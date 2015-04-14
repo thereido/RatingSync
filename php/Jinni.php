@@ -70,7 +70,9 @@ class Jinni
         $results = $this->http->searchSuggestions($searchStr, $type);
         foreach ($results as $result) {
             $films[] = $film = new \RatingSync\Film($this->http);
-            $film->setFilmId($result['id']);
+            $rating = new \RatingSync\Rating(\RatingSync\Rating::SOURCE_JINNI);
+            $rating->setFilmId($result['id']);
+            $film->setRating($rating);
             $film->setName($result['name']);
             $film->setYear($result['year']);
             $film->setContentType($result['contentType']);
@@ -112,12 +114,12 @@ class Jinni
             $rating = new \RatingSync\Rating(\RatingSync\Rating::SOURCE_JINNI);
             $rating->setYourScore($ratingMatches[1]);
             $rating->setYourRatingDate($ratingDateMatches[1]);
+            $rating->setFilmId($filmIdMatches[1]);
 
             $films[] = $film = new \RatingSync\Film($this->http);
             $film->setRating($rating);
             $film->setName(htmlspecialchars_decode($matches[1]));
             $film->setUrlName($matches[2], \RatingSync\Rating::SOURCE_JINNI);
-            $film->setFilmId($filmIdMatches[1]);
             $film->setImage($contentTypeMatches[1]);
             if ($contentTypeMatches[2] == 'movie') {
                 $film->setContentType(\RatingSync\Film::CONTENT_FILM);

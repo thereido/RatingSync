@@ -20,7 +20,7 @@ class HttpJinni
             $sessionCookie = ";JSESSIONID=".$this->jSessionID;
         }
 
-        $ch = curl_init($baseUrl.$path);
+        $ch = curl_init($this->baseUrl.$path);
         curl_setopt($ch, CURLOPT_COOKIE, $authCookie . $sessionCookie);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
