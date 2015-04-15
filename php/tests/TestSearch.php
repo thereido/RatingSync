@@ -16,7 +16,7 @@ $jinni = new \RatingSync\Jinni("change_to_a_real_username");
 $searchResults = $jinni->getSearchSuggestions('Wolf Wall Street', \RatingSync\Film::CONTENT_FILM);
 
 foreach ($searchResults as $film) {
-    $name = $film->getName();
+    $name = $film->getTitle();
     echo "Name: $name<br>";
 }
 ?>
