@@ -5,9 +5,9 @@ Import/Export entertainment ratings across websites like IMDb, RottenTomatoes, J
 
 Goals
 ==============
-Export from Jinni to XML
-Export from IMDb to XML
-Import from XML to DB
-Import from DB to Jinni
-Sync DB RatingSync with DB Jinni
-Auto testing
+Export from Jinni to XML<br>
+Export from IMDb to XML<br>
+Import from XML to DB<br>
+Import from DB to Jinni<br>
+Sync DB RatingSync with DB Jinni<br>
+Auto testing<br>
