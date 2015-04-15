@@ -14,7 +14,7 @@ class Film {
      */
     protected $http;
 
-    protected $name;
+    protected $title;
     protected $year;
     protected $contentType;
     protected $image;
@@ -82,14 +82,14 @@ class Film {
         return getRating($source)->getYourScore();
     }
 
-    public function setName($name)
+    public function setTitle($title)
     {
-        $this->name = $name;
+        $this->title = $title;
     }
 
-    public function getName()
+    public function getTitle()
     {
-        return $this->name;
+        return $this->title;
     }
 
     public function setYear($year)

@@ -124,7 +124,7 @@ class HttpJinni
         foreach ($matches as $match) {
             $results[] = array(
                 'id' => $match[1],
-                'name' => stripslashes($match[2]),
+                'title' => stripslashes($match[2]),
                 'year' => $match[4],
                 'contentType' => $match[3]
             );

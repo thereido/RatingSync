@@ -73,7 +73,7 @@ class Jinni
             $rating = new \RatingSync\Rating(\RatingSync\Rating::SOURCE_JINNI);
             $rating->setFilmId($result['id']);
             $film->setRating($rating);
-            $film->setName($result['name']);
+            $film->setTitle($result['title']);
             $film->setYear($result['year']);
             $film->setContentType($result['contentType']);
         }
@@ -86,7 +86,7 @@ class Jinni
         $filmSections = explode('<div class="ratings_cell5">', $page);
         array_shift($films);
         foreach ($filmSections as $filmSection) {
-            // URL name and film name
+            // URL name and film title
             if (0 === preg_match('@<div class="ratings_cell2" title="([^"]+)">[\s\n\r]+<a href="http://www.jinni.com/(?:movies|tv)/([^/]+)/" class="ratings_link" onclick="">([^"]+)</a>@', $filmSection, $matches)) {
                 continue;
             }
@@ -118,7 +118,7 @@ class Jinni
 
             $films[] = $film = new \RatingSync\Film($this->http);
             $film->setRating($rating);
-            $film->setName(htmlspecialchars_decode($matches[1]));
+            $film->setTitle(htmlspecialchars_decode($matches[1]));
             $film->setUrlName($matches[2], \RatingSync\Rating::SOURCE_JINNI);
             $film->setImage($contentTypeMatches[1]);
             if ($contentTypeMatches[2] == 'movie') {

@@ -23,7 +23,7 @@ echo "  <tr><td>Name</td><td>Your Score</td><td>Rated Date</td><td>Unique Name</
 foreach($films as $film) {
     $rating = $film->getRating("Jinni");
     echo "<tr>";
-    echo "<td>" . $film->getName() . " (" . $film->getYear() . ")</td>";
+    echo "<td>" . $film->getTitle() . " (" . $film->getYear() . ")</td>";
     echo "<td>" . $rating->getYourScore() . "</td>";
     echo "<td>" . $rating->getYourRatingDate() . "</td>";
     echo "<td>" . $film->getUrlName("Jinni") . "</td>";
