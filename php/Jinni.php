@@ -159,9 +159,11 @@ class Jinni
 
     public function getFilmDetailFromWebsite($film, $overwrite = false)
     {
-        // See which detail needed from the website
+        // See which detail is needed from the website
         $overwriteYear = true;
         $overwriteRating = true;
+        $overwriteGenres = true;
+        $overwriteDirector = true;
         $needToRetrieveFromWebsite = true;
         if (!$overwrite) {
             $overwriteYear = false;
@@ -173,6 +175,14 @@ class Jinni
             }
             if ($film->getRating(\RatingSync\Rating::SOURCE_JINNI) == null) {
                 $overwriteRating = true;
+                $needToRetrieveFromWebsite = true;
+            }
+            if (count($film->getGenres()) == 0) {
+                $overwriteGenres = true;
+                $needToRetrieveFromWebsite = true;
+            }
+            if (strlen($film->getDirector()) == 0) {
+                $overwriteYear = true;
                 $needToRetrieveFromWebsite = true;
             }
         }
@@ -207,5 +217,31 @@ class Jinni
 
         // Rating
         // FIXME
+
+        // Genres
+        if ($overwriteGenres) {
+            $groupSections = explode('<div class="right_genomeGroup">', $page);
+            array_shift($groupSections);
+            foreach ($groupSections as $groupSection) {
+                if (!stripos($groupSection, "Genres")) {
+                    continue;
+                }
+                $geneSections = explode('right_genomeLink', $groupSection);
+                array_shift($geneSections);
+                foreach ($geneSections as $geneSection) {
+                    // Letters, Spaces, Hyphens, Numbers
+                    if (0 < preg_match('@([a-zA-Z \-\d]+)[,]?<\/a>@', $geneSection, $matches)) {
+                        $film->addGenre($matches[1]);
+                    }
+                }
+            }
+        }
+
+        // Director
+        if ($overwriteDirector) {
+            if (0 < preg_match('@<b>Directed by:<\/b>.+>(.+)<\/a>@', $page, $matches)) {
+                $film->setDirector($matches[1]);
+            }
+        }
     }
 }

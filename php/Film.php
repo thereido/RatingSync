@@ -20,6 +20,8 @@ class Film {
     protected $image;
     protected $ratings = [];
     protected $urlNames = [];
+    protected $genres = array();
+    protected $director;
     protected $defaultRatingSource = \RatingSync\Rating::SOURCE_JINNI;
 
     public function __construct(HttpJinni $http)
@@ -120,5 +122,51 @@ class Film {
     public function getImage()
     {
         return $this->image;
+    }
+
+    public function addGenre($new_genre)
+    {
+        if (!in_array($new_genre, $this->genres)) {
+            $this->genres[] = $new_genre;
+        }
+    }
+
+    public function removeGenre($removeThisGenre)
+    {
+        $remainingGenres = array();
+        for ($x = 0; $x < count($this->genres); $x++) {
+            if ($removeThisGenre != $this->genres[$x]) {
+                $remainingGenres[] = $this->genres[$x];
+            }
+        }
+        $this->genres = $remainingGenres;
+    }
+
+    public function removeAllGenres()
+    {
+        $this->genres = array();
+    }
+
+    public function getGenres()
+    {
+        return $this->genres;
+    }
+
+    public function isGenre($genre)
+    {
+        return in_array($genre, $this->genres);
+    }
+
+    /**
+     * @param string $director Separate with commas when they are more than one
+     */
+    public function setDirector($director)
+    {
+        $this->director = $director;
+    }
+
+    public function getDirector()
+    {
+        return $this->director;
     }
 }
