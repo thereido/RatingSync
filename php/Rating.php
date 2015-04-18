@@ -143,7 +143,7 @@ class Rating
      */
     public function getSuggestedScore()
     {
-        return $this->yourSuggestedScore;
+        return $this->suggestedScore;
     }
 
     /**
