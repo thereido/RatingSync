@@ -107,7 +107,7 @@ class Jinni
             }
 
             // Image and Content type (Movie/TV/ShortFilm)
-            if (0 === preg_match('@<img src="(http://media1.jinni.com/(tv|movie|shorts)/[^/]+/[^"]+)"@', $filmSection, $contentTypeMatches)) {
+            if (0 === preg_match('@<img src="(http://media[\d]*.jinni.com/(tv|movie|shorts)/[^/]+/[^"]+)"@', $filmSection, $contentTypeMatches)) {
                 continue;
             }
 
