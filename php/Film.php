@@ -37,6 +37,66 @@ class Film {
         return false;
     }
 
+    /**
+     * <film>
+           <title/>
+           <year/>
+           <contentType/>
+           <image/>
+           <directors>
+               <director/>
+           </directors>
+           <genres>
+               <genre/>
+           </genres>
+           <source>
+               <sourceName/>
+               <filmId/>
+               <urlName/>
+               <rating>
+                   <yourScore/>
+                   <yourRatingDate/>
+                   <suggestedScore/>
+                   <criticScore/>
+                   <userScore/>
+               </rating>
+           </source>
+       </film>
+     *
+     * @param SimpleXMLElement $xml Add new <film> into this param
+     *
+     * @return none
+     */
+    public function addXmlChild($xml)
+    {
+        $filmXml = $xml->addChild("film");
+        $filmXml->addChild('title', htmlentities($this->getTitle()));
+        $filmXml->addChild('year', $this->getYear());
+        $filmXml->addChild('contentType', $this->getContentType());
+        $filmXml->addChild('image', $this->getImage());
+
+        $directorsXml = $filmXml->addChild('directors');
+        $directorsXml->addChild('director', $this->getDirector()); /* FIXME */
+
+        $genresXml = $filmXml->addChild('genres');
+        foreach ($this->getGenres() as $genre) {
+            $genresXml->addChild('genre', htmlentities($genre));
+        }
+
+        foreach ($this->ratings as $rating) {
+            $sourceXml = $filmXml->addChild('source');
+            $sourceXml->addChild('sourceName', $rating->getSource());
+            $sourceXml->addChild('filmId', $rating->getFilmId());
+            $sourceXml->addChild('urlName', $this->getUrlName($rating->getSource()));
+            $ratingXml = $sourceXml->addChild('rating');
+            $ratingXml->addChild('yourScore', $rating->getYourScore());
+            $ratingXml->addChild('yourRatingDate', $rating->getYourRatingDate());
+            $ratingXml->addChild('suggestedScore', $rating->getSuggestedScore());
+            $ratingXml->addChild('criticScore', $rating->getCriticScore());
+            $ratingXml->addChild('userScore', $rating->getUserScore());
+        }
+    }
+
     public function setUrlName($urlName, $source)
     {
         $this->urlNames[$source] = $urlName;
