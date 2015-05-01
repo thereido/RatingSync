@@ -1,5 +1,5 @@
 <?php
-$username = "change_to_a_real_username";
+$username = "freereido";
 ?>
 
 <!DOCTYPE html>
@@ -30,7 +30,7 @@ foreach($films as $film) {
     echo "<tr>";
     echo "<td>" . $film->getTitle() . " (" . $film->getYear() . ")</td>";
     echo "<td>" . $rating->getYourScore() . "</td>";
-    echo "<td>" . $rating->getYourRatingDate() . "</td>";
+    echo "<td>" . $rating->getYourRatingDate()->format("n/j/Y") . "</td>";
     echo "<td>" . $genres . "</td>";
     echo "<td>" . $film->getDirector() . "</td>";
     echo "<td>" . $film->getContentType() . "</td>";
