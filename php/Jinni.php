@@ -16,6 +16,8 @@ require_once __DIR__."/Rating.php";
  */
 class Jinni
 {
+    const JINNI_DATE_FORMAT = "n/j/y";
+
     public $http;
     protected $username;
 
@@ -107,13 +109,13 @@ class Jinni
             }
 
             // Image and Content type (Movie/TV/ShortFilm)
-            if (0 === preg_match('@<img src="(http://media1.jinni.com/(tv|movie|shorts)/[^/]+/[^"]+)"@', $filmSection, $contentTypeMatches)) {
+            if (0 === preg_match('@<img src="(http://media[\d]*.jinni.com/(tv|movie|shorts)/[^/]+/[^"]+)"@', $filmSection, $contentTypeMatches)) {
                 continue;
             }
 
             $rating = new \RatingSync\Rating(\RatingSync\Rating::SOURCE_JINNI);
             $rating->setYourScore($ratingMatches[1]);
-            $rating->setYourRatingDate($ratingDateMatches[1]);
+            $rating->setYourRatingDate(\DateTime::createFromFormat(self::JINNI_DATE_FORMAT, $ratingDateMatches[1]));
             $rating->setFilmId($filmIdMatches[1]);
 
             $films[] = $film = new \RatingSync\Film($this->http);
