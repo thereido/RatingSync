@@ -16,6 +16,8 @@ require_once __DIR__."/Rating.php";
  */
 class Jinni
 {
+    const JINNI_DATE_FORMAT = "n/j/y";
+
     public $http;
     protected $username;
 
@@ -86,8 +88,8 @@ class Jinni
         $filmSections = explode('<div class="ratings_cell5">', $page);
         array_shift($films);
         foreach ($filmSections as $filmSection) {
-            // URL name and film title
-            if (0 === preg_match('@<div class="ratings_cell2" title="([^"]+)">[\s\n\r]+<a href="http://www.jinni.com/(?:movies|tv)/([^/]+)/" class="ratings_link" onclick="">([^"]+)</a>@', $filmSection, $matches)) {
+            // Film title, URL name, Content Type (Movie/TV/ShortFilm)
+            if (0 === preg_match('@<div class="ratings_cell2" title="([^"]+)">[\s\n\r]+<a href="http://www.jinni.com/(movies|tv|shorts)/([^/]+)/"@', $filmSection, $matches)) {
                 continue;
             }
             
@@ -113,19 +115,19 @@ class Jinni
 
             $rating = new \RatingSync\Rating(\RatingSync\Rating::SOURCE_JINNI);
             $rating->setYourScore($ratingMatches[1]);
-            $rating->setYourRatingDate($ratingDateMatches[1]);
+            $rating->setYourRatingDate(\DateTime::createFromFormat(self::JINNI_DATE_FORMAT, $ratingDateMatches[1]));
             $rating->setFilmId($filmIdMatches[1]);
 
             $films[] = $film = new \RatingSync\Film($this->http);
             $film->setRating($rating);
             $film->setTitle(htmlspecialchars_decode($matches[1]));
-            $film->setUrlName($matches[2], \RatingSync\Rating::SOURCE_JINNI);
-            $film->setImage($contentTypeMatches[1]);
-            if ($contentTypeMatches[2] == 'movie') {
+            $film->setUrlName($matches[3], \RatingSync\Rating::SOURCE_JINNI);
+            $film->setImage($imageMatches[1]);
+            if ($matches[2] == 'movies') {
                 $film->setContentType(\RatingSync\Film::CONTENT_FILM);
-            } elseif ($contentTypeMatches[2] == 'tv') {
+            } elseif ($matches[2] == 'tv') {
                 $film->setContentType(\RatingSync\Film::CONTENT_TV);
-            } elseif ($contentTypeMatches[2] == 'shorts') {
+            } elseif ($matches[2] == 'shorts') {
                 $film->setContentType(\RatingSync\Film::CONTENT_SHORTFILM);
             }
 
