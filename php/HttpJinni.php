@@ -9,11 +9,22 @@ class HttpJinni
 
     public function __construct($username)
     {
+        if (! (is_string($username) && 0 < strlen($username)) ) {
+            throw new \InvalidArgumentException('$username must be non-empty');
+        }
+
         $this->username = $username;
     }
 
+    /**
+     *@return string|false HTML as string or false if the page is not found
+     */
     public function getPage($path, $postData = null, $headersOnly = false)
     {
+        if (! (!is_null($path)) ) {
+            throw new \InvalidArgumentException("getPage() path cannot be NULL");
+        }
+
         $authCookie = "auth=".$this->username;
         $sessionCookie = "";
         if (!empty($this->jSessionID)) {
@@ -66,7 +77,7 @@ class HttpJinni
     {
         if (!$this->jSessionID) {
             // Needs a session ID. Get a lightweight page
-            $this->getPage('/sitemap.html');
+            $this->getPage('/info/about.html');
         }
         $postData = 'callCount=1'."\n".
             'batchId=0'."\n".

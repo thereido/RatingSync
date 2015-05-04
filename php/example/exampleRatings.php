@@ -1,5 +1,5 @@
 <?php
-$username = "change_to_a_real_username";
+$username = "testratingsync";
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +15,7 @@ require_once "../Jinni.php";
 
 $jinni = new \RatingSync\Jinni($username);
 
-$films = $jinni->getRatings(1, 1, true);
+$films = $jinni->getRatings(null, 1, true);
 echo "<h2>Count: " . count($films) . "</h2>";
 
 echo "<table>";
@@ -30,7 +30,7 @@ foreach($films as $film) {
     echo "<tr>";
     echo "<td>" . $film->getTitle() . " (" . $film->getYear() . ")</td>";
     echo "<td>" . $rating->getYourScore() . "</td>";
-    echo "<td>" . $rating->getYourRatingDate() . "</td>";
+    echo "<td>" . $rating->getYourRatingDate()->format("n/j/Y") . "</td>";
     echo "<td>" . $genres . "</td>";
     echo "<td>" . $film->getDirector() . "</td>";
     echo "<td>" . $film->getContentType() . "</td>";
