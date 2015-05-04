@@ -1,5 +1,5 @@
 <?php
-$username = "freereido";
+$username = "testratingsync";
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +15,7 @@ require_once "../Jinni.php";
 
 $jinni = new \RatingSync\Jinni($username);
 
-$films = $jinni->getRatings(1, 1, true);
+$films = $jinni->getRatings(null, 1, true);
 echo "<h2>Count: " . count($films) . "</h2>";
 
 echo "<table>";

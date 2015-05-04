@@ -11,7 +11,7 @@
 <?php
 require_once "../Jinni.php";
 
-$jinni = new \RatingSync\Jinni("freereido");
+$jinni = new \RatingSync\Jinni("testratingsync");
 
 $searchResults = $jinni->getSearchSuggestions('Wolf Wall Street', \RatingSync\Film::CONTENT_FILM);
 
