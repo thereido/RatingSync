@@ -25,7 +25,7 @@ foreach($films as $film) {
     echo "<tr>";
     echo "<td>" . $film->getTitle() . "</td>";
     echo "<td>" . $rating->getYourScore() . "</td>";
-    echo "<td>" . $rating->getYourRatingDate() . "</td>";
+    echo "<td>" . $rating->getYourRatingDate()->format("n/j/Y") . "</td>";
     echo "<td>" . $film->getContentType() . "</td>";
     echo "<td><img src='" . $film->getImage() . "' /></td>";
     echo "</tr>";

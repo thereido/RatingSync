@@ -108,8 +108,8 @@ class Jinni
                 continue;
             }
 
-            // Image and Content type (Movie/TV/ShortFilm)
-            if (0 === preg_match('@<img src="(http://media[\d]*.jinni.com/(tv|movie|shorts)/[^/]+/[^"]+)"@', $filmSection, $contentTypeMatches)) {
+            // Image
+            if (0 === preg_match('@<img src="(http://media[\d]*.jinni.com/(?:tv|movie|shorts|no-image)/[^/]+/[^"]+)"@', $filmSection, $imageMatches)) {
                 continue;
             }
 
