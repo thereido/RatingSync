@@ -257,8 +257,16 @@ class Jinni
     public function exportRatings($format, $filename, $detail = false)
     {
         $films = $this->getRatings(null, 1, $detail);
-        $filename = "./output/$filename";
+
+        // Open the output file
+        $outputDir = "./output";
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir);
+        }
+        $filename = $outputDir . "/$filename";
         $fp = fopen($filename, "w");
+
+        // Write XML
         $xml = new \SimpleXMLElement("<films/>");
         foreach ($films as $film) {
             $film->addXmlChild($xml);
