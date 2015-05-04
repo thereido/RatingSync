@@ -1,5 +1,5 @@
 <?php
-$username = "change_to_a_real_username";
+$username = "testratingsync";
 ?>
 
 <!DOCTYPE html>

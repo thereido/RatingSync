@@ -11,7 +11,7 @@
 <?php
 require_once "../Jinni.php";
 
-$jinni = new \RatingSync\Jinni("change_to_a_real_username");
+$jinni = new \RatingSync\Jinni("testratingsync");
 
 $searchResults = $jinni->getSearchSuggestions('Wolf Wall Street', \RatingSync\Film::CONTENT_FILM);
 
