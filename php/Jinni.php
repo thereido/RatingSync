@@ -159,41 +159,13 @@ class Jinni
         return $matches[1] + 1;
     }
 
-    public function getFilmDetailFromWebsite($film, $overwrite = false)
+    public function getFilmDetailFromWebsite($film, $overwrite = true)
     {
-        // See which detail is needed from the website
-        $overwriteYear = true;
-        $overwriteRating = true;
-        $overwriteGenres = true;
-        $overwriteDirector = true;
-        $needToRetrieveFromWebsite = true;
-        if (!$overwrite) {
-            $overwriteYear = false;
-            $overwriteRating = false;
-            $needToRetrieveFromWebsite = false;
-            if ($film->getYear() == null) {
-                $overwriteYear = true;
-                $needToRetrieveFromWebsite = true;
-            }
-            if ($film->getRating(\RatingSync\Rating::SOURCE_JINNI) == null) {
-                $overwriteRating = true;
-                $needToRetrieveFromWebsite = true;
-            }
-            if (count($film->getGenres()) == 0) {
-                $overwriteGenres = true;
-                $needToRetrieveFromWebsite = true;
-            }
-            if (strlen($film->getDirector()) == 0) {
-                $overwriteYear = true;
-                $needToRetrieveFromWebsite = true;
-            }
+        if (! $film instanceof Film ) {
+            throw new \InvalidArgumentException('Function getFilmDetailFromWebsite must be given a Film object');
+        } elseif ( is_null($film->getContentType()) || is_null($film->getUrlName(Rating::SOURCE_JINNI)) ) {
+            throw new \InvalidArgumentException('Function getFilmDetailFromWebsite must have Content Type and URL Name');
         }
-
-        if (!$needToRetrieveFromWebsite) {
-            return;
-        }
-
-        $urlName = $film->getUrlName(\RatingSync\Rating::SOURCE_JINNI);
 
         switch ($film->getContentType()) {
         case \RatingSync\Film::CONTENT_FILM:
@@ -208,20 +180,18 @@ class Jinni
         default:
             $type = null;
         }
+
+        $urlName = $film->getUrlName(\RatingSync\Rating::SOURCE_JINNI);
         $page = $this->http->getPage('/'.$type.'/'.$urlName);
 
-        // Year
-        if ($overwriteYear) {
-            if (0 < preg_match('@<h1 class=\"title1\">.*, (\d\d\d\d)<\/h1>@', $page, $matches)) {
-                $film->setYear($matches[1]);
-            }
-        }
-
-        // Rating
-        // FIXME
+        $this->parseTitleFromDetailPage($page, $film, $overwrite);
+        $this->parseFilmYearFromDetailPage($page, $film, $overwrite);
+        $this->parseImageFromDetailPage($page, $film, $overwrite);
+        $this->parseRatingFromDetailPage($page, $film, $overwrite);
 
         // Genres
-        if ($overwriteGenres) {
+        if ($overwrite || empty($film->getGenres())) {
+            $film->removeAllGenres();
             $groupSections = explode('<div class="right_genomeGroup">', $page);
             array_shift($groupSections);
             foreach ($groupSections as $groupSection) {
@@ -239,12 +209,136 @@ class Jinni
             }
         }
 
-        // Director
-        if ($overwriteDirector) {
-            if (0 < preg_match('@<b>Directed by:<\/b>.+>(.+)<\/a>@', $page, $matches)) {
-                $film->setDirector($matches[1]);
+        // Directors
+        if ($overwrite || empty($film->getDirectors())) {
+            $film->removeAllDirectors();
+            if (0 < preg_match('@<b>Directed by:<\/b>(.+)@', $page, $directorLines)) {
+                preg_match_all("@<[^>]+>(.*)</[^>]+>@U", $directorLines[1], $directorMatches);
+                $directors = $directorMatches[1];
+                foreach ($directors as $director) {
+                    $film->addDirector($director);
+                }
             }
         }
+    }
+
+    /**
+     * Get the title from html of the film's detail page. Set the value
+     * in the Film param.
+     *
+     * @param string $page      HTML of the film detail page
+     * @param Film   $film      Set the title in this Film object
+     * @param bool   $overwrite Only overwrite data if 1) $overwrite=true OR/AND 2) data is null
+     *
+     * @return bool true is value is written to the Film object
+     */
+    protected function parseTitleFromDetailPage($page, $film, $overwrite)
+    {
+        if (!$overwrite && !is_null($film->getTitle())) {
+            return false;
+        }
+
+        if (0 === preg_match('@<h1 class=\"title1\">(.*), \d\d\d\d<\/h1>@', $page, $matches)) {
+            return false;
+        }
+        $film->setTitle($matches[1]);
+        return true;
+    }
+
+    /**
+     * Get the film year from html of the film's detail page. Set the value
+     * in the Film param.
+     *
+     * @param string $page      HTML of the film detail page
+     * @param Film   $film      Set the title in this Film object
+     * @param bool   $overwrite Only overwrite data if 1) $overwrite=true OR/AND 2) data is null
+     *
+     * @return bool true is value is written to the Film object
+     */
+    protected function parseFilmYearFromDetailPage($page, $film, $overwrite)
+    {
+        if (!$overwrite && !is_null($film->getYear())) {
+            return false;
+        }
+
+        if (0 < preg_match('@<h1 class=\"title1\">.*, (\d\d\d\d)<\/h1>@', $page, $matches)) {
+            $film->setYear($matches[1]);
+            return true;
+        } else {
+            return false;
+        }        
+    }
+
+    /**
+     * Get the image link from html of the film's detail page. Set the value
+     * in the Film param.
+     *
+     * @param string $page      HTML of the film detail page
+     * @param Film   $film      Set the image link in this Film object
+     * @param bool   $overwrite Only overwrite data if 1) $overwrite=true OR/AND 2) data is null
+     *
+     * @return bool true is value is written to the Film object
+     */
+    protected function parseImageFromDetailPage($page, $film, $overwrite)
+    {
+        if (!$overwrite && !is_null($film->getImage())) {
+            return false;
+        }
+
+        if (0 === preg_match('@<img src="(http://media[\d]*.jinni.com/(?:tv|movie|shorts|no-image)/[^/]+/[^"]+)@', $page, $matches)) {
+            return false;
+        }
+        $film->setImage($matches[1]);
+        return true;
+    }
+
+    /**
+     * Get the rating from html of the film's detail page. Set the value
+     * in the Film param.
+     *
+     * @param string $page      HTML of the film detail page
+     * @param Film   $film      Set the rating in this Film object
+     * @param bool   $overwrite Only overwrite data if 1) $overwrite=true OR/AND 2) data is null
+     */
+    protected function parseRatingFromDetailPage($page, $film, $overwrite)
+    {
+        $rating = $film->getRating(Rating::SOURCE_JINNI);
+        $urlName = $film->getUrlName(\RatingSync\Rating::SOURCE_JINNI);
+
+        // Your score
+        if ($overwrite || is_null($rating->getYourScore())) {
+            $rating->setYourScore(null);
+            if (0 < preg_match('/uniqueName: \"'.$urlName.'\"[^}]+isRatedRating: true/', $page, $matches)) {
+                if (0 < preg_match('/uniqueName: \"'.$urlName.'\"[^}]+RatedORSuggestedValue: (\d[\d]?)/', $page, $matches)) {
+                    $rating->setYourScore($matches[1]);
+                }
+            }
+        }
+
+        // Suggested score
+        if ($overwrite || is_null($rating->getSuggestedScore())) {
+            if (0 < preg_match('/uniqueName: \"'.$urlName.'\"[^}]+isSuggestedRating: true/', $page, $matches)) {
+                if (0 < preg_match('/uniqueName: \"'.$urlName.'\"[^}]+RatedORSuggestedValue: (\d[\d]?)/', $page, $matches)) {
+                    $rating->setSuggestedScore($matches[1]);
+                }
+            }
+        }
+
+        // Rating Date - not available in the detail page
+
+        // Film ID
+        if ($overwrite || is_null($rating->getFilmId())) {
+            $rating->setFilmId(null);
+            if (0 < preg_match('/uniqueName: \"'.$urlName.'\"[^}]+uniqueId: \"([^\"]+)\"/', $page, $matches)) {
+                $rating->setFilmId($matches[1]);
+            }
+        }
+
+        // Critic Score - not applicable for Jinni
+
+        // User Score - not applicable for Jinni
+            
+        $film->setRating($rating);
     }
 
     /**

@@ -29,7 +29,7 @@ function export($username, $source, $format, $filename)
     }
 
     $jinni = new \RatingSync\Jinni($username);
-    return $jinni->exportRatings($format, $filename, false);;
+    return $jinni->exportRatings($format, $filename, true);;
 }
 
 ?>

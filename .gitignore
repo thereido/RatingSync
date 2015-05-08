@@ -5,3 +5,5 @@
 /debug_result.html
 /php/output
 /php/unit_tests.cmd
+/php/tests/TempHttpJinniTest.php
+/php/tests/TempJinniTest.php

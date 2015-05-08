@@ -1,6 +1,10 @@
 <?php
 namespace RatingSync;
 
+require_once __DIR__."/exceptions/HttpErrorException.php";
+require_once __DIR__."/exceptions/HttpNotFoundException.php";
+require_once __DIR__."/exceptions/HttpUnauthorizedRedirectException.php";
+
 class HttpJinni
 {
     protected $username;
@@ -17,7 +21,9 @@ class HttpJinni
     }
 
     /**
-     *@return string|false HTML as string or false if the page is not found
+     * @return string|false HTML as string or false if the page is not found
+     * @throws \RatingSync\UnauthorizedRedirectException
+     * @throws \InvalidArgumentException
      */
     public function getPage($path, $postData = null, $headersOnly = false)
     {
@@ -48,6 +54,16 @@ class HttpJinni
         $result = curl_exec($ch);
         $info = curl_getinfo($ch);
         curl_close($ch);
+        
+        // Verify HTTP Code
+        $httpCode = $info['http_code'];
+        if (401 == $httpCode) {
+            throw new HttpUnauthorizedRedirectException('Unauthorized Redirect: ' . $this->baseUrl . $path);
+        } elseif (404 == $httpCode) {
+            throw new HttpNotFoundException('HTTP Not Found: ' . $this->baseUrl . $path);
+        } elseif (($httpCode < 200) || (299 < $httpCode)) {
+            throw new HttpErrorException('HTTP Error ' . $httpCode . ': ' . $this->baseUrl . $path);
+        }
 
         $headers = substr($result, 0, $info['header_size']);
 
@@ -60,6 +76,14 @@ class HttpJinni
         } else {
             $page = substr($result, $info['header_size']);
         }
+        
+/*
+        if (strpos($page, '<form id=\'unauthorizedRedirectForm\'')) {
+            throw new UnauthorizedRedirectException('Unauthorized Redirect: ' . $this->baseUrl . $path);
+        } elseif (strpos($page, '<h1 class="title1">Whoops!</h1>')) {
+            throw new \Exception('Whoops!: ' . $this->baseUrl . $path);
+        }
+*/
 
         return $page;
     }
