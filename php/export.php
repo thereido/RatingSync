@@ -15,32 +15,37 @@ require_once "./main.php";
 
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title>RatingSync Export</title>
-    </head>
-    <body>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RatingSync Export</title>
+    <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
+    <link href="../css/jumbotron-narrow.css" rel="stylesheet">
+    <script src="../js/bootstrap.min.js"></script>
+</head>
 
+<body>    
+  
 <?php
 // define variables and set to empty values
-$username = $source = $format = $filename = $returnMsg = null;
+$username = $source = $format = $filename = $success = null;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = test_input($_POST["username"]);
     $source = test_input($_POST["source"]);
     $format = test_input($_POST["format"]);
-    $filename = test_input($_POST["filename"]);
 
-    /* FIXME - input validation */
+    // FIXME - input validation
     
     if (\RatingSync\export($username, $source, $format, $filename)) {
-        $returnMsg = "Export successful!";
+        $success = true;
     } else {
-        $returnMsg = "<b>Something went wrong</b>";
+        $success = false;
     }
 }
 
-function test_input($data) {
+function test_input($data)
+{
      $data = trim($data);
      $data = stripslashes($data);
      $data = htmlspecialchars($data);
@@ -48,24 +53,69 @@ function test_input($data) {
 }
 ?>
 
-<h2>RatingSync Export</h2>
-<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"> 
-   Username: <input type="text" name="username" value="<?php echo $username; ?>">
-   <br><br>
-   Export From:
-   <input type="radio" name="source" value="jinni" checked>Jinni
-   <br><br>
-   Format:
-   <input type="radio" name="format" value="xml" checked>XML
-   <br><br>
-   Download File: <input type="text" name="filename" value="<?php echo $filename; ?>">
-   <br><br>
-   <input type="submit" name="submit" value="Submit"> 
+<form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+    <div class="container">
+      <div class="header clearfix">
+        <nav>
+          <ul class="nav nav-pills pull-right">
+            <li role="presentation" class="active"><a href="/index.html">Home</a></li>
+          </ul>
+        </nav>
+        <h3 class="text-muted">RatingSync</h3>
+      </div>
+
+      <div class="well" style="text-align:center">
+        <h1>Export Ratings</h1>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-offset-1 col-sm-10">
+        <?php
+        if (!is_null($success)) {
+            if ($success) {
+                echo "<div class=\"alert alert-success\"><strong>Success!</strong></div>\n";
+            } else {
+                echo "<div class=\"alert alert-warning\"><strong>Failure!</strong> Something went wrong.</div>\n";
+            }
+        }
+        ?>
+        </div> <!-- /col -->
+      </div> <!-- /row -->
+            
+      <div class="row">
+        <div class="col-lg-offset-1 col-lg-5">
+          <label>Export from</label>
+          <label class="radio-inline"><input type="radio" name="source" value="jinni" checked>Jinni</label>
+          <label class="radio-inline"><input type="radio" name="source" value="imdb" disabled>IMDb</label>
+        </div><!-- /col -->
+        <div class="col-lg-offset-1 col-lg-5">
+          <label>Format</label>
+          <label class="col-lg-offset-1 radio-inline"><input type="radio" name="format" value="XML" checked>XML</label>
+        </div><!-- /col -->
+      </div><!-- /row -->
+        
+      <p></p>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="input-group">
+            <span class="input-group-addon" id="username-addon1">Jinni Username</span>
+            <input type="text" class="form-control" placeholder="Username" aria-describedby="username-addon1" name="username" value="<?php echo $username; ?>">
+          </div>
+        </div>
+      </div><!-- /row -->
+      
+      <p/>
+      <div class="row">
+        <div class="col-lg-12" style="text-align:center">
+          <input type="submit" name="submitBtn" class="btn btn-lg btn-primary" href="#" role="button" value="Export">
+        </div>
+      </div><!-- /row -->
+
+      <p/>
+      <footer class="footer">
+      </footer>
+    </div>
 </form>
 
-<?php
-echo "<h2>Your Input:</h2>";
-echo $returnMsg;
-?>
-    </body>
+</body>
 </html>
