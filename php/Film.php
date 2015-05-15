@@ -21,7 +21,7 @@ class Film {
     protected $ratings = array();
     protected $urlNames = array();
     protected $genres = array();
-    protected $director;
+    protected $directors = array();
     protected $defaultRatingSource = \RatingSync\Rating::SOURCE_JINNI;
 
     public function __construct(HttpJinni $http)
@@ -40,6 +40,77 @@ class Film {
             return true;
         }
         return false;
+    }
+
+    /**
+     * <film title="">
+           <title/>
+           <year/>
+           <contentType/>
+           <image/>
+           <directors>
+               <director/>
+           </directors>
+           <genres>
+               <genre/>
+           </genres>
+           <source name="">
+               <filmId/>
+               <urlName/>
+               <rating>
+                   <yourScore/>
+                   <yourRatingDate/>
+                   <suggestedScore/>
+                   <criticScore/>
+                   <userScore/>
+               </rating>
+           </source>
+       </film>
+     *
+     * @param SimpleXMLElement $xml Add new <film> into this param
+     *
+     * @return none
+     */
+    public function addXmlChild($xml)
+    {
+        if (! $xml instanceof \SimpleXMLElement ) {
+            throw new \InvalidArgumentException('Function addXmlChild must be given a SimpleXMLElement');
+        }
+
+        $filmXml = $xml->addChild("film");
+        $filmXml->addAttribute('title', htmlentities($this->getTitle()));
+        $filmXml->addChild('title', htmlentities($this->getTitle()));
+        $filmXml->addChild('year', $this->getYear());
+        $filmXml->addChild('contentType', $this->getContentType());
+        $filmXml->addChild('image', $this->getImage());
+
+        $directorsXml = $filmXml->addChild('directors');
+        $directors = $this->getDirectors();
+        foreach ($directors as $director) {
+            $directorsXml->addChild('director', htmlentities($director));
+        }
+
+        $genresXml = $filmXml->addChild('genres');
+        foreach ($this->getGenres() as $genre) {
+            $genresXml->addChild('genre', htmlentities($genre));
+        }
+
+        foreach ($this->ratings as $rating) {
+            $sourceXml = $filmXml->addChild('source');
+            $sourceXml->addAttribute('name', $rating->getSource());
+            $sourceXml->addChild('filmId', $rating->getFilmId());
+            $sourceXml->addChild('urlName', $this->getUrlName($rating->getSource()));
+            $ratingXml = $sourceXml->addChild('rating');
+            $ratingXml->addChild('yourScore', $rating->getYourScore());
+            $ratingDate = null;
+            if (!is_null($rating->getYourRatingDate())) {
+                $ratingDate = $rating->getYourRatingDate()->format("Y-n-j");
+            }
+            $ratingXml->addChild('yourRatingDate', $ratingDate);
+            $ratingXml->addChild('suggestedScore', $rating->getSuggestedScore());
+            $ratingXml->addChild('criticScore', $rating->getCriticScore());
+            $ratingXml->addChild('userScore', $rating->getUserScore());
+        }
     }
 
     public function setUrlName($urlName, $source)
@@ -234,16 +305,40 @@ class Film {
         return in_array($genre, $this->genres);
     }
 
-    /**
-     * @param string $director Separate with commas when they are more than one
-     */
-    public function setDirector($director)
+    public function addDirector($new_director)
     {
-        $this->director = $director;
+        if (empty($new_director)) {
+            throw new \InvalidArgumentException('addDirector param must not be empty');
+        }
+
+        if (!in_array($new_director, $this->directors)) {
+            $this->directors[] = $new_director;
+        }
     }
 
-    public function getDirector()
+    public function removeDirector($removeThisDirector)
     {
-        return $this->director;
+        $remainingDirectors = array();
+        for ($x = 0; $x < count($this->directors); $x++) {
+            if ($removeThisDirector != $this->directors[$x]) {
+                $remainingDirectors[] = $this->directors[$x];
+            }
+        }
+        $this->directors = $remainingDirectors;
+    }
+
+    public function removeAllDirectors()
+    {
+        $this->directors = array();
+    }
+
+    public function getDirectors()
+    {
+        return $this->directors;
+    }
+
+    public function isDirector($director)
+    {
+        return in_array($director, $this->directors);
     }
 }

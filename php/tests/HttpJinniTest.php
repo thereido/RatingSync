@@ -87,10 +87,26 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers \RatingSync\HttpJinni::getPage
+     * @expectedException \RatingSync\HttpUnauthorizedRedirectException
      */
-    public function testCannotGetPageAndReturnsFalse() {
-        $page = self::$http->getPage("Bad Page");
-        $this->assertFalse($page);
+    public function testGetPageUnauthorizedRedirect() {
+        self::$http->getPage('/user/---Username--No--Match---/ratings');
+    }
+
+    /**
+     * @covers \RatingSync\HttpJinni::getPage
+     * @expectedException \RatingSync\HttpNotFoundException
+     */
+    public function testCannotGetPageWithNotFound() {
+        self::$http->getPage("/findthis");
+    }
+
+    /**
+     * @covers \RatingSync\HttpJinni::getPage
+     * @expectedException \RatingSync\HttpErrorException
+     */
+    public function testGetPageHttpError() {
+        self::$http->getPage('Bad URL');
     }
 
     /**
