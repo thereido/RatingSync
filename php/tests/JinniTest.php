@@ -539,14 +539,57 @@ class JinniTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
     }
+    
+    /**
+     * @covers \RatingSync\Jinni::exportRatings
+     * @depends testObjectCanBeConstructed
+     */
+    public function testExportRatingsXmlNoDetail()
+    {
+        $jinni = new Jinni(TEST_USERNAME);
+
+        $testFilename = "ratings_test.xml";
+        $success = $jinni->exportRatings("XML", $testFilename, false);
+        $this->assertTrue($success);
+
+        $fullTestFilename = ".." . Constants::RS_OUTPUT_PATH . $testFilename;
+        $fullVerifyFilename = "tests/testfile/verify_ratings_nodetail.xml";
+        $this->assertTrue(is_readable($fullTestFilename), 'Need to read downloaded file ' . $fullTestFilename);
+        $this->assertTrue(is_readable($fullVerifyFilename), 'Need to read verify file ' . $fullVerifyFilename);
+
+        $fp_test = fopen($fullTestFilename, "r");
+        $fp_verify = fopen($fullVerifyFilename, "r");
+        $test = fread($fp_test, filesize($fullTestFilename));
+        $verify = fread($fp_verify, filesize($fullVerifyFilename));
+        $this->assertEquals($test, $verify, 'Match exported file vs verify file');
+        fclose($fp_test);
+        fclose($fp_verify);
+    }
 
     /**
      * @covers \RatingSync\Jinni::exportRatings
      * @depends testObjectCanBeConstructed
      */
-    public function testExportRatingsXml()
+    public function testExportRatingsXmlDetail()
     {
-echo "\nFIXME testExportRatingsXml\n";
+        $jinni = new Jinni(TEST_USERNAME);
+
+        $testFilename = "ratings_test.xml";
+        $success = $jinni->exportRatings("XML", $testFilename, true);
+        $this->assertTrue($success);
+
+        $fullTestFilename = ".." . Constants::RS_OUTPUT_PATH . $testFilename;
+        $fullVerifyFilename = "tests/testfile/verify_ratings_detail.xml";
+        $this->assertTrue(is_readable($fullTestFilename), 'Need to read downloaded file ' . $fullTestFilename);
+        $this->assertTrue(is_readable($fullVerifyFilename), 'Need to read verify file ' . $fullVerifyFilename);
+
+        $fp_test = fopen($fullTestFilename, "r");
+        $fp_verify = fopen($fullVerifyFilename, "r");
+        $test = fread($fp_test, filesize($fullTestFilename));
+        $verify = fread($fp_verify, filesize($fullVerifyFilename));
+        $this->assertEquals($test, $verify, 'Match exported file vs verify file');
+        fclose($fp_test);
+        fclose($fp_verify);
     }
 }
 

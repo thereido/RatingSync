@@ -9,7 +9,7 @@
  */
 namespace RatingSync;
 
-require_once __DIR__."/Jinni.php";
+require_once "Jinni.php";
 
 /**
  * Export ratings from $source and write to a new file.  The file
@@ -22,14 +22,16 @@ require_once __DIR__."/Jinni.php";
  *
  * @return bool true/false - success/fail
  */
-function export($username, $source, $format, $filename)
+function export($username, $source, $format)
 {
-    if ($filename == null || strlen($filename) == 0) {
-        $filename = "ratings.xml";
-    }
+    $filename = "ratings.xml";
 
     $jinni = new \RatingSync\Jinni($username);
-    return $jinni->exportRatings($format, $filename, true);;
+    if ($jinni->exportRatings($format, $filename, true)) {
+        return $filename;
+    } else {
+        return "";
+    }
 }
 
 ?>

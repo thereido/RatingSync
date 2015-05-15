@@ -4,9 +4,10 @@
  */
 namespace RatingSync;
 
-require_once __DIR__."/Film.php";
-require_once __DIR__."/HttpJinni.php";
-require_once __DIR__."/Rating.php";
+require_once "Constants.php";
+require_once "Film.php";
+require_once "HttpJinni.php";
+require_once "Rating.php";
 
 /**
  * Communicate to/from the Jinni website
@@ -354,12 +355,7 @@ class Jinni
     {
         $films = $this->getRatings(null, 1, $detail);
 
-        // Open the output file
-        $outputDir = "./output";
-        if (!is_dir($outputDir)) {
-            mkdir($outputDir);
-        }
-        $filename = $outputDir . "/$filename";
+        $filename =  ".." . Constants::RS_OUTPUT_PATH . $filename;
         $fp = fopen($filename, "w");
 
         // Write XML

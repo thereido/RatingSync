@@ -7,10 +7,10 @@
      Username
      Source
      Format
-     Filename
  *
  */
-require_once "./main.php";
+require_once "main.php";
+require_once "Constants.php";
 ?>
 
 <!DOCTYPE html>
@@ -37,10 +37,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // FIXME - input validation
     
-    if (\RatingSync\export($username, $source, $format, $filename)) {
-        $success = true;
-    } else {
+    $filename = \RatingSync\export($username, $source, $format);
+    if (empty($filename)) {
         $success = false;
+    } else {
+        $success = true;
     }
 }
 
@@ -73,9 +74,11 @@ function test_input($data)
         <?php
         if (!is_null($success)) {
             if ($success) {
-                echo "<div class=\"alert alert-success\"><strong>Success!</strong></div>\n";
+                echo '<div class="alert alert-success">';
+                echo '<strong>Success!</strong> <a href="' . \RatingSync\Constants::RS_OUTPUT_PATH . $filename . '">Download</a>';
+                echo '</div>';
             } else {
-                echo "<div class=\"alert alert-warning\"><strong>Failure!</strong> Something went wrong.</div>\n";
+                echo '<div class="alert alert-warning"><strong>Failure!</strong> Something went wrong.</div>\n';
             }
         }
         ?>
