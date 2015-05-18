@@ -75,7 +75,7 @@ function test_input($data)
         if (!is_null($success)) {
             if ($success) {
                 echo '<div class="alert alert-success">';
-                echo '<strong>Success!</strong> <a href="' . \RatingSync\Constants::RS_OUTPUT_PATH . $filename . '">Download</a>';
+                echo '<strong>Success!</strong> <a href="' . \RatingSync\Constants::RS_OUTPUT_URL_PATH . $filename . '">Download</a>';
                 echo '</div>';
             } else {
                 echo '<div class="alert alert-warning"><strong>Failure!</strong> Something went wrong.</div>\n';

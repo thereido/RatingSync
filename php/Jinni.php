@@ -355,7 +355,7 @@ class Jinni
     {
         $films = $this->getRatings(null, 1, $detail);
 
-        $filename =  ".." . Constants::RS_OUTPUT_PATH . $filename;
+        $filename =  __DIR__ . DIRECTORY_SEPARATOR . ".." . Constants::outputFilePath() . $filename;
         $fp = fopen($filename, "w");
 
         // Write XML

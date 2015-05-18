@@ -1,9 +1,9 @@
 <?php
 namespace RatingSync;
 
-require_once __DIR__."/exceptions/HttpErrorException.php";
-require_once __DIR__."/exceptions/HttpNotFoundException.php";
-require_once __DIR__."/exceptions/HttpUnauthorizedRedirectException.php";
+require_once "exceptions/HttpErrorException.php";
+require_once "exceptions/HttpNotFoundException.php";
+require_once "exceptions/HttpUnauthorizedRedirectException.php";
 
 class HttpJinni
 {

@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "Jinni.php";
+require_once "../Jinni.php";
 
 const TEST_USERNAME = "testratingsync";
 
@@ -552,8 +552,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $success = $jinni->exportRatings("XML", $testFilename, false);
         $this->assertTrue($success);
 
-        $fullTestFilename = ".." . Constants::RS_OUTPUT_PATH . $testFilename;
-        $fullVerifyFilename = "tests/testfile/verify_ratings_nodetail.xml";
+        $fullTestFilename = __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . Constants::outputFilePath() . $testFilename;
+        $fullVerifyFilename = "testfile/verify_ratings_nodetail.xml";
         $this->assertTrue(is_readable($fullTestFilename), 'Need to read downloaded file ' . $fullTestFilename);
         $this->assertTrue(is_readable($fullVerifyFilename), 'Need to read verify file ' . $fullVerifyFilename);
 
@@ -578,15 +578,18 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $success = $jinni->exportRatings("XML", $testFilename, true);
         $this->assertTrue($success);
 
-        $fullTestFilename = ".." . Constants::RS_OUTPUT_PATH . $testFilename;
-        $fullVerifyFilename = "tests/testfile/verify_ratings_detail.xml";
+        $fullTestFilename = __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . Constants::outputFilePath() . $testFilename;
+        $fullVerifyFilename = "testfile/verify_ratings_detail.xml";
         $this->assertTrue(is_readable($fullTestFilename), 'Need to read downloaded file ' . $fullTestFilename);
         $this->assertTrue(is_readable($fullVerifyFilename), 'Need to read verify file ' . $fullVerifyFilename);
 
         $fp_test = fopen($fullTestFilename, "r");
         $fp_verify = fopen($fullVerifyFilename, "r");
-        $test = fread($fp_test, filesize($fullTestFilename));
-        $verify = fread($fp_verify, filesize($fullVerifyFilename));
+        $testFileSize = filesize($fullTestFilename);
+        $verifyFileSize = filesize($fullVerifyFilename);
+        $this->assertEquals($testFileSize, $verifyFileSize, 'File sizes - test vs verify');
+        $test = fread($fp_test, 22);
+        $verify = fread($fp_verify, 22);
         $this->assertEquals($test, $verify, 'Match exported file vs verify file');
         fclose($fp_test);
         fclose($fp_verify);

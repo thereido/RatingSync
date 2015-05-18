@@ -4,9 +4,9 @@
  */
 namespace RatingSync;
 
-require_once "Film.php";
-require_once "Rating.php";
-require_once "HttpJinni.php";
+require_once "../Film.php";
+require_once "../Rating.php";
+require_once "../HttpJinni.php";
 
 require_once "JinniTest.php";
 

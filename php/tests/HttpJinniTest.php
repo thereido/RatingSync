@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "HttpJinni.php";
+require_once "../HttpJinni.php";
 
 class HttpJinniExtension extends \RatingSync\HttpJinni {
     function _buildApiParamString($params) {
@@ -33,12 +33,10 @@ class HttpJinniExtension extends \RatingSync\HttpJinni {
 class HttpJinniTest extends \PHPUnit_Framework_TestCase
 {
     protected static $http;
-    protected static $testFileDir;
 
     public function setup() 
     {
         self::$http = new HttpJinniExtension("username");
-        self::$testFileDir = __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR;
     }
 
     /**

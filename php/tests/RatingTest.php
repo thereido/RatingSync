@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "Rating.php";
+require_once "../Rating.php";
 
 class RatingTest extends \PHPUnit_Framework_TestCase
 {
