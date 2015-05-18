@@ -48,7 +48,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testUrlNameCanBeSetWithNull()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setUrlName(null, Rating::SOURCE_IMDB);
+        $film->setUrlName(null, Constants::SOURCE_IMDB);
     }
 
     /**
@@ -58,7 +58,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testUrlNameCanBeSetWithEmpty()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setUrlName("", Rating::SOURCE_IMDB);
+        $film->setUrlName("", Constants::SOURCE_IMDB);
     }
 
     /**
@@ -68,7 +68,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testUrlNameCanBeSetWithNonEmpty()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setUrlName("url_name", Rating::SOURCE_IMDB);
+        $film->setUrlName("url_name", Constants::SOURCE_IMDB);
     }
 
     /**
@@ -90,8 +90,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetUrlName()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setUrlName("url_name", Rating::SOURCE_IMDB);
-        $this->assertEquals("url_name", $film->getUrlName(Rating::SOURCE_IMDB));
+        $film->setUrlName("url_name", Constants::SOURCE_IMDB);
+        $this->assertEquals("url_name", $film->getUrlName(Constants::SOURCE_IMDB));
     }
 
     /**
@@ -101,7 +101,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetUrlNameNeverSet()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $this->assertNull($film->getUrlName(Rating::SOURCE_IMDB));
+        $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB));
     }
 
     /**
@@ -112,8 +112,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetNullUrlName()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setUrlName(null, Rating::SOURCE_IMDB);
-        $this->assertNull($film->getUrlName(Rating::SOURCE_IMDB));
+        $film->setUrlName(null, Constants::SOURCE_IMDB);
+        $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB));
     }
 
     /**
@@ -125,8 +125,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetUrlNameWithEmptySetsToNull()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setUrlName("", Rating::SOURCE_IMDB);
-        $this->assertNull($film->getUrlName(Rating::SOURCE_IMDB), "Setting empty URL name should be set to null");
+        $film->setUrlName("", Constants::SOURCE_IMDB);
+        $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), "Setting empty URL name should be set to null");
     }
 
     /**
@@ -159,7 +159,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetRatingWithString()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setRating("Bad_Arg", Rating::SOURCE_IMDB);
+        $film->setRating("Bad_Arg", Constants::SOURCE_IMDB);
     }
 
     /**
@@ -170,7 +170,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetRatingWithNumber()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setRating(7, Rating::SOURCE_IMDB);
+        $film->setRating(7, Constants::SOURCE_IMDB);
     }
 
     /**
@@ -180,7 +180,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetRatingWithNull()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setRating(null, Rating::SOURCE_IMDB);
+        $film->setRating(null, Constants::SOURCE_IMDB);
     }
 
     /**
@@ -190,7 +190,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetRatingWithEmpty()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setRating("", Rating::SOURCE_IMDB);
+        $film->setRating("", Constants::SOURCE_IMDB);
     }
 
     /**
@@ -200,8 +200,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetRating()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $rating = new Rating(Rating::SOURCE_IMDB);
-        $film->setRating($rating, Rating::SOURCE_IMDB);
+        $rating = new Rating(Constants::SOURCE_IMDB);
+        $film->setRating($rating, Constants::SOURCE_IMDB);
     }
 
     /**
@@ -211,7 +211,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetRatingWithNoSource()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $rating = new Rating(Rating::SOURCE_IMDB);
+        $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating);
     }
 
@@ -223,8 +223,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetRatingWithIncompatibleSource()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $rating = new Rating(Rating::SOURCE_IMDB);
-        $film->setRating($rating, Rating::SOURCE_JINNI);
+        $rating = new Rating(Constants::SOURCE_IMDB);
+        $film->setRating($rating, Constants::SOURCE_JINNI);
     }
 
     /**
@@ -236,10 +236,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetRating()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $rating = new Rating(Rating::SOURCE_IMDB);
+        $rating = new Rating(Constants::SOURCE_IMDB);
         $rating->setYourScore(6);
         $film->setRating($rating);
-        $this->assertEquals(6, $film->getRating(Rating::SOURCE_IMDB)->getYourScore());
+        $this->assertEquals(6, $film->getRating(Constants::SOURCE_IMDB)->getYourScore());
     }
 
     /**
@@ -252,13 +252,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetRatingWithMultipleRatings()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $ratingJinni = new Rating(Rating::SOURCE_JINNI);
-        $ratingImdb = new Rating(Rating::SOURCE_IMDB);
+        $ratingJinni = new Rating(Constants::SOURCE_JINNI);
+        $ratingImdb = new Rating(Constants::SOURCE_IMDB);
         $ratingJinni->setYourScore(7);
         $ratingImdb->setYourScore(6);
         $film->setRating($ratingJinni);
         $film->setRating($ratingImdb);
-        $this->assertEquals(6, $film->getRating(Rating::SOURCE_IMDB)->getYourScore());
+        $this->assertEquals(6, $film->getRating(Constants::SOURCE_IMDB)->getYourScore());
     }
 
     /**
@@ -268,8 +268,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetRatingNeverSet()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $rating = $film->getRating(Rating::SOURCE_IMDB);
-        $this->assertEquals(Rating::SOURCE_IMDB, $rating->getSource());
+        $rating = $film->getRating(Constants::SOURCE_IMDB);
+        $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
     }
 
     /**
@@ -280,8 +280,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetRatingWasSetNull()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setRating(null, Rating::SOURCE_IMDB);
-        $this->assertNull($film->getRating(Rating::SOURCE_IMDB));
+        $film->setRating(null, Constants::SOURCE_IMDB);
+        $this->assertNull($film->getRating(Constants::SOURCE_IMDB));
     }
 
     /**
@@ -292,8 +292,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetRatingWasSetEmpty()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setRating("", Rating::SOURCE_IMDB);
-        $this->assertNull($film->getRating(Rating::SOURCE_IMDB));
+        $film->setRating("", Constants::SOURCE_IMDB);
+        $this->assertNull($film->getRating(Constants::SOURCE_IMDB));
     }
 
     /**
@@ -326,7 +326,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetYourScoreWithBadArg()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setYourScore(6.5, Rating::SOURCE_IMDB);
+        $film->setYourScore(6.5, Constants::SOURCE_IMDB);
     }
 
     /**
@@ -336,7 +336,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetYourScoreWithNull()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setYourScore(null, Rating::SOURCE_IMDB);
+        $film->setYourScore(null, Constants::SOURCE_IMDB);
     }
 
     /**
@@ -347,7 +347,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetYourScoreWithEmpty()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setYourScore("", Rating::SOURCE_IMDB);
+        $film->setYourScore("", Constants::SOURCE_IMDB);
     }
 
     /**
@@ -357,7 +357,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testSetYourScore()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setYourScore(7, Rating::SOURCE_IMDB);
+        $film->setYourScore(7, Constants::SOURCE_IMDB);
     }
 
     /**
@@ -369,8 +369,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetYourScore()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setYourScore(7, Rating::SOURCE_IMDB);
-        $this->assertEquals(7, $film->getYourScore(Rating::SOURCE_IMDB));
+        $film->setYourScore(7, Constants::SOURCE_IMDB);
+        $this->assertEquals(7, $film->getYourScore(Constants::SOURCE_IMDB));
     }
 
     /**
@@ -380,7 +380,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetYourScoreNeverSet()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $this->assertNull($film->getYourScore(Rating::SOURCE_IMDB));
+        $this->assertNull($film->getYourScore(Constants::SOURCE_IMDB));
     }
 
     /**
@@ -391,8 +391,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetYourScoreWasSetNull()
     {
         $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setYourScore(null, Rating::SOURCE_IMDB);
-        $this->assertNull($film->getYourScore(Rating::SOURCE_IMDB));
+        $film->setYourScore(null, Constants::SOURCE_IMDB);
+        $this->assertNull($film->getYourScore(Constants::SOURCE_IMDB));
     }
 
     /**
@@ -1320,18 +1320,18 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->setYear(2013);
         $film->setContentType("FeatureFilm");
         $film->setImage("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg");
-        $film->setUrlName("frozen-2013", Rating::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $film->addDirector("Chris Buck");
         $film->addGenre("Family");
 
-        $rating = new Rating(Rating::SOURCE_JINNI);
+        $rating = new Rating(Constants::SOURCE_JINNI);
         $rating->setFilmId("999");
         $rating->setYourScore(8);
         $rating->setYourRatingDate(\DateTime::createFromFormat("n/j/Y", "5/1/2015"));
         $rating->setSuggestedScore(7);
         $rating->setCriticScore(8);
         $rating->setUserScore(10);
-        $film->setRating($rating, Rating::SOURCE_JINNI);
+        $film->setRating($rating, Constants::SOURCE_JINNI);
 
         $xml = new \SimpleXMLElement("<films/>");
         $film->addXmlChild($xml);
@@ -1374,23 +1374,23 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Chris Buck");
         $film->addGenre("Family");
 
-        $rating = new Rating(Rating::SOURCE_JINNI);
+        $rating = new Rating(Constants::SOURCE_JINNI);
         $rating->setFilmId("999");
         $rating->setYourScore(8);
         $rating->setYourRatingDate(\DateTime::createFromFormat("n/j/Y", "5/1/2015"));
         $rating->setSuggestedScore(7);
         $rating->setCriticScore(8);
         $rating->setUserScore(10);
-        $film->setUrlName("frozen-2013", Rating::SOURCE_JINNI);
-        $film->setRating($rating, Rating::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
+        $film->setRating($rating, Constants::SOURCE_JINNI);
 
-        $rating = new Rating(Rating::SOURCE_IMDB);
+        $rating = new Rating(Constants::SOURCE_IMDB);
         $rating->setFilmId("tt2294629");
         $rating->setYourScore(4);
         $rating->setYourRatingDate(\DateTime::createFromFormat("n/j/Y", "5/4/2015"));
         $rating->setCriticScore(8);
         $rating->setUserScore(7);
-        $film->setRating($rating, Rating::SOURCE_IMDB);
+        $film->setRating($rating, Constants::SOURCE_IMDB);
 
         $xml = new \SimpleXMLElement("<films/>");
         $film->addXmlChild($xml);

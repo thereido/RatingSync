@@ -123,8 +123,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", $film->getImage(), 'Image link');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
-        $this->assertEquals("frozen-2013", $film->getUrlName(RATING::SOURCE_JINNI), 'URL Name');
-        $rating = $film->getRating(RATING::SOURCE_JINNI);
+        $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), 'URL Name');
+        $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("5/4/2015", $rating->getYourRatingDate()->format("n/j/Y"), 'Your Rating Date');
     }
@@ -188,7 +188,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
     {
         $jinni = new Jinni(TEST_USERNAME);
         $film = new Film($jinni->http);
-        $film->setUrlName("frozen-2013", Rating::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $jinni->getFilmDetailFromWebsite($film);
     }
 
@@ -202,7 +202,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $jinni = new Jinni(TEST_USERNAME);
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
-        $film->setUrlName("NO_MATCH_URLNAME", Rating::SOURCE_JINNI);
+        $film->setUrlName("NO_MATCH_URLNAME", Constants::SOURCE_JINNI);
         $jinni->getFilmDetailFromWebsite($film, true);
     }
 
@@ -216,17 +216,17 @@ class JinniTest extends \PHPUnit_Framework_TestCase
 
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
-        $film->setUrlName("frozen-2013", Rating::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $jinni->getFilmDetailFromWebsite($film, true);
 
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
         $this->assertEquals(1, preg_match('@(http://media[\d]*.jinni.com/(?:tv|movie|shorts|no-image)/frozen-2013/[^"]+)@', $film->getImage(), $matches), 'Image link');
-        $this->assertEquals("frozen-2013", $film->getUrlName(RATING::SOURCE_JINNI), 'URL Name');
+        $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), 'URL Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
-        $rating = $film->getRating(RATING::SOURCE_JINNI);
+        $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals("999", $rating->getFilmId(), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
@@ -245,7 +245,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
 
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
-        $film->setUrlName("frozen-2013", Rating::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $jinni->getFilmDetailFromWebsite($film, true);
 
         // Same results as testGetFilmDetailFromWebsite
@@ -253,10 +253,10 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
         $this->assertEquals(1, preg_match('@(http://media[\d]*.jinni.com/(?:tv|movie|shorts|no-image)/frozen-2013/[^"]+)@', $film->getImage(), $matches), 'Image link');
-        $this->assertEquals("frozen-2013", $film->getUrlName(RATING::SOURCE_JINNI), 'URL Name');
+        $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), 'URL Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
-        $rating = $film->getRating(RATING::SOURCE_JINNI);
+        $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals("999", $rating->getFilmId(), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
@@ -279,32 +279,32 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $film->setTitle("Original_Title");
         $film->setYear(1900);
         $film->setImage("Original_Image");
-        $film->setUrlName("Original_JinniUrlName", Rating::SOURCE_JINNI);
-        $film->setUrlName("Original_IMDbUrlName", Rating::SOURCE_IMDB);
+        $film->setUrlName("Original_JinniUrlName", Constants::SOURCE_JINNI);
+        $film->setUrlName("Original_IMDbUrlName", Constants::SOURCE_IMDB);
         $film->addGenre("Original_Genre1");
         $film->addGenre("Original_Genre2");
         $film->addDirector("Original_Director1");
         $film->addDirector("Original_Director2");
-        $ratingJinniOrig = new Rating(Rating::SOURCE_JINNI);
+        $ratingJinniOrig = new Rating(Constants::SOURCE_JINNI);
         $ratingJinniOrig->setFilmId("Original_JinniFilmId");
         $ratingJinniOrig->setYourScore(1);
         $ratingJinniOrig->setYourRatingDate(new \DateTime('2000-01-01'));
         $ratingJinniOrig->setSuggestedScore(2);
         $ratingJinniOrig->setCriticScore(3);
         $ratingJinniOrig->setUserScore(4);
-        $film->setRating($ratingJinniOrig, Rating::SOURCE_JINNI);
-        $ratingImdbOrig = new Rating(Rating::SOURCE_IMDB);
+        $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
+        $ratingImdbOrig = new Rating(Constants::SOURCE_IMDB);
         $ratingImdbOrig->setFilmId("Original_ImdbFilmId");
         $ratingImdbOrig->setYourScore(2);
         $ratingImdbOrig->setYourRatingDate(new \DateTime('2000-01-02'));
         $ratingImdbOrig->setSuggestedScore(3);
         $ratingImdbOrig->setCriticScore(4);
         $ratingImdbOrig->setUserScore(5);
-        $film->setRating($ratingImdbOrig, Rating::SOURCE_IMDB);
+        $film->setRating($ratingImdbOrig, Constants::SOURCE_IMDB);
 
         // Get detail overwriting
         $film->setContentType("FeatureFilm");
-        $film->setUrlName("frozen-2013", Rating::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $jinni->getFilmDetailFromWebsite($film, true);
 
         // Test the new data
@@ -312,10 +312,10 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
         $this->assertEquals(1, preg_match('@(http://media[\d]*.jinni.com/(?:tv|movie|shorts|no-image)/frozen-2013/[^"]+)@', $film->getImage(), $matches), 'Image link');
-        $this->assertEquals("frozen-2013", $film->getUrlName(RATING::SOURCE_JINNI), 'URL Name');
+        $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), 'URL Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
-        $rating = $film->getRating(RATING::SOURCE_JINNI);
+        $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals("999", $rating->getFilmId(), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
 
@@ -326,7 +326,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(4, $rating->getUserScore(), 'User score not available from Jinni');
 
         // IMDb Rating is unchanged
-        $rating = $film->getRating(RATING::SOURCE_IMDB);
+        $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals("Original_ImdbFilmId", $rating->getFilmId(), 'Film ID');
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
@@ -349,50 +349,50 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $film->setTitle("Original_Title");
         $film->setYear(1900);
         $film->setImage("Original_Image");
-        $film->setUrlName("Original_IMDbUrlName", Rating::SOURCE_IMDB);
+        $film->setUrlName("Original_IMDbUrlName", Constants::SOURCE_IMDB);
         $film->addGenre("Original_Genre1");
         $film->addGenre("Original_Genre2");
         $film->addDirector("Original_Director1");
         $film->addDirector("Original_Director2");
-        $ratingJinniOrig = new Rating(Rating::SOURCE_JINNI);
+        $ratingJinniOrig = new Rating(Constants::SOURCE_JINNI);
         $ratingJinniOrig->setFilmId("Original_JinniFilmId");
         $ratingJinniOrig->setYourScore(1);
         $ratingJinniOrig->setYourRatingDate(new \DateTime('2000-01-01'));
         $ratingJinniOrig->setSuggestedScore(2);
         $ratingJinniOrig->setCriticScore(3);
         $ratingJinniOrig->setUserScore(4);
-        $film->setRating($ratingJinniOrig, Rating::SOURCE_JINNI);
-        $ratingImdbOrig = new Rating(Rating::SOURCE_IMDB);
+        $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
+        $ratingImdbOrig = new Rating(Constants::SOURCE_IMDB);
         $ratingImdbOrig->setFilmId("Original_ImdbFilmId");
         $ratingImdbOrig->setYourScore(2);
         $ratingImdbOrig->setYourRatingDate(new \DateTime('2000-01-02'));
         $ratingImdbOrig->setSuggestedScore(3);
         $ratingImdbOrig->setCriticScore(4);
         $ratingImdbOrig->setUserScore(5);
-        $film->setRating($ratingImdbOrig, Rating::SOURCE_IMDB);
+        $film->setRating($ratingImdbOrig, Constants::SOURCE_IMDB);
 
         // Get detail not overwriting
         $film->setContentType("FeatureFilm");
-        $film->setUrlName("frozen-2013", Rating::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $jinni->getFilmDetailFromWebsite($film, false);
 
         // Same original data
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
-        $this->assertEquals("frozen-2013", $film->getUrlName(RATING::SOURCE_JINNI), 'Jinni URL Name');
+        $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), 'Jinni URL Name');
         $this->assertEquals("Original_Title", $film->getTitle(), 'Title');
         $this->assertEquals(1900, $film->getYear(), 'Year');
         $this->assertEquals("Original_Image", $film->getImage(), 'Image link');
-        $this->assertEquals("Original_IMDbUrlName", $film->getUrlName(RATING::SOURCE_IMDB), 'Jinni URL Name');
+        $this->assertEquals("Original_IMDbUrlName", $film->getUrlName(Constants::SOURCE_IMDB), 'Jinni URL Name');
         $this->assertEquals(array("Original_Director1", "Original_Director2"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Original_Genre1", "Original_Genre2"), $film->getGenres(), 'Genres');
-        $rating = $film->getRating(RATING::SOURCE_JINNI);
+        $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals("Original_JinniFilmId", $rating->getFilmId(), 'Film ID');
         $this->assertEquals(1, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/1/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Your Rating Date');
         $this->assertEquals(2, $rating->getSuggestedScore(), 'Suggested score');
         $this->assertEquals(3, $rating->getCriticScore(), 'Critic score');
         $this->assertEquals(4, $rating->getUserScore(), 'User score');
-        $rating = $film->getRating(RATING::SOURCE_IMDB);
+        $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals("Original_ImdbFilmId", $rating->getFilmId(), 'Film ID');
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Your Rating Date');
@@ -411,7 +411,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
 
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
-        $film->setUrlName("frozen-2013", Rating::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $jinni->getFilmDetailFromWebsite($film, false);
 
         // Same results as testGetFilmDetailFromWebsite or testGetFilmDetailFromWebsiteOverwriteTrueOverEmpty
@@ -419,10 +419,10 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
         $this->assertEquals(1, preg_match('@(http://media[\d]*.jinni.com/(?:tv|movie|shorts|no-image)/frozen-2013/[^"]+)@', $film->getImage(), $matches), 'Image link');
-        $this->assertEquals("frozen-2013", $film->getUrlName(RATING::SOURCE_JINNI), 'URL Name');
+        $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), 'URL Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
-        $rating = $film->getRating(RATING::SOURCE_JINNI);
+        $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals("999", $rating->getFilmId(), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
@@ -445,32 +445,32 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $film->setTitle("Original_Title");
         $film->setYear(1900);
         $film->setImage("Original_Image");
-        $film->setUrlName("Original_JinniUrlName", Rating::SOURCE_JINNI);
-        $film->setUrlName("Original_IMDbUrlName", Rating::SOURCE_IMDB);
+        $film->setUrlName("Original_JinniUrlName", Constants::SOURCE_JINNI);
+        $film->setUrlName("Original_IMDbUrlName", Constants::SOURCE_IMDB);
         $film->addGenre("Original_Genre1");
         $film->addGenre("Original_Genre2");
         $film->addDirector("Original_Director1");
         $film->addDirector("Original_Director2");
-        $ratingJinniOrig = new Rating(Rating::SOURCE_JINNI);
+        $ratingJinniOrig = new Rating(Constants::SOURCE_JINNI);
         $ratingJinniOrig->setFilmId("Original_JinniFilmId");
         $ratingJinniOrig->setYourScore(1);
         $ratingJinniOrig->setYourRatingDate(new \DateTime('2000-01-01'));
         $ratingJinniOrig->setSuggestedScore(2);
         $ratingJinniOrig->setCriticScore(3);
         $ratingJinniOrig->setUserScore(4);
-        $film->setRating($ratingJinniOrig, Rating::SOURCE_JINNI);
-        $ratingImdbOrig = new Rating(Rating::SOURCE_IMDB);
+        $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
+        $ratingImdbOrig = new Rating(Constants::SOURCE_IMDB);
         $ratingImdbOrig->setFilmId("Original_ImdbFilmId");
         $ratingImdbOrig->setYourScore(2);
         $ratingImdbOrig->setYourRatingDate(new \DateTime('2000-01-02'));
         $ratingImdbOrig->setSuggestedScore(3);
         $ratingImdbOrig->setCriticScore(4);
         $ratingImdbOrig->setUserScore(5);
-        $film->setRating($ratingImdbOrig, Rating::SOURCE_IMDB);
+        $film->setRating($ratingImdbOrig, Constants::SOURCE_IMDB);
 
         // Get detail overwriting
         $film->setContentType("FeatureFilm");
-        $film->setUrlName("frozen-2013", Rating::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $jinni->getFilmDetailFromWebsite($film);
 
         // Test the new data (overwrite default param is true)
@@ -478,17 +478,17 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
         $this->assertEquals(1, preg_match('@(http://media[\d]*.jinni.com/(?:tv|movie|shorts|no-image)/frozen-2013/[^"]+)@', $film->getImage(), $matches), 'Image link');
-        $this->assertEquals("frozen-2013", $film->getUrlName(RATING::SOURCE_JINNI), 'URL Name');
+        $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), 'URL Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
-        $rating = $film->getRating(RATING::SOURCE_JINNI);
+        $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals("999", $rating->getFilmId(), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/1/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
         $this->assertEquals(2, $rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertEquals(3, $rating->getCriticScore(), 'Critic score not available from Jinni');
         $this->assertEquals(4, $rating->getUserScore(), 'User score not available from Jinni');
-        $rating = $film->getRating(RATING::SOURCE_IMDB);
+        $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals("Original_ImdbFilmId", $rating->getFilmId(), 'Film ID');
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
@@ -518,7 +518,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
 
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
-        $film->setUrlName("frozen-2013", Rating::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $jinni->getFilmDetailFromWebsite($film);
 
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
@@ -534,7 +534,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
 
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
-        $film->setUrlName("frozen-2013", Rating::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $jinni->getFilmDetailFromWebsite($film);
 
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');

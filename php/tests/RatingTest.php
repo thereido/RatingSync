@@ -40,7 +40,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidContentTypeTrue()
     {
-        $this->assertTrue(Rating::validSource(Rating::SOURCE_JINNI), Rating::SOURCE_JINNI . " should be valid");
+        $this->assertTrue(Rating::validSource(Constants::SOURCE_JINNI), Constants::SOURCE_JINNI . " should be valid");
         $this->assertFalse(Rating::validSource("Bad_Source"), "Bad_Source should be invalid");
     }
 
@@ -50,8 +50,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSourceCanBeRetrieved()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
-        $this->assertEquals(\RatingSync\Rating::SOURCE_IMDB, $r->getSource());
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
+        $this->assertEquals(\RatingSync\Constants::SOURCE_IMDB, $r->getSource());
     }
 
     /**
@@ -61,7 +61,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetAndGetFilmId()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         
         // Null
         $r->setFilmId(null);
@@ -90,7 +90,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testFilmIdCanBeRetrievedFromNewObject()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $this->assertNull($r->getFilmId());
     }
 
@@ -101,7 +101,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCannotBeSetWithFloat()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(6.5);
     }
 
@@ -112,7 +112,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCannotBeSetWithFloatString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore("6.5");
     }
 
@@ -123,7 +123,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCannotBeSetWithNonNumericalString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore("Not an int");
     }
 
@@ -134,7 +134,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCannotBeSetWithNegative()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(-1);
     }
 
@@ -145,7 +145,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCannotBeSetWithHigherThan10()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(11);
     }
 
@@ -156,7 +156,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCanBeSetWithInt()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(6);
         $this->assertEquals(6, $r->getYourScore());
     }
@@ -168,7 +168,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCanBeSetWithIntString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore("6");
         $this->assertEquals(6, $r->getYourScore());
     }
@@ -180,7 +180,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCanBeSetWithNull()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(null);
         $this->assertNull($r->getYourScore());
     }
@@ -191,7 +191,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCanBeRetrievedFromNewObject()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $this->assertNull($r->getYourScore());
     }
 
@@ -202,7 +202,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourRatingDateCannotBeSetWithString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourRatingDate("10/12/2012");
     }
 
@@ -213,7 +213,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourRatingDateCanBeSetWithNull()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourRatingDate(null);
         $this->assertNull($r->getYourRatingDate());
     }
@@ -225,7 +225,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourRatingDateCanBeSetWithDateObject()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $date = new \DateTime('2000-01-31');
         $r->setYourRatingDate($date);
         $this->assertEquals($date->getTimestamp(), $r->getYourRatingDate()->getTimestamp());
@@ -238,7 +238,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCannotBeSetWithFloat()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(6.5);
     }
 
@@ -249,7 +249,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCannotBeSetWithFloatString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore("6.5");
     }
 
@@ -260,7 +260,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCannotBeSetWithNonNumericalString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore("Not an int");
     }
 
@@ -271,7 +271,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCannotBeSetWithNegative()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(-1);
     }
 
@@ -282,7 +282,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCannotBeSetWithHigherThan10()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(11);
     }
 
@@ -293,7 +293,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCanBeSetWithInt()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(6);
         $this->assertEquals(6, $r->getSuggestedScore());
     }
@@ -305,7 +305,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCanBeSetWithIntString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore("6");
         $this->assertEquals(6, $r->getSuggestedScore());
     }
@@ -317,7 +317,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCanBeSetWithNull()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(null);
         $this->assertNull($r->getSuggestedScore());
     }
@@ -328,7 +328,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCanBeRetrievedFromNewObject()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $this->assertNull($r->getSuggestedScore());
     }
 
@@ -339,7 +339,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCannotBeSetWithFloat()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore(6.5);
     }
 
@@ -350,7 +350,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCannotBeSetWithFloatString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore("6.5");
     }
 
@@ -361,7 +361,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCannotBeSetWithNonNumericalString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore("Not an int");
     }
 
@@ -372,7 +372,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCannotBeSetWithNegative()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore(-1);
     }
 
@@ -383,7 +383,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCannotBeSetWithHigherThan10()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore(11);
     }
 
@@ -394,7 +394,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCanBeSetWithInt()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore(6);
         $this->assertEquals(6, $r->getCriticScore());
     }
@@ -406,7 +406,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCanBeSetWithIntString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore("6");
         $this->assertEquals(6, $r->getCriticScore());
     }
@@ -418,7 +418,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCanBeSetWithNull()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore(null);
         $this->assertNull($r->getCriticScore());
     }
@@ -429,7 +429,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCanBeRetrievedFromNewObject()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $this->assertNull($r->getCriticScore());
     }
 
@@ -440,7 +440,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCannotBeSetWithFloat()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore(6.5);
     }
 
@@ -451,7 +451,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCannotBeSetWithFloatString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore("6.5");
     }
 
@@ -462,7 +462,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCannotBeSetWithNonNumericalString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore("Not an int");
     }
 
@@ -473,7 +473,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCannotBeSetWithNegative()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore(-1);
     }
 
@@ -484,7 +484,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCannotBeSetWithHigherThan10()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore(11);
     }
 
@@ -495,7 +495,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCanBeSetWithInt()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore(6);
         $this->assertEquals(6, $r->getUserScore());
     }
@@ -507,7 +507,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCanBeSetWithIntString()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore("6");
         $this->assertEquals(6, $r->getUserScore());
     }
@@ -519,7 +519,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCanBeSetWithNull()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore(null);
         $this->assertNull($r->getUserScore());
     }
@@ -530,7 +530,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCanBeRetrievedFromNewObject()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $this->assertNull($r->getUserScore());
     }
 
@@ -540,7 +540,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidRatingScores()
     {
-        $r = new Rating(\RatingSync\Rating::SOURCE_IMDB);
+        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         
         $this->assertFalse($r->validRatingScore(6.5)); // Float
         $this->assertFalse($r->validRatingScore("6.5")); // Float  String

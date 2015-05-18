@@ -72,8 +72,8 @@ class Jinni
         $films = array();
         $results = $this->http->searchSuggestions($searchStr, $type);
         foreach ($results as $result) {
-            $films[] = $film = new \RatingSync\Film($this->http);
-            $rating = new \RatingSync\Rating(\RatingSync\Rating::SOURCE_JINNI);
+            $films[] = $film = new Film($this->http);
+            $rating = new Rating(Constants::SOURCE_JINNI);
             $rating->setFilmId($result['id']);
             $film->setRating($rating);
             $film->setTitle($result['title']);
@@ -114,15 +114,15 @@ class Jinni
                 continue;
             }
 
-            $rating = new \RatingSync\Rating(\RatingSync\Rating::SOURCE_JINNI);
+            $rating = new Rating(Constants::SOURCE_JINNI);
             $rating->setYourScore($ratingMatches[1]);
             $rating->setYourRatingDate(\DateTime::createFromFormat(self::JINNI_DATE_FORMAT, $ratingDateMatches[1]));
             $rating->setFilmId($filmIdMatches[1]);
 
-            $films[] = $film = new \RatingSync\Film($this->http);
+            $films[] = $film = new Film($this->http);
             $film->setRating($rating);
             $film->setTitle(htmlspecialchars_decode($matches[1]));
-            $film->setUrlName($matches[3], \RatingSync\Rating::SOURCE_JINNI);
+            $film->setUrlName($matches[3], Constants::SOURCE_JINNI);
             $film->setImage($imageMatches[1]);
             if ($matches[2] == 'movies') {
                 $film->setContentType(\RatingSync\Film::CONTENT_FILM);
@@ -164,25 +164,25 @@ class Jinni
     {
         if (! $film instanceof Film ) {
             throw new \InvalidArgumentException('Function getFilmDetailFromWebsite must be given a Film object');
-        } elseif ( is_null($film->getContentType()) || is_null($film->getUrlName(Rating::SOURCE_JINNI)) ) {
+        } elseif ( is_null($film->getContentType()) || is_null($film->getUrlName(Constants::SOURCE_JINNI)) ) {
             throw new \InvalidArgumentException('Function getFilmDetailFromWebsite must have Content Type and URL Name');
         }
 
         switch ($film->getContentType()) {
-        case \RatingSync\Film::CONTENT_FILM:
+        case Film::CONTENT_FILM:
             $type = 'movies';
             break;
-        case \RatingSync\Film::CONTENT_TV:
+        case Film::CONTENT_TV:
             $type = 'tv';
             break;
-        case \RatingSync\Film::CONTENT_SHORTFILM:
+        case Film::CONTENT_SHORTFILM:
             $type = 'shorts';
             break;
         default:
             $type = null;
         }
 
-        $urlName = $film->getUrlName(\RatingSync\Rating::SOURCE_JINNI);
+        $urlName = $film->getUrlName(Constants::SOURCE_JINNI);
         $page = $this->http->getPage('/'.$type.'/'.$urlName);
 
         $this->parseTitleFromDetailPage($page, $film, $overwrite);
@@ -303,8 +303,8 @@ class Jinni
      */
     protected function parseRatingFromDetailPage($page, $film, $overwrite)
     {
-        $rating = $film->getRating(Rating::SOURCE_JINNI);
-        $urlName = $film->getUrlName(\RatingSync\Rating::SOURCE_JINNI);
+        $rating = $film->getRating(Constants::SOURCE_JINNI);
+        $urlName = $film->getUrlName(Constants::SOURCE_JINNI);
 
         // Your score
         if ($overwrite || is_null($rating->getYourScore())) {

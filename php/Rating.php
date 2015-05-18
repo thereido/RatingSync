@@ -27,10 +27,6 @@ date_default_timezone_set('America/New_York');
  */
 class Rating
 {
-    const SOURCE_JINNI      = "Jinni";
-    const SOURCE_IMDB       = "IMDb";
-    const SOURCE_RATINGSYNC = "RatingSync";
-
     protected $source;          // Local, IMDb, RottenTomatoes, Jinni, etc.
 
     protected $filmId;          // Unique Id in the given website (source)
@@ -43,7 +39,7 @@ class Rating
     /**
      * Rating data from one source
      *
-     * @param string $source IMDb, RottenTomatoes, Jinni, Local, etc. Options are /RatingSync/Rating::SOURCE_***
+     * @param string $source IMDb, RottenTomatoes, Jinni, Local, etc. Options are /RatingSync/Constants::SOURCE_***
      */
     public function __construct($source)
     {
@@ -56,7 +52,7 @@ class Rating
 
     public static function validSource($source)
     {       
-        if (in_array($source, array(static::SOURCE_JINNI, static::SOURCE_IMDB, static::SOURCE_RATINGSYNC))) {
+        if (in_array($source, array(Constants::SOURCE_JINNI, Constants::SOURCE_IMDB, Constants::SOURCE_RATINGSYNC))) {
             return true;
         }
         return false;

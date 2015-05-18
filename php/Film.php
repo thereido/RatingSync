@@ -22,7 +22,7 @@ class Film {
     protected $urlNames = array();
     protected $genres = array();
     protected $directors = array();
-    protected $defaultRatingSource = \RatingSync\Rating::SOURCE_JINNI;
+    protected $defaultRatingSource = Constants::SOURCE_JINNI;
 
     public function __construct(HttpJinni $http)
     {
