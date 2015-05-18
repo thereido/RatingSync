@@ -16,7 +16,7 @@ require_once "Jinni.php";
    is written to the server.
  *
  * @param string $username Account's ratings exported
- * @param string $source   IMDb, Jinni, etc \RatingSync\Rating::SOURCE_***
+ * @param string $source   IMDb, Jinni, etc \RatingSync\Constants::SOURCE_***
  * @param string $format   XML
  * @param string $filename Output file name written to ./output/$filename
  *
