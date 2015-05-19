@@ -16,7 +16,7 @@ require_once "Jinni.php";
    is written to the server.
  *
  * @param string $username Account's ratings exported
- * @param string $source   IMDb, Jinni, etc \RatingSync\Constants::SOURCE_***
+ * @param string $source   IMDb, Jinni, etc Constants::SOURCE_***
  * @param string $format   XML
  * @param string $filename Output file name written to ./output/$filename
  *
@@ -26,7 +26,7 @@ function export($username, $source, $format)
 {
     $filename = "ratings.xml";
 
-    $jinni = new \RatingSync\Jinni($username);
+    $jinni = new Jinni($username);
     if ($jinni->exportRatings($format, $filename, true)) {
         return $filename;
     } else {

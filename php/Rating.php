@@ -61,7 +61,7 @@ class Rating
     /**
      * Website the rating comes from
      *
-     * @return string \RatingSync\Rating::SOURCE_***
+     * @return string \RatingSync\Constants::SOURCE_***
      */
     public function getSource()
     {
