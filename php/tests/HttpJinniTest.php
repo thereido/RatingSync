@@ -6,39 +6,20 @@ namespace RatingSync;
 
 require_once "../HttpJinni.php";
 
-class HttpJinniExtension extends \RatingSync\HttpJinni {
-    function _buildApiParamString($params) {
-        return $this->buildApiParamString($params);
-    }
-    function _buildParamVar($var) {
-        return $this->buildParamVar($var);
-    }
-    function _parseSearchSuggestionResults($result) {
-        return $this->parseSearchSuggestionResults($result);
-    }
-    function _rawApiCall($scriptName, $method, array $params = array()) {
-        return $this->rawApiCall($scriptName, $method, $params);
-    }
-    function _getSessionID() {
-        return $this->jSessionID;
-    }
-    function _getBaseUrl() {
-        return $this->baseUrl;
-    }
-    function _getUsername() {
-        return $this->username;
-    }
+// Child class to expose protected members and functions
+class HttpChild extends \RatingSync\HttpJinni {
+    function _getSessionId() { return $this->jSessionId; }
+    function _getBaseUrl() { return $this->baseUrl; }
+    function _getUsername() { return $this->username; }
+
+    function _buildApiParamString($params) { return $this->buildApiParamString($params); }
+    function _buildParamVar($var) { return $this->buildParamVar($var); }
+    function _parseSearchSuggestionResults($result) { return $this->parseSearchSuggestionResults($result); }
+    function _rawApiCall($scriptName, $method, array $params = array()) { return $this->rawApiCall($scriptName, $method, $params); }
 }
 
 class HttpJinniTest extends \PHPUnit_Framework_TestCase
 {
-    protected static $http;
-
-    public function setup() 
-    {
-        self::$http = new HttpJinniExtension("username");
-    }
-
     /**
      * @covers            \RatingSync\HttpJinni::__construct
      * @expectedException \InvalidArgumentException
@@ -80,7 +61,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCannotGetPageWithNullPage() {
-        self::$http->getPage(null);
+        $http = new HttpChild("username");
+        $http->getPage(null);
     }
 
     /**
@@ -88,7 +70,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \RatingSync\HttpUnauthorizedRedirectException
      */
     public function testGetPageUnauthorizedRedirect() {
-        self::$http->getPage('/user/---Username--No--Match---/ratings');
+        $http = new HttpChild("username");
+        $http->getPage('/user/---Username--No--Match---/ratings');
     }
 
     /**
@@ -96,7 +79,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \RatingSync\HttpNotFoundException
      */
     public function testCannotGetPageWithNotFound() {
-        self::$http->getPage("/findthis");
+        $http = new HttpChild("username");
+        $http->getPage("/findthis");
     }
 
     /**
@@ -104,14 +88,16 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \RatingSync\HttpErrorException
      */
     public function testGetPageHttpError() {
-        self::$http->getPage('Bad URL');
+        $http = new HttpChild("username");
+        $http->getPage('Bad URL');
     }
 
     /**
      * @covers \RatingSync\HttpJinni::getPage
      */
     public function testGetPageAbout() {
-        $page = self::$http->getPage('/info/about.html');
+        $http = new HttpChild("username");
+        $page = $http->getPage('/info/about.html');
         $this->assertGreaterThan(0, stripos($page, "About Jinni</title>"), "Getting the Jinni 'About' page does not look right");
     }
 
@@ -119,8 +105,9 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\HttpJinni::getPage
      */
     public function testGetPageGetSessionID() {
-        $page = self::$http->getPage('/info/about.html');
-        $this->assertGreaterThan(0, strlen(self::$http->_getSessionID()), "getPage() did not bring a jSessionID");
+        $http = new HttpChild("username");
+        $page = $http->getPage('/info/about.html');
+        $this->assertGreaterThan(0, strlen($http->_getSessionId()), "getPage() did not bring a jSessionID");
     }
 
     /**
@@ -128,21 +115,24 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testBaseUrl() {
         // This is just tell us if the BaseUrl changed so we need to update some other tests
-        $this->assertEquals("http://www.jinni.com", self::$http->_getBaseUrl(), "/RatingSync/HttpJinni::\$baseUrl has changed, which might affect other tests");
+        $http = new HttpChild("username");
+        $this->assertEquals("http://www.jinni.com", $http->_getBaseUrl(), "/RatingSync/HttpJinni::\$baseUrl has changed, which might affect other tests");
     }
 
     /**
      * @covers \RatingSync\HttpJinni::getPage
      */
     public function testGetPageNeedsUsername() {
-        $this->assertGreaterThan(0, strlen(self::$http->_getUsername()));
+        $http = new HttpChild("username");
+        $this->assertGreaterThan(0, strlen($http->_getUsername()));
     }
 
     /**
      * @covers \RatingSync\HttpJinni::getPage
      */
     public function testGetPageWithHeadersOnly() {
-        $headers = self::$http->getPage('/info/about.html', null, true);
+        $http = new HttpChild("username");
+        $headers = $http->getPage('/info/about.html', null, true);
         $this->assertStringEndsWith("Connection: keep-alive", rtrim($headers), "getPage() with headersOnly=true is not ending in a header");
     }
 
@@ -151,29 +141,31 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildParamVarString()
     {
+        $http = new HttpChild("username");
+
         // search string and content type
         $this->assertEquals(
             "c0-param0=string:Everything You\n".
             "c0-param1=Object_Object:{contentTypeFilter:string:TvSeries}\n",
-            self::$http->_buildApiParamString(array('Everything You', (object)array('contentTypeFilter' => 'TvSeries')))
+            $http->_buildApiParamString(array('Everything You', (object)array('contentTypeFilter' => 'TvSeries')))
         );
         // null context type
         $this->assertEquals(
             "c0-param0=string:Everything You\n".
             "c0-param1=Object_Object:{contentTypeFilter:null:null}\n",
-            self::$http->_buildApiParamString(array('Everything You', (object)array('contentTypeFilter' => null)))
+            $http->_buildApiParamString(array('Everything You', (object)array('contentTypeFilter' => null)))
         );
         // Comma in the search string
         $this->assertEquals(
             "c0-param0=string:About Sex, But\n".
             "c0-param1=Object_Object:{contentTypeFilter:null:null}\n",
-            self::$http->_buildApiParamString(array('About Sex, But', (object)array('contentTypeFilter' => null)))
+            $http->_buildApiParamString(array('About Sex, But', (object)array('contentTypeFilter' => null)))
         );
         // Apostrophe
         $this->assertEquals(
             "c0-param0=string:Hobson's\n".
             "c0-param1=Object_Object:{contentTypeFilter:null:null}\n",
-            self::$http->_buildApiParamString(array('Hobson\'s', (object)array('contentTypeFilter' => null)))
+            $http->_buildApiParamString(array('Hobson\'s', (object)array('contentTypeFilter' => null)))
         );
     }
 
@@ -182,12 +174,14 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildParamVar()
     {
+        $http = new HttpChild("username");
+
         // Array object
-        $this->assertEquals("Object_Object:{contentTypeFilter:null:null}", self::$http->_buildParamVar((object)array('contentTypeFilter' => null)));
+        $this->assertEquals("Object_Object:{contentTypeFilter:null:null}", $http->_buildParamVar((object)array('contentTypeFilter' => null)));
         // String
-        $this->assertEquals("string:test", self::$http->_buildParamVar("test"));
+        $this->assertEquals("string:test", $http->_buildParamVar("test"));
         // Int
-        $this->assertEquals("number:123", self::$http->_buildParamVar(123));
+        $this->assertEquals("number:123", $http->_buildParamVar(123));
     }
 
     /**
@@ -195,7 +189,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \Exception
      */
     public function testCannotParseSearchSuggestionResultsWithEmptySearch() {
-        self::$http->_parseSearchSuggestionResults("");
+        $http = new HttpChild("username");
+        $http->_parseSearchSuggestionResults("");
     }
 
     /**
@@ -203,13 +198,15 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \Exception
      */
     public function testCannotParseSearchSuggestionResultsWithNullSearch() {
-        self::$http->_parseSearchSuggestionResults(null);
+        $http = new HttpChild("username");
+        $http->_parseSearchSuggestionResults(null);
     }
 
     /**
      * @covers \RatingSync\HttpJinni::parseSearchSuggestionResults
      */
     public function testCanParseSearchSuggestionResultsWithTheMatrix() {
+        $http = new HttpChild("username");
         $resultStr = <<<EOD
 //#DWR-INSERT
 //#DWR-REPLY
@@ -226,7 +223,7 @@ s9.categoryType=null;s9.entityType='Title';s9.id="40882";s9.name="The Animatrix:
 s10.categoryType=null;s10.entityType='Title';s10.id="40834";s10.name="The Animatrix: Kid\'s Story";s10.popularity=null;s10.titleType='Short';s10.year=2003;
 dwr.engine._remoteHandleCallback('1','0',{results:s0,searchPhrase:"the matrix",suggestTime:0.034233891});
 EOD;
-        $results = self::$http->_parseSearchSuggestionResults($resultStr);
+        $results = $http->_parseSearchSuggestionResults($resultStr);
         $this->assertTrue(count($results) == 10);
         $this->assertEquals(array('contentType' => 'FeatureFilm', 'id' => 191, 'title' => 'The Matrix', 'year' => 1999), $results[0]);
         $this->assertEquals(array('contentType' => 'FeatureFilm', 'id' => 192, 'title' => 'The Matrix Reloaded', 'year' => 2003), $results[1]);
@@ -238,6 +235,7 @@ EOD;
      * @covers \RatingSync\HttpJinni::parseSearchSuggestionResults
      */
     public function testCanParseSearchSuggestionResultsIgnoringKeywords() {
+        $http = new HttpChild("username");
         $resultStr = <<<EOD
 //#DWR-INSERT
 //#DWR-REPLY
@@ -254,7 +252,7 @@ s9.categoryType=null;s9.entityType='Title';s9.id="58762";s9.name="Transformers: 
 s10.categoryType=null;s10.entityType='Title';s10.id="58000";s10.name="Transformers: Cybertron";s10.popularity=null;s10.titleType='TvSeries';s10.year=2005;
 dwr.engine._remoteHandleCallback('16','0',{results:s0,searchPhrase:"transform",suggestTime:0.021716644});
 EOD;
-        $results = self::$http->_parseSearchSuggestionResults($resultStr);
+        $results = $http->_parseSearchSuggestionResults($resultStr);
         $this->assertTrue(count($results) == 8);
         $this->assertEquals(array('contentType' => 'FeatureFilm', 'id' => 655, 'title' => 'Transformers', 'year' => 2007), $results[0]);
     }

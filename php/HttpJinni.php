@@ -1,91 +1,22 @@
 <?php
 namespace RatingSync;
 
-require_once "exceptions/HttpErrorException.php";
-require_once "exceptions/HttpNotFoundException.php";
-require_once "exceptions/HttpUnauthorizedRedirectException.php";
+require_once "Http.php";
 
-class HttpJinni
+class HttpJinni extends Http
 {
-    protected $username;
-    protected $jSessionID;
-    protected $baseUrl = "http://www.jinni.com";
-
+    /**
+     * Child class construct must set these members...
+         $baseUrl
+         $lightweightUrl
+     *
+     * @param string $username Account of the source website
+     */
     public function __construct($username)
     {
-        if (! (is_string($username) && 0 < strlen($username)) ) {
-            throw new \InvalidArgumentException('$username must be non-empty');
-        }
-
-        $this->username = $username;
-    }
-
-    /**
-     * @return string|false HTML as string or false if the page is not found
-     * @throws \RatingSync\UnauthorizedRedirectException
-     * @throws \InvalidArgumentException
-     */
-    public function getPage($path, $postData = null, $headersOnly = false)
-    {
-        if (! (!is_null($path)) ) {
-            throw new \InvalidArgumentException("getPage() path cannot be NULL");
-        }
-
-        $authCookie = "auth=".$this->username;
-        $sessionCookie = "";
-        if (!empty($this->jSessionID)) {
-            $sessionCookie = ";JSESSIONID=".$this->jSessionID;
-        }
-
-        $ch = curl_init($this->baseUrl.$path);
-        curl_setopt($ch, CURLOPT_COOKIE, $authCookie . $sessionCookie);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_ENCODING, "");
-
-        if (is_array($postData)) {
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
-        } elseif (is_string($postData)) {
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-        }
-
-        $result = curl_exec($ch);
-        $info = curl_getinfo($ch);
-        curl_close($ch);
-        
-        // Verify HTTP Code
-        $httpCode = $info['http_code'];
-        if (401 == $httpCode) {
-            throw new HttpUnauthorizedRedirectException('Unauthorized Redirect: ' . $this->baseUrl . $path);
-        } elseif (404 == $httpCode) {
-            throw new HttpNotFoundException('HTTP Not Found: ' . $this->baseUrl . $path);
-        } elseif (($httpCode < 200) || (299 < $httpCode)) {
-            throw new HttpErrorException('HTTP Error ' . $httpCode . ': ' . $this->baseUrl . $path);
-        }
-
-        $headers = substr($result, 0, $info['header_size']);
-
-        if (preg_match("@Set-Cookie: JSESSIONID=([^;]+);@i", $headers, $matches)) {
-            $this->jSessionID = $matches[1];
-        }
-
-        if ($headersOnly) {
-            $page = $headers;
-        } else {
-            $page = substr($result, $info['header_size']);
-        }
-        
-/*
-        if (strpos($page, '<form id=\'unauthorizedRedirectForm\'')) {
-            throw new UnauthorizedRedirectException('Unauthorized Redirect: ' . $this->baseUrl . $path);
-        } elseif (strpos($page, '<h1 class="title1">Whoops!</h1>')) {
-            throw new \Exception('Whoops!: ' . $this->baseUrl . $path);
-        }
-*/
-
-        return $page;
+        parent::__construct($username);
+        $this->baseUrl = "http://www.jinni.com";
+        $this->lightweightUrl = "/info/about.html";
     }
 
     public function searchSuggestions($searchStr, $type = null)
