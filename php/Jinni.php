@@ -24,6 +24,9 @@ class Jinni
 
     public function __construct($username)
     {
+        if (! (is_string($username) && 0 < strlen($username)) ) {
+            throw new \InvalidArgumentException('$username must be non-empty');
+        }
         $this->http = new \RatingSync\HttpJinni($username);
         $this->username = $username;
     }
@@ -74,7 +77,7 @@ class Jinni
         foreach ($results as $result) {
             $films[] = $film = new Film($this->http);
             $rating = new Rating(Constants::SOURCE_JINNI);
-            $rating->setFilmId($result['id']);
+            $film->setFilmId($result['id'], Constants::SOURCE_JINNI);
             $film->setRating($rating);
             $film->setTitle($result['title']);
             $film->setYear($result['year']);
@@ -93,42 +96,50 @@ class Jinni
             if (0 === preg_match('@<div class="ratings_cell2" title="([^"]+)">[\s\n\r]+<a href="http://www.jinni.com/(movies|tv|shorts)/([^/]+)/"@', $filmSection, $matches)) {
                 continue;
             }
+            $title = htmlspecialchars_decode($matches[1]);
+            $contentType = $matches[2];
+            $urlName = $matches[3];
             
             // Rating
-            if (0 === preg_match('@RatedORSuggestedValue: (\d+)@', $filmSection, $ratingMatches)) {
+            if (0 === preg_match('@RatedORSuggestedValue: (\d+)@', $filmSection, $matches)) {
                 continue;
             }
+            $yourScore = $matches[1];
             
             // Rating Date
-            if (0 === preg_match('@<div class="ratings_cell4"><span[^>]+>(\d+\/\d+\/\d+)<@', $filmSection, $ratingDateMatches)) {
+            if (0 === preg_match('@<div class="ratings_cell4"><span[^>]+>(\d+\/\d+\/\d+)<@', $filmSection, $matches)) {
                 continue;
             }
+            $ratingDate = $matches[1];
 
             // Film ID
-            if (0 === preg_match('@contentId: "(\d+)@', $filmSection, $filmIdMatches)) {
+            if (0 === preg_match('@contentId: "(\d+)@', $filmSection, $matches)) {
                 continue;
             }
+            $filmId = $matches[1];
 
             // Image
-            if (0 === preg_match('@<img src="(http://media[\d]*.jinni.com/(?:tv|movie|shorts|no-image)/[^/]+/[^"]+)"@', $filmSection, $imageMatches)) {
+            if (0 === preg_match('@<img src="(http://media[\d]*.jinni.com/(?:tv|movie|shorts|no-image)/[^/]+/[^"]+)"@', $filmSection, $matches)) {
                 continue;
             }
+            $image = $matches[1];
 
             $rating = new Rating(Constants::SOURCE_JINNI);
-            $rating->setYourScore($ratingMatches[1]);
-            $rating->setYourRatingDate(\DateTime::createFromFormat(self::JINNI_DATE_FORMAT, $ratingDateMatches[1]));
-            $rating->setFilmId($filmIdMatches[1]);
+            $rating->setYourScore($yourScore);
+            $rating->setYourRatingDate(\DateTime::createFromFormat(self::JINNI_DATE_FORMAT, $ratingDate));
 
             $films[] = $film = new Film($this->http);
-            $film->setRating($rating);
-            $film->setTitle(htmlspecialchars_decode($matches[1]));
-            $film->setUrlName($matches[3], Constants::SOURCE_JINNI);
-            $film->setImage($imageMatches[1]);
-            if ($matches[2] == 'movies') {
+            $film->setRating($rating, Constants::SOURCE_JINNI);
+            $film->setTitle($title);
+            $film->setFilmId($filmId, Constants::SOURCE_JINNI);
+            $film->setUrlName($urlName, Constants::SOURCE_JINNI);
+            $film->setImage($image);
+            $film->setImage($image, Constants::SOURCE_JINNI);
+            if ($contentType == 'movies') {
                 $film->setContentType(\RatingSync\Film::CONTENT_FILM);
-            } elseif ($matches[2] == 'tv') {
+            } elseif ($contentType == 'tv') {
                 $film->setContentType(\RatingSync\Film::CONTENT_TV);
-            } elseif ($matches[2] == 'shorts') {
+            } elseif ($contentType == 'shorts') {
                 $film->setContentType(\RatingSync\Film::CONTENT_SHORTFILM);
             }
 
@@ -328,10 +339,10 @@ class Jinni
         // Rating Date - not available in the detail page
 
         // Film ID
-        if ($overwrite || is_null($rating->getFilmId())) {
-            $rating->setFilmId(null);
+        if ($overwrite || is_null($film->getFilmId(Constants::SOURCE_JINNI))) {
+            $film->setFilmId(null, Constants::SOURCE_JINNI);
             if (0 < preg_match('/uniqueName: \"'.$urlName.'\"[^}]+uniqueId: \"([^\"]+)\"/', $page, $matches)) {
-                $rating->setFilmId($matches[1]);
+                $film->setFilmId($matches[1], Constants::SOURCE_JINNI);
             }
         }
 

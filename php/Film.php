@@ -4,6 +4,8 @@
  */
 namespace RatingSync;
 
+require_once "Http.php";
+
 class Film {
     const CONTENT_FILM      = 'FeatureFilm';
     const CONTENT_TV        = 'TvSeries';
@@ -18,15 +20,13 @@ class Film {
     protected $year;
     protected $contentType;
     protected $image;
-    protected $ratings = array();
-    protected $urlNames = array();
+    protected $sources = array();
     protected $genres = array();
     protected $directors = array();
-    protected $defaultRatingSource = Constants::SOURCE_JINNI;
 
-    public function __construct(HttpJinni $http)
+    public function __construct(Http $http)
     {
-        if (! ($http instanceof HttpJinni) ) {
+        if (! ($http instanceof Http) ) {
             throw new \InvalidArgumentException('Film contrust must have an Http object');
         }
 
@@ -55,6 +55,7 @@ class Film {
                <genre/>
            </genres>
            <source name="">
+               <image/>
                <filmId/>
                <urlName/>
                <rating>
@@ -95,11 +96,13 @@ class Film {
             $genresXml->addChild('genre', htmlentities($genre));
         }
 
-        foreach ($this->ratings as $rating) {
+        foreach ($this->sources as $source) {
             $sourceXml = $filmXml->addChild('source');
-            $sourceXml->addAttribute('name', $rating->getSource());
-            $sourceXml->addChild('filmId', $rating->getFilmId());
-            $sourceXml->addChild('urlName', $this->getUrlName($rating->getSource()));
+            $sourceXml->addAttribute('name', $source->getName());
+            $sourceXml->addChild('image', $source->getImage());
+            $sourceXml->addChild('filmId', $source->getFilmId());
+            $sourceXml->addChild('urlName', $source->getUrlName());
+            $rating = $source->getRating();
             $ratingXml = $sourceXml->addChild('rating');
             $ratingXml->addChild('yourScore', $rating->getYourScore());
             $ratingDate = null;
@@ -113,32 +116,63 @@ class Film {
         }
     }
 
+    protected function getSource($sourceName)
+    {
+        if (! Source::validSource($sourceName) ) {
+            throw new \InvalidArgumentException('Getting Source $source invalid');
+        }
+
+        if (empty($this->sources[$sourceName])) {
+            $this->sources[$sourceName] = new Source($sourceName);
+        }
+
+        return $this->sources[$sourceName];
+    }
+
+    public function setFilmId($FilmId, $source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid setting Film ID');
+        }
+
+        $this->getSource($source)->setFilmId($FilmId);
+    }
+
+    public function getFilmId($source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid getting Film ID');
+        }
+
+        return $this->getSource($source)->getFilmId();
+    }
+
     public function setUrlName($urlName, $source)
     {
-        if (! Rating::validSource($source) ) {
+        if (! Source::validSource($source) ) {
             throw new \InvalidArgumentException('Source $source invalid setting URL name');
         }
 
-        if (0 == strlen($urlName)) {
-            $urlName = null;
-        }
-        $this->urlNames[$source] = $urlName;
+        $this->getSource($source)->setUrlName($urlName);
     }
 
     public function getUrlName($source)
     {
-        if (! Rating::validSource($source) ) {
+        if (! Source::validSource($source) ) {
             throw new \InvalidArgumentException('Source $source invalid getting URL name');
         }
 
-        $urlName = null;
-        if (array_key_exists($source, $this->urlNames)) {
-            $urlName = $this->urlNames[$source];
-        }
-
-        return $urlName;
+        return $this->getSource($source)->getUrlName();
     }
 
+    /**
+     * Set or reset the rating for a given source.  If the $source param
+     * is not set then use the $yourRating param's source.  If the $yourRating
+     * param is null the $source's rating will get reset to null. 
+     *
+     * @param \RatingSync\Rating $yourRating New rating
+     * @param string|null        $source     Rating source
+     */
     public function setRating($yourRating, $source = null)
     {
         if (is_null($source)) {
@@ -148,7 +182,7 @@ class Film {
                 $source = $yourRating->getSource();
             }
         } else {
-            if (! Rating::validSource($source) ) {
+            if (! Source::validSource($source) ) {
                 throw new \InvalidArgumentException('Invalid source '.$source);
             }
         }
@@ -158,41 +192,32 @@ class Film {
         }
 
         if (empty($source)) {
-                throw new \Exception('No source found for setting a rating');
+            throw new \Exception('No source found for setting a rating');
         } 
 
         if ("" == $yourRating) {
             $yourRating = null;
         } else {
-            if (is_null($yourRating->getSource())) {
-                $yourRating->setSource($source);
-            } elseif (! ($source == $yourRating->getSource()) ) {
+            if (! ($source == $yourRating->getSource()) ) {
                 throw new \InvalidArgumentException("If param source is given it must match param rating's source. Param: ".$source." Rating source: ".$yourRating->getSource());
             }
         }
 
-        $this->ratings[$source] = $yourRating;
+        $this->getSource($source)->setRating($yourRating);
     }
 
     public function getRating($source)
     {
-        if (! Rating::validSource($source) ) {
+        if (! Source::validSource($source) ) {
             throw new \InvalidArgumentException('Source '.$source.' invalid getting rating');
         }
 
-        $rating = null;
-        if (array_key_exists($source, $this->ratings)) {
-            $rating = $this->ratings[$source];
-        } else {
-            $rating = new \RatingSync\Rating($source);
-        }
-
-        return $rating;
+        return $this->getSource($source)->getRating();
     }
 
     public function setYourScore($yourScore, $source)
     {
-        if (! Rating::validSource($source) ) {
+        if (! Source::validSource($source) ) {
             throw new \InvalidArgumentException('Source $source invalid setting YourScore');
         }
 
@@ -203,7 +228,7 @@ class Film {
 
     public function getYourScore($source)
     {
-        if (! Rating::validSource($source) ) {
+        if (! Source::validSource($source) ) {
             throw new \InvalidArgumentException('Source $source invalid getting YourScore');
         }
 
@@ -258,14 +283,43 @@ class Film {
         return $this->contentType;
     }
 
-    public function setImage($image)
+    /**
+     * A Film object has it's own image link, and also one for each
+     * source.  The $source param can optionally specific which image
+     * to set.
+     *
+     * @param string      $image link
+     * @param string|null $source
+     */
+    public function setImage($image, $source = null)
     {
-        $this->image = $image;
+        if (empty($source)) {
+            $this->image = $image;
+        } else {
+            if (! Source::validSource($source) ) {
+                throw new \InvalidArgumentException('Source $source invalid setting image');
+            }
+            $this->getSource($source)->setImage($image);
+        }
     }
-
-    public function getImage()
+    
+    /**
+     * A Film object has it's own image link, and also one for each
+     * source.  The $source param can optionally specific which image
+     * to get.
+     *
+     * @param string|null $source
+     */
+    public function getImage($source = null)
     {
-        return $this->image;
+        if (empty($source)) {
+            return $this->image;
+        } else {
+            if (! Source::validSource($source) ) {
+                throw new \InvalidArgumentException('Source $source invalid setting image');
+            }
+            return $this->getSource($source)->getImage();
+        }
     }
 
     public function addGenre($new_genre)

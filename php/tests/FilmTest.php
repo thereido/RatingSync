@@ -17,7 +17,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testObjectCanBeConstructedFromHttp()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         return $film;
     }
 
@@ -31,13 +31,57 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers  \RatingSync\Film::setFilmId
+     * @covers  \RatingSync\Film::getFilmId
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testSetAndGetFilmId()
+    {
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        
+        // Null
+        $film->setFilmId(null, Constants::SOURCE_JINNI);
+        $this->assertNull($film->getFilmId(Constants::SOURCE_JINNI));
+
+        // Empty String
+        $film->setFilmId("", Constants::SOURCE_JINNI);
+        $this->assertEquals("", $film->getFilmId(Constants::SOURCE_JINNI));
+        
+        // Int
+        $film->setFilmId(1234, Constants::SOURCE_JINNI);
+        $this->assertEquals(1234, $film->getFilmId(Constants::SOURCE_JINNI));
+        
+        // Number as a string
+        $film->setFilmId("1234", Constants::SOURCE_JINNI);
+        $this->assertEquals(1234, $film->getFilmId(Constants::SOURCE_JINNI));
+        
+        // Alpha-num string
+        $film->setFilmId("Film 1D", Constants::SOURCE_JINNI);
+        $this->assertEquals("Film 1D", $film->getFilmId(Constants::SOURCE_JINNI));
+
+        // Mismatch source
+        $film->setFilmId("Film 1D", Constants::SOURCE_JINNI);
+        $this->assertNull($film->getFilmId(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getFilmId
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testFilmIdCanBeRetrievedFromNewObject()
+    {
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $this->assertNull($film->getFilmId(Constants::SOURCE_JINNI));
+    }
+
+    /**
      * @covers  \RatingSync\Film::setUrlName
      * @depends testObjectCanBeConstructedFromHttp
      * @expectedException \InvalidArgumentException
      */
     public function testUrlNameCannotBeSetWithInvalidSource()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName("url_name", "Bad_Source");
     }
 
@@ -47,7 +91,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testUrlNameCanBeSetWithNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName(null, Constants::SOURCE_IMDB);
     }
 
@@ -57,7 +101,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testUrlNameCanBeSetWithEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName("", Constants::SOURCE_IMDB);
     }
 
@@ -67,7 +111,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testUrlNameCanBeSetWithNonEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName("url_name", Constants::SOURCE_IMDB);
     }
 
@@ -78,7 +122,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testUrlNameCannotBeGottenWithInvalidSource()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->getUrlName("Bad_Source");
     }
 
@@ -89,9 +133,9 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetUrlName()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setUrlName("url_name", Constants::SOURCE_IMDB);
-        $this->assertEquals("url_name", $film->getUrlName(Constants::SOURCE_IMDB));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $film->setUrlName("url_name", Constants::SOURCE_JINNI);
+        $this->assertEquals("url_name", $film->getUrlName(Constants::SOURCE_JINNI));
     }
 
     /**
@@ -100,7 +144,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetUrlNameNeverSet()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB));
     }
 
@@ -111,7 +155,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetNullUrlName()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName(null, Constants::SOURCE_IMDB);
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB));
     }
@@ -124,7 +168,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetUrlNameWithEmptySetsToNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName("", Constants::SOURCE_IMDB);
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), "Setting empty URL name should be set to null");
     }
@@ -136,7 +180,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithInvalidSource()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating(null, "Bad_Source");
     }
 
@@ -147,7 +191,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithNullRatingNullSource()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating(null, "Bad_Source");
     }
 
@@ -158,7 +202,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithString()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating("Bad_Arg", Constants::SOURCE_IMDB);
     }
 
@@ -169,7 +213,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithNumber()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating(7, Constants::SOURCE_IMDB);
     }
 
@@ -179,7 +223,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating(null, Constants::SOURCE_IMDB);
     }
 
@@ -189,7 +233,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating("", Constants::SOURCE_IMDB);
     }
 
@@ -199,7 +243,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRating()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating, Constants::SOURCE_IMDB);
     }
@@ -210,7 +254,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithNoSource()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating);
     }
@@ -222,7 +266,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithIncompatibleSource()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating, Constants::SOURCE_JINNI);
     }
@@ -235,7 +279,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRating()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $rating = new Rating(Constants::SOURCE_IMDB);
         $rating->setYourScore(6);
         $film->setRating($rating);
@@ -251,7 +295,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingWithMultipleRatings()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $ratingJinni = new Rating(Constants::SOURCE_JINNI);
         $ratingImdb = new Rating(Constants::SOURCE_IMDB);
         $ratingJinni->setYourScore(7);
@@ -267,7 +311,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingNeverSet()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
     }
@@ -279,9 +323,14 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingWasSetNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating(null, Constants::SOURCE_IMDB);
-        $this->assertNull($film->getRating(Constants::SOURCE_IMDB));
+        $rating = $film->getRating(Constants::SOURCE_IMDB);
+        $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
+        $this->assertNull($rating->getYourScore());
+        $this->assertNull($rating->getSuggestedScore());
+        $this->assertNull($rating->getCriticScore());
+        $this->assertNull($rating->getUserScore());
     }
 
     /**
@@ -291,9 +340,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingWasSetEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating("", Constants::SOURCE_IMDB);
-        $this->assertNull($film->getRating(Constants::SOURCE_IMDB));
+        $rating = $film->getRating(Constants::SOURCE_IMDB);
+        $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
+        $this->assertNull($rating->getYourScore());
     }
 
     /**
@@ -303,7 +354,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingWithInvalidSource()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->getRating("Bad_Source");
     }
 
@@ -314,7 +365,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYourScoreWithInvalidSource()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore("your_score", "Bad_Source");
     }
 
@@ -325,8 +376,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYourScoreWithBadArg()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
-        $film->setYourScore(6.5, Constants::SOURCE_IMDB);
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $film->setYourScore("Bad_Score", Constants::SOURCE_IMDB);
     }
 
     /**
@@ -335,7 +386,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYourScoreWithNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore(null, Constants::SOURCE_IMDB);
     }
 
@@ -346,7 +397,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYourScoreWithEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore("", Constants::SOURCE_IMDB);
     }
 
@@ -356,7 +407,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYourScore()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore(7, Constants::SOURCE_IMDB);
     }
 
@@ -368,7 +419,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetYourScore()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore(7, Constants::SOURCE_IMDB);
         $this->assertEquals(7, $film->getYourScore(Constants::SOURCE_IMDB));
     }
@@ -379,7 +430,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetYourScoreNeverSet()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getYourScore(Constants::SOURCE_IMDB));
     }
 
@@ -390,7 +441,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetYourScoreWasSetNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore(null, Constants::SOURCE_IMDB);
         $this->assertNull($film->getYourScore(Constants::SOURCE_IMDB));
     }
@@ -402,7 +453,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetYourScoreWithInvalidSource()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->getYourScore("Bad_Source");
     }
 
@@ -412,7 +463,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetTitleWithNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle(null);
     }
 
@@ -422,7 +473,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetTitleWithEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("");
     }
 
@@ -432,7 +483,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetTitle()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("New_Title");
     }
 
@@ -444,7 +495,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetTitle()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("New_Title");
         $this->assertEquals("New_Title", $film->getTitle());
     }
@@ -455,7 +506,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetTitleNeverSet()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getTitle());
     }
 
@@ -466,7 +517,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetTitleWasSetNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle(null);
         $this->assertNull($film->getTitle());
     }
@@ -478,7 +529,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetTitleWasSetEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("");
         $this->assertEquals("", $film->getTitle());
     }
@@ -490,7 +541,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYearWithBadArgFloat()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear(1999.5);
     }
 
@@ -501,7 +552,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYearWithBadArgStringCastToInt()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear("1999.5");
     }
 
@@ -511,7 +562,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYearWithNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear(null);
     }
 
@@ -521,7 +572,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYearWithEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear("");
     }
 
@@ -531,7 +582,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYearInt()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear(1942);
     }
 
@@ -541,7 +592,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYearString()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear("1942");
     }
 
@@ -553,7 +604,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetYear()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear(1942);
         $this->assertEquals(1942, $film->getYear());
     }
@@ -566,7 +617,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetYearSetFromString()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear("1942");
         $this->assertEquals(1942, $film->getYear());
     }
@@ -577,7 +628,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetYearNeverSet()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getYear());
     }
 
@@ -588,7 +639,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetYearAfterYearWasSetNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear(null);
         $this->assertNull($film->getYear());
     }
@@ -600,7 +651,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetYearWasSetEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear("");
         $this->assertNull($film->getYear());
     }
@@ -612,7 +663,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetContentTypeWithBadArg()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType("Bad_ContentType");
     }
 
@@ -622,7 +673,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetContentTypeWithNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType(null);
     }
 
@@ -632,7 +683,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetContentTypeWithEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType("");
     }
 
@@ -642,7 +693,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetContentType()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType(Film::CONTENT_FILM);
     }
 
@@ -654,7 +705,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetContentType()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType(Film::CONTENT_FILM);
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType());
     }
@@ -665,7 +716,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetContentTypeNeverSet()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getContentType());
     }
 
@@ -676,7 +727,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetContentTypeWasSetNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType(null);
         $this->assertNull($film->getContentType());
     }
@@ -688,7 +739,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetContentTypeWasSetEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType("");
         $this->assertNull($film->getContentType());
     }
@@ -699,7 +750,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetImageWithNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage(null);
     }
 
@@ -709,7 +760,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetImageWithEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("");
     }
 
@@ -719,7 +770,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetImage()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("http://example.com/example.jpg");
     }
 
@@ -731,7 +782,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetImage()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("http://example.com/example.jpg");
         $this->assertEquals("http://example.com/example.jpg", $film->getImage());
     }
@@ -742,7 +793,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetImageNeverSet()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getImage());
     }
 
@@ -753,7 +804,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetImageWasSetNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage(null);
         $this->assertNull($film->getImage());
     }
@@ -765,9 +816,109 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetImageWasSetEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("");
         $this->assertEquals("", $film->getImage());
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setImage
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testSetImageWithNullAndSource()
+    {
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $film->setImage(null, Constants::SOURCE_JINNI);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setImage
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testSetImageWithEmptyAndSource()
+    {
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $film->setImage("", Constants::SOURCE_JINNI);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setImage
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testSetImageAndSource()
+    {
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $film->setImage("http://example.com/example.jpg", Constants::SOURCE_JINNI);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setImage
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testSetImageAndInvalidSource()
+    {
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $film->setImage("http://example.com/example.jpg", "BAD SOURCE");
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setImage
+     * @covers  \RatingSync\Film::getImage
+     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testSetImageAndSource
+     */
+    public function testGetImageAndSource()
+    {
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $film->setImage("http://example.com/example.jpg", Constants::SOURCE_JINNI);
+        $this->assertEquals("http://example.com/example.jpg", $film->getImage(Constants::SOURCE_JINNI));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setImage
+     * @covers  \RatingSync\Film::getImage
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testGetImageAndInvalidSource()
+    {
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $film->getImage("BAD SOURCE");
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getImage
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testGetImageNeverSetAndSource()
+    {
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $this->assertNull($film->getImage(Constants::SOURCE_JINNI));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getImage
+     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testSetImageWithNullAndSource
+     */
+    public function testGetImageWasSetNullAndSource()
+    {
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $film->setImage(null, Constants::SOURCE_JINNI);
+        $this->assertNull($film->getImage(Constants::SOURCE_JINNI));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getImage
+     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testSetImageWithEmptyAndSource
+     */
+    public function testGetImageWasSetEmptyAndSource()
+    {
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
+        $film->setImage("", Constants::SOURCE_JINNI);
+        $this->assertEquals("", $film->getImage(Constants::SOURCE_JINNI));
     }
 
     /**
@@ -777,7 +928,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddGenreWithNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre(null);
     }
 
@@ -788,7 +939,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddGenreWithEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("");
     }
 
@@ -798,7 +949,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddGenre()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
     }
 
@@ -808,7 +959,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddGenreAddSecondGenre()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
     }
@@ -819,7 +970,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddGenreDuplicate()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Comedy");
     }
@@ -830,7 +981,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddGenreMultiWithDuplicate()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Comedy");
@@ -844,7 +995,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetGenres()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $this->assertEquals(array('Comedy'), $film->getGenres());
     }
@@ -857,7 +1008,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetGenresTwoGenres()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $this->assertEquals(array('Comedy', 'Horror'), $film->getGenres());
@@ -871,7 +1022,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetGenresDuplicate()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Comedy");
         $this->assertEquals(array('Comedy'), $film->getGenres());
@@ -885,7 +1036,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetGenresMultiWithDuplicate()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Comedy");
@@ -900,7 +1051,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetGenresThreeGenres()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -914,7 +1065,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveGenre()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -929,7 +1080,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveGenreWithMissingGenre()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -944,7 +1095,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveAllGenres()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -960,7 +1111,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testIsGenreTrue()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -975,7 +1126,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testIsGenreFalse()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -992,7 +1143,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveAllGenresThenAddOne()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -1008,7 +1159,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddDirectorWithNull()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector(null);
     }
 
@@ -1019,7 +1170,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddDirectorWithEmpty()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("");
     }
 
@@ -1029,7 +1180,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddDirector()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Georges Méliès");
     }
 
@@ -1039,7 +1190,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddDirectorAddSecondDirector()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Georges Méliès");
         $film->addDirector("Jennifer Lee");
     }
@@ -1050,7 +1201,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddDirectorDuplicate()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Jennifer Lee");
     }
@@ -1061,7 +1212,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddDirectorMultiWithDuplicate()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
@@ -1075,7 +1226,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetDirectors()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $this->assertEquals(array('Christopher Nolan'), $film->getDirectors());
     }
@@ -1088,7 +1239,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetDirectorsTwoDirectors()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $this->assertEquals(array('Christopher Nolan', 'Jennifer Lee'), $film->getDirectors());
@@ -1102,7 +1253,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetDirectorsDuplicate()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Christopher Nolan");
         $this->assertEquals(array('Christopher Nolan'), $film->getDirectors());
@@ -1116,7 +1267,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetDirectorsMultiWithDuplicate()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Christopher Nolan");
@@ -1131,7 +1282,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetDirectorsThreeDirectors()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1145,7 +1296,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveDirector()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1160,7 +1311,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveDirectorWithMissingDirector()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1175,7 +1326,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveAllDirectors()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1189,7 +1340,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetDirectorsNeverSet()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertCount(0, $film->getDirectors());
     }
 
@@ -1200,7 +1351,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetDirectorsWithNoDirectors()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->removeAllDirectors();
         $this->assertCount(0, $film->getDirectors());
@@ -1214,7 +1365,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testIsDirectorTrue()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1229,7 +1380,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testIsDirectorFalse()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1246,7 +1397,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveAllDirectorsThenAddOne()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1262,7 +1413,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddXmlChildFromNullParam()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addXmlChild(null);
     }
 
@@ -1273,7 +1424,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddXmlChildFromString()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addXmlChild("Bad_Arg_As_A_String");
     }
 
@@ -1284,7 +1435,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testAddXmlChild()
     {
         // Basic test of this function
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("Film_Title");
         $xml = new \SimpleXMLElement("<films/>");
         $film->addXmlChild($xml);
@@ -1300,7 +1451,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddXmlChildWithEmptyFilmObject()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $xml = new \SimpleXMLElement("<films/>");
         $film->addXmlChild($xml);
         $xmlStr = "<?xml version=\"1.0\"?>\n";
@@ -1315,17 +1466,22 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddXmlChildWithAllFields()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        // Film data
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("Frozen");
         $film->setYear(2013);
         $film->setContentType("FeatureFilm");
         $film->setImage("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg");
-        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $film->addDirector("Chris Buck");
         $film->addGenre("Family");
 
+        // Source data
+        $film->setImage("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", Constants::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
+        $film->setFilmId("999", Constants::SOURCE_JINNI);
+
+        // Rating data
         $rating = new Rating(Constants::SOURCE_JINNI);
-        $rating->setFilmId("999");
         $rating->setYourScore(8);
         $rating->setYourRatingDate(\DateTime::createFromFormat("n/j/Y", "5/1/2015"));
         $rating->setSuggestedScore(7);
@@ -1345,6 +1501,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=     "<directors><director>Chris Buck</director></directors>";
         $xmlStr .=     "<genres><genre>Family</genre></genres>";
         $xmlStr .=     "<source name=\"Jinni\">";
+        $xmlStr .=         "<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>";
         $xmlStr .=         "<filmId>999</filmId>";
         $xmlStr .=         "<urlName>frozen-2013</urlName>";
         $xmlStr .=         "<rating>";
@@ -1366,7 +1523,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddXmlChildWithMultipleRatings()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        // Film data
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("Frozen");
         $film->setYear(2013);
         $film->setContentType("FeatureFilm");
@@ -1374,18 +1532,25 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Chris Buck");
         $film->addGenre("Family");
 
+        // Jinni data
+        $film->setImage("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", Constants::SOURCE_JINNI);
+        $film->setFilmId("999", Constants::SOURCE_JINNI);
+        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
+
+        // Jinni Rating data
         $rating = new Rating(Constants::SOURCE_JINNI);
-        $rating->setFilmId("999");
         $rating->setYourScore(8);
         $rating->setYourRatingDate(\DateTime::createFromFormat("n/j/Y", "5/1/2015"));
         $rating->setSuggestedScore(7);
         $rating->setCriticScore(8);
         $rating->setUserScore(10);
-        $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $film->setRating($rating, Constants::SOURCE_JINNI);
 
+        // IMDb data
+        $film->setFilmId("tt2294629", Constants::SOURCE_IMDB);
+
+        // IMDb Rating data
         $rating = new Rating(Constants::SOURCE_IMDB);
-        $rating->setFilmId("tt2294629");
         $rating->setYourScore(4);
         $rating->setYourRatingDate(\DateTime::createFromFormat("n/j/Y", "5/4/2015"));
         $rating->setCriticScore(8);
@@ -1404,6 +1569,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=     "<directors><director>Chris Buck</director></directors>";
         $xmlStr .=     "<genres><genre>Family</genre></genres>";
         $xmlStr .=     "<source name=\"Jinni\">";
+        $xmlStr .=         "<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>";
         $xmlStr .=         "<filmId>999</filmId>";
         $xmlStr .=         "<urlName>frozen-2013</urlName>";
         $xmlStr .=         "<rating>";
@@ -1415,6 +1581,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=         "</rating>";
         $xmlStr .=     "</source>";
         $xmlStr .=     "<source name=\"IMDb\">";
+        $xmlStr .=         "<image/>";
         $xmlStr .=         "<filmId>tt2294629</filmId>";
         $xmlStr .=         "<urlName/>";
         $xmlStr .=         "<rating>";
@@ -1436,7 +1603,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddXmlChildWithMultipleGenres()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("Frozen");
         $film->addGenre("Family");
         $film->addGenre("Fantasy");
@@ -1463,7 +1630,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddXmlChildWithMultipleDirectors()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("Frozen");
         $film->addDirector("Chris Buck");
         $film->addDirector("Jennifer Lee");
@@ -1502,7 +1669,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testStrangeCharactersInNames()
     {
-        $film = new Film(new HttpJinni(TEST_USERNAME));
+        $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("Les Misérables & Gromit");
         $film->addGenre("Sci-Fi");
         $film->addDirector("Georges Méliès");

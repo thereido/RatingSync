@@ -6,7 +6,7 @@ namespace RatingSync;
 
 require_once "../Jinni.php";
 
-const TEST_USERNAME = "testratingsync";
+const TEST_JINNI_USERNAME = "testratingsync";
 
 class JinniTest extends \PHPUnit_Framework_TestCase
 {
@@ -33,7 +33,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testObjectCanBeConstructed()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         return $jinni;
     }
 
@@ -54,7 +54,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatings()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $films = $jinni->getRatings();
     }
 
@@ -77,7 +77,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingsCount()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $films = $jinni->getRatings();
         $this->assertCount(21, $films);
     }
@@ -89,7 +89,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingsLimitPages()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $films = $jinni->getRatings(1);
         $this->assertCount(20, $films);
     }
@@ -101,7 +101,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingsBeginPage()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $films = $jinni->getRatings(null, 2);
         $this->assertEquals("The Shawshank Redemption", $films[0]->getTitle());
     }
@@ -114,7 +114,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingsDetails()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $films = $jinni->getRatings(1, 1, true);
         $film = $films[0];
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
@@ -135,7 +135,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetSearchSuggestions()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $films = $jinni->getSearchSuggestions("Shawshank");
         $titles = array();
         foreach ($films as $film) {
@@ -151,7 +151,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteFromNull()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $jinni->getFilmDetailFromWebsite(null);
     }
 
@@ -162,7 +162,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteFromString()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $jinni->getFilmDetailFromWebsite("String_Not_Film_Object");
     }
 
@@ -173,7 +173,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteWithoutUrlName()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
         $jinni->getFilmDetailFromWebsite($film);
@@ -186,7 +186,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteWithoutContentType()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $film = new Film($jinni->http);
         $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $jinni->getFilmDetailFromWebsite($film);
@@ -199,7 +199,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteNoMatch()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
         $film->setUrlName("NO_MATCH_URLNAME", Constants::SOURCE_JINNI);
@@ -212,7 +212,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsite()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
 
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
@@ -227,7 +227,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $rating->getFilmId(), 'Film ID');
+        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
@@ -241,7 +241,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteOverwriteTrueOverEmpty()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
 
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
@@ -257,7 +257,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $rating->getFilmId(), 'Film ID');
+        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
@@ -271,7 +271,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteOverwriteTrueOverOriginalData()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
 
         $film = new Film($jinni->http);
 
@@ -279,6 +279,10 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $film->setTitle("Original_Title");
         $film->setYear(1900);
         $film->setImage("Original_Image");
+        $film->setImage("Original_JinniImage", Constants::SOURCE_JINNI);
+        $film->setImage("Original_IMDbImage", Constants::SOURCE_IMDB);
+        $film->setFilmId("Original_JinniFilmId", Constants::SOURCE_JINNI);
+        $film->setFilmId("Original_IMDbFilmId", Constants::SOURCE_IMDB);
         $film->setUrlName("Original_JinniUrlName", Constants::SOURCE_JINNI);
         $film->setUrlName("Original_IMDbUrlName", Constants::SOURCE_IMDB);
         $film->addGenre("Original_Genre1");
@@ -286,7 +290,6 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Original_Director1");
         $film->addDirector("Original_Director2");
         $ratingJinniOrig = new Rating(Constants::SOURCE_JINNI);
-        $ratingJinniOrig->setFilmId("Original_JinniFilmId");
         $ratingJinniOrig->setYourScore(1);
         $ratingJinniOrig->setYourRatingDate(new \DateTime('2000-01-01'));
         $ratingJinniOrig->setSuggestedScore(2);
@@ -294,7 +297,6 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $ratingJinniOrig->setUserScore(4);
         $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
         $ratingImdbOrig = new Rating(Constants::SOURCE_IMDB);
-        $ratingImdbOrig->setFilmId("Original_ImdbFilmId");
         $ratingImdbOrig->setYourScore(2);
         $ratingImdbOrig->setYourRatingDate(new \DateTime('2000-01-02'));
         $ratingImdbOrig->setSuggestedScore(3);
@@ -316,7 +318,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $rating->getFilmId(), 'Film ID');
+        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
 
         // The film detail page does not have these fields.  Don't overwrite them.
@@ -327,7 +329,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
 
         // IMDb Rating is unchanged
         $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals("Original_ImdbFilmId", $rating->getFilmId(), 'Film ID');
+        $this->assertEquals("Original_IMDbFilmId", $film->getFilmId(Constants::SOURCE_IMDB), 'Film ID');
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
@@ -341,7 +343,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteOverwriteFalseOverOriginalData()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
 
         $film = new Film($jinni->http);
 
@@ -354,16 +356,18 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Original_Genre2");
         $film->addDirector("Original_Director1");
         $film->addDirector("Original_Director2");
+        $film->setImage("Original_Image", Constants::SOURCE_JINNI);
+        $film->setFilmId("Original_JinniFilmId", Constants::SOURCE_JINNI);
         $ratingJinniOrig = new Rating(Constants::SOURCE_JINNI);
-        $ratingJinniOrig->setFilmId("Original_JinniFilmId");
         $ratingJinniOrig->setYourScore(1);
         $ratingJinniOrig->setYourRatingDate(new \DateTime('2000-01-01'));
         $ratingJinniOrig->setSuggestedScore(2);
         $ratingJinniOrig->setCriticScore(3);
         $ratingJinniOrig->setUserScore(4);
         $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
+        $film->setImage("Original_Image", Constants::SOURCE_IMDB);
+        $film->setFilmId("Original_ImdbFilmId", Constants::SOURCE_IMDB);
         $ratingImdbOrig = new Rating(Constants::SOURCE_IMDB);
-        $ratingImdbOrig->setFilmId("Original_ImdbFilmId");
         $ratingImdbOrig->setYourScore(2);
         $ratingImdbOrig->setYourRatingDate(new \DateTime('2000-01-02'));
         $ratingImdbOrig->setSuggestedScore(3);
@@ -386,14 +390,14 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Original_Director1", "Original_Director2"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Original_Genre1", "Original_Genre2"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("Original_JinniFilmId", $rating->getFilmId(), 'Film ID');
+        $this->assertEquals("Original_JinniFilmId", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(1, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/1/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Your Rating Date');
         $this->assertEquals(2, $rating->getSuggestedScore(), 'Suggested score');
         $this->assertEquals(3, $rating->getCriticScore(), 'Critic score');
         $this->assertEquals(4, $rating->getUserScore(), 'User score');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals("Original_ImdbFilmId", $rating->getFilmId(), 'Film ID');
+        $this->assertEquals("Original_ImdbFilmId", $film->getFilmId(Constants::SOURCE_IMDB), 'Film ID');
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Your Rating Date');
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score');
@@ -407,7 +411,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteOverwriteFalseOverEmpty()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
 
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
@@ -423,7 +427,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $rating->getFilmId(), 'Film ID');
+        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
@@ -437,7 +441,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteOverwriteDefault()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
 
         $film = new Film($jinni->http);
 
@@ -445,6 +449,10 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $film->setTitle("Original_Title");
         $film->setYear(1900);
         $film->setImage("Original_Image");
+        $film->setImage("Original_JinniImage", Constants::SOURCE_JINNI);
+        $film->setImage("Original_IMDbImage", Constants::SOURCE_IMDB);
+        $film->setFilmId("Original_JinniFilmId", Constants::SOURCE_JINNI);
+        $film->setFilmId("Original_ImdbFilmId", Constants::SOURCE_IMDB);
         $film->setUrlName("Original_JinniUrlName", Constants::SOURCE_JINNI);
         $film->setUrlName("Original_IMDbUrlName", Constants::SOURCE_IMDB);
         $film->addGenre("Original_Genre1");
@@ -452,7 +460,6 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Original_Director1");
         $film->addDirector("Original_Director2");
         $ratingJinniOrig = new Rating(Constants::SOURCE_JINNI);
-        $ratingJinniOrig->setFilmId("Original_JinniFilmId");
         $ratingJinniOrig->setYourScore(1);
         $ratingJinniOrig->setYourRatingDate(new \DateTime('2000-01-01'));
         $ratingJinniOrig->setSuggestedScore(2);
@@ -460,7 +467,6 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $ratingJinniOrig->setUserScore(4);
         $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
         $ratingImdbOrig = new Rating(Constants::SOURCE_IMDB);
-        $ratingImdbOrig->setFilmId("Original_ImdbFilmId");
         $ratingImdbOrig->setYourScore(2);
         $ratingImdbOrig->setYourRatingDate(new \DateTime('2000-01-02'));
         $ratingImdbOrig->setSuggestedScore(3);
@@ -482,14 +488,14 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $rating->getFilmId(), 'Film ID');
+        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/1/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
         $this->assertEquals(2, $rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertEquals(3, $rating->getCriticScore(), 'Critic score not available from Jinni');
         $this->assertEquals(4, $rating->getUserScore(), 'User score not available from Jinni');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals("Original_ImdbFilmId", $rating->getFilmId(), 'Film ID');
+        $this->assertEquals("Original_ImdbFilmId", $film->getFilmId(Constants::SOURCE_IMDB), 'Film ID');
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
@@ -503,7 +509,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteOverwriteFalseOverEmptyFilm()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
         $film = new Film($jinni->http);
         $jinni->getFilmDetailFromWebsite($film);
     }
@@ -514,7 +520,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testMultipleGenres()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
 
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
@@ -530,7 +536,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testMultipleDirectors()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
 
         $film = new Film($jinni->http);
         $film->setContentType("FeatureFilm");
@@ -546,7 +552,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testExportRatingsXmlNoDetail()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
 
         $testFilename = "ratings_test.xml";
         $success = $jinni->exportRatings("XML", $testFilename, false);
@@ -559,6 +565,9 @@ class JinniTest extends \PHPUnit_Framework_TestCase
 
         $fp_test = fopen($fullTestFilename, "r");
         $fp_verify = fopen($fullVerifyFilename, "r");
+        $testFileSize = filesize($fullTestFilename);
+        $verifyFileSize = filesize($fullVerifyFilename);
+        $this->assertEquals($testFileSize, $verifyFileSize, 'File sizes - test vs verify');
         $test = fread($fp_test, filesize($fullTestFilename));
         $verify = fread($fp_verify, filesize($fullVerifyFilename));
         $this->assertEquals($test, $verify, 'Match exported file vs verify file');
@@ -572,7 +581,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testExportRatingsXmlDetail()
     {
-        $jinni = new Jinni(TEST_USERNAME);
+        $jinni = new Jinni(TEST_JINNI_USERNAME);
 
         $testFilename = "ratings_test.xml";
         $success = $jinni->exportRatings("XML", $testFilename, true);

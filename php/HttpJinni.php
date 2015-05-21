@@ -30,13 +30,13 @@ class HttpJinni extends Http
 
     protected function rawApiCall($scriptName, $method, array $params = array())
     {
-        if (!$this->jSessionID) {
+        if (!$this->jSessionId) {
             // Needs a session ID. Get a lightweight page
             $this->getPage('/info/about.html');
         }
         $postData = 'callCount=1'."\n".
             'batchId=0'."\n".
-            'httpSessionId='.$this->jSessionID."\n".
+            'httpSessionId='.$this->jSessionId."\n".
             'scriptSessionId=3C675DDBB02222BE8CB51E2415259E99676'."\n".
             'c0-scriptName='.$scriptName."\n".
             'c0-methodName='.$method."\n".

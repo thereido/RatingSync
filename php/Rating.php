@@ -10,6 +10,8 @@
  */
 namespace RatingSync;
 
+require_once "Source.php";
+
 date_default_timezone_set('America/New_York');
 
 /**
@@ -27,9 +29,8 @@ date_default_timezone_set('America/New_York');
  */
 class Rating
 {
-    protected $source;          // Local, IMDb, RottenTomatoes, Jinni, etc.
+    protected $sourceName;          // Local, IMDb, RottenTomatoes, Jinni, etc.
 
-    protected $filmId;          // Unique Id in the given website (source)
     protected $yourScore;       // Rating (or score) from you - 1 to 10
     protected $yourRatingDate;  // The day you rated it
     protected $suggestedScore;  // How much they think you would like. Suggested by the source.
@@ -43,19 +44,11 @@ class Rating
      */
     public function __construct($source)
     {
-        if (! static::validSource($source) ) {
+        if (! Source::validSource($source) ) {
             throw new \InvalidArgumentException('Source $source invalid');
         }
 
-        $this->source = $source;
-    }
-
-    public static function validSource($source)
-    {       
-        if (in_array($source, array(Constants::SOURCE_JINNI, Constants::SOURCE_IMDB, Constants::SOURCE_RATINGSYNC))) {
-            return true;
-        }
-        return false;
+        $this->sourceName = $source;
     }
 
     /**
@@ -65,30 +58,7 @@ class Rating
      */
     public function getSource()
     {
-        return $this->source;
-    }
-
-    /**
-     * ID to find this film within the source
-     *
-     * @param string $filmId ID to find this film within the source
-     *
-     * @return none
-     */
-    public function setFilmId($filmId)
-    {
-        $this->filmId = $filmId;
-    }
-
-    /**
-     * Return the id... This only works if the id is already set. This function does not
-     * retrieve it from the local db from the source.
-     *
-     * @return string matches id in a /RatingSync/Film
-     */
-    public function getFilmId()
-    {
-        return $this->filmId;
+        return $this->sourceName;
     }
 
     /**
@@ -101,13 +71,13 @@ class Rating
     public function setYourScore($score)
     {
         if (! (is_null($score) ||  $this->validRatingScore($score)) ) {
-            throw new \InvalidArgumentException("setYourScore ($score) must be an int between 1 to 10");
+            throw new \InvalidArgumentException("setYourScore ($score) must be a number between 1 to 10");
         }
 
         if (is_null($score)) {
             $this->yourScore = null;
         } else {
-            $this->yourScore = (int)$score;
+            $this->yourScore = (float)$score;
         }
     }
 
@@ -157,13 +127,13 @@ class Rating
     public function setSuggestedScore($score)
     {
         if (! (is_null($score) ||  $this->validRatingScore($score)) ) {
-            throw new \InvalidArgumentException("setYourScore ($score) must be an int between 1 to 10");
+            throw new \InvalidArgumentException("setYourScore ($score) must be a number between 1 to 10");
         }
 
         if (is_null($score)) {
             $this->suggestedScore = null;
         } else {
-            $this->suggestedScore = (int)$score;
+            $this->suggestedScore = (float)$score;
         }
     }
 
@@ -187,13 +157,13 @@ class Rating
     public function setCriticScore($score)
     {
         if (! (is_null($score) ||  $this->validRatingScore($score)) ) {
-            throw new \InvalidArgumentException("setYourScore ($score) must be an int between 1 to 10");
+            throw new \InvalidArgumentException("setCriticScore ($score) must be a number between 1 to 10");
         }
 
         if (is_null($score)) {
             $this->criticScore = null;
         } else {
-            $this->criticScore = (int)$score;
+            $this->criticScore = (float)$score;
         }
     }
 
@@ -217,13 +187,13 @@ class Rating
     public function setUserScore($score)
     {
         if (! (is_null($score) ||  $this->validRatingScore($score)) ) {
-            throw new \InvalidArgumentException("setYourScore ($score) must be an int between 1 to 10");
+            throw new \InvalidArgumentException("setUserScore ($score) must be a number between 1 to 10");
         }
 
         if (is_null($score)) {
             $this->userScore = null;
         } else {
-            $this->userScore = (int)$score;
+            $this->userScore = (float)$score;
         }
     }
 
@@ -238,18 +208,16 @@ class Rating
     }
 
     /**
-     * Valid scores are integers 1 to 10.  Strings can be casted, but
-     * no floats.
+     * Valid scores are numbers 1 to 10.  Strings can be casted.
      *
-     * @param int $score 1 to 10
+     * @param float $score 1 to 10
      *
      * @return true=valid, false=invalid
      */
     public function validRatingScore($score)
     {
         if ( is_numeric($score) &&
-             ((float)$score == (int)$score) &&
-             (1 <= (int)$score && (int)$score <= 10) ) {
+             (1 <= (float)$score && (float)$score <= 10) ) {
             return true;
         } else {
             return false;

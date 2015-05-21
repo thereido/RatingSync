@@ -5,6 +5,7 @@
 namespace RatingSync;
 
 require_once "../Rating.php";
+require_once "../Constants.php";
 
 class RatingTest extends \PHPUnit_Framework_TestCase
 {
@@ -36,15 +37,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \RatingSync\Film::validContentType
-     */
-    public function testValidContentTypeTrue()
-    {
-        $this->assertTrue(Rating::validSource(Constants::SOURCE_JINNI), Constants::SOURCE_JINNI . " should be valid");
-        $this->assertFalse(Rating::validSource("Bad_Source"), "Bad_Source should be invalid");
-    }
-
-    /**
      * @covers  \RatingSync\Rating::getSource
      * @depends testObjectCanBeConstructedFromStringValue
      */
@@ -55,65 +47,27 @@ class RatingTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers  \RatingSync\Rating::setFilmId
-     * @covers  \RatingSync\Rating::getFilmId
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testSetAndGetFilmId()
-    {
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        
-        // Null
-        $r->setFilmId(null);
-        $this->assertNull($r->getFilmId());
-
-        // Empty String
-        $r->setFilmId("");
-        $this->assertEquals("", $r->getFilmId());
-        
-        // Int
-        $r->setFilmId(1234);
-        $this->assertEquals(1234, $r->getFilmId());
-        
-        // Number as a string
-        $r->setFilmId("1234");
-        $this->assertEquals(1234, $r->getFilmId());
-        
-        // Alpha-num string
-        $r->setFilmId("Film 1D");
-        $this->assertEquals("Film 1D", $r->getFilmId());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::getFilmId
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testFilmIdCanBeRetrievedFromNewObject()
-    {
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $this->assertNull($r->getFilmId());
-    }
-
-    /**
      * @covers  \RatingSync\Rating::setYourScore
+     * @covers  \RatingSync\Rating::getYourScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testYourScoreCannotBeSetWithFloat()
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(6.5);
+        $this->assertEquals(6.5, $r->getYourScore());
     }
 
     /**
      * @covers  \RatingSync\Rating::setYourScore
+     * @covers  \RatingSync\Rating::getYourScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testYourScoreCannotBeSetWithFloatString()
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore("6.5");
+        $this->assertEquals(6.5, $r->getYourScore());
     }
 
     /**
@@ -233,24 +187,26 @@ class RatingTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Rating::setSuggestedScore
+     * @covers  \RatingSync\Rating::getSuggestedScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testSuggestedScoreCannotBeSetWithFloat()
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(6.5);
+        $this->assertEquals(6.5, $r->getSuggestedScore());
     }
 
     /**
      * @covers  \RatingSync\Rating::setSuggestedScore
+     * @covers  \RatingSync\Rating::getSuggestedScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testSuggestedScoreCannotBeSetWithFloatString()
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore("6.5");
+        $this->assertEquals(6.5, $r->getSuggestedScore());
     }
 
     /**
@@ -334,24 +290,26 @@ class RatingTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Rating::setCriticScore
+     * @covers  \RatingSync\Rating::getCriticScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testCriticScoreCannotBeSetWithFloat()
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore(6.5);
+        $this->assertEquals(6.5, $r->getCriticScore());
     }
 
     /**
      * @covers  \RatingSync\Rating::setCriticScore
+     * @covers  \RatingSync\Rating::getCriticScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testCriticScoreCannotBeSetWithFloatString()
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore("6.5");
+        $this->assertEquals(6.5, $r->getCriticScore());
     }
 
     /**
@@ -435,24 +393,26 @@ class RatingTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Rating::setUserScore
+     * @covers  \RatingSync\Rating::getUserScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
-    public function testUserScoreCannotBeSetWithFloat()
+    public function testUserScoreCanBeSetWithFloat()
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore(6.5);
+        $this->assertEquals(6.5, $r->getUserScore());
     }
 
     /**
      * @covers  \RatingSync\Rating::setUserScore
+     * @covers  \RatingSync\Rating::getUserScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
-    public function testUserScoreCannotBeSetWithFloatString()
+    public function testUserScoreCanBeSetWithFloatString()
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore("6.5");
+        $this->assertEquals(6.5, $r->getUserScore());
     }
 
     /**
@@ -542,34 +502,34 @@ class RatingTest extends \PHPUnit_Framework_TestCase
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         
-        $this->assertFalse($r->validRatingScore(6.5)); // Float
-        $this->assertFalse($r->validRatingScore("6.5")); // Float  String
-        $this->assertFalse($r->validRatingScore("Not an int")); // Non-Numerical String
-        $this->assertFalse($r->validRatingScore(-1)); // Negative
-        $this->assertFalse($r->validRatingScore(11)); // Higher Than 10
-        $this->assertFalse($r->validRatingScore(0)); // Zero
-        $this->assertFalse($r->validRatingScore(null)); // Null
+        $this->assertFalse($r->validRatingScore("Not an int"), "Invalid - Not an int"); // Non-Numerical String
+        $this->assertFalse($r->validRatingScore(-1), "Invalid - Negative"); // Negative
+        $this->assertFalse($r->validRatingScore(11), "Invalid - Higher Than 10"); // Higher Than 10
+        $this->assertFalse($r->validRatingScore(0), "Invalid - Zero"); // Zero
+        $this->assertFalse($r->validRatingScore(null), "Invalid - Null"); // Null
 
-        $this->assertTrue($r->validRatingScore(1)); // Int in limit
-        $this->assertTrue($r->validRatingScore(2)); // Int in limit
-        $this->assertTrue($r->validRatingScore(3)); // Int in limit
-        $this->assertTrue($r->validRatingScore(4)); // Int in limit
-        $this->assertTrue($r->validRatingScore(5)); // Int in limit
-        $this->assertTrue($r->validRatingScore(6)); // Int in limit
-        $this->assertTrue($r->validRatingScore(7)); // Int in limit
-        $this->assertTrue($r->validRatingScore(8)); // Int in limit
-        $this->assertTrue($r->validRatingScore(9)); // Int in limit
-        $this->assertTrue($r->validRatingScore(10)); // Int in limit
-        $this->assertTrue($r->validRatingScore("1")); // String
-        $this->assertTrue($r->validRatingScore("2")); // String
-        $this->assertTrue($r->validRatingScore("3")); // String
-        $this->assertTrue($r->validRatingScore("4")); // String
-        $this->assertTrue($r->validRatingScore("5")); // String
-        $this->assertTrue($r->validRatingScore("6")); // String
-        $this->assertTrue($r->validRatingScore("7")); // String
-        $this->assertTrue($r->validRatingScore("8")); // String
-        $this->assertTrue($r->validRatingScore("9")); // String
-        $this->assertTrue($r->validRatingScore("10")); // String
+        $this->assertTrue($r->validRatingScore(1), "Valid - 1"); // Int in limit
+        $this->assertTrue($r->validRatingScore(2), "Valid - 2"); // Int in limit
+        $this->assertTrue($r->validRatingScore(3), "Valid - 3"); // Int in limit
+        $this->assertTrue($r->validRatingScore(4), "Valid - 4"); // Int in limit
+        $this->assertTrue($r->validRatingScore(5), "Valid - 5"); // Int in limit
+        $this->assertTrue($r->validRatingScore(6), "Valid - 6"); // Int in limit
+        $this->assertTrue($r->validRatingScore(7), "Valid - 7"); // Int in limit
+        $this->assertTrue($r->validRatingScore(8), "Valid - 8"); // Int in limit
+        $this->assertTrue($r->validRatingScore(9), "Valid - 9"); // Int in limit
+        $this->assertTrue($r->validRatingScore(10), "Valid - 10"); // Int in limit
+        $this->assertTrue($r->validRatingScore("1"), "Valid - '1'"); // String
+        $this->assertTrue($r->validRatingScore("2"), "Valid - '2'"); // String
+        $this->assertTrue($r->validRatingScore("3"), "Valid - '3'"); // String
+        $this->assertTrue($r->validRatingScore("4"), "Valid - '4'"); // String
+        $this->assertTrue($r->validRatingScore("5"), "Valid - '5'"); // String
+        $this->assertTrue($r->validRatingScore("6"), "Valid - '6'"); // String
+        $this->assertTrue($r->validRatingScore("7"), "Valid - '7'"); // String
+        $this->assertTrue($r->validRatingScore("8"), "Valid - '8'"); // String
+        $this->assertTrue($r->validRatingScore("9"), "Valid - '9'"); // String
+        $this->assertTrue($r->validRatingScore("10"), "Valid - '10'"); // String
+        $this->assertTrue($r->validRatingScore(6.5), "Valid - 6.5"); // Float
+        $this->assertTrue($r->validRatingScore("6.5"), "Valid - '6.5'"); // Float  String
     }
 }
 

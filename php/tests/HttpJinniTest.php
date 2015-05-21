@@ -7,7 +7,7 @@ namespace RatingSync;
 require_once "../HttpJinni.php";
 
 // Child class to expose protected members and functions
-class HttpChild extends \RatingSync\HttpJinni {
+class HttpJinniExt extends \RatingSync\HttpJinni {
     function _getSessionId() { return $this->jSessionId; }
     function _getBaseUrl() { return $this->baseUrl; }
     function _getUsername() { return $this->username; }
@@ -61,7 +61,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCannotGetPageWithNullPage() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $http->getPage(null);
     }
 
@@ -70,7 +70,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \RatingSync\HttpUnauthorizedRedirectException
      */
     public function testGetPageUnauthorizedRedirect() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $http->getPage('/user/---Username--No--Match---/ratings');
     }
 
@@ -79,7 +79,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \RatingSync\HttpNotFoundException
      */
     public function testCannotGetPageWithNotFound() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $http->getPage("/findthis");
     }
 
@@ -88,7 +88,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \RatingSync\HttpErrorException
      */
     public function testGetPageHttpError() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $http->getPage('Bad URL');
     }
 
@@ -96,7 +96,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\HttpJinni::getPage
      */
     public function testGetPageAbout() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $page = $http->getPage('/info/about.html');
         $this->assertGreaterThan(0, stripos($page, "About Jinni</title>"), "Getting the Jinni 'About' page does not look right");
     }
@@ -105,7 +105,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\HttpJinni::getPage
      */
     public function testGetPageGetSessionID() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $page = $http->getPage('/info/about.html');
         $this->assertGreaterThan(0, strlen($http->_getSessionId()), "getPage() did not bring a jSessionID");
     }
@@ -115,7 +115,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testBaseUrl() {
         // This is just tell us if the BaseUrl changed so we need to update some other tests
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $this->assertEquals("http://www.jinni.com", $http->_getBaseUrl(), "/RatingSync/HttpJinni::\$baseUrl has changed, which might affect other tests");
     }
 
@@ -123,7 +123,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\HttpJinni::getPage
      */
     public function testGetPageNeedsUsername() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $this->assertGreaterThan(0, strlen($http->_getUsername()));
     }
 
@@ -131,7 +131,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\HttpJinni::getPage
      */
     public function testGetPageWithHeadersOnly() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $headers = $http->getPage('/info/about.html', null, true);
         $this->assertStringEndsWith("Connection: keep-alive", rtrim($headers), "getPage() with headersOnly=true is not ending in a header");
     }
@@ -141,7 +141,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildParamVarString()
     {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
 
         // search string and content type
         $this->assertEquals(
@@ -174,7 +174,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testBuildParamVar()
     {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
 
         // Array object
         $this->assertEquals("Object_Object:{contentTypeFilter:null:null}", $http->_buildParamVar((object)array('contentTypeFilter' => null)));
@@ -189,7 +189,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \Exception
      */
     public function testCannotParseSearchSuggestionResultsWithEmptySearch() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $http->_parseSearchSuggestionResults("");
     }
 
@@ -198,7 +198,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \Exception
      */
     public function testCannotParseSearchSuggestionResultsWithNullSearch() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $http->_parseSearchSuggestionResults(null);
     }
 
@@ -206,7 +206,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\HttpJinni::parseSearchSuggestionResults
      */
     public function testCanParseSearchSuggestionResultsWithTheMatrix() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $resultStr = <<<EOD
 //#DWR-INSERT
 //#DWR-REPLY
@@ -235,7 +235,7 @@ EOD;
      * @covers \RatingSync\HttpJinni::parseSearchSuggestionResults
      */
     public function testCanParseSearchSuggestionResultsIgnoringKeywords() {
-        $http = new HttpChild("username");
+        $http = new HttpJinniExt("username");
         $resultStr = <<<EOD
 //#DWR-INSERT
 //#DWR-REPLY

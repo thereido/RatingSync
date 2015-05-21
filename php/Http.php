@@ -69,6 +69,7 @@ abstract class Http
 
         $ch = curl_init($this->baseUrl.$path);
         curl_setopt($ch, CURLOPT_COOKIE, $authCookie . $sessionCookie);
+//FIXME curl_setopt($ch, CURLOPT_COOKIE, $sessionCookie);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_ENCODING, "");
