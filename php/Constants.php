@@ -10,6 +10,7 @@ class Constants
     const SOURCE_JINNI      = "Jinni";
     const SOURCE_IMDB       = "IMDb";
     const SOURCE_RATINGSYNC = "RatingSync";
+    const EXPORT_FORMAT_XML = "XML";
     
     static function outputFilePath()
     {

@@ -81,7 +81,7 @@ class HttpJinni extends Http
     protected function parseSearchSuggestionResults($str)
     {
         if (0 == preg_match("@dwr.engine._remoteHandleCallback\(\'\d+\',\'\d+\',\{results:([^,]+),@", $str, $matches)) {
-            throw new \Exception('Could not parse API result');
+            throw new \Exception('Could not parse Jinni API result');
         }
 
         preg_match_all("@s\d+.categoryType=null;s\d+.entityType='Title';s\d+.id=\"(\d+)\";s\d+.name=\"([^\"]+)\";s\d+.popularity=null;s\d+.titleType=\'([A-Z,a-z]+)';s\d+.year=(\d+);@", $str, $matches, PREG_SET_ORDER);

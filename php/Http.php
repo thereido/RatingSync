@@ -5,6 +5,11 @@ require_once "exceptions/HttpErrorException.php";
 require_once "exceptions/HttpNotFoundException.php";
 require_once "exceptions/HttpUnauthorizedRedirectException.php";
 
+/**
+ *
+ * Functions a child must implement
+ *   - getNextRatingPageNumber
+ */
 abstract class Http
 {
     protected $username;
