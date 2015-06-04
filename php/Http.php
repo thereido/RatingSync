@@ -13,7 +13,7 @@ require_once "exceptions/HttpUnauthorizedRedirectException.php";
 abstract class Http
 {
     protected $username;
-    protected $jSessionId;
+    protected $sessionId;
     protected $baseUrl = null;
     protected $lightweightUrl = null;
     
@@ -65,16 +65,9 @@ abstract class Http
         if (! (!is_null($path)) ) {
             throw new \InvalidArgumentException("getPage() path cannot be NULL");
         }
-
-        $authCookie = "auth=".$this->username;
-        $sessionCookie = "";
-        if (!empty($this->jSessionId)) {
-            $sessionCookie = ";JSESSIONID=".$this->jSessionId;
-        }
-
+        
         $ch = curl_init($this->baseUrl.$path);
-        curl_setopt($ch, CURLOPT_COOKIE, $authCookie . $sessionCookie);
-//FIXME curl_setopt($ch, CURLOPT_COOKIE, $sessionCookie);
+        $this->putCookiesInRequest($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_ENCODING, "");
@@ -102,35 +95,40 @@ abstract class Http
         }
 
         $headers = substr($result, 0, $info['header_size']);
-
-        if (preg_match("@Set-Cookie: JSESSIONID=([^;]+);@i", $headers, $matches)) {
-            $this->jSessionId = $matches[1];
-        }
+        $this->storeCookiesFromResponse($headers);
 
         if ($headersOnly) {
             $page = $headers;
         } else {
             $page = substr($result, $info['header_size']);
         }
-        
-/* FIXME
-        if (strpos($page, '<form id=\'unauthorizedRedirectForm\'')) {
-            throw new UnauthorizedRedirectException('Unauthorized Redirect: ' . $this->baseUrl . $path);
-        } elseif (strpos($page, '<h1 class="title1">Whoops!</h1>')) {
-            throw new \Exception('Whoops!: ' . $this->baseUrl . $path);
-        }
-*/
 
         return $page;
     }
 
     /**
-     * If there is no session id, go to a lightweight page to set it
+     * Set whatever cookies a website uses.  The \RatingSync\Http::getPage() calls
+       this function before curl_exec.
+     *
+     * @param resource $ch This object is affect by this function
+     *
+     * @return none
      */
-    protected function setJSessionId()
+    protected function putCookiesInRequest($ch)
     {
-        if (!$this->jSessionId) {
-            $this->getPage($this->lightweightUrl);
-        }
+        // No-op. Made for a child class
+    }
+
+    /**
+     * Set whatever cookies a website uses.  The \RatingSync\Http::getPage() calls
+       this function after curl_exec.
+     *
+     * @param string $headers Http response
+     *
+     * @return none
+     */
+    protected function storeCookiesFromResponse($ch)
+    {
+        // No-op. Made for a child class
     }
 }

@@ -16,8 +16,7 @@ class HttpChild extends \RatingSync\Http {
 
     function _validateAfterConstructor() { return $this->validateAfterConstructor(); }
 
-    function _setJSessionId() { $this->setJSessionID(); }
-    function _getJSessionId() { return $this->jSessionId; }
+    function _getSessionId() { return $this->sessionId; }
 
     public function searchSuggestions($searchStr, $type = null) {}
 }
@@ -108,16 +107,6 @@ class HttpTest extends \PHPUnit_Framework_TestCase
         $http = new HttpChild("username");
         $page = $http->getPage('/info/about.html');
         $this->assertGreaterThan(0, stripos($page, "About Jinni</title>"), "Get 'About' page");
-    }
-
-    /**
-     * @covers \RatingSync\Http::setJSessionId
-     * @depends testConstructorValidated
-     */
-    public function testSetJSessionId() {
-        $http = new HttpChild("username");
-        $http->_setJSessionId();
-        $this->assertFalse(empty($http->_getJSessionId()));
     }
 
     /**

@@ -8,9 +8,10 @@ require_once "../HttpJinni.php";
 
 // Child class to expose protected members and functions
 class HttpJinniExt extends \RatingSync\HttpJinni {
-    function _getSessionId() { return $this->jSessionId; }
+    function _getSessionId() { return $this->sessionId; }
     function _getBaseUrl() { return $this->baseUrl; }
     function _getUsername() { return $this->username; }
+    function _getLightweightUrl() { return $this->lightweightUrl; }
 
     function _buildApiParamString($params) { return $this->buildApiParamString($params); }
     function _buildParamVar($var) { return $this->buildParamVar($var); }
@@ -104,10 +105,10 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers \RatingSync\HttpJinni::getPage
      */
-    public function testGetPageGetSessionID() {
+    public function testGetCookies() {
         $http = new HttpJinniExt("username");
-        $page = $http->getPage('/info/about.html');
-        $this->assertGreaterThan(0, strlen($http->_getSessionId()), "getPage() did not bring a jSessionID");
+        $page = $http->getPage($http->_getLightweightUrl());
+        $this->assertGreaterThan(0, strlen($http->_getSessionId()), "Session ID Cookie");
     }
 
     /**
@@ -132,7 +133,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetPageWithHeadersOnly() {
         $http = new HttpJinniExt("username");
-        $headers = $http->getPage('/info/about.html', null, true);
+        $headers = $http->getPage($http->_getLightweightUrl(), null, true);
         $this->assertStringEndsWith("Connection: keep-alive", rtrim($headers), "getPage() with headersOnly=true is not ending in a header");
     }
 

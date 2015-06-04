@@ -30,13 +30,13 @@ class HttpJinni extends Http
 
     protected function rawApiCall($scriptName, $method, array $params = array())
     {
-        if (!$this->jSessionId) {
+        if (!$this->sessionId) {
             // Needs a session ID. Get a lightweight page
             $this->getPage('/info/about.html');
         }
         $postData = 'callCount=1'."\n".
             'batchId=0'."\n".
-            'httpSessionId='.$this->jSessionId."\n".
+            'httpSessionId='.$this->sessionId."\n".
             'scriptSessionId=3C675DDBB02222BE8CB51E2415259E99676'."\n".
             'c0-scriptName='.$scriptName."\n".
             'c0-methodName='.$method."\n".
@@ -96,5 +96,39 @@ class HttpJinni extends Http
             );
         }
         return $results;
+    }
+
+    /**
+     * Set whatever cookies a website uses.  The \RatingSync\Http::getPage() calls
+       this function before curl_exec.
+     *
+     * @param resource $ch This object is affect by this function
+     *
+     * @return none
+     */
+    protected function putCookiesInRequest($ch)
+    {
+        $authCookie = "auth=".$this->username;
+        $sessionCookie = "";
+        if (!empty($this->sessionId)) {
+            $sessionCookie = ";JSESSIONID=".$this->sessionId;
+        }
+
+        curl_setopt($ch, CURLOPT_COOKIE, $authCookie . $sessionCookie);
+    }
+
+    /**
+     * Set whatever cookies a website uses.  The \RatingSync\Http::getPage() calls
+       this function after curl_exec.
+     *
+     * @param string $headers Http response
+     *
+     * @return none
+     */
+    protected function storeCookiesFromResponse($headers)
+    {
+        if (preg_match("@Set-Cookie: JSESSIONID=([^;]+);@i", $headers, $matches)) {
+            $this->sessionId = $matches[1];
+        }
     }
 }
