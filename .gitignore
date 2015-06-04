@@ -1,8 +1,9 @@
 
 /phpinfo.php
 /PHPPage.php
-/php/tests/unit_tests.cmd
-/php/tests/Temp*
 /php/output/ratings.xml
 /php/output/ratings_test.xml
 /php/output/Temp*
+/php/tests/unit_tests.cmd
+/php/tests/Temp*
+/php/tests/cache/*
