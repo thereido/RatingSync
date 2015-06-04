@@ -89,7 +89,7 @@ function test_input($data)
         <div class="col-lg-offset-1 col-lg-5">
           <label>Export from</label>
           <label class="radio-inline"><input type="radio" name="source" value="jinni" checked>Jinni</label>
-          <label class="radio-inline"><input type="radio" name="source" value="imdb" disabled>IMDb</label>
+          <label class="radio-inline"><input type="radio" name="source" value="imdb">IMDb</label>
         </div><!-- /col -->
         <div class="col-lg-offset-1 col-lg-5">
           <label>Format</label>

@@ -10,6 +10,7 @@
 namespace RatingSync;
 
 require_once "Jinni.php";
+require_once "Imdb.php";
 
 /**
  * Export ratings from $source and write to a new file.  The file
@@ -25,9 +26,17 @@ require_once "Jinni.php";
 function export($username, $source, $format)
 {
     $filename = "ratings.xml";
+    $site = null;
 
-    $jinni = new Jinni($username);
-    if ($jinni->exportRatings($format, $filename, true)) {
+    if ($source == "jinni") {
+        $site = new Jinni($username);
+    } elseif ($source == "imdb") {
+        $site = new Imdb($username);
+    } else {
+        return "";
+    }
+
+    if ($site->exportRatings($format, $filename, true)) {
         return $filename;
     } else {
         return "";
