@@ -10,13 +10,23 @@ require_once "../Rating.php";
 
 class SourceTest extends \PHPUnit_Framework_TestCase
 {
+    public $debug;
+    public $lastTestTime;
+
+    public function setUp()
+    {
+        $this->debug = true;
+        $this->lastTestTime = new \DateTime();
+    }
+
     /**
      * @covers \RatingSync\Source::__construct
      */
     public function testObjectCanBeConstructed()
     {
         $source = new Source(Constants::SOURCE_JINNI);
-        return $source;
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -26,6 +36,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertTrue(Source::validSource(Constants::SOURCE_JINNI), Constants::SOURCE_JINNI . " should be valid");
         $this->assertFalse(Source::validSource("Bad_Source"), "Bad_Source should be invalid");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -36,6 +48,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $this->assertEquals(Constants::SOURCE_JINNI, $source->getName());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -66,6 +80,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         // Alpha-num string
         $source->setFilmId("Film 1D");
         $this->assertEquals("Film 1D", $source->getFilmId());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -76,6 +92,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $this->assertNull($source->getFilmId());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -86,6 +104,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setUrlName(null);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -96,6 +116,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setUrlName("");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -106,6 +128,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setUrlName("url_name");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -118,6 +142,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setUrlName("url_name");
         $this->assertEquals("url_name", $source->getUrlName());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -128,6 +154,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $this->assertNull($source->getUrlName());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -140,6 +168,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setUrlName(null);
         $this->assertNull($source->getUrlName());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -153,6 +183,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setUrlName("");
         $this->assertNull($source->getUrlName(), "Setting empty URL name should be set to null");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -162,6 +194,7 @@ class SourceTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithString()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setRating("Bad_Arg");
     }
@@ -173,6 +206,7 @@ class SourceTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithNumber()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setRating(7);
     }
@@ -185,6 +219,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setRating(null);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -195,6 +231,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setRating("");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -204,6 +242,7 @@ class SourceTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithMismatchedSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $source = new Source(Constants::SOURCE_JINNI);
         $rating = new Rating(Constants::SOURCE_IMDB);
         $source->setRating($rating);
@@ -218,6 +257,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $source = new Source(Constants::SOURCE_JINNI);
         $rating = new Rating($source->getName());
         $source->setRating($rating);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -233,6 +274,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(6);
         $source->setRating($rating);
         $this->assertEquals(6, $source->getRating()->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -244,6 +287,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $source = new Source(Constants::SOURCE_JINNI);
         $rating = $source->getRating();
         $this->assertEquals(Constants::SOURCE_JINNI, $rating->getSource());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -261,6 +306,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getSuggestedScore());
         $this->assertNull($rating->getCriticScore());
         $this->assertNull($rating->getUserScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -275,6 +322,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $rating = $source->getRating();
         $this->assertEquals(Constants::SOURCE_JINNI, $rating->getSource());
         $this->assertNull($rating->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -284,6 +333,7 @@ class SourceTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYourScoreWithBadArg()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setYourScore("Bad_Score");
     }
@@ -296,6 +346,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setYourScore(null);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -305,6 +357,7 @@ class SourceTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYourScoreWithEmpty()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setYourScore("");
     }
@@ -317,6 +370,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setYourScore(7);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -330,6 +385,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setYourScore(7);
         $this->assertEquals(7, $source->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -340,6 +397,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $this->assertNull($source->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -352,6 +411,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setYourScore(null);
         $this->assertNull($source->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -362,6 +423,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setImage(null);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -372,6 +435,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setImage("");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -382,6 +447,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setImage("http://example.com/example.jpg");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -395,6 +462,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setImage("http://example.com/example.jpg");
         $this->assertEquals("http://example.com/example.jpg", $source->getImage());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -405,6 +474,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     {
         $source = new Source(Constants::SOURCE_JINNI);
         $this->assertNull($source->getImage());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -417,6 +488,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setImage(null);
         $this->assertNull($source->getImage());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -429,6 +502,8 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setImage("");
         $this->assertEquals("", $source->getImage());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 }
 

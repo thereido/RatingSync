@@ -28,9 +28,13 @@ class JinniExt extends \RatingSync\Jinni {
 
 class JinniTest extends \PHPUnit_Framework_TestCase
 {
-    static public function getCachePath()
+    public $debug;
+    public $lastTestTime;
+
+    public function setUp()
     {
-        return __DIR__ . DIRECTORY_SEPARATOR . "cache" . DIRECTORY_SEPARATOR;
+        $this->debug = true;
+        $this->lastTestTime = new \DateTime();
     }
 
     /**
@@ -39,6 +43,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotBeConstructedFromNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new Jinni(null);
     }
 
@@ -48,6 +53,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotBeConstructedFromEmptyUsername()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new Jinni("");
     }
 
@@ -57,7 +63,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
     public function testObjectCanBeConstructed()
     {
         $site = new Jinni(TEST_JINNI_USERNAME);
-        return $site;
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -67,8 +74,61 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingsUsernameWithNoMatch()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new Jinni("---Username--No--Match---");
         $films = $site->getRatings();
+    }
+
+    /**
+     * @covers \RatingSync\Jinni::cacheRatingsPage
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCacheRatingsPage()
+    {
+        $site = new JinniExt(TEST_JINNI_USERNAME);
+
+        $page = "<html><body><h2>Rating page 2</h2></body></html>";
+        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_ratingspage.xml";
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $page);
+        fclose($fp);
+
+        $site->cacheRatingsPage($page, 2);
+        $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_JINNI_USERNAME . "_ratings_2.html";
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        
+        unlink($verifyFilename);
+        unlink($testFilename);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Jinni::cacheFilmDetailPage
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCacheFilmDetailPage()
+    {
+        $site = new JinniExt(TEST_JINNI_USERNAME);
+        $film = new Film($site->http);
+        $film->setFilmId("999999", $site->_getSourceName());
+        
+        $page = "<html><body><h2>Film Detail</h2></body></html>";
+        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_filmdetailpage.xml";
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $page);
+        fclose($fp);
+        
+        $site->cacheFilmDetailPage($page, $film);
+        $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_JINNI_USERNAME . "_film_" . $site->getFilmUniqueAttr($film) . ".html";
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        
+        unlink($verifyFilename);
+        unlink($testFilename);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -79,18 +139,91 @@ class JinniTest extends \PHPUnit_Framework_TestCase
     {
         $site = new Jinni(TEST_JINNI_USERNAME);
         $films = $site->getRatings();
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
      * @covers \RatingSync\Jinni::getRatings
-     * @depends testObjectCanBeConstructed
+     * @depends testGetRatings
      */
-    public function testGetRatingsFromRandomAccount()
+    public function testGetRatingsUsingCacheAlways()
     {
-        // Find films even though the account is not logged in
-        $site = new Jinni("Alyssa.Mann");
-        $films = $site->getRatings();
-        $this->assertGreaterThan(0, count($films));
+        // Want cached files ready for this test: Yes
+        $site = new jinni(TEST_JINNI_USERNAME);
+
+        // limitPages=null, beginPage=1, detail=false, refreshCache=-1 (always use cache)
+        $films = $site->getRatings(null, 1, false, Constants::USE_CACHE_ALWAYS);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Jinni::getRatings
+     * @depends testGetRatings
+     */
+    public function testGetRatingsUsingCacheNever()
+    {
+        // Want cached files ready for this test: Yes
+        $site = new jinni(TEST_JINNI_USERNAME);
+
+        // limitPages=null, beginPage=1, detail=false, refreshCache=0 (refresh now)
+        $films = $site->getRatings(null, 1, false, Constants::USE_CACHE_NEVER);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Jinni::getRatings
+     * @covers \RatingSync\Jinni::cacheRatingsPage
+     * @depends testGetRatings
+     */
+    public function testCacheAllRatingsPagesWithRecentFiles()
+    {
+        $site = new JinniExt(TEST_JINNI_USERNAME);
+
+        $pageNums = array('1', '2');
+        foreach ($pageNums as $pageNum) {
+            $page = '<html><body><h2>Rating page ' . $pageNum . '</h2></body></html>';
+            $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_JINNI_USERNAME . "_ratings_" . $pageNum . ".html";
+            $fp = fopen($testFilename, "w");
+            fwrite($fp, $page);
+            fclose($fp);
+        }
+        $originalCacheTime = time();
+        sleep(1);
+
+        // limitPages=null, beginPage=1, detail=false, refreshCache=0 (refresh now)
+        $films = $site->getRatings(null, 1, false, Constants::USE_CACHE_NEVER);
+        
+        foreach ($pageNums as $pageNum) {
+            $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_JINNI_USERNAME . "_ratings_" . $pageNum . ".html";
+            $this->assertFileExists($testFilename, 'Cache file ' . $pageNum . ' exists');
+            $this->assertGreaterThan($originalCacheTime, filemtime($testFilename), 'Modified time');
+            unlink($testFilename);
+        }
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Jinni::getRatings
+     * @depends testGetRatings
+     */
+    public function testGetRatingsUsingCacheWithOldFiles()
+    {
+        // Want cached files ready for this test: Yes
+        $site = new JinniExt(TEST_JINNI_USERNAME);
+
+        $timeBeforeGetRatings = time();
+        sleep(1);
+        // limitPages=null, beginPage=1, detail=false, refreshCache=60
+        $films = $site->getRatings(null, 1, false, 0.01);
+        
+        $filename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_JINNI_USERNAME . "_ratings_1.html";
+        $this->assertGreaterThan($timeBeforeGetRatings, filemtime($filename), "Cache shpuld be new");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -103,6 +236,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $site = new Jinni(TEST_JINNI_USERNAME);
         $films = $site->getRatings();
         $this->assertCount(21, $films);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -115,6 +250,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $site = new Jinni(TEST_JINNI_USERNAME);
         $films = $site->getRatings(1);
         $this->assertCount(20, $films);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -127,6 +264,35 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $site = new Jinni(TEST_JINNI_USERNAME);
         $films = $site->getRatings(null, 2);
         $this->assertEquals("The Shawshank Redemption", $films[0]->getTitle());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+    
+    /**
+     * @covers \RatingSync\Jinni::getRatings
+     * @depends testObjectCanBeConstructed
+     * @depends testGetRatingsLimitPages
+     * @depends testGetRatingsBeginPage
+     */
+    public function testGetRatingsDetailsNoCache()
+    {
+        $site = new JinniExt(TEST_JINNI_USERNAME);
+        $films = $site->getRatings(1, 1, true, Constants::USE_CACHE_NEVER);
+        $this->assertCount(20, $films);
+        $film = $films[0];
+        $this->assertEquals("Frozen", $film->getTitle(), 'Title');
+        $this->assertEquals(2013, $film->getYear(), 'Year');
+        $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
+        $this->assertEquals("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", $film->getImage(), 'Image link');
+        $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
+        $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
+        $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), 'URL Name');
+        $rating = $film->getRating($site->_getSourceName());
+        $this->assertFalse(is_null($rating));
+        $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
+        $this->assertEquals("5/4/2015", $rating->getYourRatingDate()->format("n/j/Y"), 'Your Rating Date');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -137,7 +303,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingsDetails()
     {
-        $site = new Jinni(TEST_JINNI_USERNAME);
+        $site = new JinniExt(TEST_JINNI_USERNAME);
         $films = $site->getRatings(1, 1, true);
         $film = $films[0];
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
@@ -147,9 +313,11 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), 'URL Name');
-        $rating = $film->getRating(Constants::SOURCE_JINNI);
+        $rating = $film->getRating($site->_getSourceName());
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("5/4/2015", $rating->getYourRatingDate()->format("n/j/Y"), 'Your Rating Date');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -165,32 +333,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
             $titles[] = $film->getTitle();
         }
         $this->assertTrue(in_array("The Shawshank Redemption", $titles));
-    }
 
-    /**
-     * @depends testObjectCanBeConstructed
-     */
-    public function testCacheFilmDetail()
-    {
-        // Cache the file for later tests in this unit test class
-        $http = new HttpJinni(TEST_JINNI_USERNAME);
-
-
-        // Frozen (movie)
-        $this->cachedDetailPage = $http->getPage("/movies/frozen-2013/");
-        $this->assertStringEndsWith("</html>", $this->cachedDetailPage);
-        $filename = JinniTest::getCachePath() . "jinni_frozen-2013.html";
-        $fp = fopen($filename, "w");
-        fwrite($fp, $this->cachedDetailPage);
-        fclose($fp);
-
-        // Good Morning America (ongoing TV series)
-        $this->cachedDetailPage = $http->getPage("/tv/good-morning-america/");
-        $this->assertStringEndsWith("</html>", $this->cachedDetailPage);
-        $filename = JinniTest::getCachePath() . "jinni_good-morning-america.html";
-        $fp = fopen($filename, "w");
-        fwrite($fp, $this->cachedDetailPage);
-        fclose($fp);
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -200,6 +344,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteFromNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new Jinni(TEST_JINNI_USERNAME);
         $site->getFilmDetailFromWebsite(null);
     }
@@ -211,6 +356,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteFromString()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new Jinni(TEST_JINNI_USERNAME);
         $site->getFilmDetailFromWebsite("String_Not_Film_Object");
     }
@@ -222,6 +368,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteWithoutUrlName()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new Jinni(TEST_JINNI_USERNAME);
         $film = new Film($site->http);
         $film->setContentType("FeatureFilm");
@@ -235,6 +382,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteWithoutContentType()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new Jinni(TEST_JINNI_USERNAME);
         $film = new Film($site->http);
         $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
@@ -248,6 +396,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteNoMatch()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new Jinni(TEST_JINNI_USERNAME);
         $film = new Film($site->http);
         $film->setContentType("FeatureFilm");
@@ -276,12 +425,14 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
+        $this->assertEquals("70785", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertNull($rating->getCriticScore(), 'Critic score not available from Jinni');
         $this->assertNull($rating->getUserScore(), 'User score not available from Jinni');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -306,12 +457,14 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
+        $this->assertEquals("70785", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertNull($rating->getCriticScore(), 'Critic score not available from Jinni');
         $this->assertNull($rating->getUserScore(), 'User score not available from Jinni');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -367,7 +520,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
+        $this->assertEquals("70785", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
 
         // The film detail page does not have these fields.  Don't overwrite them.
@@ -384,6 +537,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertEquals(4, $rating->getCriticScore(), 'Critic score not available from Jinni');
         $this->assertEquals(5, $rating->getUserScore(), 'User score not available from Jinni');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -452,6 +607,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score');
         $this->assertEquals(4, $rating->getCriticScore(), 'Critic score');
         $this->assertEquals(5, $rating->getUserScore(), 'User score');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -476,12 +633,14 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
+        $this->assertEquals("70785", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertNull($rating->getCriticScore(), 'Critic score not available from Jinni');
         $this->assertNull($rating->getUserScore(), 'User score not available from Jinni');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -537,7 +696,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
+        $this->assertEquals("70785", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/1/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
         $this->assertEquals(2, $rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
@@ -550,6 +709,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertEquals(4, $rating->getCriticScore(), 'Critic score not available from Jinni');
         $this->assertEquals(5, $rating->getUserScore(), 'User score not available from Jinni');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -558,6 +719,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteOverwriteFalseOverEmptyFilm()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new Jinni(TEST_JINNI_USERNAME);
         $film = new Film($site->http);
         $site->getFilmDetailFromWebsite($film);
@@ -577,6 +739,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $site->getFilmDetailFromWebsite($film);
 
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -593,6 +757,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $site->getFilmDetailFromWebsite($film);
 
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -622,6 +788,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($test, $verify, 'Match exported file vs verify file');
         fclose($fp_test);
         fclose($fp_verify);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -651,6 +819,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($test, $verify, 'Match exported file vs verify file');
         fclose($fp_test);
         fclose($fp_verify);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -660,6 +830,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingPageUrlWithArgsNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $site->_getRatingPageUrl(null);
     }
@@ -671,6 +842,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingPageUrlWithArgsEmpty()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $site->_getRatingPageUrl(array());
     }
@@ -682,6 +854,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingPageUrlWithPageIndexNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $site->_getRatingPageUrl(array('pageIndex' => null));
     }
@@ -693,6 +866,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingPageUrlWithPageIndexEmpty()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $site->_getRatingPageUrl(array('pageIndex' => ""));
     }
@@ -704,6 +878,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingPageUrlWithPageIndexNotInt()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $site->_getRatingPageUrl(array('pageIndex' => "Not_An_Int"));
     }
@@ -718,6 +893,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         
         $url = $site->_getRatingPageUrl(array('pageIndex' => 3));
         $this->assertEquals('/user/'.TEST_JINNI_USERNAME.'/ratings?pagingSlider_index=3', $url);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -729,6 +906,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $site = new JinniExt(TEST_JINNI_USERNAME);
         
         $this->assertFalse($site->_getNextRatingPageNumber(null));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -740,6 +919,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $site = new JinniExt(TEST_JINNI_USERNAME);
         
         $this->assertFalse($site->_getNextRatingPageNumber(""));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -753,6 +934,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $args = array('pageIndex' => 1);
         $page = $site->_getHttp()->getPage($site->_getRatingPageUrl($args));
         $this->assertEquals(2, $site->_getNextRatingPageNumber($page));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -766,6 +949,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $args = array('pageIndex' => 2);
         $page = $site->_getHttp()->getPage($site->_getRatingPageUrl($args));
         $this->assertFalse($site->_getNextRatingPageNumber($page));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -778,17 +963,19 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Jinni::parseDetailPageRating
      * @covers \RatingSync\Jinni::parseDetailPageGenres
      * @covers \RatingSync\Jinni::parseDetailPageDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageEmptyFilmOverwriteTrue()
     {
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $film = new Film($site->_getHttp());
 
-        $filename = JinniTest::getCachePath() . "jinni_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setFilmId("70785", $site->_getSourceName());
+        $findFilm->setContentType(Film::CONTENT_FILM, $site->_getSourceName());
+        $findFilm->setUrlName("frozen-2013", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Title');
@@ -812,7 +999,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         
         $success = $site->_parseDetailPageForFilmId($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Film Id');
-        $this->assertEquals("999", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (empty film overwrite=true)');
+        $this->assertEquals("70785", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (empty film overwrite=true)');
         
         $success = $site->_parseDetailPageForRating($page, $film, true);
         $rating = $film->getRating($site->_getSourceName());
@@ -829,6 +1016,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (empty film overwrite=true)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -841,17 +1030,19 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Jinni::parseDetailPageRating
      * @covers \RatingSync\Jinni::parseDetailPageGenres
      * @covers \RatingSync\Jinni::parseDetailPageDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageEmptyFilmOverwriteFalse()
     {
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $film = new Film($site->_getHttp());
 
-        $filename = JinniTest::getCachePath() . "jinni_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setFilmId("70785", $site->_getSourceName());
+        $findFilm->setContentType(Film::CONTENT_FILM, $site->_getSourceName());
+        $findFilm->setUrlName("frozen-2013", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Title');
@@ -875,7 +1066,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         
         $success = $site->_parseDetailPageForFilmId($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Film Id');
-        $this->assertEquals("999", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (empty film overwrite=false)');
+        $this->assertEquals("70785", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (empty film overwrite=false)');
         
         $success = $site->_parseDetailPageForRating($page, $film, false);
         $rating = $film->getRating($site->_getSourceName());
@@ -892,6 +1083,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (empty film overwrite=false)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -904,7 +1097,6 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Jinni::parseDetailPageRating
      * @covers \RatingSync\Jinni::parseDetailPageGenres
      * @covers \RatingSync\Jinni::parseDetailPageDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageFullFilmOverwriteTrue()
     {
@@ -941,11 +1133,13 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $ratingImdbOrig->setUserScore(5);
         $film->setRating($ratingImdbOrig, Constants::SOURCE_IMDB);
 
-        // Read a Film Detail page cached
-        $filename = JinniTest::getCachePath() . "jinni_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setFilmId("70785", $site->_getSourceName());
+        $findFilm->setContentType(Film::CONTENT_FILM, $site->_getSourceName());
+        $findFilm->setUrlName("frozen-2013", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Title');
@@ -972,7 +1166,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         
         $success = $site->_parseDetailPageForFilmId($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Film Id');
-        $this->assertEquals("999", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (full film overwrite=true)');
+        $this->assertEquals("70785", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (full film overwrite=true)');
         $this->assertEquals("Original_IMDbFilmId", $film->getFilmId(Constants::SOURCE_IMDB), 'Check matching Film Id (full film overwrite=true)');
         
         $success = $site->_parseDetailPageForRating($page, $film, true);
@@ -996,6 +1190,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (full film overwrite=true)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -1008,7 +1204,6 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Jinni::parseDetailPageRating
      * @covers \RatingSync\Jinni::parseDetailPageGenres
      * @covers \RatingSync\Jinni::parseDetailPageDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageFullFilmOverwriteFalse()
     {
@@ -1045,11 +1240,13 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $ratingImdbOrig->setUserScore(5);
         $film->setRating($ratingImdbOrig, Constants::SOURCE_IMDB);
 
-        // Read a Film Detail page cached
-        $filename = JinniTest::getCachePath() . "jinni_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setFilmId("70785", $site->_getSourceName());
+        $findFilm->setContentType(Film::CONTENT_FILM, $site->_getSourceName());
+        $findFilm->setUrlName("frozen-2013", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Title');
@@ -1100,6 +1297,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Original_Director1", "Original_Director2"), $film->getDirectors(), 'Check matching Directors (full film overwrite=false)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -1112,10 +1311,13 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $film = new Film($site->_getHttp());
 
-        $filename = JinniTest::getCachePath() . "jinni_good-morning-america.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setFilmId("37194", $site->_getSourceName());
+        $findFilm->setContentType(Film::CONTENT_TV, $site->_getSourceName());
+        $findFilm->setUrlName("good-morning-america", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Title');
@@ -1124,6 +1326,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForFilmYear($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Year');
         $this->assertEquals(1975, $film->getYear(), 'Check matching Year (empty film overwrite=true)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 }
 

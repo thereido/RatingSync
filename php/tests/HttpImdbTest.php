@@ -20,12 +20,22 @@ class HttpImdbExt extends \RatingSync\HttpImdb {
 
 class HttpImdbTest extends \PHPUnit_Framework_TestCase
 {
+    public $debug;
+    public $lastTestTime;
+
+    public function setUp()
+    {
+        $this->debug = true;
+        $this->lastTestTime = new \DateTime();
+    }
+
     /**
      * @covers            \RatingSync\HttpImdb::__construct
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new HttpImdb(null);
     }
 
@@ -35,6 +45,7 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotBeConstructedFromEmptyUsername()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new HttpImdb("");
     }
 
@@ -44,6 +55,7 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotBeConstructedFromInt()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new HttpImdb(1);
     }
 
@@ -53,7 +65,8 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
     public function testObjectCanBeConstructedFromStringValue()
     {
         $http = new HttpImdb("username");
-        return $http;
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -64,6 +77,8 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
     {
         $http = new HttpImdbExt("username");
         $this->assertTrue($http->_validateAfterConstructor());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -73,6 +88,7 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotGetPageWithNullPage()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpImdbExt("username");
         $http->getPage(null);
     }
@@ -84,6 +100,7 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotGetPageWithNotFound()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpImdbExt("username");
         $http->getPage("/findthis");
     }
@@ -95,6 +112,7 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetPageHttpError()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpImdbExt("username");
         $http->getPage('Bad URL');
     }
@@ -108,6 +126,8 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
         $http = new HttpImdbExt("username");
         $page = $http->getPage('/help/?general/&ref_=hlp_brws');
         $this->assertGreaterThan(0, stripos($page, "<title>Help : General Info</title>"), "Get 'About' page");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -119,6 +139,8 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertGreaterThan(0, strlen($http->_getSessionId()), "Session ID Cookie");
         $this->assertGreaterThan(0, strlen($http->_getCookieUu()), "uu Cookie");
         $this->assertGreaterThan(0, strlen($http->_getCookieCs()), "cs Cookie");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -129,6 +151,8 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
         // This is just tell us if the BaseUrl changed so we need to update some other tests
         $http = new HttpImdbExt("username");
         $this->assertEquals("http://www.imdb.com", $http->_getBaseUrl(), "/RatingSync/HttpImdb::\$baseUrl has changed, which might affect other tests");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -138,6 +162,8 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
         $http = new HttpImdbExt("username");
         $headers = $http->getPage($http->_getLightweightUrl(), null, true);
         $this->assertStringEndsWith("Transfer-Encoding: chunked", rtrim($headers), "getPage() with headersOnly=true is not ending in a header");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -149,6 +175,7 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
         $ch = curl_init($http->_getBaseUrl());
         $http->_putCookiesInRequest($ch);
 
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -162,6 +189,7 @@ class HttpImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(empty($http->_getCookieUu()));
         $this->assertFalse(empty($http->_getCookieCs()));
 
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 }
 

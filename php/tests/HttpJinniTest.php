@@ -21,12 +21,22 @@ class HttpJinniExt extends \RatingSync\HttpJinni {
 
 class HttpJinniTest extends \PHPUnit_Framework_TestCase
 {
+    public $debug;
+    public $lastTestTime;
+
+    public function setUp()
+    {
+        $this->debug = true;
+        $this->lastTestTime = new \DateTime();
+    }
+
     /**
      * @covers            \RatingSync\HttpJinni::__construct
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new HttpJinni(null);
     }
 
@@ -36,6 +46,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotBeConstructedFromEmptyUsername()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new HttpJinni("");
     }
 
@@ -45,6 +56,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotBeConstructedFromInt()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new HttpJinni(1);
     }
 
@@ -54,7 +66,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
     public function testObjectCanBeConstructedFromStringValue()
     {
         $http = new HttpJinni("username");
-        return $http;
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -62,6 +75,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCannotGetPageWithNullPage() {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpJinniExt("username");
         $http->getPage(null);
     }
@@ -71,6 +85,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \RatingSync\HttpUnauthorizedRedirectException
      */
     public function testGetPageUnauthorizedRedirect() {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpJinniExt("username");
         $http->getPage('/user/---Username--No--Match---/ratings');
     }
@@ -80,6 +95,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \RatingSync\HttpNotFoundException
      */
     public function testCannotGetPageWithNotFound() {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpJinniExt("username");
         $http->getPage("/findthis");
     }
@@ -89,6 +105,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \RatingSync\HttpErrorException
      */
     public function testGetPageHttpError() {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpJinniExt("username");
         $http->getPage('Bad URL');
     }
@@ -100,6 +117,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
         $http = new HttpJinniExt("username");
         $page = $http->getPage('/info/about.html');
         $this->assertGreaterThan(0, stripos($page, "About Jinni</title>"), "Getting the Jinni 'About' page does not look right");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -109,6 +128,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
         $http = new HttpJinniExt("username");
         $page = $http->getPage($http->_getLightweightUrl());
         $this->assertGreaterThan(0, strlen($http->_getSessionId()), "Session ID Cookie");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -118,6 +139,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
         // This is just tell us if the BaseUrl changed so we need to update some other tests
         $http = new HttpJinniExt("username");
         $this->assertEquals("http://www.jinni.com", $http->_getBaseUrl(), "/RatingSync/HttpJinni::\$baseUrl has changed, which might affect other tests");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -126,6 +149,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
     public function testGetPageNeedsUsername() {
         $http = new HttpJinniExt("username");
         $this->assertGreaterThan(0, strlen($http->_getUsername()));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -135,6 +160,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
         $http = new HttpJinniExt("username");
         $headers = $http->getPage($http->_getLightweightUrl(), null, true);
         $this->assertStringEndsWith("Connection: keep-alive", rtrim($headers), "getPage() with headersOnly=true is not ending in a header");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -168,6 +195,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
             "c0-param1=Object_Object:{contentTypeFilter:null:null}\n",
             $http->_buildApiParamString(array('Hobson\'s', (object)array('contentTypeFilter' => null)))
         );
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -183,6 +212,8 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("string:test", $http->_buildParamVar("test"));
         // Int
         $this->assertEquals("number:123", $http->_buildParamVar(123));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -190,6 +221,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \Exception
      */
     public function testCannotParseSearchSuggestionResultsWithEmptySearch() {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpJinniExt("username");
         $http->_parseSearchSuggestionResults("");
     }
@@ -199,6 +231,7 @@ class HttpJinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \Exception
      */
     public function testCannotParseSearchSuggestionResultsWithNullSearch() {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpJinniExt("username");
         $http->_parseSearchSuggestionResults(null);
     }
@@ -230,6 +263,8 @@ EOD;
         $this->assertEquals(array('contentType' => 'FeatureFilm', 'id' => 192, 'title' => 'The Matrix Reloaded', 'year' => 2003), $results[1]);
         $this->assertEquals(array('contentType' => 'TvSeries', 'id' => 34040, 'title' => 'Threat Matrix', 'year' => 2003), $results[7]);
         $this->assertEquals(array('contentType' => 'Short', 'id' => 40834, 'title' => 'The Animatrix: Kid\'s Story', 'year' => 2003), $results[9]);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -256,6 +291,8 @@ EOD;
         $results = $http->_parseSearchSuggestionResults($resultStr);
         $this->assertTrue(count($results) == 8);
         $this->assertEquals(array('contentType' => 'FeatureFilm', 'id' => 655, 'title' => 'Transformers', 'year' => 2007), $results[0]);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 }
 

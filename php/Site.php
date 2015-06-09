@@ -79,12 +79,13 @@ abstract class Site
        to another page for full detail. Using $details=true can take a long
        time.
      *
-     * @param string $page HTML from a page of ratings
-     * @param bool|false $details Get all data for each film
+     * @param string     $page         HTML from a page of ratings
+     * @param bool|false $details      Get all data for each film
+     * @param int|0      $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
      *
      * @return array Film class objects
      */
-    abstract protected function getFilmsFromRatingsPage($page, $details = false);
+    abstract protected function getFilmsFromRatingsPage($page, $details = false, $refreshCache = 0);
 
     /**
      * Return the film detail page's URL within a website. The URL does not
@@ -204,21 +205,43 @@ abstract class Site
     abstract protected function parseDetailPageForDirectors($page, $film, $overwrite);
 
     /**
+     * Return a film's unique attribute.  This the attr available from ratings pages
+       and from a film detail page.  In most sites the Film ID is always available, but
+       Jinni is has URL Name and don't always Film ID.  The Site implentation returns
+       Film::getFilmId().  Child classes can return something else.
+     *
+     * @param \RatingSync\Film $film get the attr from this film
+     *
+     * @return string unique attribute
+     */
+    public function getFilmUniqueAttr($film)
+    {
+        if (!is_null($film) && ($film instanceof Film)) {
+            return $film->getFilmId($this->sourceName);
+        }
+    }
+
+    /**
      * Get every rating on $this->username's account
      *
-     * @param int|null $limitPages Limit the number of pages of ratings
-     * @param int|1    $beginPage  First page of rating results
-     * @param bool     $details    Bring full film details (slower)
+     * @param int|null $limitPages   Limit the number of pages of ratings
+     * @param int|1    $beginPage    First page of rating results
+     * @param bool     $details      Bring full film details (slower)
+     * @param int|0    $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
      *
      * @return array of Film
      */
-    public function getRatings($limitPages = null, $beginPage = 1, $details = false)
+    public function getRatings($limitPages = null, $beginPage = 1, $details = false, $refreshCache = Constants::USE_CACHE_NEVER)
     {
         $films = array();
         $args = array('pageIndex' => $beginPage);
         // Get one page of ratings
-        $page = $this->http->getPage($this->getRatingPageUrl($args));
-        $films = $this->getFilmsFromRatingsPage($page, $details);
+        $page = $this->getRatingsPageFromCache($beginPage, $refreshCache);
+        if (empty($page)) {
+            $page = $this->http->getPage($this->getRatingPageUrl($args));
+            $this->cacheRatingsPage($page, $beginPage);
+        }
+        $films = $this->getFilmsFromRatingsPage($page, $details, $refreshCache);
 
         // Get the rest of rating pages
         // While... within the limit and still another page available
@@ -227,11 +250,121 @@ abstract class Site
                   ($nextPageNumber = $this->getNextRatingPageNumber($page))
               ) {
             $args['pageIndex'] = $nextPageNumber;
-            $page = $this->http->getPage($this->getRatingPageUrl($args));
-            $films = array_merge($films, $this->getFilmsFromRatingsPage($page, $details));
+            $page = $this->getRatingsPageFromCache($nextPageNumber, $refreshCache);
+            if (empty($page)) {
+                $page = $this->http->getPage($this->getRatingPageUrl($args));
+                $this->cacheRatingsPage($page, $nextPageNumber);
+            }
+            $films = array_merge($films, $this->getFilmsFromRatingsPage($page, $details, $refreshCache));
             $pageCount++;
         }
         return $films;
+    }
+
+    /**
+     * Return a cached page of ratings if the cached file is fresh enough. The $refreshCache param
+     * shows if it is fresh enough. If the file is out of date return null.
+     *
+     * @param int   $pageNum      Page of rating results
+     * @param int|0 $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
+     *
+     * @return string File as a string. Null if the use cache is not used.
+     */
+    public function getRatingsPageFromCache($pageNum, $refreshCache = Constants::USE_CACHE_NEVER)
+    {
+        if (Constants::USE_CACHE_NEVER == $refreshCache) {
+            return null;
+        }
+        
+        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_ratings_$pageNum.html";
+
+        if (!file_exists($filename)) {
+            return null;
+        }
+
+        $fileDateString = filemtime($filename);
+        if (!$fileDateString) {
+            return null;
+        }
+
+        $filestamp = date("U", $fileDateString);
+        $refresh = true;
+        if (Constants::USE_CACHE_ALWAYS == $refreshCache || ($filestamp >= (time() - ($refreshCache * 60)))) {
+            $refresh = false;
+        }
+        
+        if (!$refresh) {
+            return file_get_contents($filename);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Return a cached film page if the cached file is fresh enough. The $refreshCache param
+     * shows if it is fresh enough. If the file is out of date return null.
+     *
+     * @param \RatingSync\Film $film         Film needed detail for
+     * @param int|0            $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
+     *
+     * @return string File as a string. Null if the use cache is not used.
+     */
+    public function getFilmDetailPageFromCache($film, $refreshCache = Constants::USE_CACHE_NEVER)
+    {
+        if (Constants::USE_CACHE_NEVER == $refreshCache) {
+            return null;
+        }
+        
+        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_film_" . $this->getFilmUniqueAttr($film) . ".html";
+
+        if (!file_exists($filename) || (filesize($filename) == 0)) {
+            return null;
+        }
+
+        $fileDateString = filemtime($filename);
+        if (!$fileDateString) {
+            return null;
+        }
+
+        $filestamp = date("U", $fileDateString);
+        $refresh = true;
+        if (Constants::USE_CACHE_ALWAYS == $refreshCache || ($filestamp >= (time() - ($refreshCache * 60)))) {
+            $refresh = false;
+        }
+        
+        if (!$refresh) {
+            return file_get_contents($filename);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Cache a ratings page in a local file
+     *
+     * @param string $page    File as a string
+     * @param int    $pageNum Page of rating results used in the new filename
+     */
+    public function cacheRatingsPage($page, $pageNum)
+    {
+        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_ratings_$pageNum.html";
+        $fp = fopen($filename, "w");
+        fwrite($fp, $page);
+        fclose($fp);
+    }
+
+    /**
+     * Cache a film detail page in a local file
+     *
+     * @param string           $page File as a string
+     * @param \RatingSync\Film $film Film data about the page
+     */
+    public function cacheFilmDetailPage($page, $film)
+    {
+        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_film_" . $this->getFilmUniqueAttr($film) . ".html";
+        $fp = fopen($filename, "w");
+        fwrite($fp, $page);
+        fclose($fp);
     }
 
     /**
@@ -264,12 +397,13 @@ abstract class Site
      * @param string     $format   File format to write to (or database). Currently only XML.
      * @param string     $filename Write to a new (overwrite) file in the output directory
      * @param bool|false $detail   False brings only rating data. True also brings full detail (can take a long time).
+     * @param int|0      $useCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
      *
      * @return true for success, false for failure
      */
-    public function exportRatings($format, $filename, $detail = false)
+    public function exportRatings($format, $filename, $detail = false, $useCache = Constants::USE_CACHE_NEVER)
     {
-        $films = $this->getRatings(null, 1, $detail);
+        $films = $this->getRatings(null, 1, $detail, $useCache);
 
         $filename =  __DIR__ . DIRECTORY_SEPARATOR . ".." . Constants::outputFilePath() . $filename;
         $fp = fopen($filename, "w");
@@ -287,9 +421,16 @@ abstract class Site
         return true;
     }
 
-    public function getFilmDetailFromWebsite($film, $overwrite = true)
+    /*
+     * @param int|0 $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
+     */
+    public function getFilmDetailFromWebsite($film, $overwrite = true, $refreshCache = Constants::USE_CACHE_NEVER)
     {
-        $page = $this->http->getPage($this->getFilmDetailPageUrl($film));
+        $page = $this->getFilmDetailPageFromCache($film, $refreshCache);
+        if (empty($page)) {
+            $page = $this->http->getPage($this->getFilmDetailPageUrl($film));
+            $this->cacheFilmDetailPage($page, $film);
+        }
 
         $this->parseDetailPageForTitle($page, $film, $overwrite);
         $this->parseDetailPageForFilmYear($page, $film, $overwrite);

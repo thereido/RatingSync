@@ -18,17 +18,22 @@ const TEST_SITE_USERNAME = "testratingsync";
    - testCannotBeConstructedFromEmptyUsername
    - testObjectCanBeConstructed
    - testGetRatingsUsernameWithNoMatch
+   - testCacheRatingsPage
+   - testCacheFilmDetailPage
    - testGetRatings
-   - testGetRatingsFromRandomAccount
+   - testGetRatingsUsingCacheAlways
+   - testGetRatingsUsingCacheNever
+   - testGetRatingsUsingCacheWithRecentFiles
+   - testGetRatingsUsingCacheWithOldFiles
    - testGetRatingsCount
    - testGetRatingsLimitPages
    - testGetRatingsBeginPage
+   - testGetRatingsDetailsNoCache
    - testGetRatingsDetails
    - testGetSearchSuggestions
    - testGetFilmDetailFromWebsiteFromNull
    - testGetFilmDetailFromWebsiteFromString
-   - testGetFilmDetailFromWebsiteWithoutUrlName
-   - testGetFilmDetailFromWebsiteWithoutContentType
+   - testGetFilmDetailFromWebsiteWithoutFilmId
    - testGetFilmDetailFromWebsiteNoMatch
    - testGetFilmDetailFromWebsite
    - testGetFilmDetailFromWebsiteOverwriteTrueOverEmpty
@@ -92,8 +97,8 @@ class SiteChild extends \RatingSync\Site {
         return '/user/'.urlencode($this->username).'/ratings?pagingSlider_index='.$pageIndex;
     }
 
-    // Abstract Function based on \RatingSync\Jinni::getFilmsFromRatingsPage
-    protected function getFilmsFromRatingsPage($page, $details = false) {
+    // Abstract Function returns 2 films
+    protected function getFilmsFromRatingsPage($page, $details = false, $refreshCache = 0) {
         $film = new Film($this->http);
         $film2 = new Film($this->http);
 
@@ -144,7 +149,17 @@ class SiteChild extends \RatingSync\Site {
     }
 
     // Abstract Function based on \RatingSync\Jinni::getNextRatingPageNumber
-    protected function getNextRatingPageNumber($page) {}
+    protected function getNextRatingPageNumber($page) {
+        if (0 == preg_match('@pagingSlider\.addPage\(\d+,false\);[\n|\t]+\$\(document\)@', $page, $matches)) {
+            return false;
+        }
+
+        if (0 == preg_match('@<input type="hidden" name="pagingSlider_index" id="pagingSlider_index" value="(\d+)" />@', $page, $matches)) {
+            return false;
+        }
+        
+        return $matches[1] + 1;
+    }
 
     // Abstract Function based on \RatingSync\Jinni::getFilmDetailPageUrl
     protected function getFilmDetailPageUrl($film)
@@ -190,8 +205,8 @@ class SiteChild extends \RatingSync\Site {
         if (is_null($film) || !($film instanceof Film) || empty($film->getUrlName($this->sourceName))) {
             throw new \InvalidArgumentException('Film param must have a URL Name');
         }
-
-        return '/{[^}]+uniqueName: \"' . $film->getUrlName($this->sourceName) . '\"[^}]+uniqueId: \"(.+)\"/';
+        
+        return '/{[^}]+contentId: \"(.+)\"[^}]+uniqueName: \"' . $film->getUrlName($this->sourceName) . '\"/';
     }
 
     // Abstract Function based on \RatingSync\Jinni::getDetailPageRegexForUrlName
@@ -293,16 +308,33 @@ class SiteChild extends \RatingSync\Site {
         }
         return true;
     }
+
+    public function getFilmUniqueAttr($film)
+    {
+        if (!is_null($film) && ($film instanceof Film)) {
+            return $film->getUrlName($this->sourceName);
+        }
+    }
 }
 
 class SiteTest extends \PHPUnit_Framework_TestCase
 {
+    public $debug;
+    public $lastTestTime;
+
+    public function setUp()
+    {
+        $this->debug = true;
+        $this->lastTestTime = new \DateTime();
+    }
+
     /**
      * @covers            \RatingSync\Site::__construct
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new SiteChild(null);
     }
 
@@ -312,6 +344,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotBeConstructedFromEmptyUsername()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new SiteChild("");
     }
 
@@ -321,7 +354,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     public function testObjectCanBeConstructed()
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
-        return $site;
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -334,6 +368,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $site->_setSourceName(Constants::SOURCE_JINNI);
         $site->_setHttp(null);
         $this->assertFalse($site->_validateAfterConstructor());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -346,6 +382,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $site->_setSourceName(null);
         $site->_setHttp(new HttpJinni(TEST_SITE_USERNAME));
         $this->assertFalse($site->_validateAfterConstructor());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -356,6 +394,60 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
         $this->assertTrue($site->_validateAfterConstructor());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Site::cacheRatingsPage
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCacheRatingsPage()
+    {
+        $site = new SiteChild(TEST_SITE_USERNAME);
+
+        $page = "<html><body><h2>Rating page 2</h2></body></html>";
+        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_ratingspage.xml";
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $page);
+        fclose($fp);
+
+        $site->cacheRatingsPage($page, 2);
+        $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_SITE_USERNAME . "_ratings_2.html";
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        
+        unlink($verifyFilename);
+        unlink($testFilename);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Site::cacheFilmDetailPage
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCacheFilmDetailPage()
+    {
+        $site = new SiteChild(TEST_SITE_USERNAME);
+        $film = new Film($site->http);
+        $film->setFilmId("tt2294629", $site->_getSourceName());
+        
+        $page = "<html><body><h2>Film Detail</h2></body></html>";
+        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_filmdetailpage.xml";
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $page);
+        fclose($fp);
+        
+        $site->cacheFilmDetailPage($page, $film);
+        $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_SITE_USERNAME . "_film_" . $site->getFilmUniqueAttr($film) . ".html";
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        
+        unlink($verifyFilename);
+        unlink($testFilename);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -367,18 +459,88 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $site = new SiteChild(TEST_SITE_USERNAME);
 
         $films = $site->getRatings();
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Site::getRatings
+     * @covers \RatingSync\Site::cacheRatingsPage
+     * @depends testCacheRatingsPage
+     * @depends testGetRatingsWithoutExceptions
+     */
+    public function testCacheAllRatingsPagesWithRecentFiles()
+    {
+        $site = new SiteChild(TEST_SITE_USERNAME);
+
+        $pageNums = array('1', '2');
+        foreach ($pageNums as $pageNum) {
+            $page = '<html><body><h2>Rating page ' . $pageNum . '</h2></body></html>';
+            $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_SITE_USERNAME . "_ratings_" . $pageNum . ".html";
+            $fp = fopen($testFilename, "w");
+            fwrite($fp, $page);
+            fclose($fp);
+        }
+        $originalCacheTime = time();
+        sleep(1);
+
+        // limitPages=null, beginPage=1, detail=false, refreshCache=0 (refresh now)
+        $films = $site->getRatings(null, 1, false, Constants::USE_CACHE_NEVER);
+        
+        foreach ($pageNums as $pageNum) {
+            $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_SITE_USERNAME . "_ratings_" . $pageNum . ".html";
+            $this->assertFileExists($testFilename, 'Cache file ' . $pageNum . ' exists');
+            $this->assertGreaterThan($originalCacheTime, filemtime($testFilename), 'Modified time');
+            unlink($testFilename);
+        }
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Site::getRatings
+     * @covers \RatingSync\Site::cacheRatingsPage
+     * @depends testGetRatingsWithoutExceptions
+     * @depends testCacheRatingsPage
+     */
+    public function testCacheAllRatingsPagesWithNoFiles()
+    {
+        $site = new SiteChild(TEST_SITE_USERNAME);
+        
+        $pageNums = array('1', '2');
+        foreach ($pageNums as $pageNum) {
+            $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_SITE_USERNAME . "_ratings_" . $pageNum . ".html";
+            if (file_exists($testFilename)) {
+                unlink($testFilename);
+            }
+        }
+
+        // limitPages=null, beginPage=1, detail=false, refreshCache=0 (refresh now)
+        $films = $site->getRatings(null, 1, false, Constants::USE_CACHE_NEVER);
+        
+        foreach ($pageNums as $pageNum) {
+            $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_SITE_USERNAME . "_ratings_" . $pageNum . ".html";
+            $this->assertFileExists($testFilename, 'Cache file ' . $pageNum . ' exists');
+        }
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
      * @covers \RatingSync\Site::getRatings
      * @depends testGetRatingsWithoutExceptions
+     * @depends testCacheAllRatingsPagesWithNoFiles
      */
     public function testGetRatingsCount()
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
 
+        // Each page of ratings from SiteChild returns 2 films.  SiteChild get two
+        // pages because of the cached pages made by testCacheAllRatingsPagesWithNoFiles
         $films = $site->getRatings();
-        $this->assertCount(2, $films);
+        $this->assertCount(4, $films);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -390,6 +552,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $site = new SiteChild(TEST_SITE_USERNAME);
 
         $films = $site->getRatings(null, 1, true);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
         
     }
     
@@ -402,6 +566,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $site = new SiteChild(TEST_SITE_USERNAME);
 
         $films = $site->getRatings(1, 2, false);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
         
     }
     
@@ -416,6 +582,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $site->_setHttp(new HttpJinni(TEST_SITE_USERNAME));
 
         $films = $site->getSearchSuggestions("Shawshank");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -442,9 +610,15 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($testFileSize, $verifyFileSize, 'File sizes - test vs verify');
         $test = fread($fp_test, filesize($fullTestFilename));
         $verify = fread($fp_verify, filesize($fullVerifyFilename));
+
+        // Each page of ratings from SiteChild returns 2 films.  SiteChild get two
+        // pages because of the cached pages made by testCacheAllRatingsPagesWithNoFiles.
+        // The exported file have 2 films twice.
         $this->assertEquals($test, $verify, 'Match exported file vs verify file');
         fclose($fp_test);
         fclose($fp_verify);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -471,9 +645,15 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($testFileSize, $verifyFileSize, 'File sizes - test vs verify');
         $test = fread($fp_test, 22);
         $verify = fread($fp_verify, 22);
+
+        // Each page of ratings from SiteChild returns 2 films.  SiteChild get two
+        // pages because of the cached pages made by testCacheAllRatingsPagesWithNoFiles.
+        // The exported file have 2 films twice.
         $this->assertEquals($test, $verify, 'Match exported file vs verify file');
         fclose($fp_test);
         fclose($fp_verify);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -485,9 +665,10 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $site = new SiteChild(TEST_SITE_USERNAME);
 
         $film = new Film($site->_getHttp());
+        $film->setFilmId("70785", Constants::SOURCE_JINNI);
         $film->setContentType("FeatureFilm");
         $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
-        $site->getFilmDetailFromWebsite($film, true);
+        $site->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_NEVER);
 
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
@@ -497,12 +678,14 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
+        $this->assertEquals("70785", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertNull($rating->getCriticScore(), 'Critic score not available from Jinni');
         $this->assertNull($rating->getUserScore(), 'User score not available from Jinni');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -545,6 +728,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $film->setRating($ratingImdbOrig, Constants::SOURCE_IMDB);
 
         // Get detail overwriting
+        $film->setFilmId("70785", Constants::SOURCE_JINNI);
         $film->setContentType("FeatureFilm");
         $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $site->getFilmDetailFromWebsite($film, true);
@@ -558,7 +742,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
+        $this->assertEquals("70785", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
 
         // The film detail page does not have these fields.  Don't overwrite them.
@@ -575,6 +759,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertEquals(4, $rating->getCriticScore(), 'Critic score not available from Jinni');
         $this->assertEquals(5, $rating->getUserScore(), 'User score not available from Jinni');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -586,6 +772,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $site = new SiteChild(TEST_SITE_USERNAME);
 
         $film = new Film($site->_getHttp());
+        $film->setFilmId("70785", Constants::SOURCE_JINNI);
         $film->setContentType("FeatureFilm");
         $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
         $site->getFilmDetailFromWebsite($film, false);
@@ -599,12 +786,14 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("999", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
+        $this->assertEquals("70785", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID');
         $this->assertEquals(8, $rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertNull($rating->getCriticScore(), 'Critic score not available from Jinni');
         $this->assertNull($rating->getUserScore(), 'User score not available from Jinni');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -673,19 +862,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score');
         $this->assertEquals(4, $rating->getCriticScore(), 'Critic score');
         $this->assertEquals(5, $rating->getUserScore(), 'User score');
-    }
-    
-    public function testCacheFilmDetail()
-    {
-        // Cache the file for later tests in this unit test class
-        $http = new HttpJinni(TEST_SITE_USERNAME);
-        $this->cachedDetailPage = $http->getPage("/movies/frozen-2013/");
-        $this->assertStringEndsWith("</html>", $this->cachedDetailPage);
 
-        $filename = JinniTest::getCachePath() . "jinni_frozen-2013.html";
-        $fp = fopen($filename, "w");
-        fwrite($fp, $this->cachedDetailPage);
-        fclose($fp);
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -698,17 +876,18 @@ class SiteTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Site::parseDetailPageForRating
      * @covers \RatingSync\Site::parseDetailPageForGenres
      * @covers \RatingSync\Site::parseDetailPageForDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageEmptyFilmOverwriteTrue()
     {
         $site = new SiteChild(TEST_JINNI_USERNAME);
         $film = new Film($site->_getHttp());
 
-        $filename = JinniTest::getCachePath() . "jinni_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setContentType(Film::CONTENT_FILM, $site->_getSourceName());
+        $findFilm->setUrlName("frozen-2013", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Title');
@@ -732,7 +911,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         
         $success = $site->_parseDetailPageForFilmId($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Film Id');
-        $this->assertEquals("999", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (empty film overwrite=true)');
+        $this->assertEquals("70785", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (empty film overwrite=true)');
         
         $success = $site->_parseDetailPageForRating($page, $film, true);
         $rating = $film->getRating($site->_getSourceName());
@@ -749,6 +928,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (empty film overwrite=true)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -761,17 +942,18 @@ class SiteTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Site::parseDetailPageForRating
      * @covers \RatingSync\Site::parseDetailPageForGenres
      * @covers \RatingSync\Site::parseDetailPageForDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageEmptyFilmOverwriteFalse()
     {
         $site = new SiteChild(TEST_JINNI_USERNAME);
         $film = new Film($site->_getHttp());
 
-        $filename = JinniTest::getCachePath() . "jinni_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setContentType(Film::CONTENT_FILM, $site->_getSourceName());
+        $findFilm->setUrlName("frozen-2013", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Title');
@@ -795,7 +977,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         
         $success = $site->_parseDetailPageForFilmId($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Film Id');
-        $this->assertEquals("999", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (empty film overwrite=false)');
+        $this->assertEquals("70785", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (empty film overwrite=false)');
         
         $success = $site->_parseDetailPageForRating($page, $film, false);
         $rating = $film->getRating($site->_getSourceName());
@@ -812,6 +994,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (empty film overwrite=false)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -824,7 +1008,6 @@ class SiteTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Site::parseDetailPageForRating
      * @covers \RatingSync\Site::parseDetailPageForGenres
      * @covers \RatingSync\Site::parseDetailPageForDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageFullFilmOverwriteTrue()
     {
@@ -861,11 +1044,12 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $ratingImdbOrig->setUserScore(5);
         $film->setRating($ratingImdbOrig, Constants::SOURCE_IMDB);
 
-        // Read a Film Detail page cached
-        $filename = JinniTest::getCachePath() . "jinni_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setContentType(Film::CONTENT_FILM, $site->_getSourceName());
+        $findFilm->setUrlName("frozen-2013", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Title');
@@ -892,7 +1076,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         
         $success = $site->_parseDetailPageForFilmId($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Film Id');
-        $this->assertEquals("999", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (full film overwrite=true)');
+        $this->assertEquals("70785", $film->getFilmId($site->_getSourceName()), 'Check matching Film Id (full film overwrite=true)');
         $this->assertEquals("Original_IMDbFilmId", $film->getFilmId(Constants::SOURCE_IMDB), 'Check matching Film Id (full film overwrite=true)');
         
         $success = $site->_parseDetailPageForRating($page, $film, true);
@@ -916,6 +1100,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (full film overwrite=true)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -928,7 +1114,6 @@ class SiteTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Site::parseDetailPageForRating
      * @covers \RatingSync\Site::parseDetailPageForGenres
      * @covers \RatingSync\Site::parseDetailPageForDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageFullFilmOverwriteFalse()
     {
@@ -965,11 +1150,12 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $ratingImdbOrig->setUserScore(5);
         $film->setRating($ratingImdbOrig, Constants::SOURCE_IMDB);
 
-        // Read a Film Detail page cached
-        $filename = JinniTest::getCachePath() . "jinni_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setContentType(Film::CONTENT_FILM, $site->_getSourceName());
+        $findFilm->setUrlName("frozen-2013", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Title');
@@ -1020,6 +1206,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Original_Director1", "Original_Director2"), $film->getDirectors(), 'Check matching Directors (full film overwrite=false)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 }
 

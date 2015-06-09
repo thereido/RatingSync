@@ -9,12 +9,22 @@ require_once "../Constants.php";
 
 class RatingTest extends \PHPUnit_Framework_TestCase
 {
+    public $debug;
+    public $lastTestTime;
+
+    public function setUp()
+    {
+        $this->debug = true;
+        $this->lastTestTime = new \DateTime();
+    }
+
     /**
      * @covers            \RatingSync\Rating::__construct
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new Rating(null);
     }
 
@@ -24,6 +34,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotBeConstructedFromInvalidSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new Rating("Netflux");
     }
 
@@ -33,7 +44,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
     public function testObjectCanBeConstructedFromStringValue()
     {
         $rating = new Rating("Jinni");
-        return $rating;
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -44,6 +56,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $this->assertEquals(\RatingSync\Constants::SOURCE_IMDB, $r->getSource());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -56,6 +70,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(6.5);
         $this->assertEquals(6.5, $r->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -68,6 +84,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore("6.5");
         $this->assertEquals(6.5, $r->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -77,6 +95,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCannotBeSetWithNonNumericalString()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore("Not an int");
     }
@@ -88,6 +107,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCannotBeSetWithNegative()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(-1);
     }
@@ -99,6 +119,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourScoreCannotBeSetWithHigherThan10()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(11);
     }
@@ -113,6 +134,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(6);
         $this->assertEquals(6, $r->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -125,6 +148,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore("6");
         $this->assertEquals(6, $r->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -137,6 +162,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(null);
         $this->assertNull($r->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -147,6 +174,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $this->assertNull($r->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -156,6 +185,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testYourRatingDateCannotBeSetWithString()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourRatingDate("10/12/2012");
     }
@@ -170,6 +200,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourRatingDate(null);
         $this->assertNull($r->getYourRatingDate());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -183,6 +215,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $date = new \DateTime('2000-01-31');
         $r->setYourRatingDate($date);
         $this->assertEquals($date->getTimestamp(), $r->getYourRatingDate()->getTimestamp());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -195,6 +229,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(6.5);
         $this->assertEquals(6.5, $r->getSuggestedScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -207,6 +243,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore("6.5");
         $this->assertEquals(6.5, $r->getSuggestedScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -216,6 +254,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCannotBeSetWithNonNumericalString()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore("Not an int");
     }
@@ -227,6 +266,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCannotBeSetWithNegative()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(-1);
     }
@@ -238,6 +278,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testSuggestedScoreCannotBeSetWithHigherThan10()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(11);
     }
@@ -252,6 +293,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(6);
         $this->assertEquals(6, $r->getSuggestedScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -264,6 +307,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore("6");
         $this->assertEquals(6, $r->getSuggestedScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -276,6 +321,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(null);
         $this->assertNull($r->getSuggestedScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -286,6 +333,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $this->assertNull($r->getSuggestedScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -298,6 +347,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore(6.5);
         $this->assertEquals(6.5, $r->getCriticScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -310,6 +361,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore("6.5");
         $this->assertEquals(6.5, $r->getCriticScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -319,6 +372,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCannotBeSetWithNonNumericalString()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore("Not an int");
     }
@@ -330,6 +384,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCannotBeSetWithNegative()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore(-1);
     }
@@ -341,6 +396,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testCriticScoreCannotBeSetWithHigherThan10()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore(11);
     }
@@ -355,6 +411,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore(6);
         $this->assertEquals(6, $r->getCriticScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -367,6 +425,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore("6");
         $this->assertEquals(6, $r->getCriticScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -379,6 +439,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setCriticScore(null);
         $this->assertNull($r->getCriticScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -389,6 +451,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $this->assertNull($r->getCriticScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -401,6 +465,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore(6.5);
         $this->assertEquals(6.5, $r->getUserScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -413,6 +479,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore("6.5");
         $this->assertEquals(6.5, $r->getUserScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -422,6 +490,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCannotBeSetWithNonNumericalString()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore("Not an int");
     }
@@ -433,6 +502,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCannotBeSetWithNegative()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore(-1);
     }
@@ -444,6 +514,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
      */
     public function testUserScoreCannotBeSetWithHigherThan10()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore(11);
     }
@@ -458,6 +529,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore(6);
         $this->assertEquals(6, $r->getUserScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -470,6 +543,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore("6");
         $this->assertEquals(6, $r->getUserScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -482,6 +557,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setUserScore(null);
         $this->assertNull($r->getUserScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -492,6 +569,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
     {
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $this->assertNull($r->getUserScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -530,6 +609,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($r->validRatingScore("10"), "Valid - '10'"); // String
         $this->assertTrue($r->validRatingScore(6.5), "Valid - 6.5"); // Float
         $this->assertTrue($r->validRatingScore("6.5"), "Valid - '6.5'"); // Float  String
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 }
 

@@ -12,13 +12,23 @@ require_once "JinniTest.php";
 
 class FilmTest extends \PHPUnit_Framework_TestCase
 {
+    public $debug;
+    public $lastTestTime;
+
+    public function setUp()
+    {
+        $this->debug = true;
+        $this->lastTestTime = new \DateTime();
+    }
+
     /**
      * @covers \RatingSync\Film::__construct
      */
     public function testObjectCanBeConstructedFromHttp()
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
-        return $film;
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -28,6 +38,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertTrue(Film::validContentType(Film::CONTENT_FILM), Film::CONTENT_FILM . " should be valid");
         $this->assertFalse(Film::validContentType("Bad_Type"), "Bad_Type should be invalid");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -62,6 +74,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         // Mismatch source
         $film->setFilmId("Film 1D", Constants::SOURCE_JINNI);
         $this->assertNull($film->getFilmId(Constants::SOURCE_IMDB));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -72,6 +86,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getFilmId(Constants::SOURCE_JINNI));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -81,6 +97,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testUrlNameCannotBeSetWithInvalidSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName("url_name", "Bad_Source");
     }
@@ -93,6 +110,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName(null, Constants::SOURCE_IMDB);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -103,6 +122,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName("", Constants::SOURCE_IMDB);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -113,6 +134,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName("url_name", Constants::SOURCE_IMDB);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -122,6 +145,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testUrlNameCannotBeGottenWithInvalidSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->getUrlName("Bad_Source");
     }
@@ -136,6 +160,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName("url_name", Constants::SOURCE_JINNI);
         $this->assertEquals("url_name", $film->getUrlName(Constants::SOURCE_JINNI));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -146,6 +172,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -158,6 +186,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName(null, Constants::SOURCE_IMDB);
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -171,6 +201,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setUrlName("", Constants::SOURCE_IMDB);
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), "Setting empty URL name should be set to null");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -180,6 +212,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithInvalidSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating(null, "Bad_Source");
     }
@@ -191,6 +224,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithNullRatingNullSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating(null, "Bad_Source");
     }
@@ -202,6 +236,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithString()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating("Bad_Arg", Constants::SOURCE_IMDB);
     }
@@ -213,6 +248,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithNumber()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating(7, Constants::SOURCE_IMDB);
     }
@@ -225,6 +261,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating(null, Constants::SOURCE_IMDB);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -235,6 +273,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setRating("", Constants::SOURCE_IMDB);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -246,6 +286,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating, Constants::SOURCE_IMDB);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -257,6 +299,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -266,6 +310,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetRatingWithIncompatibleSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating, Constants::SOURCE_JINNI);
@@ -284,6 +329,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(6);
         $film->setRating($rating);
         $this->assertEquals(6, $film->getRating(Constants::SOURCE_IMDB)->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -303,6 +350,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->setRating($ratingJinni);
         $film->setRating($ratingImdb);
         $this->assertEquals(6, $film->getRating(Constants::SOURCE_IMDB)->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -314,6 +363,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -331,6 +382,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getSuggestedScore());
         $this->assertNull($rating->getCriticScore());
         $this->assertNull($rating->getUserScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -345,6 +398,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
         $this->assertNull($rating->getYourScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -354,8 +409,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingWithInvalidSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->getRating("Bad_Source");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -365,8 +423,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYourScoreWithInvalidSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore("your_score", "Bad_Source");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -376,6 +437,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYourScoreWithBadArg()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore("Bad_Score", Constants::SOURCE_IMDB);
     }
@@ -388,6 +450,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore(null, Constants::SOURCE_IMDB);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -397,6 +461,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYourScoreWithEmpty()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore("", Constants::SOURCE_IMDB);
     }
@@ -409,6 +474,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore(7, Constants::SOURCE_IMDB);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -422,6 +489,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore(7, Constants::SOURCE_IMDB);
         $this->assertEquals(7, $film->getYourScore(Constants::SOURCE_IMDB));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -432,6 +501,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getYourScore(Constants::SOURCE_IMDB));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -444,6 +515,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYourScore(null, Constants::SOURCE_IMDB);
         $this->assertNull($film->getYourScore(Constants::SOURCE_IMDB));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -453,6 +526,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetYourScoreWithInvalidSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->getYourScore("Bad_Source");
     }
@@ -465,6 +539,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle(null);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -475,6 +551,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -485,6 +563,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("New_Title");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -498,6 +578,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("New_Title");
         $this->assertEquals("New_Title", $film->getTitle());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -508,6 +590,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getTitle());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -520,6 +604,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle(null);
         $this->assertNull($film->getTitle());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -532,6 +618,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setTitle("");
         $this->assertEquals("", $film->getTitle());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -541,6 +629,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYearWithBadArgFloat()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear(1999.5);
     }
@@ -552,6 +641,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetYearWithBadArgStringCastToInt()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear("1999.5");
     }
@@ -564,6 +654,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear(null);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -574,6 +666,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear("");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -584,6 +678,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear(1942);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -594,6 +690,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear("1942");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -607,6 +705,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear(1942);
         $this->assertEquals(1942, $film->getYear());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -620,6 +720,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear("1942");
         $this->assertEquals(1942, $film->getYear());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -630,6 +732,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getYear());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -642,6 +746,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear(null);
         $this->assertNull($film->getYear());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -654,6 +760,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setYear("");
         $this->assertNull($film->getYear());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -663,6 +771,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetContentTypeWithBadArg()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType("Bad_ContentType");
     }
@@ -675,6 +784,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType(null);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -685,6 +796,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType("");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -695,6 +808,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType(Film::CONTENT_FILM);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -708,6 +823,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType(Film::CONTENT_FILM);
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -718,6 +835,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getContentType());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -730,6 +849,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType(null);
         $this->assertNull($film->getContentType());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -742,6 +863,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setContentType("");
         $this->assertNull($film->getContentType());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -752,6 +875,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage(null);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -762,6 +887,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -772,6 +899,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("http://example.com/example.jpg");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -785,6 +914,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("http://example.com/example.jpg");
         $this->assertEquals("http://example.com/example.jpg", $film->getImage());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -795,6 +926,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getImage());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -807,6 +940,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage(null);
         $this->assertNull($film->getImage());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -819,6 +954,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("");
         $this->assertEquals("", $film->getImage());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -829,6 +966,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage(null, Constants::SOURCE_JINNI);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -839,6 +978,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("", Constants::SOURCE_JINNI);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -849,6 +990,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("http://example.com/example.jpg", Constants::SOURCE_JINNI);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -858,6 +1001,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetImageAndInvalidSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("http://example.com/example.jpg", "BAD SOURCE");
     }
@@ -873,6 +1017,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("http://example.com/example.jpg", Constants::SOURCE_JINNI);
         $this->assertEquals("http://example.com/example.jpg", $film->getImage(Constants::SOURCE_JINNI));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -883,6 +1029,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetImageAndInvalidSource()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->getImage("BAD SOURCE");
     }
@@ -895,6 +1042,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertNull($film->getImage(Constants::SOURCE_JINNI));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -907,6 +1056,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage(null, Constants::SOURCE_JINNI);
         $this->assertNull($film->getImage(Constants::SOURCE_JINNI));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -919,6 +1070,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->setImage("", Constants::SOURCE_JINNI);
         $this->assertEquals("", $film->getImage(Constants::SOURCE_JINNI));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -928,6 +1081,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddGenreWithNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre(null);
     }
@@ -939,6 +1093,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddGenreWithEmpty()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("");
     }
@@ -951,6 +1106,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -962,6 +1119,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -973,6 +1132,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Comedy");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -985,6 +1146,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Comedy");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }    
 
     /**
@@ -998,6 +1161,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addGenre("Comedy");
         $this->assertEquals(array('Comedy'), $film->getGenres());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1012,6 +1177,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $this->assertEquals(array('Comedy', 'Horror'), $film->getGenres());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1026,6 +1193,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Comedy");
         $film->addGenre("Comedy");
         $this->assertEquals(array('Comedy'), $film->getGenres());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1041,6 +1210,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Horror");
         $film->addGenre("Comedy");
         $this->assertEquals(array('Comedy', 'Horror'), $film->getGenres());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1056,6 +1227,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Horror");
         $film->addGenre("Drama");
         $this->assertEquals(array('Comedy', 'Horror', 'Drama'), $film->getGenres());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1071,6 +1244,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Drama");
         $film->removeGenre("Horror");
         $this->assertEquals(array('Comedy', 'Drama'), $film->getGenres());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1086,6 +1261,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Drama");
         $film->removeGenre("Sci-Fi");
         $this->assertEquals(array('Comedy', 'Horror', 'Drama'), $film->getGenres());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1101,6 +1278,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Drama");
         $film->removeAllGenres();
         $this->assertEmpty($film->getGenres());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1116,6 +1295,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Horror");
         $film->addGenre("Drama");
         $this->assertTrue($film->isGenre("Horror"));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1131,6 +1312,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Horror");
         $film->addGenre("Drama");
         $this->assertFalse($film->isGenre("Sci-Fi"));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1150,6 +1333,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->removeAllGenres();
         $film->addGenre("Comedy");
         $this->assertTrue($film->isGenre("Comedy"));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1159,6 +1344,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddDirectorWithNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector(null);
     }
@@ -1170,6 +1356,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddDirectorWithEmpty()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("");
     }
@@ -1182,6 +1369,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Georges Méliès");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1193,6 +1382,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Georges Méliès");
         $film->addDirector("Jennifer Lee");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1204,6 +1395,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Jennifer Lee");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1216,6 +1409,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }    
 
     /**
@@ -1229,6 +1424,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addDirector("Christopher Nolan");
         $this->assertEquals(array('Christopher Nolan'), $film->getDirectors());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1243,6 +1440,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $this->assertEquals(array('Christopher Nolan', 'Jennifer Lee'), $film->getDirectors());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1257,6 +1456,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Christopher Nolan");
         $this->assertEquals(array('Christopher Nolan'), $film->getDirectors());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1272,6 +1473,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Christopher Nolan");
         $this->assertEquals(array('Christopher Nolan', 'Jennifer Lee'), $film->getDirectors());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1287,6 +1490,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
         $this->assertEquals(array('Christopher Nolan', 'Jennifer Lee', 'Georges Méliès'), $film->getDirectors());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1302,6 +1507,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Georges Méliès");
         $film->removeDirector("Jennifer Lee");
         $this->assertEquals(array('Christopher Nolan', 'Georges Méliès'), $film->getDirectors());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1317,6 +1524,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Georges Méliès");
         $film->removeDirector("Steven Spielberg");
         $this->assertEquals(array('Christopher Nolan', 'Jennifer Lee', 'Georges Méliès'), $film->getDirectors());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1332,6 +1541,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Georges Méliès");
         $film->removeAllDirectors();
         $this->assertEmpty($film->getDirectors());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1342,6 +1553,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $this->assertCount(0, $film->getDirectors());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1355,6 +1568,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Christopher Nolan");
         $film->removeAllDirectors();
         $this->assertCount(0, $film->getDirectors());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1370,6 +1585,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
         $this->assertTrue($film->isDirector("Jennifer Lee"));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1385,6 +1602,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
         $this->assertFalse($film->isDirector("Steven Spielberg"));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1404,6 +1623,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->removeAllDirectors();
         $film->addDirector("Christopher Nolan");
         $this->assertTrue($film->isDirector("Christopher Nolan"));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1413,6 +1634,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddXmlChildFromNullParam()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addXmlChild(null);
     }
@@ -1424,6 +1646,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddXmlChildFromString()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         $film->addXmlChild("Bad_Arg_As_A_String");
     }
@@ -1443,6 +1666,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "<films><film title=\"Film_Title\"><title>Film_Title</title><year/><contentType/><image/><directors/><genres/></film></films>";
         $xmlStr .= "\n";
         $this->assertEquals($xmlStr, $xml->asXml());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1458,6 +1683,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "<films><film title=\"\"><title/><year/><contentType/><image/><directors/><genres/></film></films>";
         $xmlStr .= "\n";
         $this->assertEquals($xmlStr, $xml->asXml());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1515,6 +1742,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "</film>";
         $xmlStr .= "</films>\n";
         $this->assertEquals($xmlStr, $xml->asXml());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1595,6 +1824,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "</film>";
         $xmlStr .= "</films>\n";
         $this->assertEquals($xmlStr, $xml->asXml());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1622,6 +1853,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "</film>";
         $xmlStr .= "</films>\n";
         $this->assertEquals($xmlStr, $xml->asXml());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1649,6 +1882,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "</film>";
         $xmlStr .= "</films>\n";
         $this->assertEquals($xmlStr, $xml->asXml());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1690,6 +1925,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "</film>";
         $xmlStr .= "</films>\n";
         $this->assertEquals($xmlStr, $xml->asXml());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 }
 

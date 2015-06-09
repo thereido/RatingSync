@@ -5,7 +5,6 @@
 namespace RatingSync;
 
 require_once "../Imdb.php";
-require_once "JinniTest.php";
 
 const TEST_IMDB_USERNAME = "ur60460017";
 
@@ -13,6 +12,7 @@ const TEST_IMDB_USERNAME = "ur60460017";
 class ImdbExt extends \RatingSync\Imdb {
     function _getHttp() { return $this->http; }
     function _getSourceName() { return $this->sourceName; }
+    function _getUsername() { return $this->username; }
 
     function _getRatingPageUrl($args) { return $this->getRatingPageUrl($args); }
     function _getNextRatingPageNumber($page) { return $this->getNextRatingPageNumber($page); }
@@ -29,12 +29,22 @@ class ImdbExt extends \RatingSync\Imdb {
 
 class ImdbTest extends \PHPUnit_Framework_TestCase
 {
+    public $debug;
+    public $lastTestTime;
+
+    public function setUp()
+    {
+        $this->debug = true;
+        $this->lastTestTime = new \DateTime();
+    }
+
     /**
      * @covers            \RatingSync\Imdb::__construct
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new Imdb(null);
     }
 
@@ -44,6 +54,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotBeConstructedFromEmptyUsername()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new Imdb("");
     }
 
@@ -53,7 +64,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     public function testObjectCanBeConstructed()
     {
         $site = new Imdb(TEST_IMDB_USERNAME);
-        return $site;
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -65,28 +77,143 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     {
         $site = new Imdb("---Username--No--Match---");
         $films = $site->getRatings();
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Imdb::cacheRatingsPage
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCacheRatingsPage()
+    {
+        $site = new ImdbExt(TEST_IMDB_USERNAME);
+
+        $page = "<html><body><h2>Rating page 2</h2></body></html>";
+        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_ratingspage.xml";
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $page);
+        fclose($fp);
+
+        $site->cacheRatingsPage($page, 2);
+        $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_IMDB_USERNAME . "_ratings_2.html";
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        
+        unlink($verifyFilename);
+        unlink($testFilename);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Imdb::cacheFilmDetailPage
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCacheFilmDetailPage()
+    {
+        $site = new ImdbExt(TEST_IMDB_USERNAME);
+        $film = new Film($site->http);
+        $film->setFilmId("tt2294629", $site->_getSourceName());
+        
+        $page = "<html><body><h2>Film Detail</h2></body></html>";
+        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_filmdetailpage.xml";
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $page);
+        fclose($fp);
+        
+        $site->cacheFilmDetailPage($page, $film);
+        $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_IMDB_USERNAME . "_film_" . $site->getFilmUniqueAttr($film) . ".html";
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        
+        unlink($verifyFilename);
+        unlink($testFilename);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
      * @covers \RatingSync\Imdb::getRatings
      * @depends testObjectCanBeConstructed
+     * @depends testCacheRatingsPage
      */
     public function testGetRatings()
     {
         $site = new Imdb(TEST_IMDB_USERNAME);
         $films = $site->getRatings();
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
      * @covers \RatingSync\Imdb::getRatings
-     * @depends testObjectCanBeConstructed
+     * @depends testGetRatings
      */
-    public function testGetRatingsFromRandomAccount()
+    public function testGetRatingsUsingCacheAlways()
     {
-        // Find films even though the account is not logged in
-        $site = new Imdb("ur29387747");
-        $films = $site->getRatings();
-        $this->assertGreaterThan(0, count($films));
+        // Want cached files ready for this test: Yes
+        $site = new Imdb(TEST_IMDB_USERNAME);
+
+        // limitPages=null, beginPage=1, detail=false, refreshCache=-1 (always use cache)
+        $films = $site->getRatings(null, 1, false, Constants::USE_CACHE_ALWAYS);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Imdb::getRatings
+     * @depends testGetRatings
+     */
+    public function testGetRatingsUsingCacheNever()
+    {
+        // Want cached files ready for this test: Yes
+        $site = new Imdb(TEST_IMDB_USERNAME);
+
+        // limitPages=null, beginPage=1, detail=false, refreshCache=0 (refresh now)
+        $films = $site->getRatings(null, 1, false, Constants::USE_CACHE_NEVER);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Imdb::getRatings
+     * @depends testGetRatings
+     */
+    public function testGetRatingsUsingCacheWithRecentFiles()
+    {
+        // Want cached files ready for this test: Yes
+        $site = new ImdbExt(TEST_IMDB_USERNAME);
+        
+        sleep(1);
+        $timeBeforeGetRatings = time();
+        // limitPages=null, beginPage=1, detail=false, refreshCache=60
+        $films = $site->getRatings(null, 1, false, 60);
+        
+        $filename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_IMDB_USERNAME . "_ratings_1.html";
+        $this->assertLessThan($timeBeforeGetRatings, filemtime($filename), "Cache should not be new");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Imdb::getRatings
+     * @depends testGetRatings
+     */
+    public function testGetRatingsUsingCacheWithOldFiles()
+    {
+        // Want cached files ready for this test: Yes
+        $site = new ImdbExt(TEST_IMDB_USERNAME);
+
+        $timeBeforeGetRatings = time();
+        sleep(1);
+        // limitPages=null, beginPage=1, detail=false, refreshCache=60
+        $films = $site->getRatings(null, 1, false, 0.01);
+        
+        $filename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_IMDB_USERNAME . "_ratings_1.html";
+        $this->assertGreaterThan($timeBeforeGetRatings, filemtime($filename), "Cache should be new");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -97,8 +224,10 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     public function testGetRatingsCount()
     {
         $site = new Imdb(TEST_IMDB_USERNAME);
-        $films = $site->getRatings();
+        $films = $site->getRatings(null, 1, false, 60);
         $this->assertCount(104, $films);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -109,32 +238,36 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     public function testGetRatingsLimitPages()
     {
         $site = new Imdb(TEST_IMDB_USERNAME);
-        $films = $site->getRatings(1);
+        $films = $site->getRatings(1, 1, false, 60);
         $this->assertCount(100, $films);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
-     * @covers \RatingSync\Jinni::getRatings
+     * @covers \RatingSync\Imdb::getRatings
      * @depends testObjectCanBeConstructed
      * @depends testGetRatings
      */
     public function testGetRatingsBeginPage()
     {
         $site = new Imdb(TEST_IMDB_USERNAME);
-        $films = $site->getRatings(null, 2);
+        $films = $site->getRatings(null, 2, false, 60);
         $this->assertEquals("Unbroken", $films[0]->getTitle());
-    }
 
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+    
     /**
-     * @covers \RatingSync\Jinni::getRatings
+     * @covers \RatingSync\Imdb::getRatings
      * @depends testObjectCanBeConstructed
      * @depends testGetRatingsLimitPages
      * @depends testGetRatingsBeginPage
      */
-    public function testGetRatingsDetails()
+    public function testGetRatingsDetailsNoCache()
     {
         $site = new ImdbExt(TEST_IMDB_USERNAME);
-        $films = $site->getRatings(1, 1, true);
+        $films = $site->getRatings(1, 1, true, Constants::USE_CACHE_NEVER);
         $this->assertCount(100, $films);
         $film = $films[0];
         $this->assertEquals("Almost Famous", $film->getTitle(), 'Title');
@@ -147,6 +280,42 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $rating = $film->getRating($site->_getSourceName());
         $this->assertFalse(is_null($rating));
         $this->assertEquals(6, $rating->getYourScore(), 'Your Score');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Imdb::getRatings
+     * @covers \RatingSync\Imdb::cacheRatingsPage
+     * @covers \RatingSync\Imdb::cacheFilmDetailPage
+     * @depends testGetRatingsDetailsNoCache
+     * @depends testCacheRatingsPage
+     * @depends testCacheFilmDetailPage
+     */
+    public function testGetRatingsDetails()
+    {
+        $site = new ImdbExt(TEST_IMDB_USERNAME);
+        $films = $site->getRatings(null, 1, true, 60);
+        $this->assertCount(104, $films);
+        $film = $films[0];
+        $this->assertEquals("Almost Famous", $film->getTitle(), 'Title');
+        $this->assertEquals(2000, $film->getYear(), 'Year');
+        $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTI0MDc0MzIyM15BMl5BanBnXkFtZTYwMzc4NzA)@', $film->getImage(), $matches), 'Image link');
+        $this->assertEquals(array("Cameron Crowe"), $film->getDirectors(), 'Director(s)');
+        $this->assertEquals(array("Drama", "Music", "Romance"), $film->getGenres(), 'Genres');
+        $this->assertNull($film->getUrlName($site->_getSourceName()), 'URL Name');
+        $rating = $film->getRating($site->_getSourceName());
+        $this->assertFalse(is_null($rating));
+        $this->assertEquals(6, $rating->getYourScore(), 'Your Score');
+
+        // Cache files should exist for Ratings pages and Detail pages
+        $firstRatingsFile = Constants::cacheFilePath() . $site->_getSourceName() . "_" . $site->_getUsername() . "_ratings_1.html";
+        $firstDetailFile = Constants::cacheFilePath() . $site->_getSourceName() . "_" . $site->_getUsername() . "_film_" . $site->getFilmUniqueAttr($film) . ".html";
+        $this->assertFileExists($firstRatingsFile, 'First ratings page cache file should exist');
+        $this->assertFileExists($firstDetailFile, 'First film detail page cache file should exist');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -159,38 +328,13 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      */
 
     /**
-     * @depends testObjectCanBeConstructed
-     */
-    public function testCacheFilmDetail()
-    {
-        // Cache the file for later tests in this unit test class
-        $http = new HttpImdb(TEST_IMDB_USERNAME);
-
-
-        // Frozen (movie)
-        $this->cachedDetailPage = $http->getPage("/title/tt2294629/");
-        $this->assertGreaterThan(100, strlen($this->cachedDetailPage));
-        $filename = JinniTest::getCachePath() . "imdb_frozen-2013.html";
-        $fp = fopen($filename, "w");
-        fwrite($fp, $this->cachedDetailPage);
-        fclose($fp);
-
-        // Good Morning America (ongoing TV series)
-        $this->cachedDetailPage = $http->getPage("/title/tt0072506/");
-        $this->assertGreaterThan(100, strlen($this->cachedDetailPage));
-        $filename = JinniTest::getCachePath() . "imdb_good-morning-america.html";
-        $fp = fopen($filename, "w");
-        fwrite($fp, $this->cachedDetailPage);
-        fclose($fp);
-    }
-
-    /**
      * @covers \RatingSync\Imdb::getFilmDetailFromWebsite
      * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testGetFilmDetailFromWebsiteFromNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new Imdb(TEST_IMDB_USERNAME);
         $site->getFilmDetailFromWebsite(null);
     }
@@ -202,6 +346,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteFromString()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new Imdb(TEST_IMDB_USERNAME);
         $site->getFilmDetailFromWebsite("String_Not_Film_Object");
     }
@@ -213,6 +358,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteWithoutFilmId()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new Imdb(TEST_IMDB_USERNAME);
         $film = new Film($site->http);
         $site->getFilmDetailFromWebsite($film);
@@ -225,6 +371,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteNoMatch()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new ImdbExt(TEST_IMDB_USERNAME);
         $film = new Film($site->http);
         $film->setFilmId("NO_FILMID_MATCH", $site->_getSourceName());
@@ -259,6 +406,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -285,6 +434,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $rating = $film->getRating($site->_getSourceName());
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Critic score');
         $this->assertEquals(7.7, $rating->getUserScore(), 'User score');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -335,7 +486,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $film->setFilmId("tt2294629", Constants::SOURCE_IMDB);
         $site->getFilmDetailFromWebsite($film, true);
 
-        // Verify - Same original data
+        // Verify - new data
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
@@ -343,7 +494,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
 
-        // Verify - Same original data (IMDb)
+        // Verify - new data (IMDb)
         $this->assertEquals("tt2294629", $film->getFilmId(Constants::SOURCE_IMDB), 'Film ID');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Critic score');
@@ -354,7 +505,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score');
 
-        // Verify - Same original data (Jinni, unchanged)
+        // Verify - new data (Jinni, unchanged)
         $this->assertEquals("Original_FilmId_Jinni", $film->getFilmId(Constants::SOURCE_JINNI), 'Film ID (Jinni)');
         $this->assertEquals("Original_UrlName_Jinni", $film->getUrlName(Constants::SOURCE_JINNI), 'URL Name (Jinni)');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
@@ -363,6 +514,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $rating->getSuggestedScore(), 'Suggested score (Jinni)');
         $this->assertEquals(3, $rating->getCriticScore(), 'Critic score (Jinni)');
         $this->assertEquals(4, $rating->getUserScore(), 'User score (Jinni)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -439,6 +592,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $rating->getSuggestedScore(), 'Suggested score (Jinni)');
         $this->assertEquals(3, $rating->getCriticScore(), 'Critic score (Jinni)');
         $this->assertEquals(4, $rating->getUserScore(), 'User score (Jinni)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -465,10 +620,12 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $rating = $film->getRating($site->_getSourceName());
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Critic score');
         $this->assertEquals(7.7, $rating->getUserScore(), 'User score');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
-     * @covers \RatingSync\Jinni::getFilmDetailFromWebsite
+     * @covers \RatingSync\Imdb::getFilmDetailFromWebsite
      * @depends testGetFilmDetailFromWebsiteOverwriteTrueOverOriginalData
      */
     public function testGetFilmDetailFromWebsiteOverwriteDefault()
@@ -543,6 +700,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $rating->getSuggestedScore(), 'Suggested score (Jinni)');
         $this->assertEquals(3, $rating->getCriticScore(), 'Critic score (Jinni)');
         $this->assertEquals(4, $rating->getUserScore(), 'User score (Jinni)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -551,6 +710,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetFilmDetailFromWebsiteOverwriteFalseOverEmptyFilm()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new Imdb(TEST_IMDB_USERNAME);
         $film = new Film($site->http);
         $site->getFilmDetailFromWebsite($film);
@@ -569,6 +729,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $site->getFilmDetailFromWebsite($film);
 
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -584,6 +746,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $site->getFilmDetailFromWebsite($film);
 
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -614,6 +778,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($test, $verify, 'Match exported file vs verify file');
         fclose($fp_test);
         fclose($fp_verify);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 */
     
@@ -645,6 +811,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($test, $verify, 'Match exported file vs verify file');
         fclose($fp_test);
         fclose($fp_verify);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 */
     
@@ -655,6 +823,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingPageUrlWithArgsNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new ImdbExt(TEST_IMDB_USERNAME);
         $site->_getRatingPageUrl(null);
     }
@@ -666,6 +835,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingPageUrlWithArgsEmpty()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new ImdbExt(TEST_IMDB_USERNAME);
         $site->_getRatingPageUrl(array());
     }
@@ -677,6 +847,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingPageUrlWithPageIndexNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new ImdbExt(TEST_IMDB_USERNAME);
         $site->_getRatingPageUrl(array('pageIndex' => null));
     }
@@ -688,6 +859,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingPageUrlWithPageIndexEmpty()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new ImdbExt(TEST_IMDB_USERNAME);
         $site->_getRatingPageUrl(array('pageIndex' => ""));
     }
@@ -699,6 +871,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetRatingPageUrlWithPageIndexNotInt()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $site = new ImdbExt(TEST_IMDB_USERNAME);
         $site->_getRatingPageUrl(array('pageIndex' => "Not_An_Int"));
     }
@@ -713,6 +886,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         
         $url = $site->_getRatingPageUrl(array('pageIndex' => 3));
         $this->assertEquals('/user/'.TEST_IMDB_USERNAME.'/ratings?start=201&view=detail&sort=title:asc', $url);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -724,6 +899,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $site = new ImdbExt(TEST_IMDB_USERNAME);
         
         $this->assertFalse($site->_getNextRatingPageNumber(null));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -735,6 +912,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $site = new ImdbExt(TEST_IMDB_USERNAME);
         
         $this->assertFalse($site->_getNextRatingPageNumber(""));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -748,6 +927,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $args = array('pageIndex' => 1);
         $page = $site->_getHttp()->getPage($site->_getRatingPageUrl($args));
         $this->assertEquals(2, $site->_getNextRatingPageNumber($page));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -761,6 +942,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $args = array('pageIndex' => 2);
         $page = $site->_getHttp()->getPage($site->_getRatingPageUrl($args));
         $this->assertFalse($site->_getNextRatingPageNumber($page));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -773,17 +956,17 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Imdb::parseDetailPageRating
      * @covers \RatingSync\Imdb::parseDetailPageGenres
      * @covers \RatingSync\Imdb::parseDetailPageDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageEmptyFilmOverwriteTrue()
     {
         $site = new ImdbExt(TEST_IMDB_USERNAME);
         $film = new Film($site->_getHttp());
 
-        $filename = JinniTest::getCachePath() . "imdb_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setFilmId("tt2294629", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Title');
@@ -823,6 +1006,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (empty film overwrite=true)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -835,17 +1020,17 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Imdb::parseDetailPageRating
      * @covers \RatingSync\Imdb::parseDetailPageGenres
      * @covers \RatingSync\Imdb::parseDetailPageDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageEmptyFilmOverwriteFalse()
     {
         $site = new ImdbExt(TEST_IMDB_USERNAME);
         $film = new Film($site->_getHttp());
 
-        $filename = JinniTest::getCachePath() . "imdb_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setFilmId("tt2294629", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Title');
@@ -885,6 +1070,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (empty film overwrite=false)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -897,7 +1084,6 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Imdb::parseDetailPageRating
      * @covers \RatingSync\Imdb::parseDetailPageGenres
      * @covers \RatingSync\Imdb::parseDetailPageDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageFullFilmOverwriteTrue()
     {
@@ -938,11 +1124,11 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $ratingJinniOrig->setUserScore(4);
         $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
 
-        // Read a Film Detail page cached
-        $filename = JinniTest::getCachePath() . "imdb_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setFilmId("tt2294629", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Title');
@@ -983,6 +1169,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (full film overwrite=true)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -995,7 +1183,6 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Imdb::parseDetailPageRating
      * @covers \RatingSync\Imdb::parseDetailPageGenres
      * @covers \RatingSync\Imdb::parseDetailPageDirectors
-     * @depends testCacheFilmDetail
      */
     public function testParseDetailPageFullFilmOverwriteFalse()
     {
@@ -1036,11 +1223,11 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $ratingJinniOrig->setUserScore(4);
         $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
 
-        // Read a Film Detail page cached
-        $filename = JinniTest::getCachePath() . "imdb_frozen-2013.html";
-        $fp = fopen($filename, "r");
-        $page = fread($fp, filesize($filename));
-        fclose($fp);
+        // Get HTML of the film's detail page
+        $findFilm = new Film($site->_getHttp());
+        $findFilm->setFilmId("tt2294629", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($findFilm, true, 60);
+        $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
         $success = $site->_parseDetailPageForTitle($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Title');
@@ -1091,6 +1278,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Original_Director1", "Original_Director2"), $film->getDirectors(), 'Check matching Directors (full film overwrite=false)');
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 }
 

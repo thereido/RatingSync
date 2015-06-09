@@ -1,0 +1,424 @@
+<?xml version="1.0"?>
+<films>
+<film title="Frozen">
+<title>Frozen</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>
+<filmId>70785</filmId>
+<urlName>frozen-2013</urlName>
+<rating>
+<yourScore>8</yourScore>
+<yourRatingDate>2015-5-4</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="King Kong">
+<title>King Kong</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/king-kong/king-kong-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/king-kong/king-kong-5.jpeg</image>
+<filmId>364</filmId>
+<urlName>king-kong</urlName>
+<rating>
+<yourScore>6</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Monsters, Inc.">
+<title>Monsters, Inc.</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/monsters-inc/monsters-inc-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/monsters-inc/monsters-inc-5.jpeg</image>
+<filmId>105</filmId>
+<urlName>monsters-inc</urlName>
+<rating>
+<yourScore>7</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Pirates of the Caribbean: The Curse of the Black Pearl">
+<title>Pirates of the Caribbean: The Curse of the Black Pearl</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/pirates-of-the-caribbean-the-curse-of-the-black-pearl/pirates-of-the-caribbean-the-curse-of-the-black-pearl-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/pirates-of-the-caribbean-the-curse-of-the-black-pearl/pirates-of-the-caribbean-the-curse-of-the-black-pearl-5.jpeg</image>
+<filmId>407</filmId>
+<urlName>pirates-of-the-caribbean-the-curse-of-the-black-pearl</urlName>
+<rating>
+<yourScore>4</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Waltz With Bashir">
+<title>Waltz With Bashir</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/waltz-with-bashir/waltz-with-bashir-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/waltz-with-bashir/waltz-with-bashir-5.jpeg</image>
+<filmId>10159</filmId>
+<urlName>waltz-with-bashir</urlName>
+<rating>
+<yourScore>6</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Eternal Sunshine of the Spotless Mind">
+<title>Eternal Sunshine of the Spotless Mind</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/eternal-sunshine-of-the-spotless-mind/eternal-sunshine-of-the-spotless-mind-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/eternal-sunshine-of-the-spotless-mind/eternal-sunshine-of-the-spotless-mind-5.jpeg</image>
+<filmId>316</filmId>
+<urlName>eternal-sunshine-of-the-spotless-mind</urlName>
+<rating>
+<yourScore>8</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Gattaca">
+<title>Gattaca</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/gattaca/gattaca-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/gattaca/gattaca-5.jpeg</image>
+<filmId>5245</filmId>
+<urlName>gattaca</urlName>
+<rating>
+<yourScore>8</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Synecdoche, New York">
+<title>Synecdoche, New York</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/synecdoche-new-york/synecdoche-new-york-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/synecdoche-new-york/synecdoche-new-york-5.jpeg</image>
+<filmId>10055</filmId>
+<urlName>synecdoche-new-york</urlName>
+<rating>
+<yourScore>7</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="The Rachel Maddow Show">
+<title>The Rachel Maddow Show</title>
+<year/>
+<contentType>TvSeries</contentType>
+<image>http://media.jinni.com/tv/the-rachel-maddow-show/the-rachel-maddow-show-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/tv/the-rachel-maddow-show/the-rachel-maddow-show-5.jpeg</image>
+<filmId>49860</filmId>
+<urlName>the-rachel-maddow-show</urlName>
+<rating>
+<yourScore>3</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Good Morning America">
+<title>Good Morning America</title>
+<year/>
+<contentType>TvSeries</contentType>
+<image>http://media.jinni.com/tv/good-morning-america/good-morning-america-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/tv/good-morning-america/good-morning-america-5.jpeg</image>
+<filmId>37194</filmId>
+<urlName>good-morning-america</urlName>
+<rating>
+<yourScore>6</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Le voyage dans la lune">
+<title>Le voyage dans la lune</title>
+<year/>
+<contentType>ShortFilm</contentType>
+<image>http://media.jinni.com/shorts/voyage-dans-la-lune-le/voyage-dans-la-lune-le-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/shorts/voyage-dans-la-lune-le/voyage-dans-la-lune-le-5.jpeg</image>
+<filmId>10090</filmId>
+<urlName>voyage-dans-la-lune-le</urlName>
+<rating>
+<yourScore>4</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Wallace &amp;amp; Gromit: A Matter of Loaf and Death">
+<title>Wallace &amp; Gromit: A Matter of Loaf and Death</title>
+<year/>
+<contentType>ShortFilm</contentType>
+<image>http://media.jinni.com/shorts/wallace-and-gromit-a-matter-of-loaf-and-death/wallace-and-gromit-a-matter-of-loaf-and-death-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/shorts/wallace-and-gromit-a-matter-of-loaf-and-death/wallace-and-gromit-a-matter-of-loaf-and-death-5.jpeg</image>
+<filmId>24938</filmId>
+<urlName>wallace-and-gromit-a-matter-of-loaf-and-death</urlName>
+<rating>
+<yourScore>6</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Paperman">
+<title>Paperman</title>
+<year/>
+<contentType>ShortFilm</contentType>
+<image>http://media.jinni.com/shorts/paperman/paperman-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/shorts/paperman/paperman-5.jpeg</image>
+<filmId>71037</filmId>
+<urlName>paperman</urlName>
+<rating>
+<yourScore>7</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Dexter">
+<title>Dexter</title>
+<year/>
+<contentType>TvSeries</contentType>
+<image>http://media.jinni.com/tv/dexter/dexter-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/tv/dexter/dexter-5.jpeg</image>
+<filmId>10609</filmId>
+<urlName>dexter</urlName>
+<rating>
+<yourScore>6</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Modern Family">
+<title>Modern Family</title>
+<year/>
+<contentType>TvSeries</contentType>
+<image>http://media.jinni.com/tv/modern-family/modern-family-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/tv/modern-family/modern-family-5.jpeg</image>
+<filmId>22032</filmId>
+<urlName>modern-family</urlName>
+<rating>
+<yourScore>8</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Wall-E">
+<title>Wall-E</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/wall-e/wall-e-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/wall-e/wall-e-5.jpeg</image>
+<filmId>4504</filmId>
+<urlName>wall-e</urlName>
+<rating>
+<yourScore>6</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Pulp Fiction">
+<title>Pulp Fiction</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/pulp-fiction/pulp-fiction-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/pulp-fiction/pulp-fiction-5.jpeg</image>
+<filmId>127</filmId>
+<urlName>pulp-fiction</urlName>
+<rating>
+<yourScore>10</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="The Bourne Ultimatum">
+<title>The Bourne Ultimatum</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/the-bourne-ultimatum/the-bourne-ultimatum-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/the-bourne-ultimatum/the-bourne-ultimatum-5.jpeg</image>
+<filmId>458</filmId>
+<urlName>the-bourne-ultimatum</urlName>
+<rating>
+<yourScore>6</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Game of Thrones">
+<title>Game of Thrones</title>
+<year/>
+<contentType>TvSeries</contentType>
+<image>http://media.jinni.com/tv/game-of-thrones/game-of-thrones-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/tv/game-of-thrones/game-of-thrones-5.jpeg</image>
+<filmId>26839</filmId>
+<urlName>game-of-thrones</urlName>
+<rating>
+<yourScore>7</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="Inception">
+<title>Inception</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/inception/inception-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/inception/inception-5.jpeg</image>
+<filmId>22685</filmId>
+<urlName>inception</urlName>
+<rating>
+<yourScore>9</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<film title="The Shawshank Redemption">
+<title>The Shawshank Redemption</title>
+<year/>
+<contentType>FeatureFilm</contentType>
+<image>http://media.jinni.com/movie/the-shawshank-redemption/the-shawshank-redemption-5.jpeg</image>
+<directors/>
+<genres/>
+<source name="Jinni">
+<image>http://media.jinni.com/movie/the-shawshank-redemption/the-shawshank-redemption-5.jpeg</image>
+<filmId>202</filmId>
+<urlName>the-shawshank-redemption</urlName>
+<rating>
+<yourScore>7</yourScore>
+<yourRatingDate>2015-5-1</yourRatingDate>
+<suggestedScore/>
+<criticScore/>
+<userScore/>
+</rating>
+</source>
+</film>
+<count>21</count>
+</films>

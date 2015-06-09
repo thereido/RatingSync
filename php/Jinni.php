@@ -33,6 +33,23 @@ class Jinni extends Site
     }
 
     /**
+     * Return a film's unique attribute.  This the attr available from ratings pages
+       and from a film detail page.  In most sites the Film ID is always available, but
+       Jinni is has URL Name and don't always Film ID.  The Site implentation returns
+       Film::getFilmId().  Child classes can return something else.
+     *
+     * @param \RatingSync\Film $film get the attr from this film
+     *
+     * @return string unique attribute
+     */
+    public function getFilmUniqueAttr($film)
+    {
+        if (!is_null($film) && ($film instanceof Film)) {
+            return $film->getUrlName($this->sourceName);
+        }
+    }
+
+    /**
      * Return the rating page's URL within a website. The URL does not
      * include the base URL.  
      *
@@ -56,12 +73,13 @@ class Jinni extends Site
        each film goes to another page for full detail. Using $details=true
        can take a long time.
      *
-     * @param string $page HTML from a page of ratings
-     * @param bool|false $details Get all data for each film
+     * @param string     $page         HTML from a page of ratings
+     * @param bool|false $details      Get all data for each film
+     * @param int|0      $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
      *
      * @return array Film class objects
      */
-    protected function getFilmsFromRatingsPage($page, $details = false)
+    protected function getFilmsFromRatingsPage($page, $details = false, $refreshCache = 0)
     {
         $films = array();
         $filmSections = explode('<div class="ratings_cell5">', $page);
@@ -119,7 +137,7 @@ class Jinni extends Site
             }
 
             if ($details) {
-                $this->getFilmDetailFromWebsite($film, false);
+                $this->getFilmDetailFromWebsite($film, false, $refreshCache);
             }
         }
 
@@ -142,7 +160,7 @@ class Jinni extends Site
         if (0 == preg_match('@<input type="hidden" name="pagingSlider_index" id="pagingSlider_index" value="(\d+)" />@', $page, $matches)) {
             return false;
         }
-
+        
         return $matches[1] + 1;
     }
 
@@ -322,7 +340,7 @@ class Jinni extends Site
             throw new \InvalidArgumentException('Film param must have a URL Name');
         }
 
-        return '/{[^}]+uniqueName: \"' . $film->getUrlName($this->sourceName) . '\"[^}]+uniqueId: \"(.+)\"/';   
+        return '/{[^}]+contentId: \"(.+)\"[^}]+uniqueName: \"' . $film->getUrlName($this->sourceName) . '\"/';
     }
 
     /**

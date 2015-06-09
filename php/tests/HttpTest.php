@@ -23,12 +23,22 @@ class HttpChild extends \RatingSync\Http {
 
 class HttpTest extends \PHPUnit_Framework_TestCase
 {
+    public $debug;
+    public $lastTestTime;
+
+    public function setUp()
+    {
+        $this->debug = true;
+        $this->lastTestTime = new \DateTime();
+    }
+
     /**
      * @covers            \RatingSync\Http::__construct
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromNull()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new HttpChild(null);
     }
 
@@ -38,6 +48,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotBeConstructedFromEmptyUsername()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new HttpChild("");
     }
 
@@ -47,6 +58,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotBeConstructedFromInt()
     {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         new HttpChild(1);
     }
 
@@ -56,7 +68,8 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     public function testObjectCanBeConstructedFromStringValue()
     {
         $http = new HttpChild("username");
-        return $http;
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -67,6 +80,8 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     {
         $http = new HttpChild("username");
         $this->assertTrue($http->_validateAfterConstructor());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -75,6 +90,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCannotGetPageWithNullPage() {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpChild("username");
         $http->getPage(null);
     }
@@ -85,6 +101,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
      * @expectedException \RatingSync\HttpNotFoundException
      */
     public function testCannotGetPageWithNotFound() {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpChild("username");
         $http->getPage("/findthis");
     }
@@ -95,6 +112,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
      * @expectedException \RatingSync\HttpErrorException
      */
     public function testGetPageHttpError() {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
         $http = new HttpChild("username");
         $http->getPage('Bad URL');
     }
@@ -107,6 +125,8 @@ class HttpTest extends \PHPUnit_Framework_TestCase
         $http = new HttpChild("username");
         $page = $http->getPage('/info/about.html');
         $this->assertGreaterThan(0, stripos($page, "About Jinni</title>"), "Get 'About' page");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -117,6 +137,8 @@ class HttpTest extends \PHPUnit_Framework_TestCase
         $http = new HttpChild("username");
         $headers = $http->getPage('/info/about.html', null, true);
         $this->assertStringEndsWith("Connection: keep-alive", rtrim($headers), "getPage() with headersOnly=true is not ending in a header");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 }
 

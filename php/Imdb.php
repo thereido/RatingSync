@@ -73,12 +73,13 @@ class Imdb extends Site
        each film goes to another page for full detail. Using $details=true
        can take a long time.
      *
-     * @param string $page HTML from a page of ratings
-     * @param bool|false $details Get all data for each film
+     * @param string     $page         HTML from a page of ratings
+     * @param bool|false $details      Get all data for each film
+     * @param int|0      $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
      *
      * @return array Film class objects
      */
-    protected function getFilmsFromRatingsPage($page, $details = false)
+    protected function getFilmsFromRatingsPage($page, $details = false, $refreshCache = 0)
     {
         $films = array();
         $filmSections = explode('data-const=', $page);
@@ -136,7 +137,7 @@ class Imdb extends Site
             $film->setImage($image, $this->sourceName);
 
             if ($details) {
-                $this->getFilmDetailFromWebsite($film, false);
+                $this->getFilmDetailFromWebsite($film, false, $refreshCache);
             }
         }
 
