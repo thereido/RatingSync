@@ -2149,12 +2149,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testStrangeCharactersInNames()
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
-        $film->setTitle("Les Misérables & Gromit");
+        $film->setTitle("Les Misérables & Gromit's");
         $film->addGenre("Sci-Fi");
         $film->addDirector("Georges Méliès");
         
         // Verify title, genre, director
-        $this->assertEquals("Les Misérables & Gromit", $film->getTitle(), "Title");
+        $this->assertEquals("Les Misérables & Gromit's", $film->getTitle(), "Title");
         $this->assertTrue($film->isGenre("Sci-Fi"), "Genre");
         $this->assertTrue($film->isDirector("Georges Méliès"), "Director");
 
@@ -2163,8 +2163,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addXmlChild($xml);
         $xmlStr = "<?xml version=\"1.0\"?>\n";
         $xmlStr .= "<films>";
-        $xmlStr .= "<film title=\"Les Mis&#xE9;rables &amp; Gromit\">";
-        $xmlStr .=     "<title>Les Mis&#xE9;rables &amp; Gromit</title>";
+        $xmlStr .= "<film title=\"Les Mis&#xE9;rables &amp; Gromit's\">";
+        $xmlStr .=     "<title>Les Mis&#xE9;rables &amp; Gromit's</title>";
         $xmlStr .=     "<year/><contentType/><image/>";
         $xmlStr .=     "<directors><director>Georges M&#xE9;li&#xE8;s</director></directors>";
         $xmlStr .=     "<genres><genre>Sci-Fi</genre></genres>";
@@ -2176,7 +2176,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlFilmArray = $xml->xpath('/films/film');
         $filmSxe = $xmlFilmArray[0];
         $readFilm = Film::createFromXml($filmSxe, new HttpJinni(TEST_JINNI_USERNAME));
-        $this->assertEquals("Les Misérables & Gromit", $readFilm->getTitle(), "Title read from XML");
+        $this->assertEquals("Les Misérables & Gromit's", $readFilm->getTitle(), "Title read from XML");
         $this->assertTrue($readFilm->isGenre("Sci-Fi"), "Genre read from XML");
         $this->assertTrue($readFilm->isDirector("Georges Méliès"), "Director read from XML");
 
