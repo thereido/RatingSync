@@ -463,7 +463,7 @@ abstract class Site
         if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
             return false;
         }
-        $film->setTitle($matches[1]);
+        $film->setTitle(html_entity_decode($matches[1], ENT_QUOTES, "utf-8"));
         return true;
     }
 
@@ -664,5 +664,31 @@ abstract class Site
         }
 
         $film->setRating($rating);
+    }
+
+    /**
+     * Read films from a file and return them in an array
+     *
+     * @param string $format   File format to read from. Currently only XML.
+     * @param string $filename Input file (including path)
+     *
+     * @return array of Films
+     */
+    public function parseFilmsFromFile($format, $filename)
+    {
+        $xml = simplexml_load_file($filename);
+        $xmlFilmArray = $xml->xpath('/films/film');
+        
+        $films = array();
+        foreach ($xmlFilmArray as $filmSxe) {
+            try {
+                $film = Film::createFromXml($filmSxe, $this->http);
+                $films[] = $film;
+            } catch (\Exception $e) {
+                // Ignore
+            }
+        }
+
+        return $films;
     }
 }

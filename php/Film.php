@@ -79,8 +79,8 @@ class Film {
         }
 
         $filmXml = $xml->addChild("film");
-        $filmXml->addAttribute('title', htmlentities($this->getTitle()));
-        $filmXml->addChild('title', htmlentities($this->getTitle()));
+        $filmXml->addAttribute('title', $this->getTitle());
+        $filmXml->addChild('title', htmlspecialchars($this->getTitle()));
         $filmXml->addChild('year', $this->getYear());
         $filmXml->addChild('contentType', $this->getContentType());
         $filmXml->addChild('image', $this->getImage());
@@ -88,12 +88,12 @@ class Film {
         $directorsXml = $filmXml->addChild('directors');
         $directors = $this->getDirectors();
         foreach ($directors as $director) {
-            $directorsXml->addChild('director', htmlentities($director));
+            $directorsXml->addChild('director', htmlspecialchars($director));
         }
 
         $genresXml = $filmXml->addChild('genres');
         foreach ($this->getGenres() as $genre) {
-            $genresXml->addChild('genre', htmlentities($genre));
+            $genresXml->addChild('genre', htmlentities($genre, ENT_COMPAT, "utf-8"));
         }
 
         foreach ($this->sources as $source) {
@@ -116,12 +116,103 @@ class Film {
         }
     }
 
+    /**
+     * New Film object with data from XML
+     *
+     * @param \SimpleXMLElement $filmSxe Film data
+     * @param \RatingSync\Http  $http    -
+     *
+     * @return a new Film
+     */
+    public static function createFromXml($filmSxe, $http)
+    {
+        if (! ($filmSxe instanceof \SimpleXMLElement && $http instanceof Http) ) {
+            throw new \InvalidArgumentException('Function createFromXml must be given a SimpleXMLElement and an Http');
+        } elseif (empty(Self::xmlStringByKey('title', $filmSxe))) {
+            throw new \Exception('Function createFromXml: xml must have a title');
+        }
+
+        $film = new Film($http);
+        $film->setTitle(html_entity_decode(Self::xmlStringByKey('title', $filmSxe), ENT_QUOTES, "utf-8"));
+        $film->setYear(Self::xmlStringByKey('year', $filmSxe));
+        $film->setContentType(Self::xmlStringByKey('contentType', $filmSxe));
+        $film->setImage(Self::xmlStringByKey('image', $filmSxe));
+
+        foreach ($filmSxe->xpath('directors') as $directorsSxe) {
+            foreach ($directorsSxe[0]->children() as $directorSxe) {
+                if (!empty($directorSxe->__toString())) {
+                    $film->addDirector($directorSxe->__toString());
+                }
+            }
+        }
+
+        foreach ($filmSxe->xpath('genres') as $genresSxe) {
+            foreach ($genresSxe[0]->children() as $genreSxe) {
+                if (!empty($genreSxe->__toString())) {
+                    $film->addGenre($genreSxe->__toString());
+                }
+            }
+        }
+
+        foreach ($filmSxe->xpath('source') as $sourceSxe) {
+            $sourceName = null;
+            $sourceNameSxe = $sourceSxe['name'];
+            if (is_null($sourceNameSxe) || is_null($sourceNameSxe[0]) || !Source::validSource($sourceNameSxe[0]->__toString())) {
+                continue;
+            }
+            $source = $film->getSource($sourceNameSxe[0]->__toString());
+            $source->setImage(Self::xmlStringByKey('image', $sourceSxe));
+            $source->setFilmId(Self::xmlStringByKey('filmId', $sourceSxe));
+            $source->setUrlName(Self::xmlStringByKey('urlName', $sourceSxe));
+
+            $ratingSxe = $sourceSxe->xpath('rating')[0];
+            $rating = new Rating($source->getName());
+            $yourScore = Self::xmlStringByKey('yourScore', $ratingSxe);
+            if (Rating::validRatingScore($yourScore)) {
+                $rating->setYourScore($yourScore);
+            }
+            $yourRatingDateStr = Self::xmlStringByKey('yourRatingDate', $ratingSxe);
+            if (!empty($yourRatingDateStr)) {
+                $rating->setYourRatingDate(\DateTime::createFromFormat("Y-n-j", $yourRatingDateStr));
+            }
+            $suggestedScore = Self::xmlStringByKey('suggestedScore', $ratingSxe);
+            if (Rating::validRatingScore($suggestedScore)) {
+                $rating->setSuggestedScore($suggestedScore);
+            }
+            $criticScore = Self::xmlStringByKey('criticScore', $ratingSxe);
+            if (Rating::validRatingScore($criticScore)) {
+                $rating->setCriticScore($criticScore);
+            }
+            $userScore = Self::xmlStringByKey('userScore', $ratingSxe);
+            if (Rating::validRatingScore($userScore)) {
+                $rating->setUserScore($userScore);
+            }
+
+            $source->setRating($rating);
+        }
+
+        return $film;
+    }
+
+    public static function xmlStringByKey($key, $sxe)
+    {
+        if (empty($key) || empty($sxe)) {
+            return null;
+        }
+        $needleArray = $sxe->xpath($key);
+        if (empty($needleArray)) {
+            return null;
+        }
+        $needleSxe = $needleArray[0];
+        return $needleSxe->__toString();
+    }
+
     protected function getSource($sourceName)
     {
         if (! Source::validSource($sourceName) ) {
             throw new \InvalidArgumentException('Getting Source $source invalid');
         }
-
+        
         if (empty($this->sources[$sourceName])) {
             $this->sources[$sourceName] = new Source($sourceName);
         }
@@ -359,14 +450,14 @@ class Film {
         return in_array($genre, $this->genres);
     }
 
-    public function addDirector($new_director)
+    public function addDirector($director)
     {
-        if (empty($new_director)) {
+        if (empty($director)) {
             throw new \InvalidArgumentException('addDirector param must not be empty');
         }
 
-        if (!in_array($new_director, $this->directors)) {
-            $this->directors[] = $new_director;
+        if (!in_array($director, $this->directors)) {
+            $this->directors[] = $director;
         }
     }
 

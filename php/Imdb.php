@@ -87,7 +87,7 @@ class Imdb extends Site
         foreach ($filmSections as $filmSection) {
             // Title
             preg_match('@<b>.*>(.*)<\/a>@', $filmSection, $matches);
-            $title = $matches[1];
+            $title = html_entity_decode($matches[1], ENT_QUOTES, "utf-8");
 
             // Year, Content Type
             preg_match('@<span class=\"year_type\">\((\d\d\d\d) ?([^)]*)\)@', $filmSection, $matches);
@@ -115,7 +115,7 @@ class Imdb extends Site
             }
 
             $films[] = $film = new Film($this->http);
-            $film->setTitle(htmlspecialchars_decode($title));
+            $film->setTitle($title);
             $film->setYear($year);
             if ($contentType == 'TV Series') {
                 $film->setContentType(Film::CONTENT_TV);
@@ -187,7 +187,7 @@ class Imdb extends Site
             preg_match_all('/<span class="itemprop" itemprop="genre">([^<]*)<\/span>/', $page, $genreMatches);
             $genres = $genreMatches[1];
             foreach ($genres as $genre) {
-                $film->addGenre($genre);
+                $film->addGenre(html_entity_decode($genre, ENT_QUOTES, "utf-8"));
                 $didFindGenres = true;
             }
         }
@@ -227,7 +227,7 @@ class Imdb extends Site
                 preg_match_all('/itemprop="name">([^<]*)</', $sectionMatches[1], $directorMatches);
                 $directors = $directorMatches[1];
                 foreach ($directors as $director) {
-                    $film->addDirector($director);
+                    $film->addDirector(html_entity_decode($director, ENT_QUOTES, "utf-8"));
                     $didFindDirectors = true;
                 }
             }

@@ -214,7 +214,7 @@ class Rating
      *
      * @return true=valid, false=invalid
      */
-    public function validRatingScore($score)
+    public static function validRatingScore($score)
     {
         if ( is_numeric($score) &&
              (1 <= (float)$score && (float)$score <= 10) ) {

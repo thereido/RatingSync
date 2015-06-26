@@ -32,7 +32,7 @@ class Source
     }
 
     public static function validSource($source)
-    {       
+    {
         if (in_array($source, array(Constants::SOURCE_JINNI, Constants::SOURCE_IMDB, Constants::SOURCE_RATINGSYNC))) {
             return true;
         }

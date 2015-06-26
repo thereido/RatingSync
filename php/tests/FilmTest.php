@@ -17,7 +17,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->debug = true;
+        $this->debug = false;
         $this->lastTestTime = new \DateTime();
     }
 
@@ -1887,6 +1887,248 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers  \RatingSync\Film::createFromXml
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCreateFromXmlArgsNull()
+    {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+        Film::createFromXml(null, null);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::createFromXml
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCreateFromXmlArgsFilmSxeNull()
+    {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+        Film::createFromXml(null, new HttpJinni(TEST_JINNI_USERNAME));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::createFromXml
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCreateFromXmlArgsHttpNull()
+    {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+        Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"), null);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::createFromXml
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCreateFromXmlArgsFilmSxeWrongType()
+    {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+        Film::createFromXml("Bad_Type", new HttpJinni(TEST_JINNI_USERNAME));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::createFromXml
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCreateFromXmlArgsHttpWrongType()
+    {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+        Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"), "Bad_Type");
+    }
+
+    /**
+     * @covers  \RatingSync\Film::createFromXml
+     * @expectedException \Exception
+     */
+    public function testCreateFromXmlArgsNoTitle()
+    {
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+        Film::createFromXml(new \SimpleXMLElement("<film><year>1900</year></film>"), new HttpJinni(TEST_JINNI_USERNAME));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::createFromXml
+     */
+    public function testCreateFromXmlArgsGood()
+    {
+        Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"), new HttpJinni(TEST_JINNI_USERNAME));
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Film::createFromXml
+     * @depends testCreateFromXmlArgsGood
+     */
+    public function testCreateFromXml()
+    {
+        $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
+        $xml = simplexml_load_file($filename);
+        $xmlFilmArray = $xml->xpath('/films/film');
+
+        // Title1
+        $film = Film::createFromXml($xmlFilmArray[1], new HttpJinni(TEST_JINNI_USERNAME));
+        $this->assertEquals("Title1", $film->getTitle(), "Title1 title");
+        $this->assertEquals(2001, $film->getYear(), "Title1 year");
+        $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Title1 ContentType");
+        $this->assertEquals("http://example.com/title1_image.jpeg", $film->getImage(), "Title1 image");
+        $this->assertEquals(array("Director1.1"), $film->getDirectors(), "Title1 directors");
+        $this->assertEquals(array("Genre1.1"), $film->getGenres(), "Title1 genres");
+        $this->assertEquals("http://example.com/title1_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." image");
+        $this->assertEquals("FilmId1_rs", $film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEquals("UrlName1_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+        $this->assertEquals(1, $rating->getYourScore(), "Title1 ".Constants::SOURCE_RATINGSYNC." your score");
+        $this->assertEquals("1/1/15", $rating->getYourRatingDate()->format('n/j/y'), "Title1 ".Constants::SOURCE_RATINGSYNC." rating date");
+        $this->assertEquals(2, $rating->getSuggestedScore(), "Title1 ".Constants::SOURCE_RATINGSYNC." suggested score");
+        $this->assertEquals(3, $rating->getCriticScore(), "Title1 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEquals(4, $rating->getUserScore(), "Title1 ".Constants::SOURCE_RATINGSYNC." user score");
+
+        // Title2
+        $film = Film::createFromXml($xmlFilmArray[2], new HttpJinni(TEST_JINNI_USERNAME));
+        $this->assertEquals("Title2", $film->getTitle(), "Title2 title");
+        $this->assertEquals(2002, $film->getYear(), "Title2 year");
+        $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Title2 ContentType");
+        $this->assertEquals("http://example.com/title2_image.jpeg", $film->getImage(), "Title2 image");
+        $this->assertEquals(array("Director2.1", "Director2.2"), $film->getDirectors(), "Title2 directors");
+        $this->assertEquals(array("Genre2.1", "Genre2.2"), $film->getGenres(), "Title2 genres");
+        $this->assertEquals("http://example.com/title2_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." image");
+        $this->assertEquals("FilmId2_rs", $film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEquals("UrlName2_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+        $this->assertEquals(2, $rating->getYourScore(), "Title2 ".Constants::SOURCE_RATINGSYNC." your score");
+        $this->assertEquals("1/2/15", $rating->getYourRatingDate()->format('n/j/y'), "Title2 ".Constants::SOURCE_RATINGSYNC." rating date");
+        $this->assertEquals(3, $rating->getSuggestedScore(), "Title2 ".Constants::SOURCE_RATINGSYNC." suggested score");
+        $this->assertEquals(4, $rating->getCriticScore(), "Title2 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEquals(5, $rating->getUserScore(), "Title2 ".Constants::SOURCE_RATINGSYNC." user score");
+
+        // Title3
+        $film = Film::createFromXml($xmlFilmArray[3], new HttpJinni(TEST_JINNI_USERNAME));
+        $this->assertEquals("Title3", $film->getTitle(), "Title3 title");
+        $this->assertEmpty($film->getYear(), "Title3 year");
+        $this->assertEmpty($film->getContentType(), "Title3 ContentType");
+        $this->assertEmpty($film->getImage(), "Title3 image");
+        $this->assertEmpty($film->getDirectors(), "Title3 directors");
+        $this->assertEmpty($film->getGenres(), "Title3 genres");
+        $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." image");
+        $this->assertEmpty($film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEmpty($film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+        $this->assertEmpty($rating->getYourScore(), "Title3 ".Constants::SOURCE_RATINGSYNC." your score");
+        $this->assertEmpty($rating->getYourRatingDate(), "Title3 ".Constants::SOURCE_RATINGSYNC." rating date");
+        $this->assertEmpty($rating->getSuggestedScore(), "Title3 ".Constants::SOURCE_RATINGSYNC." suggested score");
+        $this->assertEmpty($rating->getCriticScore(), "Title3 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEmpty($rating->getUserScore(), "Title3 ".Constants::SOURCE_RATINGSYNC." user score");
+
+        // Title4
+        $film = Film::createFromXml($xmlFilmArray[4], new HttpJinni(TEST_JINNI_USERNAME));
+        $this->assertEquals("Title4", $film->getTitle(), "Title3 title");
+        $this->assertEmpty($film->getYear(), "Title4 year");
+        $this->assertEmpty($film->getContentType(), "Title4 ContentType");
+        $this->assertEmpty($film->getImage(), "Title4 image");
+        $this->assertEmpty($film->getDirectors(), "Title4 directors");
+        $this->assertEmpty($film->getGenres(), "Title4 genres");
+        $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." image");
+        $this->assertEmpty($film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEmpty($film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+        $this->assertEmpty($rating->getYourScore(), "Title4 ".Constants::SOURCE_RATINGSYNC." your score");
+        $this->assertEmpty($rating->getYourRatingDate(), "Title4 ".Constants::SOURCE_RATINGSYNC." rating date");
+        $this->assertEmpty($rating->getSuggestedScore(), "Title4 ".Constants::SOURCE_RATINGSYNC." suggested score");
+        $this->assertEmpty($rating->getCriticScore(), "Title4 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEmpty($rating->getUserScore(), "Title4 ".Constants::SOURCE_RATINGSYNC." user score");
+
+        // Title5
+        $film = Film::createFromXml($xmlFilmArray[5], new HttpJinni(TEST_JINNI_USERNAME));
+        $this->assertEquals("Title5", $film->getTitle(), "Title5 title");
+        $this->assertEmpty($film->getYear(), "Title5 year");
+        $this->assertEmpty($film->getContentType(), "Title5 ContentType");
+        $this->assertEmpty($film->getImage(), "Title5 image");
+        $this->assertEmpty($film->getDirectors(), "Title5 directors");
+        $this->assertEmpty($film->getGenres(), "Title5 genres");
+        $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." image");
+        $this->assertEmpty($film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEmpty($film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+        $this->assertEmpty($rating->getYourScore(), "Title5 ".Constants::SOURCE_RATINGSYNC." your score");
+        $this->assertEmpty($rating->getYourRatingDate(), "Title5 ".Constants::SOURCE_RATINGSYNC." rating date");
+        $this->assertEmpty($rating->getSuggestedScore(), "Title5 ".Constants::SOURCE_RATINGSYNC." suggested score");
+        $this->assertEmpty($rating->getCriticScore(), "Title5 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEmpty($rating->getUserScore(), "Title5 ".Constants::SOURCE_RATINGSYNC." user score");
+
+        // Title6
+        $film = Film::createFromXml($xmlFilmArray[6], new HttpJinni(TEST_JINNI_USERNAME));
+        $this->assertEquals("Title6", $film->getTitle(), "Title6 title");
+        $this->assertEquals(2006, $film->getYear(), "Title6 year");
+        $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Title6 ContentType");
+        $this->assertEquals("http://example.com/title6_image.jpeg", $film->getImage(), "Title6 image");
+        $this->assertEquals(array("Director6.1"), $film->getDirectors(), "Title6 directors");
+        $this->assertEquals(array("Genre6.1"), $film->getGenres(), "Title6 genres");
+        $this->assertEquals("http://example.com/title6_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." image");
+        $this->assertEquals("FilmId6_rs", $film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEquals("UrlName6_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+        $this->assertEquals(6, $rating->getYourScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." your score");
+        $this->assertEquals("1/6/15", $rating->getYourRatingDate()->format('n/j/y'), "Title6 ".Constants::SOURCE_RATINGSYNC." rating date");
+        $this->assertEquals(7, $rating->getSuggestedScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." suggested score");
+        $this->assertEquals(8, $rating->getCriticScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEquals(9, $rating->getUserScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." user score");
+        $this->assertEquals("http://example.com/title6_imdb_image.jpeg", $film->getImage(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." image");
+        $this->assertEquals("FilmId6_imdb", $film->getFilmId(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." Film ID");
+        $this->assertEquals("UrlName6_imdb", $film->getUrlName(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." URL Name");
+        $rating = $film->getRating(Constants::SOURCE_IMDB);
+        $this->assertEquals(5, $rating->getYourScore(), "Title6 ".Constants::SOURCE_IMDB." your score");
+        $this->assertEquals("1/5/15", $rating->getYourRatingDate()->format('n/j/y'), "Title6 ".Constants::SOURCE_IMDB." rating date");
+        $this->assertEquals(6, $rating->getSuggestedScore(), "Title6 ".Constants::SOURCE_IMDB." suggested score");
+        $this->assertEquals(7, $rating->getCriticScore(), "Title6 ".Constants::SOURCE_IMDB." critic score");
+        $this->assertEquals(8, $rating->getUserScore(), "Title6 ".Constants::SOURCE_IMDB." user score");
+
+        // Title7
+        $film = Film::createFromXml($xmlFilmArray[7], new HttpJinni(TEST_JINNI_USERNAME));
+        $this->assertEquals("Wallace & Gromit: A Matter of Loaf and Déath", $film->getTitle(), "Title7 title");
+        $this->assertEquals(array("Georges Méliès"), $film->getDirectors(), "Title7 directors");
+        $this->assertEquals(array("Genre 1 & 1ès"), $film->getGenres(), "Title7 genres");
+
+        // Frozen from All Sources
+        $film = Film::createFromXml($xmlFilmArray[9], new HttpJinni(TEST_JINNI_USERNAME));
+        $this->assertEquals("Frozen", $film->getTitle(), "Frozen title");
+        $this->assertEquals(2013, $film->getYear(), "Frozen year");
+        $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Frozen ContentType");
+        $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(), "Frozen image");
+        $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Frozen directors");
+        $this->assertEquals(array("Animation", "Adventure", "Comedy", "Fantasy", "Musical", "Family"), $film->getGenres(), "Frozen genres");
+        $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." image");
+        $this->assertEquals("Frozen_rs", $film->getFilmId(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEquals("UrlNameFrozen_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+        $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." your score");
+        $this->assertEquals("1/2/15", $rating->getYourRatingDate()->format('n/j/y'), "Frozen ".Constants::SOURCE_RATINGSYNC." rating date");
+        $this->assertEquals(3, $rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." suggested score");
+        $this->assertEquals(4, $rating->getCriticScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEquals(5, $rating->getUserScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." user score");
+        $this->assertEquals("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", $film->getImage(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." image");
+        $this->assertEquals("70785", $film->getFilmId(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." Film ID");
+        $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." URL Name");
+        $rating = $film->getRating(Constants::SOURCE_JINNI);
+        $this->assertEquals(8, $rating->getYourScore(), "Frozen ".Constants::SOURCE_JINNI." your score");
+        $this->assertEquals("5/4/15", $rating->getYourRatingDate()->format('n/j/y'), "Frozen ".Constants::SOURCE_JINNI." rating date");
+        $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_JINNI." suggested score");
+        $this->assertNull($rating->getCriticScore(), "Frozen ".Constants::SOURCE_JINNI." critic score");
+        $this->assertNull($rating->getUserScore(), "Frozen ".Constants::SOURCE_JINNI." user score");
+        $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
+        $this->assertEquals("tt2294629", $film->getFilmId(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Film ID");
+        $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." URL Name");
+        $rating = $film->getRating(Constants::SOURCE_IMDB);
+        $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_IMDB." your score");
+        $this->assertNull($rating->getYourRatingDate(), "Frozen ".Constants::SOURCE_IMDB." rating date");
+        $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_IMDB." suggested score");
+        $this->assertEquals(7.4, $rating->getCriticScore(), "Frozen ".Constants::SOURCE_IMDB." critic score");
+        $this->assertEquals(7.7, $rating->getUserScore(), "Frozen ".Constants::SOURCE_IMDB." user score");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
      * @covers  \RatingSync\Film::setTitle
      * @covers  \RatingSync\Film::addGenre
      * @covers  \RatingSync\Film::addDirector
@@ -1894,6 +2136,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @covers  \RatingSync\Film::isGenre
      * @covers  \RatingSync\Film::isDirector
      * @covers  \RatingSync\Film::addXmlChild
+     * @covers  \RatingSync\Film::createFromXml
      * @depends testSetTitle
      * @depends testAddGenre
      * @depends testAddDirector
@@ -1901,6 +2144,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testIsGenreTrue
      * @depends testIsDirectorTrue
      * @depends testAddXmlChild
+     * @depends testCreateFromXml
      */
     public function testStrangeCharactersInNames()
     {
@@ -1909,22 +2153,32 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->addGenre("Sci-Fi");
         $film->addDirector("Georges Méliès");
         
-        $this->assertEquals("Les Misérables & Gromit", $film->getTitle());
-        $this->assertTrue($film->isGenre("Sci-Fi"));
-        $this->assertTrue($film->isDirector("Georges Méliès"));
+        // Verify title, genre, director
+        $this->assertEquals("Les Misérables & Gromit", $film->getTitle(), "Title");
+        $this->assertTrue($film->isGenre("Sci-Fi"), "Genre");
+        $this->assertTrue($film->isDirector("Georges Méliès"), "Director");
 
+        // Verify writing to XML
         $xml = new \SimpleXMLElement("<films/>");
         $film->addXmlChild($xml);
         $xmlStr = "<?xml version=\"1.0\"?>\n";
         $xmlStr .= "<films>";
-        $xmlStr .= "<film title=\"Les Mis&amp;eacute;rables &amp;amp; Gromit\">";
-        $xmlStr .=     "<title>Les Mis&eacute;rables &amp; Gromit</title>";
+        $xmlStr .= "<film title=\"Les Mis&#xE9;rables &amp; Gromit\">";
+        $xmlStr .=     "<title>Les Mis&#xE9;rables &amp; Gromit</title>";
         $xmlStr .=     "<year/><contentType/><image/>";
-        $xmlStr .=     "<directors><director>Georges M&eacute;li&egrave;s</director></directors>";
+        $xmlStr .=     "<directors><director>Georges M&#xE9;li&#xE8;s</director></directors>";
         $xmlStr .=     "<genres><genre>Sci-Fi</genre></genres>";
         $xmlStr .= "</film>";
         $xmlStr .= "</films>\n";
-        $this->assertEquals($xmlStr, $xml->asXml());
+        $this->assertEquals($xmlStr, $xml->asXml(), "Writing to XML");
+
+        // Verify reading from XML
+        $xmlFilmArray = $xml->xpath('/films/film');
+        $filmSxe = $xmlFilmArray[0];
+        $readFilm = Film::createFromXml($filmSxe, new HttpJinni(TEST_JINNI_USERNAME));
+        $this->assertEquals("Les Misérables & Gromit", $readFilm->getTitle(), "Title read from XML");
+        $this->assertTrue($readFilm->isGenre("Sci-Fi"), "Genre read from XML");
+        $this->assertTrue($readFilm->isDirector("Georges Méliès"), "Director read from XML");
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }

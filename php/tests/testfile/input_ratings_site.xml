@@ -1,0 +1,292 @@
+<?xml version="1.0"?>
+<films>
+
+<!-- Frozen from Jinni -->
+<film title="Frozen">
+	<title>Frozen</title>
+	<year>2013</year>
+	<contentType>FeatureFilm</contentType>
+	<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>
+	<directors>
+		<director>Chris Buck</director>
+		<director>Jennifer Lee</director>
+	</directors>
+	<genres>
+		<genre>Adventure</genre>
+		<genre>Animation</genre>
+		<genre>Fantasy</genre>
+		<genre>Musical</genre>
+		<genre>Family</genre>
+		<genre>Comedy</genre>
+	</genres>
+	<source name="Jinni">
+		<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>
+		<filmId>70785</filmId>
+		<urlName>frozen-2013</urlName>
+		<rating>
+			<yourScore>8</yourScore>
+			<yourRatingDate>2015-5-4</yourRatingDate>
+			<suggestedScore/>
+			<criticScore/>
+			<userScore/>
+		</rating>
+	</source>
+</film>
+
+<!-- Title1 full data -->
+<film title="Title1">
+	<title>Title1</title>
+	<year>2001</year>
+	<contentType>FeatureFilm</contentType>
+	<image>http://example.com/title1_image.jpeg</image>
+	<directors>
+		<director>Director1.1</director>
+	</directors>
+	<genres>
+		<genre>Genre1.1</genre>
+	</genres>
+	<source name="RatingSync">
+		<image>http://example.com/title1_rs_image.jpeg</image>
+		<filmId>FilmId1_rs</filmId>
+		<urlName>UrlName1_rs</urlName>
+		<rating>
+			<yourScore>1</yourScore>
+			<yourRatingDate>2015-1-1</yourRatingDate>
+			<suggestedScore>2</suggestedScore>
+			<criticScore>3</criticScore>
+			<userScore>4</userScore>
+		</rating>
+	</source>
+</film>
+
+<!-- Title2 with multiple directors and genres -->
+<film title="Title2">
+	<title>Title2</title>
+	<year>2002</year>
+	<contentType>FeatureFilm</contentType>
+	<image>http://example.com/title2_image.jpeg</image>
+	<directors>
+		<director>Director2.1</director>
+		<director>Director2.2</director>
+	</directors>
+	<genres>
+		<genre>Genre2.1</genre>
+		<genre>Genre2.2</genre>
+	</genres>
+	<source name="RatingSync">
+		<image>http://example.com/title2_rs_image.jpeg</image>
+		<filmId>FilmId2_rs</filmId>
+		<urlName>UrlName2_rs</urlName>
+		<rating>
+			<yourScore>2</yourScore>
+			<yourRatingDate>2015-1-2</yourRatingDate>
+			<suggestedScore>3</suggestedScore>
+			<criticScore>4</criticScore>
+			<userScore>5</userScore>
+		</rating>
+	</source>
+</film>
+
+<!-- Title3 empty data -->
+<film title="Title3">
+	<title>Title3</title>
+	<year/>
+	<contentType/>
+	<image/>
+	<directors/>
+	<genres/>
+	<source/>
+</film>
+
+<!-- Title 4 Directors, Genres, Source present, but with empty data -->
+<film title="Title4">
+	<title>Title4</title>
+	<year/>
+	<contentType/>
+	<image/>
+	<directors>
+		<director/>
+	</directors>
+	<genres>
+		<genre/>
+	</genres>
+	<source name="RatingSync">
+		<image/>
+		<filmId/>
+		<urlName/>
+		<rating/>
+	</source>
+</film>
+
+<!-- Title5 One rating with empty rating data -->
+<film title="Title5">
+	<title>Title5</title>
+	<year/>
+	<contentType/>
+	<image/>
+	<directors/>
+	<genres/>
+	<source name="RatingSync">
+		<image/>
+		<filmId/>
+		<urlName/>
+		<rating>
+			<yourScore/>
+			<yourRatingDate/>
+			<suggestedScore/>
+			<criticScore/>
+			<userScore/>
+		</rating>
+	</source>
+</film>
+
+<!-- Title6 Multiple sources -->
+<film title="Title6">
+	<title>Title6</title>
+	<year>2006</year>
+	<contentType>FeatureFilm</contentType>
+	<image>http://example.com/title6_image.jpeg</image>
+	<directors>
+		<director>Director6.1</director>
+	</directors>
+	<genres>
+		<genre>Genre6.1</genre>
+	</genres>
+	<source name="RatingSync">
+		<image>http://example.com/title6_rs_image.jpeg</image>
+		<filmId>FilmId6_rs</filmId>
+		<urlName>UrlName6_rs</urlName>
+		<rating>
+			<yourScore>6</yourScore>
+			<yourRatingDate>2015-1-6</yourRatingDate>
+			<suggestedScore>7</suggestedScore>
+			<criticScore>8</criticScore>
+			<userScore>9</userScore>
+		</rating>
+	</source>
+	<source name="IMDb">
+		<image>http://example.com/title6_imdb_image.jpeg</image>
+		<filmId>FilmId6_imdb</filmId>
+		<urlName>UrlName6_imdb</urlName>
+		<rating>
+			<yourScore>5</yourScore>
+			<yourRatingDate>2015-1-5</yourRatingDate>
+			<suggestedScore>6</suggestedScore>
+			<criticScore>7</criticScore>
+			<userScore>8</userScore>
+		</rating>
+	</source>
+	<source name="Jinni">
+		<image>http://example.com/title6_jinni_image.jpeg</image>
+		<filmId>FilmId6_jinni</filmId>
+		<urlName>UrlName6_jinni</urlName>
+		<rating>
+			<yourScore>4</yourScore>
+			<yourRatingDate>2015-1-4</yourRatingDate>
+			<suggestedScore>5</suggestedScore>
+			<criticScore>6</criticScore>
+			<userScore>7</userScore>
+		</rating>
+	</source>
+</film>
+
+<!-- Title7 Web Encoding -->
+<film title="Wallace &amp; Gromit: A Matter of Loaf and Death">
+	<title>Wallace &amp; Gromit: A Matter of Loaf and D&#xE9;ath</title>
+	<directors>
+		<director>Georges M&#xE9;li&#xE8;s</director>
+	</directors>
+	<genres>
+		<genre>Genre 1 &amp; 1&#xE8;s</genre>
+	</genres>
+</film>
+
+<!-- Frozen from IMDB -->
+<film title="Frozen">
+	<title>Frozen</title>
+	<year>2013</year>
+	<contentType>FeatureFilm</contentType>
+	<image>http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg</image>
+	<directors>
+		<director>Chris Buck</director>
+		<director>Jennifer Lee</director>
+	</directors>
+	<genres>
+		<genre>Animation</genre>
+		<genre>Adventure</genre>
+		<genre>Comedy</genre>
+	</genres>
+	<source name="IMDb">
+		<image>http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg</image>
+		<filmId>tt2294629</filmId>
+		<urlName/>
+		<rating>
+			<yourScore>2</yourScore>
+			<yourRatingDate/>
+			<suggestedScore/>
+			<criticScore>7.4</criticScore>
+			<userScore>7.7</userScore>
+		</rating>
+	</source>
+</film>
+
+<!-- Frozen from all sources -->
+<film title="Frozen">
+	<title>Frozen</title>
+	<year>2013</year>
+	<contentType>FeatureFilm</contentType>
+	<image>http://example.com/frozen_rs_image.jpeg</image>
+	<directors>
+		<director>Chris Buck</director>
+		<director>Jennifer Lee</director>
+	</directors>
+	<genres>
+		<genre>Animation</genre>
+		<genre>Adventure</genre>
+		<genre>Comedy</genre>
+		<genre>Fantasy</genre>
+		<genre>Musical</genre>
+		<genre>Family</genre>
+	</genres>
+	<source name="RatingSync">
+		<image>http://example.com/frozen_rs_image.jpeg</image>
+		<filmId>Frozen_rs</filmId>
+		<urlName>UrlNameFrozen_rs</urlName>
+		<rating>
+			<yourScore>2</yourScore>
+			<yourRatingDate>2015-1-2</yourRatingDate>
+			<suggestedScore>3</suggestedScore>
+			<criticScore>4</criticScore>
+			<userScore>5</userScore>
+		</rating>
+	</source>
+	<source name="IMDb">
+		<image>http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg</image>
+		<filmId>tt2294629</filmId>
+		<urlName/>
+		<rating>
+			<yourScore>2</yourScore>
+			<yourRatingDate/>
+			<suggestedScore/>
+			<criticScore>7.4</criticScore>
+			<userScore>7.7</userScore>
+		</rating>
+	</source>
+	<source name="Jinni">
+		<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>
+		<filmId>70785</filmId>
+		<urlName>frozen-2013</urlName>
+		<rating>
+			<yourScore>8</yourScore>
+			<yourRatingDate>2015-5-4</yourRatingDate>
+			<suggestedScore/>
+			<criticScore/>
+			<userScore/>
+		</rating>
+	</source>
+</film>
+
+<!-- Empty film tag -->
+<film/>
+
+</films>

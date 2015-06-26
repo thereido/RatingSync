@@ -89,7 +89,7 @@ class Jinni extends Site
             if (0 === preg_match('@<div class="ratings_cell2" title="([^"]+)">[\s\n\r]+<a href="http://www.jinni.com/(movies|tv|shorts)/([^/]+)/"@', $filmSection, $matches)) {
                 continue;
             }
-            $title = htmlspecialchars_decode($matches[1]);
+            $title = html_entity_decode($matches[1], ENT_QUOTES, "utf-8");
             $contentType = $matches[2];
             $urlName = $matches[3];
             
@@ -228,7 +228,7 @@ class Jinni extends Site
             foreach ($geneSections as $geneSection) {
                 // Letters, Spaces, Hyphens, Numbers
                 if (0 < preg_match('@([a-zA-Z \-\d]+)[,]?<\/a>@', $geneSection, $matches)) {
-                    $film->addGenre($matches[1]);
+                    $film->addGenre(html_entity_decode($matches[1], ENT_QUOTES, "utf-8"));
                     $didFindGenres = true;
                 }
             }
@@ -269,7 +269,7 @@ class Jinni extends Site
                 preg_match_all("@<[^>]+>(.*)</[^>]+>@U", $directorLines[1], $directorMatches);
                 $directors = $directorMatches[1];
                 foreach ($directors as $director) {
-                    $film->addDirector($director);
+                    $film->addDirector(html_entity_decode($director, ENT_QUOTES, "utf-8"));
                     $didFindDirectors = true;
                 }
             }

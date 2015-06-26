@@ -15,7 +15,7 @@ class SourceTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->debug = true;
+        $this->debug = false;
         $this->lastTestTime = new \DateTime();
     }
 
