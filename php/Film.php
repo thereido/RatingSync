@@ -5,6 +5,7 @@
 namespace RatingSync;
 
 require_once "Http.php";
+require_once "main.php";
 
 class Film {
     const CONTENT_FILM      = 'FeatureFilm';
@@ -15,7 +16,8 @@ class Film {
      * @var http
      */
     protected $http;
-
+    
+    protected $id;
     protected $title;
     protected $year;
     protected $contentType;
@@ -56,7 +58,7 @@ class Film {
            </genres>
            <source name="">
                <image/>
-               <filmId/>
+               <filmName/>
                <urlName/>
                <rating>
                    <yourScore/>
@@ -100,7 +102,7 @@ class Film {
             $sourceXml = $filmXml->addChild('source');
             $sourceXml->addAttribute('name', $source->getName());
             $sourceXml->addChild('image', $source->getImage());
-            $sourceXml->addChild('filmId', $source->getFilmId());
+            $sourceXml->addChild('filmName', $source->getFilmName());
             $sourceXml->addChild('urlName', $source->getUrlName());
             $rating = $source->getRating();
             $ratingXml = $sourceXml->addChild('rating');
@@ -162,7 +164,7 @@ class Film {
             }
             $source = $film->getSource($sourceNameSxe[0]->__toString());
             $source->setImage(Self::xmlStringByKey('image', $sourceSxe));
-            $source->setFilmId(Self::xmlStringByKey('filmId', $sourceSxe));
+            $source->setFilmName(Self::xmlStringByKey('filmName', $sourceSxe));
             $source->setUrlName(Self::xmlStringByKey('urlName', $sourceSxe));
 
             $ratingSxe = $sourceSxe->xpath('rating')[0];
@@ -220,22 +222,22 @@ class Film {
         return $this->sources[$sourceName];
     }
 
-    public function setFilmId($FilmId, $source)
+    public function setFilmName($FilmName, $source)
     {
         if (! Source::validSource($source) ) {
             throw new \InvalidArgumentException('Source $source invalid setting Film ID');
         }
 
-        $this->getSource($source)->setFilmId($FilmId);
+        $this->getSource($source)->setFilmName($FilmName);
     }
 
-    public function getFilmId($source)
+    public function getFilmName($source)
     {
         if (! Source::validSource($source) ) {
             throw new \InvalidArgumentException('Source $source invalid getting Film ID');
         }
 
-        return $this->getSource($source)->getFilmId();
+        return $this->getSource($source)->getFilmName();
     }
 
     public function setUrlName($urlName, $source)
@@ -324,6 +326,16 @@ class Film {
         }
 
         return $this->getRating($source)->getYourScore();
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    public function getId()
+    {
+        return $this->id;
     }
 
     public function setTitle($title)
@@ -485,5 +497,127 @@ class Film {
     public function isDirector($director)
     {
         return in_array($director, $this->directors);
+    }
+
+    public function saveToDb()
+    {
+        $db = getDatabase();
+
+        $filmId = $this->id;
+        $title = $this->getTitle();
+        $year = $this->getYear();
+        if (empty($year)) $year = "NULL";
+        $contentType = $this->getContentType();
+        $image = $this->getImage();
+
+        // Look for an existing film row
+        $newRow = false;
+        if (empty($filmId)) {
+            $result = $db->query("SELECT id FROM film WHERE title='$title' AND year=$year");
+            if ($result->num_rows == 1) {
+                $row = $result->fetch_assoc();
+                $filmId = $row["id"];
+                $this->id = $filmId;
+                $newRow = false;
+            } else {
+                $newRow = true;
+            }
+        }
+        
+        // Insert or Update Film row
+        if ($newRow) {
+            $columns = "title, year, contentType, image";
+            $values = "'$title', $year, '$contentType', '$image'";
+            if ($db->query("INSERT INTO film ($columns) VALUES ($values)")) {
+                $filmId = $db->insert_id;
+                $this->id = $filmId;
+            }
+        } else {
+            $values = "title='$title', year=$year, contentType='$contentType', image='$image'";
+            $where = "id=$filmId";
+            $db->query("UPDATE film SET $values WHERE $where");
+        }
+        
+        // Sources
+        foreach ($this->sources as $source) {
+            $sourceName = $source->getName();
+            $sourceImage = $source->getImage();
+            $sourceUrlName = $source->getUrlName();
+            $sourceFilmName = $source->getFilmName();
+            
+            $columns = "film_id, source_name, image, urlName, filmName";
+            $values = "$filmId, '$sourceName', '$sourceImage', '$sourceUrlName', '$sourceFilmName'";
+            $db->query("REPLACE INTO film_source ($columns) VALUES ($values)");
+
+            // Rating
+            $rating = $source->getRating();
+            $yourScore = $rating->getYourScore();
+            $ratingDate = null;
+            if (!is_null($rating->getYourRatingDate())) {
+                $ratingDate = $rating->getYourRatingDate()->format("Y-m-d");
+            }
+            $suggestedScore = $rating->getSuggestedScore();
+            $criticScore = $rating->getCriticScore();
+            $userScore = $rating->getUserScore();
+            
+            $columns = "user_name, source_name, film_id";
+            $values = "'testratingsync', '$sourceName', $filmId";
+            if (!empty($yourScore)) {
+                $columns .= ", yourScore";
+                $values .= ", $yourScore";
+            }
+            if (!empty($suggestedScore)) {
+                $columns .= ", suggestedScore";
+                $values .= ", $suggestedScore";
+            }
+            if (!empty($criticScore)) {
+                $columns .= ", criticScore";
+                $values .= ", $criticScore";
+            }
+            if (!empty($userScore)) {
+                $columns .= ", userScore";
+                $values .= ", $userScore";
+            }
+            if (!empty($ratingDate)) {
+                $columns .= ", yourRatingDate";
+                $values .= ", '$ratingDate'";
+            }
+            $db->query("REPLACE INTO rating ($columns) VALUES ($values)");
+        }
+
+        // Directors
+        foreach ($this->getDirectors() as $director) {
+            $personId;
+            $result = $db->query("SELECT id FROM person WHERE fullname='$director'");
+            if ($result->num_rows == 1) {
+                $row = $result->fetch_assoc();
+                $personId = $row["id"];
+            } else {
+                $columns = "fullname, lastname";
+                $values = "'$director', '$director'";
+                $db->query("INSERT INTO person ($columns) VALUES ($values)");
+                $personId = $db->insert_id;
+            }
+
+            $columns = "person_id, film_id, position";
+            $values = "$personId, $filmId, '$director'";
+            $db->query("REPLACE INTO credit ($columns) VALUES ($values)");
+        }
+
+        // Genres
+        foreach ($this->getGenres() as $genre) {
+            $result = $db->query("SELECT 1 FROM genre WHERE name='$genre'");
+            if ($result->num_rows == 0) {
+                $columns = "name";
+                $values = "'$genre'";
+                $db->query("INSERT INTO genre ($columns) VALUES ($values)");
+            }
+
+            $columns = "film_id, genre_name";
+            $values = "$filmId, '$genre'";
+            $db->query("REPLACE INTO film_genre ($columns) VALUES ($values)");
+        }
+
+        $db->commit();
     }
 }

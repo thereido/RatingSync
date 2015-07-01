@@ -43,49 +43,49 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers  \RatingSync\Film::setFilmId
-     * @covers  \RatingSync\Film::getFilmId
+     * @covers  \RatingSync\Film::setFilmName
+     * @covers  \RatingSync\Film::getFilmName
      * @depends testObjectCanBeConstructedFromHttp
      */
-    public function testSetAndGetFilmId()
+    public function testSetAndGetFilmName()
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
         
         // Null
-        $film->setFilmId(null, Constants::SOURCE_JINNI);
-        $this->assertNull($film->getFilmId(Constants::SOURCE_JINNI));
+        $film->setFilmName(null, Constants::SOURCE_JINNI);
+        $this->assertNull($film->getFilmName(Constants::SOURCE_JINNI));
 
         // Empty String
-        $film->setFilmId("", Constants::SOURCE_JINNI);
-        $this->assertEquals("", $film->getFilmId(Constants::SOURCE_JINNI));
+        $film->setFilmName("", Constants::SOURCE_JINNI);
+        $this->assertEquals("", $film->getFilmName(Constants::SOURCE_JINNI));
         
         // Int
-        $film->setFilmId(1234, Constants::SOURCE_JINNI);
-        $this->assertEquals(1234, $film->getFilmId(Constants::SOURCE_JINNI));
+        $film->setFilmName(1234, Constants::SOURCE_JINNI);
+        $this->assertEquals(1234, $film->getFilmName(Constants::SOURCE_JINNI));
         
         // Number as a string
-        $film->setFilmId("1234", Constants::SOURCE_JINNI);
-        $this->assertEquals(1234, $film->getFilmId(Constants::SOURCE_JINNI));
+        $film->setFilmName("1234", Constants::SOURCE_JINNI);
+        $this->assertEquals(1234, $film->getFilmName(Constants::SOURCE_JINNI));
         
         // Alpha-num string
-        $film->setFilmId("Film 1D", Constants::SOURCE_JINNI);
-        $this->assertEquals("Film 1D", $film->getFilmId(Constants::SOURCE_JINNI));
+        $film->setFilmName("Film 1D", Constants::SOURCE_JINNI);
+        $this->assertEquals("Film 1D", $film->getFilmName(Constants::SOURCE_JINNI));
 
         // Mismatch source
-        $film->setFilmId("Film 1D", Constants::SOURCE_JINNI);
-        $this->assertNull($film->getFilmId(Constants::SOURCE_IMDB));
+        $film->setFilmName("Film 1D", Constants::SOURCE_JINNI);
+        $this->assertNull($film->getFilmName(Constants::SOURCE_IMDB));
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
-     * @covers  \RatingSync\Film::getFilmId
+     * @covers  \RatingSync\Film::getFilmName
      * @depends testObjectCanBeConstructedFromHttp
      */
-    public function testFilmIdCanBeRetrievedFromNewObject()
+    public function testFilmNameCanBeRetrievedFromNewObject()
     {
         $film = new Film(new HttpJinni(TEST_JINNI_USERNAME));
-        $this->assertNull($film->getFilmId(Constants::SOURCE_JINNI));
+        $this->assertNull($film->getFilmName(Constants::SOURCE_JINNI));
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
@@ -1705,7 +1705,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         // Source data
         $film->setImage("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", Constants::SOURCE_JINNI);
         $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
-        $film->setFilmId("999", Constants::SOURCE_JINNI);
+        $film->setFilmName("999", Constants::SOURCE_JINNI);
 
         // Rating data
         $rating = new Rating(Constants::SOURCE_JINNI);
@@ -1729,7 +1729,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=     "<genres><genre>Family</genre></genres>";
         $xmlStr .=     "<source name=\"Jinni\">";
         $xmlStr .=         "<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>";
-        $xmlStr .=         "<filmId>999</filmId>";
+        $xmlStr .=         "<filmName>999</filmName>";
         $xmlStr .=         "<urlName>frozen-2013</urlName>";
         $xmlStr .=         "<rating>";
         $xmlStr .=             "<yourScore>8</yourScore>";
@@ -1763,7 +1763,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
         // Jinni data
         $film->setImage("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", Constants::SOURCE_JINNI);
-        $film->setFilmId("999", Constants::SOURCE_JINNI);
+        $film->setFilmName("999", Constants::SOURCE_JINNI);
         $film->setUrlName("frozen-2013", Constants::SOURCE_JINNI);
 
         // Jinni Rating data
@@ -1776,7 +1776,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->setRating($rating, Constants::SOURCE_JINNI);
 
         // IMDb data
-        $film->setFilmId("tt2294629", Constants::SOURCE_IMDB);
+        $film->setFilmName("tt2294629", Constants::SOURCE_IMDB);
 
         // IMDb Rating data
         $rating = new Rating(Constants::SOURCE_IMDB);
@@ -1799,7 +1799,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=     "<genres><genre>Family</genre></genres>";
         $xmlStr .=     "<source name=\"Jinni\">";
         $xmlStr .=         "<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>";
-        $xmlStr .=         "<filmId>999</filmId>";
+        $xmlStr .=         "<filmName>999</filmName>";
         $xmlStr .=         "<urlName>frozen-2013</urlName>";
         $xmlStr .=         "<rating>";
         $xmlStr .=             "<yourScore>8</yourScore>";
@@ -1811,7 +1811,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=     "</source>";
         $xmlStr .=     "<source name=\"IMDb\">";
         $xmlStr .=         "<image/>";
-        $xmlStr .=         "<filmId>tt2294629</filmId>";
+        $xmlStr .=         "<filmName>tt2294629</filmName>";
         $xmlStr .=         "<urlName/>";
         $xmlStr .=         "<rating>";
         $xmlStr .=             "<yourScore>4</yourScore>";
@@ -1975,7 +1975,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Director1.1"), $film->getDirectors(), "Title1 directors");
         $this->assertEquals(array("Genre1.1"), $film->getGenres(), "Title1 genres");
         $this->assertEquals("http://example.com/title1_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEquals("FilmId1_rs", $film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEquals("FilmName1_rs", $film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." Film ID");
         $this->assertEquals("UrlName1_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." URL Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(1, $rating->getYourScore(), "Title1 ".Constants::SOURCE_RATINGSYNC." your score");
@@ -1993,7 +1993,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Director2.1", "Director2.2"), $film->getDirectors(), "Title2 directors");
         $this->assertEquals(array("Genre2.1", "Genre2.2"), $film->getGenres(), "Title2 genres");
         $this->assertEquals("http://example.com/title2_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEquals("FilmId2_rs", $film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEquals("FilmName2_rs", $film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." Film ID");
         $this->assertEquals("UrlName2_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." URL Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(2, $rating->getYourScore(), "Title2 ".Constants::SOURCE_RATINGSYNC." your score");
@@ -2011,7 +2011,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($film->getDirectors(), "Title3 directors");
         $this->assertEmpty($film->getGenres(), "Title3 genres");
         $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEmpty($film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEmpty($film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." Film ID");
         $this->assertEmpty($film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." URL Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEmpty($rating->getYourScore(), "Title3 ".Constants::SOURCE_RATINGSYNC." your score");
@@ -2029,7 +2029,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($film->getDirectors(), "Title4 directors");
         $this->assertEmpty($film->getGenres(), "Title4 genres");
         $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEmpty($film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEmpty($film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." Film ID");
         $this->assertEmpty($film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." URL Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEmpty($rating->getYourScore(), "Title4 ".Constants::SOURCE_RATINGSYNC." your score");
@@ -2047,7 +2047,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($film->getDirectors(), "Title5 directors");
         $this->assertEmpty($film->getGenres(), "Title5 genres");
         $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEmpty($film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEmpty($film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." Film ID");
         $this->assertEmpty($film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." URL Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEmpty($rating->getYourScore(), "Title5 ".Constants::SOURCE_RATINGSYNC." your score");
@@ -2065,7 +2065,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Director6.1"), $film->getDirectors(), "Title6 directors");
         $this->assertEquals(array("Genre6.1"), $film->getGenres(), "Title6 genres");
         $this->assertEquals("http://example.com/title6_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEquals("FilmId6_rs", $film->getFilmId(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEquals("FilmName6_rs", $film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." Film ID");
         $this->assertEquals("UrlName6_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." URL Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(6, $rating->getYourScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." your score");
@@ -2074,7 +2074,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(8, $rating->getCriticScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." critic score");
         $this->assertEquals(9, $rating->getUserScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." user score");
         $this->assertEquals("http://example.com/title6_imdb_image.jpeg", $film->getImage(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." image");
-        $this->assertEquals("FilmId6_imdb", $film->getFilmId(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." Film ID");
+        $this->assertEquals("FilmName6_imdb", $film->getFilmName(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." Film ID");
         $this->assertEquals("UrlName6_imdb", $film->getUrlName(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." URL Name");
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(5, $rating->getYourScore(), "Title6 ".Constants::SOURCE_IMDB." your score");
@@ -2098,7 +2098,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Frozen directors");
         $this->assertEquals(array("Animation", "Adventure", "Comedy", "Fantasy", "Musical", "Family"), $film->getGenres(), "Frozen genres");
         $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEquals("Frozen_rs", $film->getFilmId(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." Film ID");
+        $this->assertEquals("Frozen_rs", $film->getFilmName(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." Film ID");
         $this->assertEquals("UrlNameFrozen_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." URL Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." your score");
@@ -2107,7 +2107,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(4, $rating->getCriticScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." critic score");
         $this->assertEquals(5, $rating->getUserScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." user score");
         $this->assertEquals("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", $film->getImage(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." image");
-        $this->assertEquals("70785", $film->getFilmId(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." Film ID");
+        $this->assertEquals("70785", $film->getFilmName(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." Film ID");
         $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." URL Name");
         $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals(8, $rating->getYourScore(), "Frozen ".Constants::SOURCE_JINNI." your score");
@@ -2116,7 +2116,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getCriticScore(), "Frozen ".Constants::SOURCE_JINNI." critic score");
         $this->assertNull($rating->getUserScore(), "Frozen ".Constants::SOURCE_JINNI." user score");
         $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
-        $this->assertEquals("tt2294629", $film->getFilmId(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Film ID");
+        $this->assertEquals("tt2294629", $film->getFilmName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Film ID");
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." URL Name");
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_IMDB." your score");

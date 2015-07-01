@@ -96,15 +96,15 @@ class Imdb extends Site
 
             // Film ID
             preg_match('@\"(tt[\d]+)\"@', $filmSection, $matches);
-            $filmId = $matches[1];
+            $filmName = $matches[1];
             
             // Your Score, User Score
-            if (1 === preg_match('@id=\"'.$filmId.'\|your\|(\d\d?)\|(\d\d?\.?\d?)@', $filmSection, $matches)) {
+            if (1 === preg_match('@id=\"'.$filmName.'\|your\|(\d\d?)\|(\d\d?\.?\d?)@', $filmSection, $matches)) {
                 $yourScore = $matches[1];
                 $userScore = $matches[2];
             } else {
                 $yourScore = null;
-                $pregRet = preg_match('@id=\"'.$filmId.'\|imdb\|\d\d?\.?\d?\|(\d\d?\.?\d?)@', $filmSection, $matches);
+                $pregRet = preg_match('@id=\"'.$filmName.'\|imdb\|\d\d?\.?\d?\|(\d\d?\.?\d?)@', $filmSection, $matches);
                 $userScore = $matches[1];
             }
 
@@ -131,7 +131,7 @@ class Imdb extends Site
             //FIXME $rating->setYourRatingDate(\DateTime::createFromFormat($this->dateFormat, $ratingDate));
 
             $film->setRating($rating, $this->sourceName);
-            $film->setFilmId($filmId, $this->sourceName);
+            $film->setFilmName($filmName, $this->sourceName);
             //FIXME $film->setUrlName($urlName, $this->sourceName);
             $film->setImage($image);
             $film->setImage($image, $this->sourceName);
@@ -156,11 +156,11 @@ class Imdb extends Site
     {
         if (! $film instanceof Film ) {
             throw new \InvalidArgumentException('Function getFilmDetailPageUrl must be given a Film object');
-        } elseif ( is_null($film->getFilmId($this->sourceName)) ) {
+        } elseif ( is_null($film->getFilmName($this->sourceName)) ) {
             throw new \InvalidArgumentException('Function getFilmDetailPageUrl must have Film ID');
         }
 
-        return '/title/'.$film->getFilmId($this->sourceName).'/';
+        return '/title/'.$film->getFilmName($this->sourceName).'/';
     }
 
     /**
@@ -287,7 +287,7 @@ class Imdb extends Site
      *
      * @return string Regular expression to find Film Id in film detail HTML page
      */
-    protected function getDetailPageRegexForFilmId($film) {
+    protected function getDetailPageRegexForFilmName($film) {
         return '/<meta property="og:url" content=".*\/(.+)\/"/';
     }
 

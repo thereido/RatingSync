@@ -36,7 +36,7 @@ class Jinni extends Site
      * Return a film's unique attribute.  This the attr available from ratings pages
        and from a film detail page.  In most sites the Film ID is always available, but
        Jinni is has URL Name and don't always Film ID.  The Site implentation returns
-       Film::getFilmId().  Child classes can return something else.
+       Film::getFilmName().  Child classes can return something else.
      *
      * @param \RatingSync\Film $film get the attr from this film
      *
@@ -109,7 +109,7 @@ class Jinni extends Site
             if (0 === preg_match('@contentId: "(\d+)@', $filmSection, $matches)) {
                 continue;
             }
-            $filmId = $matches[1];
+            $filmName = $matches[1];
 
             // Image
             if (0 === preg_match('@<img src="(http://media[\d]*.jinni.com/(?:tv|movie|shorts|no-image)/[^/]+/[^"]+)"@', $filmSection, $matches)) {
@@ -124,7 +124,7 @@ class Jinni extends Site
             $films[] = $film = new Film($this->http);
             $film->setRating($rating, Constants::SOURCE_JINNI);
             $film->setTitle($title);
-            $film->setFilmId($filmId, Constants::SOURCE_JINNI);
+            $film->setFilmName($filmName, Constants::SOURCE_JINNI);
             $film->setUrlName($urlName, Constants::SOURCE_JINNI);
             $film->setImage($image);
             $film->setImage($image, Constants::SOURCE_JINNI);
@@ -334,7 +334,7 @@ class Jinni extends Site
      *
      * @return string Regular expression to find Film Id in film detail HTML page
      */
-    protected function getDetailPageRegexForFilmId($film)
+    protected function getDetailPageRegexForFilmName($film)
     {
         if (is_null($film) || !($film instanceof Film) || empty($film->getUrlName($this->sourceName))) {
             throw new \InvalidArgumentException('Film param must have a URL Name');

@@ -43,4 +43,20 @@ function export($username, $source, $format)
     }
 }
 
+function getDatabase()
+{
+    static $db_conn;
+    if (empty($db_conn)) {
+        $db_conn = new \mysqli("localhost", "rs_user", "password");
+
+        // Check connection
+        if ($db_conn->connect_error) {
+            die("Connection failed: " . $db_conn->connect_error);
+        }
+        $db_conn->query("USE ratingsync_db");
+    }
+
+    return $db_conn;
+}
+
 ?>

@@ -53,45 +53,45 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers  \RatingSync\Source::setFilmId
-     * @covers  \RatingSync\Source::getFilmId
+     * @covers  \RatingSync\Source::setFilmName
+     * @covers  \RatingSync\Source::getFilmName
      * @depends testObjectCanBeConstructed
      */
-    public function testSetAndGetFilmId()
+    public function testSetAndGetFilmName()
     {
         $source = new Source(Constants::SOURCE_JINNI);
         
         // Null
-        $source->setFilmId(null);
-        $this->assertNull($source->getFilmId());
+        $source->setFilmName(null);
+        $this->assertNull($source->getFilmName());
 
         // Empty String
-        $source->setFilmId("");
-        $this->assertEquals("", $source->getFilmId());
+        $source->setFilmName("");
+        $this->assertEquals("", $source->getFilmName());
         
         // Int
-        $source->setFilmId(1234);
-        $this->assertEquals(1234, $source->getFilmId());
+        $source->setFilmName(1234);
+        $this->assertEquals(1234, $source->getFilmName());
         
         // Number as a string
-        $source->setFilmId("1234");
-        $this->assertEquals(1234, $source->getFilmId());
+        $source->setFilmName("1234");
+        $this->assertEquals(1234, $source->getFilmName());
         
         // Alpha-num string
-        $source->setFilmId("Film 1D");
-        $this->assertEquals("Film 1D", $source->getFilmId());
+        $source->setFilmName("Film 1D");
+        $this->assertEquals("Film 1D", $source->getFilmName());
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
-     * @covers  \RatingSync\Source::getFilmId
+     * @covers  \RatingSync\Source::getFilmName
      * @depends testObjectCanBeConstructed
      */
-    public function testFilmIdCanBeRetrievedFromNewObject()
+    public function testFilmNameCanBeRetrievedFromNewObject()
     {
         $source = new Source(Constants::SOURCE_JINNI);
-        $this->assertNull($source->getFilmId());
+        $this->assertNull($source->getFilmName());
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }

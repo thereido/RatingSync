@@ -132,7 +132,7 @@ abstract class Site
      *
      * @return string Regular expression to find Film Id in film detail HTML page
      */
-    abstract protected function getDetailPageRegexForFilmId($film);
+    abstract protected function getDetailPageRegexForFilmName($film);
 
     /**
      * Regular expression to find URL Name in film detail HTML page
@@ -208,7 +208,7 @@ abstract class Site
      * Return a film's unique attribute.  This the attr available from ratings pages
        and from a film detail page.  In most sites the Film ID is always available, but
        Jinni is has URL Name and don't always Film ID.  The Site implentation returns
-       Film::getFilmId().  Child classes can return something else.
+       Film::getFilmName().  Child classes can return something else.
      *
      * @param \RatingSync\Film $film get the attr from this film
      *
@@ -217,7 +217,7 @@ abstract class Site
     public function getFilmUniqueAttr($film)
     {
         if (!is_null($film) && ($film instanceof Film)) {
-            return $film->getFilmId($this->sourceName);
+            return $film->getFilmName($this->sourceName);
         }
     }
 
@@ -383,7 +383,7 @@ abstract class Site
         $results = $this->http->searchSuggestions($searchStr, $type);
         foreach ($results as $result) {
             $films[] = $film = new Film($this->http);
-            $film->setFilmId($result['id'], $this->sourceName);
+            $film->setFilmName($result['id'], $this->sourceName);
             $film->setTitle($result['title']);
             $film->setYear($result['year']);
             $film->setContentType($result['contentType']);
@@ -421,6 +421,24 @@ abstract class Site
         return true;
     }
 
+    /**
+     * Get ratings from a file and import those ratings to an account at the website
+     *
+     * @param string $format     File format to read from. Currently only XML.
+     * @param string $filename   Full path to the filename reading from
+     * @param string $sourceName Website to import to
+     *
+     * @return true for success, false for failure
+     */
+    public function importRatings($format, $filename, $sourceName)
+    {
+        $films = $this->parseFilmsFromFile($format, $filename);
+        foreach ($films as $film) {
+            $film->saveToDb();
+        }
+        return true;
+    }
+
     /*
      * @param int|0 $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
      */
@@ -437,7 +455,7 @@ abstract class Site
         $this->parseDetailPageForImage($page, $film, $overwrite);
         $this->parseDetailPageForContentType($page, $film, $overwrite);
         $this->parseDetailPageForUrlName($page, $film, $overwrite);
-        $this->parseDetailPageForFilmId($page, $film, $overwrite);
+        $this->parseDetailPageForFilmName($page, $film, $overwrite);
         $this->parseDetailPageForRating($page, $film, $overwrite);
         $this->parseDetailPageForGenres($page, $film, $overwrite);
         $this->parseDetailPageForDirectors($page, $film, $overwrite);
@@ -557,17 +575,17 @@ abstract class Site
      *
      * @return bool true is value is written to the Film object
      */
-    protected function parseDetailPageForFilmId($page, $film, $overwrite)
+    protected function parseDetailPageForFilmName($page, $film, $overwrite)
     {
-        if (!$overwrite && !is_null($film->getFilmId($this->sourceName))) {
+        if (!$overwrite && !is_null($film->getFilmName($this->sourceName))) {
             return false;
         }
 
-        $regex = $this->getDetailPageRegexForFilmId($film);
+        $regex = $this->getDetailPageRegexForFilmName($film);
         if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
             return false;
         }
-        $film->setFilmId($matches[1], $this->sourceName);
+        $film->setFilmName($matches[1], $this->sourceName);
         return true;
     }
 

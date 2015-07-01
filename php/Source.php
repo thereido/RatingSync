@@ -13,7 +13,7 @@ class Source
 {
     protected $name;
     protected $image;
-    protected $filmId;
+    protected $filmName;
     protected $urlName;
     protected $rating;
 
@@ -57,13 +57,13 @@ class Source
     /**
      * ID to find this film within the source
      *
-     * @param string $filmId ID to find this film within the source
+     * @param string $filmName ID to find this film within the source
      *
      * @return none
      */
-    public function setFilmId($filmId)
+    public function setFilmName($filmName)
     {
-        $this->filmId = $filmId;
+        $this->filmName = $filmName;
     }
 
     /**
@@ -72,9 +72,9 @@ class Source
      *
      * @return string matches id in a /RatingSync/Film
      */
-    public function getFilmId()
+    public function getFilmName()
     {
-        return $this->filmId;
+        return $this->filmName;
     }
 
     public function setUrlName($urlName)
