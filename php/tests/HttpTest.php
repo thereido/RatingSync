@@ -5,21 +5,7 @@
 namespace RatingSync;
 
 require_once "../Http.php";
-
-class HttpChild extends \RatingSync\Http {
-    public function __construct($username)
-    {
-        parent::__construct($username);
-        $this->baseUrl = "http://www.jinni.com";
-        $this->lightweightUrl = "/info/about.html";
-    }
-
-    function _validateAfterConstructor() { return $this->validateAfterConstructor(); }
-
-    function _getSessionId() { return $this->sessionId; }
-
-    public function searchSuggestions($searchStr, $type = null) {}
-}
+require_once "HttpChild.php";
 
 class HttpTest extends \PHPUnit_Framework_TestCase
 {
@@ -121,10 +107,10 @@ class HttpTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Http::getPage
      * @depends testConstructorValidated
      */
-    public function testGetPageAbout() {
+    public function testGetLightweightPage() {
         $http = new HttpChild("username");
-        $page = $http->getPage('/info/about.html');
-        $this->assertGreaterThan(0, stripos($page, "About Jinni</title>"), "Get 'About' page");
+        $page = $http->getPage($http->_getLightweightUrl());
+        $this->assertGreaterThan(0, stripos($page, "<title>Help : General Info</title>"), "Get a lightweight page");
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
@@ -135,8 +121,8 @@ class HttpTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetPageWithHeadersOnly() {
         $http = new HttpChild("username");
-        $headers = $http->getPage('/info/about.html', null, true);
-        $this->assertStringEndsWith("Connection: keep-alive", rtrim($headers), "getPage() with headersOnly=true is not ending in a header");
+        $headers = $http->getPage($http->_getLightweightUrl(), null, true);
+        $this->assertStringEndsWith("Transfer-Encoding: chunked", rtrim($headers), "getPage() with headersOnly=true is not ending in a header");
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
