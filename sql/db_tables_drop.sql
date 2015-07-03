@@ -1,6 +1,6 @@
 use ratingsync_db;
 
-DROP TABLE IF EXISTS wishlist;
+DROP TABLE IF EXISTS userlist;
 DROP TABLE IF EXISTS credit;
 DROP TABLE IF EXISTS person;
 DROP TABLE IF EXISTS film_genre;

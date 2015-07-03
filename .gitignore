@@ -3,7 +3,9 @@
 /PHPPage.php
 /php/output/ratings.xml
 /php/output/ratings_test.xml
+/php/output/*Copy.xml
 /php/output/Temp*
 /php/tests/unit_tests.cmd
 /php/tests/Temp*
 /php/tests/cache/*
+/php/tests/testfile/*Copy.xml

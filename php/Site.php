@@ -430,11 +430,22 @@ abstract class Site
      *
      * @return true for success, false for failure
      */
-    public function importRatings($format, $filename, $sourceName)
+    public function importRatings($format, $filename, $sourceName = Constants::SOURCE_RATINGSYNC)
     {
+        if (! Source::validSource($sourceName) ) {
+            throw new \InvalidArgumentException('Source $source invalid');
+        } elseif ($sourceName !=  Constants::SOURCE_RATINGSYNC) {
+            throw new \InvalidArgumentException('RatingSync database is the only import supported currently (sourceName=' . $sourceName . ')');
+        }
+        if (! self::validImportFormat($format) ) {
+            throw new \InvalidArgumentException('Import format '.$format.' invalid');
+        }
+
         $films = $this->parseFilmsFromFile($format, $filename);
         foreach ($films as $film) {
-            $film->saveToDb();
+            if ($sourceName == Constants::SOURCE_RATINGSYNC) {
+                $film->saveToDb();
+            }
         }
         return true;
     }
@@ -694,6 +705,10 @@ abstract class Site
      */
     public function parseFilmsFromFile($format, $filename)
     {
+        if (! self::validImportFormat($format) ) {
+            throw new \InvalidArgumentException('File parse format '.$format.' invalid');
+        }
+
         $xml = simplexml_load_file($filename);
         $xmlFilmArray = $xml->xpath('/films/film');
         
@@ -708,5 +723,21 @@ abstract class Site
         }
 
         return $films;
+    }
+
+    public static function validExportFormat($format)
+    {
+        if (in_array($format, array(Constants::EXPORT_FORMAT_XML))) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function validImportFormat($format)
+    {
+        if (in_array($format, array(Constants::IMPORT_FORMAT_XML))) {
+            return true;
+        }
+        return false;
     }
 }

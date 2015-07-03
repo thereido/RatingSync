@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS film_source
         source_name VARCHAR(50) NOT NULL,
         image VARCHAR(150) NULL DEFAULT NULL,
         filmName VARCHAR(50) NULL DEFAULT NULL,
-        urlName VARCHAR(50) NULL DEFAULT NULL,
+        urlName VARCHAR(75) NULL DEFAULT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
         PRIMARY KEY (film_id, source_name),
@@ -137,14 +137,15 @@ CREATE TABLE IF NOT EXISTS credit
             REFERENCES film(id)
     );
   
-CREATE TABLE IF NOT EXISTS wishlist
+CREATE TABLE IF NOT EXISTS userlist
     (
         user_name VARCHAR(50) NOT NULL,
         film_id INT NOT NULL,
+        listname VARCHAR(50) NOT NULL DEFAULT 'Wishlist',
         position INT NULL DEFAULT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
-        PRIMARY KEY (user_name, film_id),
+        PRIMARY KEY (user_name, film_id, listname),
         KEY (user_name),
         KEY (film_id),
 

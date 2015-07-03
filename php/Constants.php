@@ -11,6 +11,7 @@ class Constants
     const SOURCE_IMDB                   = "IMDb";
     const SOURCE_RATINGSYNC             = "RatingSync";
     const EXPORT_FORMAT_XML             = "XML";
+    const IMPORT_FORMAT_XML             = "XML";
     const USE_CACHE_ALWAYS              = -1;
     const USE_CACHE_NEVER               = 0;
     
