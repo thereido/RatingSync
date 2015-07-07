@@ -11,7 +11,6 @@ spl_autoload_register(
                 'RatingSync\\film' => '/Film.php',
                 'RatingSync\\http' => '/Http.php',
                 'RatingSync\\httpimdb' => '/HttpImdb.php',
-                'RatingSync\\httpjinni' => '/HttpJinni.php',
                 'RatingSync\\imdb' => '/Imdb.php',
                 'RatingSync\\jinni' => '/Jinni.php',
                 'RatingSync\\main' => '/main.php',

@@ -1283,7 +1283,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
-     * @covers \RatingSync\Imdb::testParseFilmsFromFile
+     * @covers \RatingSync\Imdb::parseFilmsFromFile
      * @depends testObjectCanBeConstructed
      */
     public function testParseFilmsFromFile()
@@ -1531,6 +1531,85 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($test, $verify, 'Match test file (written) vs verify file (original)');
         fclose($fp_test);
         fclose($fp_verify);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    public function testResetDb()
+    {
+        exec("mysql --user=rs_user --password=password ratingsync_db < ..\..\sql\db_tables_drop.sql");
+        exec("mysql --user=rs_user --password=password ratingsync_db < ..\..\sql\db_tables_create.sql");
+        exec("mysql --user=rs_user --password=password ratingsync_db < ..\..\sql\db_insert_initial.sql");
+
+        $db = getDatabase();
+        $result = $db->query("SELECT count(id) as count FROM film");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(0, $row["count"], "Film rows (should be none)");
+        $result = $db->query("SELECT count(user_source.source_name) as count FROM user, source, user_source WHERE user.username='testratingsync' AND user.username=user_source.user_name AND user_source.source_name=source.name");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(3, $row["count"], "Test user with sources");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers \RatingSync\Imdb::importRatings
+     * @depends testParseFilmsFromFile
+     * @depends testResetDb
+     */
+    public function testImport()
+    {
+        $site = new Imdb(TEST_IMDB_USERNAME);
+        
+        $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
+        $films = $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename);
+        
+        $db = getDatabase();
+
+        // Count rows in each table
+        $result = $db->query("SELECT count(id) as count FROM film");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(8, $row["count"], "Films");
+        $result = $db->query("SELECT count(film_id) as count FROM film_source");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(10, $row["count"], "Film/Source rows");
+        $result = $db->query("SELECT count(film_id) as count FROM rating");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(10, $row["count"], "Ratings");
+        $result = $db->query("SELECT count(name) as count FROM genre");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(11, $row["count"], "Genres");
+        $result = $db->query("SELECT count(film_id) as count FROM film_genre");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(11, $row["count"], "Film/Genre rows");
+        $result = $db->query("SELECT count(fullname) as count FROM person");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(7, $row["count"], "People");
+        $result = $db->query("SELECT count(film_id) as count FROM credit");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(7, $row["count"], "Credits");
+
+        // Ratings for the test user
+        $result = $db->query("SELECT title, yourScore FROM rating, film WHERE rating.user_name='testratingsync' AND rating.source_name='RatingSync' AND film.id=rating.film_id");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(6, $result->num_rows, "Ratings from RS");
+        $result = $db->query("SELECT title, yourScore FROM rating, film WHERE rating.user_name='testratingsync' AND rating.source_name='Jinni' AND film.id=rating.film_id");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(2, $result->num_rows, "Ratings from Jinni");
+        $result = $db->query("SELECT title, yourScore FROM rating, film WHERE rating.user_name='testratingsync' AND rating.source_name='IMDb' AND film.id=rating.film_id");
+        $row = $result->fetch_assoc();
+        $this->assertEquals(2, $result->num_rows, "Ratings from IMDb");
+        $result = $db->query("SELECT source_name, yourScore FROM rating, film WHERE rating.user_name='testratingsync' AND film.title='Title6' AND film.id=rating.film_id");
+        while ($row = $result->fetch_assoc()) {
+            $source = $row["source_name"];
+            if ($source == "RatingSync") {
+                $this->assertEquals(6, $row["yourScore"], "Your score for Title6 from RatingSync");
+            } elseif ($source == "Jinni") {
+                $this->assertEquals(4, $row["yourScore"], "Your score for Title6 from Jinni");
+            } elseif ($source == "IMDb") {
+                $this->assertEquals(5, $row["yourScore"], "Your score for Title6 from IMDb");
+            }
+        }
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }

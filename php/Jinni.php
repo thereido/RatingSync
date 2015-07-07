@@ -11,6 +11,8 @@ require_once "Rating.php";
 require_once "Site.php";
 
 /**
+ * (OBSOLOTE WEBSITE)
+ *
  * Communicate to/from the Jinni website
  * - Search for films and tv shows
  * - Get details for each and rate it
@@ -81,67 +83,7 @@ class Jinni extends Site
      */
     protected function getFilmsFromRatingsPage($page, $details = false, $refreshCache = 0)
     {
-        $films = array();
-        $filmSections = explode('<div class="ratings_cell5">', $page);
-        array_shift($films);
-        foreach ($filmSections as $filmSection) {
-            // Film title, URL name, Content Type (Movie/TV/ShortFilm)
-            if (0 === preg_match('@<div class="ratings_cell2" title="([^"]+)">[\s\n\r]+<a href="http://www.jinni.com/(movies|tv|shorts)/([^/]+)/"@', $filmSection, $matches)) {
-                continue;
-            }
-            $title = html_entity_decode($matches[1], ENT_QUOTES, "utf-8");
-            $contentType = $matches[2];
-            $urlName = $matches[3];
-            
-            // Rating
-            if (0 === preg_match('@RatedORSuggestedValue: (\d+)@', $filmSection, $matches)) {
-                continue;
-            }
-            $yourScore = $matches[1];
-            
-            // Rating Date
-            if (0 === preg_match('@<div class="ratings_cell4"><span[^>]+>(\d+\/\d+\/\d+)<@', $filmSection, $matches)) {
-                continue;
-            }
-            $ratingDate = $matches[1];
-
-            // Film ID
-            if (0 === preg_match('@contentId: "(\d+)@', $filmSection, $matches)) {
-                continue;
-            }
-            $filmName = $matches[1];
-
-            // Image
-            if (0 === preg_match('@<img src="(http://media[\d]*.jinni.com/(?:tv|movie|shorts|no-image)/[^/]+/[^"]+)"@', $filmSection, $matches)) {
-                continue;
-            }
-            $image = $matches[1];
-
-            $rating = new Rating(Constants::SOURCE_JINNI);
-            $rating->setYourScore($yourScore);
-            $rating->setYourRatingDate(\DateTime::createFromFormat(self::JINNI_DATE_FORMAT, $ratingDate));
-
-            $films[] = $film = new Film($this->http);
-            $film->setRating($rating, Constants::SOURCE_JINNI);
-            $film->setTitle($title);
-            $film->setFilmName($filmName, Constants::SOURCE_JINNI);
-            $film->setUrlName($urlName, Constants::SOURCE_JINNI);
-            $film->setImage($image);
-            $film->setImage($image, Constants::SOURCE_JINNI);
-            if ($contentType == 'movies') {
-                $film->setContentType(\RatingSync\Film::CONTENT_FILM);
-            } elseif ($contentType == 'tv') {
-                $film->setContentType(\RatingSync\Film::CONTENT_TV);
-            } elseif ($contentType == 'shorts') {
-                $film->setContentType(\RatingSync\Film::CONTENT_SHORTFILM);
-            }
-
-            if ($details) {
-                $this->getFilmDetailFromWebsite($film, false, $refreshCache);
-            }
-        }
-
-        return $films;
+        throw new \Exception('Obsolete website (Jinni)');
     }
 
     /**
