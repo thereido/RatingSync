@@ -43,18 +43,42 @@ function export($username, $source, $format)
     }
 }
 
-function getDatabase()
+function getDatabase($mode = Constants::DB_MODE)
 {
-    static $db_conn;
-    if (empty($db_conn)) {
-        $db_conn = new \mysqli("localhost", "rs_user", "password");
+    static $db_conn_standard;
+    static $db_conn_test;
 
-        // Check connection
-        if ($db_conn->connect_error) {
-            die("Connection failed: " . $db_conn->connect_error);
-        }
-        $db_conn->query("USE ratingsync_db");
+    if (! ($mode == Constants::DB_MODE_STANDARD || $mode == Constants::DB_MODE_TEST) ) {
+        throw new \InvalidArgumentException('Must set database mode');
     }
+    
+    $db_conn;
+    if ($mode == Constants::DB_MODE_STANDARD) {
+        $db_name = "db_rs";
+        if (empty($db_conn_standard)) {
+            $db_conn_standard = new \mysqli("localhost", Constants::DB_ADMIN_USER, "pwd");
+
+            // Check connection
+            if ($db_conn_standard->connect_error) {
+                die("Connection failed: " . $db_conn->connect_error);
+            }
+            $db_conn_standard->query("USE " . $db_name);
+        }
+        $db_conn = $db_conn_standard;
+    } else if ($mode == Constants::DB_MODE_TEST) {
+        $db_name = "db_test_rs";
+        if (empty($db_conn_test)) {
+            $db_conn_test = new \mysqli("localhost", Constants::DB_ADMIN_USER, "pwd");
+
+            // Check connection
+            if ($db_conn_test->connect_error) {
+                die("Connection failed: " . $db_conn->connect_error);
+            }
+            $db_conn_test->query("USE " . $db_name);
+        }
+        $db_conn = $db_conn_test;
+    }
+
 
     return $db_conn;
 }

@@ -1,5 +1,3 @@
-use ratingsync_db;
-
 CREATE TABLE IF NOT EXISTS user
     (
         username VARCHAR(50) NOT NULL PRIMARY KEY,

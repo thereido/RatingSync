@@ -430,7 +430,7 @@ abstract class Site
      *
      * @return true for success, false for failure
      */
-    public function importRatings($format, $filename, $sourceName = Constants::SOURCE_RATINGSYNC)
+    public function importRatings($format, $filename, $username = null, $sourceName = Constants::SOURCE_RATINGSYNC)
     {
         if (! Source::validSource($sourceName) ) {
             throw new \InvalidArgumentException('Source $source invalid');
@@ -444,7 +444,7 @@ abstract class Site
         $films = $this->parseFilmsFromFile($format, $filename);
         foreach ($films as $film) {
             if ($sourceName == Constants::SOURCE_RATINGSYNC) {
-                $film->saveToDb();
+                $film->saveToDb($username);
             }
         }
         return true;

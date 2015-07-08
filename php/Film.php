@@ -499,12 +499,12 @@ class Film {
         return in_array($director, $this->directors);
     }
 
-    public function saveToDb()
+    public function saveToDb($username = null)
     {
         $db = getDatabase();
 
         $filmId = $this->id;
-        $title = $this->getTitle();
+        $title = $db->real_escape_string($this->getTitle());
         $year = $this->getYear();
         if (empty($year)) $year = "NULL";
         $contentType = $this->getContentType();
@@ -582,11 +582,18 @@ class Film {
                 $columns .= ", yourRatingDate";
                 $values .= ", '$ratingDate'";
             }
-            $db->query("REPLACE INTO rating ($columns) VALUES ($values)");
+
+            if (!empty($username)) {
+                $result = $db->query("SELECT 1 FROM user WHERE username='$username'");
+                if ($result->num_rows == 1) {
+                    $db->query("REPLACE INTO rating ($columns) VALUES ($values)");
+                }
+            }
         }
 
         // Directors
         foreach ($this->getDirectors() as $director) {
+            $director = $db->real_escape_string($director);
             $personId;
             $result = $db->query("SELECT id FROM person WHERE fullname='$director'");
             if ($result->num_rows == 1) {

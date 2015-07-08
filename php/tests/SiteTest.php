@@ -9,6 +9,7 @@ require_once "../Site.php";
 require_once "SiteChild.php";
 require_once "HttpTest.php";
 require_once "ImdbTest.php";
+require_once "10DatabaseTest.php";
 
 const TEST_SITE_USERNAME = TEST_IMDB_USERNAME;
 
@@ -1201,17 +1202,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
 
     public function testResetDb()
     {
-        exec("mysql --user=rs_user --password=password ratingsync_db < ..\..\sql\db_tables_drop.sql");
-        exec("mysql --user=rs_user --password=password ratingsync_db < ..\..\sql\db_tables_create.sql");
-        exec("mysql --user=rs_user --password=password ratingsync_db < ..\..\sql\db_insert_initial.sql");
-
-        $db = getDatabase();
-        $result = $db->query("SELECT count(id) as count FROM film");
-        $row = $result->fetch_assoc();
-        $this->assertEquals(0, $row["count"], "Film rows (should be none)");
-        $result = $db->query("SELECT count(user_source.source_name) as count FROM user, source, user_source WHERE user.username='testratingsync' AND user.username=user_source.user_name AND user_source.source_name=source.name");
-        $row = $result->fetch_assoc();
-        $this->assertEquals(3, $row["count"], "Test user with sources");
+        DatabaseTest::testResetDb();
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
@@ -1223,12 +1214,14 @@ class SiteTest extends \PHPUnit_Framework_TestCase
      */
     public function testImport()
     {
-        $site = new SiteChild(TEST_SITE_USERNAME);
+        $username_site = TEST_IMDB_USERNAME;
+        $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
+        $site = new SiteChild($username_site);
         
         $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
-        $films = $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename);
+        $films = $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename, $username_rs);
         
-        $db = getDatabase();
+        $db = getDatabase(Constants::DB_MODE_TEST);
 
         // Count rows in each table
         $result = $db->query("SELECT count(id) as count FROM film");
@@ -1254,16 +1247,16 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(7, $row["count"], "Credits");
 
         // Ratings for the test user
-        $result = $db->query("SELECT title, yourScore FROM rating, film WHERE rating.user_name='testratingsync' AND rating.source_name='RatingSync' AND film.id=rating.film_id");
+        $result = $db->query("SELECT title, yourScore FROM rating, film WHERE rating.user_name='$username_rs' AND rating.source_name='RatingSync' AND film.id=rating.film_id");
         $row = $result->fetch_assoc();
         $this->assertEquals(6, $result->num_rows, "Ratings from RS");
-        $result = $db->query("SELECT title, yourScore FROM rating, film WHERE rating.user_name='testratingsync' AND rating.source_name='Jinni' AND film.id=rating.film_id");
+        $result = $db->query("SELECT title, yourScore FROM rating, film WHERE rating.user_name='$username_rs' AND rating.source_name='Jinni' AND film.id=rating.film_id");
         $row = $result->fetch_assoc();
         $this->assertEquals(2, $result->num_rows, "Ratings from Jinni");
-        $result = $db->query("SELECT title, yourScore FROM rating, film WHERE rating.user_name='testratingsync' AND rating.source_name='IMDb' AND film.id=rating.film_id");
+        $result = $db->query("SELECT title, yourScore FROM rating, film WHERE rating.user_name='$username_rs' AND rating.source_name='IMDb' AND film.id=rating.film_id");
         $row = $result->fetch_assoc();
         $this->assertEquals(2, $result->num_rows, "Ratings from IMDb");
-        $result = $db->query("SELECT source_name, yourScore FROM rating, film WHERE rating.user_name='testratingsync' AND film.title='Title6' AND film.id=rating.film_id");
+        $result = $db->query("SELECT source_name, yourScore FROM rating, film WHERE rating.user_name='$username_rs' AND film.title='Title6' AND film.id=rating.film_id");
         while ($row = $result->fetch_assoc()) {
             $source = $row["source_name"];
             if ($source == "RatingSync") {

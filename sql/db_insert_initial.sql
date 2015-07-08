@@ -1,5 +1,3 @@
-use ratingsync_db;
-
 INSERT INTO user (username, password) VALUES ('testratingsync', 'password');
 
 INSERT INTO source (name) VALUES ('RatingSync');
