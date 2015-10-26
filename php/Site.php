@@ -179,6 +179,8 @@ abstract class Site
      * @return string Regular expression to find user score in film detail HTML page
      */
     abstract protected function getDetailPageRegexForUserScore();
+
+    abstract public function getUserPageRegexForUsername();
     
     /**
      * Get the genres from html of the film's detail page. Set the value
@@ -203,6 +205,14 @@ abstract class Site
      * @return bool true is value is written to the Film object
      */
     abstract protected function parseDetailPageForDirectors($page, $film, $overwrite);
+
+    /**
+     * Send a rating to a website.
+     * NOTE: The website must be logged in already
+     *
+     * @param Film $film Film and rating data
+     */
+    /*FIXME abstract public function saveRatingToSite($film); */
 
     /**
      * Return a film's unique attribute.  This the attr available from ratings pages
@@ -455,11 +465,7 @@ abstract class Site
      */
     public function getFilmDetailFromWebsite($film, $overwrite = true, $refreshCache = Constants::USE_CACHE_NEVER)
     {
-        $page = $this->getFilmDetailPageFromCache($film, $refreshCache);
-        if (empty($page)) {
-            $page = $this->http->getPage($this->getFilmDetailPageUrl($film));
-            $this->cacheFilmDetailPage($page, $film);
-        }
+        $page = $this->getFilmDetailPage($film, $refreshCache);
 
         $this->parseDetailPageForTitle($page, $film, $overwrite);
         $this->parseDetailPageForFilmYear($page, $film, $overwrite);
@@ -739,5 +745,40 @@ abstract class Site
             return true;
         }
         return false;
+    }
+
+    /**
+     * Return a cached film page if the cached file is fresh enough. The $refreshCache param
+     * shows if it is fresh enough. If the file is out of date return null.
+     *
+     * @param \RatingSync\Film $film         Film needed detail for
+     * @param int|0            $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
+     *
+     * @return string File as a string. Null if the use cache is not used.
+     */
+    public function getFilmDetailPage($film, $refreshCache = Constants::USE_CACHE_NEVER)
+    {
+        $page = $this->getFilmDetailPageFromCache($film, $refreshCache);
+        if (empty($page)) {
+            $page = $this->http->getPage($this->getFilmDetailPageUrl($film));
+            $this->cacheFilmDetailPage($page, $film);
+        }
+
+        return $page;
+    }
+
+    public function isUserLoggedIn() {
+        $username = null;
+        $page = $this->http->getPage($this->getUserPageUrl());
+        $regex = $this->getUserPageRegexForUsername();
+        if (!empty($regex) && 0 < preg_match($regex, $page, $matches)) {
+            $username = $matches[1];
+        }
+
+        return ($this->username == $username);
+    }
+
+    public function getUserPageUrl() {
+        return "";
     }
 }

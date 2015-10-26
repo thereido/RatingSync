@@ -349,6 +349,10 @@ class Imdb extends Site
         return '/<span itemprop="ratingValue">(\d\.?\d?)<\/span>/';
     }
 
+    public function getUserPageRegexForUsername() {
+        return '/<a href="\/user\/(ur[\d]+)\//';
+    }
+
     /**
      * Get the content type from html of the film's detail page. Set the value
      * in the Film param.
@@ -369,5 +373,29 @@ class Imdb extends Site
         }
         
         return $success;
+    }
+
+    /**
+     * Send a rating to a website.
+     * NOTE: The website must be logged in already
+     *
+     * @param Film $film Film and rating data
+     */
+    public function saveRatingToSite($film)
+    {
+/*FIXME
+        if (empty($film) || !($film instanceOf Film) || empty($film->getRating($sourceName)->getYourScore())) {
+            throw new \InvalidArgumentException('Param film must have a rating');
+        }
+
+        // Check user is logged in to site
+
+        // Get rate it URL key
+        $page = $this->getFilmDetailPage($film, $refreshCache);
+
+        // Rate it
+
+        // Verify
+*/
     }
 }

@@ -146,6 +146,9 @@ class SiteChild extends \RatingSync\Site {
 
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForUserScore
     protected function getDetailPageRegexForUserScore() { return '/<span itemprop="ratingValue">(\d\.?\d?)<\/span>/'; }
+    
+    // Abstract Function based on \RatingSync\Imdb::getUserPageRegexForUsername
+    public function getUserPageRegexForUsername() { return '/<a href="\/user\/(ur[\d]+)\//'; }
 
     // Abstract Function based on \RatingSync\Imdb::parseDetailPageForGenres
     protected function parseDetailPageForGenres($page, $film, $overwrite)

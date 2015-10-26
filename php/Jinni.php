@@ -356,4 +356,19 @@ class Jinni extends Site
     {
         return '';   
     }
+
+    public function getUserPageRegexForUsername() {
+        return '';
+    }
+
+    /**
+     * Send a rating to a website (Jinni is Obsolete).
+     * NOTE: The website must be logged in already
+     *
+     * @param Film $film Film and rating data
+     */
+    public function saveRatingToSite($film)
+    {
+        throw new \Exception('Obsolete website (Jinni)');
+    }
 }

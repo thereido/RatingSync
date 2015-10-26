@@ -627,4 +627,17 @@ class Film {
 
         $db->commit();
     }
+
+    /**
+     * Send a rating to a website.
+     * NOTE: The website must be logged in already
+     *
+     * @param string $source Rating website
+     */
+    public function rateToWebsite($source)
+    {
+        if (! Source::validSource($sourceName) ) {
+            throw new \InvalidArgumentException('Source $source invalid');
+        }
+    }
 }

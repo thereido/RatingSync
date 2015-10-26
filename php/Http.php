@@ -80,6 +80,7 @@ abstract class Http
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
         }
 
+echo "<h2>GET PAGE</h2>";
         $result = curl_exec($ch);
         $info = curl_getinfo($ch);
         curl_close($ch);
