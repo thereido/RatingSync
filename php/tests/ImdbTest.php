@@ -8,6 +8,7 @@ require_once "../Imdb.php";
 require_once "10DatabaseTest.php";
 
 const TEST_IMDB_USERNAME = "ur60460017";
+const FROZEN_USER_SCORE = 7.6;
 
 // Class to expose protected members and functions
 class ImdbExt extends \RatingSync\Imdb {
@@ -35,7 +36,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->debug = true;
+        $this->debug = false;
     }
 
     public function start($className, $functionName)
@@ -230,7 +231,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $site = new Imdb(TEST_IMDB_USERNAME);
         $films = $site->getRatings(null, 1, false, 60);
-        $this->assertCount(104, $films);
+        $this->assertCount(107, $films);
     }
 
     /**
@@ -297,14 +298,14 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
         $films = $site->getRatings(null, 1, true, 60);
-        $this->assertCount(104, $films);
+        $this->assertCount(107, $films);
         $film = $films[0];
         $this->assertEquals("Almost Famous", $film->getTitle(), 'Title');
         $this->assertEquals(2000, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTI0MDc0MzIyM15BMl5BanBnXkFtZTYwMzc4NzA)@', $film->getImage(), $matches), 'Image link');
         $this->assertEquals(array("Cameron Crowe"), $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(array("Drama", "Music", "Romance"), $film->getGenres(), 'Genres');
+        $this->assertEquals(array("Adventure", "Comedy", "Drama"), $film->getGenres(), 'Genres');
         $this->assertNull($film->getUrlName($site->_getSourceName()), 'URL Name');
         $rating = $film->getRating($site->_getSourceName());
         $this->assertFalse(is_null($rating));
@@ -400,7 +401,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating($site->_getSourceName());
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'User score');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'User score');
 
         // Not available in the detail page
         $this->assertNull($film->getUrlName($site->_getSourceName()), 'URL Name');
@@ -433,7 +434,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating($site->_getSourceName());
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'User score');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'User score');
     }
 
     /**
@@ -497,7 +498,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("tt2294629", $film->getFilmName(Constants::SOURCE_IMDB), 'Film ID');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'User score');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'User score');
         // The film detail page does not have these fields.  Don't overwrite them.
         $this->assertEquals("Original_UrlName_Imdb", $film->getUrlName(Constants::SOURCE_IMDB), 'URL Name');
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
@@ -616,7 +617,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating($site->_getSourceName());
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'User score');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'User score');
     }
 
     /**
@@ -680,7 +681,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("tt2294629", $film->getFilmName(Constants::SOURCE_IMDB), 'Film ID');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'User score');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'User score');
         // The film detail page does not have these fields.  Don't overwrite them.
         $this->assertEquals("Original_UrlName_Imdb", $film->getUrlName(Constants::SOURCE_IMDB), 'URL Name');
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
@@ -983,7 +984,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getYourRatingDate(), 'Check matching Rating Date (empty film overwrite=true)');
         $this->assertNull($rating->getSuggestedScore(), 'Check matching Suggested Score (empty film overwrite=true)');
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Check matching Critic Score (empty film overwrite=true)');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'Check matching User Score (empty film overwrite=true)');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'Check matching User Score (empty film overwrite=true)');
         
         $success = $site->_parseDetailPageForGenres($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Genres');
@@ -1046,7 +1047,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getYourRatingDate(), 'Check matching Rating Date (empty film overwrite=true)');
         $this->assertNull($rating->getSuggestedScore(), 'Check matching Suggested Score (empty film overwrite=true)');
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Check matching Critic Score (empty film overwrite=true)');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'Check matching User Score (empty film overwrite=true)');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'Check matching User Score (empty film overwrite=true)');
         
         $success = $site->_parseDetailPageForGenres($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Genres');
@@ -1144,7 +1145,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(new \DateTime('2000-01-02'), $rating->getYourRatingDate(), 'Check matching Rating Date (full film overwrite=true)');
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Check matching Suggested Score (full film overwrite=true)');
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Check matching Critic Score (full film overwrite=true)');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'Check matching User Score (full film overwrite=true)');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'Check matching User Score (full film overwrite=true)');
         
         $success = $site->_parseDetailPageForGenres($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Genres');

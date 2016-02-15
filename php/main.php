@@ -9,6 +9,7 @@
  */
 namespace RatingSync;
 
+require_once "Constants.php";
 require_once "Jinni.php";
 require_once "Imdb.php";
 require_once "RatingSyncSite.php";

@@ -121,7 +121,7 @@ class SiteChild extends \RatingSync\Site {
     protected function getDetailPageRegexForYear() { return '/<title>.* \([^\d]*(\d\d\d\d)[^\)]*\) - IMDb<\/title>/'; }
 
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForImage
-    protected function getDetailPageRegexForImage() { return '/title="[^\(]* \(\d\d\d\d\) Poster"\nsrc="([^"]+)"/'; }
+    protected function getDetailPageRegexForImage() { return '/title="[^\(]*[ \(\d\d\d\d\)]? Poster"\nsrc="([^"]+)"/'; }
 
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForContentType
     protected function getDetailPageRegexForContentType() { return '/<div class="infobar">\s*([a-zA-Z \-\/]+)\s*&nbsp;<</'; }
@@ -142,7 +142,7 @@ class SiteChild extends \RatingSync\Site {
     protected function getDetailPageRegexForSuggestedScore($film) { return ''; }
 
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForCriticScore
-    protected function getDetailPageRegexForCriticScore() { return '/provided by Metacritic\.com" > (\d\d?)\/100/'; }
+    protected function getDetailPageRegexForCriticScore() { return '/class="metacriticScore score_favorable titleReviewBarSubItem">\n<span>(\d\d?)<\/span>/'; }
 
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForUserScore
     protected function getDetailPageRegexForUserScore() { return '/<span itemprop="ratingValue">(\d\.?\d?)<\/span>/'; }

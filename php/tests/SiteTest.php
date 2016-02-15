@@ -421,7 +421,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertNull($film->getContentType(), 'Content Type');
-        $this->assertEquals('http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_SX214_AL_.jpg', $film->getImage(), 'Image link');
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Image link');
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), 'URL Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
@@ -431,7 +431,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Critic score not available from Jinni');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'User score not available from Jinni');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'User score not available from Jinni');
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
@@ -490,7 +490,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating($site->_getSourceName());
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'User score');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'User score');
 
         // The film detail page does not have these fields.  Don't overwrite them.
         $this->assertEquals("Original_IMDbUrlName", $film->getUrlName($site->_getSourceName()), 'URL Name');
@@ -526,7 +526,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertNull($film->getContentType(), 'Content Type'); // IMDb gets it, but SiteChild doesn't
-        $this->assertEquals('http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_SX214_AL_.jpg', $film->getImage(), 'Image link');
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Image link');
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), 'URL Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
@@ -536,7 +536,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Critic score not available from Jinni');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'User score not available from Jinni');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'User score not available from Jinni');
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
@@ -660,7 +660,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getYourRatingDate(), 'Check matching Rating Date (empty film overwrite=true)');
         $this->assertNull($rating->getSuggestedScore(), 'Check matching Suggested Score (empty film overwrite=true)');
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Check matching Critic Score (empty film overwrite=true)');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'Check matching User Score (empty film overwrite=true)');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'Check matching User Score (empty film overwrite=true)');
         
         $success = $site->_parseDetailPageForGenres($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Genres');
@@ -705,7 +705,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
 
         $success = $site->_parseDetailPageForImage($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Image');
-        $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_SX214_AL_.jpg", $film->getImage(), 'Check matching Image (empty film overwrite=false)');
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Image link');
         
         $success = $site->_parseDetailPageForContentType($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Content Type'); // ContentType not available in the detail page
@@ -724,7 +724,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getYourRatingDate(), 'Check matching Rating Date (empty film overwrite=false)');
         $this->assertNull($rating->getSuggestedScore(), 'Check matching Suggested Score (empty film overwrite=false)');
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Check matching Critic Score (empty film overwrite=false)');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'Check matching User Score (empty film overwrite=false)');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'Check matching User Score (empty film overwrite=false)');
         
         $success = $site->_parseDetailPageForGenres($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Genres');
@@ -803,9 +803,9 @@ class SiteTest extends \PHPUnit_Framework_TestCase
 
         $success = $site->_parseDetailPageForImage($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Image');
-        $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_SX214_AL_.jpg", $film->getImage(), 'Check matching Image (full film overwrite=true)');
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Check matching Image (full film overwrite=true)');
         $this->assertEquals("Original_JinniImage", $film->getImage(Constants::SOURCE_JINNI), 'Check matching Image (full film overwrite=true)');
-        $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_SX214_AL_.jpg", $film->getImage($site->_getSourceName()), 'Check matching Image (full film overwrite=true)');
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching Image (full film overwrite=true)');
         
         $success = $site->_parseDetailPageForUrlName($page, $film, true);
         $this->assertFalse($success, 'Parsing film object for URL Name');
@@ -823,7 +823,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(new \DateTime('2000-01-02'), $rating->getYourRatingDate(), 'Check matching Rating Date (full film overwrite=true)');
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Check matching Suggested Score (full film overwrite=true)');
         $this->assertEquals(7.4, $rating->getCriticScore(), 'Check matching Critic Score (full film overwrite=true)');
-        $this->assertEquals(7.7, $rating->getUserScore(), 'Check matching User Score (full film overwrite=true)');
+        $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'Check matching User Score (full film overwrite=true)');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals(1, $rating->getYourScore(), 'Check matching YourScore (full film overwrite=true)');
         $this->assertEquals(new \DateTime('2000-01-01'), $rating->getYourRatingDate(), 'Check matching Rating Date (full film overwrite=true)');
@@ -1106,10 +1106,10 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Frozen", $film->getTitle(), "Frozen title");
         $this->assertEquals(2013, $film->getYear(), "Frozen year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Frozen ContentType");
-        $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg", $film->getImage(), "Frozen image");
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Frozen image');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Frozen directors");
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), "Frozen genres");
-        $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), "Frozen ".Constants::SOURCE_IMDB." image");
         $this->assertEquals("tt2294629", $film->getFilmName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Film ID");
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." URL Name");
         $rating = $film->getRating(Constants::SOURCE_IMDB);
@@ -1145,7 +1145,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_JINNI." suggested score");
         $this->assertNull($rating->getCriticScore(), "Frozen ".Constants::SOURCE_JINNI." critic score");
         $this->assertNull($rating->getUserScore(), "Frozen ".Constants::SOURCE_JINNI." user score");
-        $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), "Frozen ".Constants::SOURCE_IMDB." image");
         $this->assertEquals("tt2294629", $film->getFilmName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Film ID");
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." URL Name");
         $rating = $film->getRating(Constants::SOURCE_IMDB);

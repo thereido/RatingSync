@@ -4,6 +4,8 @@
  */
 namespace RatingSync;
 
+date_default_timezone_set('America/New_York');
+
 class Constants
 {
     const RS_OUTPUT_URL_PATH            = "/php/output/";

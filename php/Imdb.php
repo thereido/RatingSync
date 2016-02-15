@@ -328,7 +328,7 @@ class Imdb extends Site
      * @return string Regular expression to find your rating score in film detail HTML page
      */
     protected function getDetailPageRegexForYourScore($film) {
-        return '/<span class="rating-rating rating-your"><span class="value">(\d\d?)<\/span>/';
+        return '/<span class="star-rating-value">(\d\d?)<\/span>/';
     }
 
     /**
@@ -357,7 +357,7 @@ class Imdb extends Site
      * @return string Regular expression to find critic score in film detail HTML page
      */
     protected function getDetailPageRegexForCriticScore() {
-        return '/provided by Metacritic\.com" > (\d\d?)\/100/';
+        return '/class="metacriticScore score_favorable titleReviewBarSubItem">\n<span>(\d\d?)<\/span>/';
     }
 
     /**

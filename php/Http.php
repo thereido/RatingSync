@@ -5,6 +5,8 @@ require_once "exceptions/HttpErrorException.php";
 require_once "exceptions/HttpNotFoundException.php";
 require_once "exceptions/HttpUnauthorizedRedirectException.php";
 
+require_once "Constants.php";
+
 /**
  *
  * Functions a child must implement

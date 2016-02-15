@@ -12,8 +12,6 @@ namespace RatingSync;
 
 require_once "Source.php";
 
-date_default_timezone_set('America/New_York');
-
 /**
  * Store and retrieve rating data for one piece of content (film, tv show...)
  * on one source.  Sources like IMDb, RottenTomatoes, Jinni, etc. or a local
@@ -187,7 +185,7 @@ class Rating
     public function setUserScore($score)
     {
         if (! (is_null($score) ||  $this->validRatingScore($score)) ) {
-            throw new \InvalidArgumentException("setUserScore ($score) must be a number between 1 to 10");
+            throw new \InvalidArgumentException("setUserScore ($score) must be a number between 0 to 10");
         }
 
         if (is_null($score)) {
@@ -217,7 +215,7 @@ class Rating
     public static function validRatingScore($score)
     {
         if ( is_numeric($score) &&
-             (1 <= (float)$score && (float)$score <= 10) ) {
+             (0 <= (float)$score && (float)$score <= 10) ) {
             return true;
         } else {
             return false;

@@ -4,6 +4,8 @@
  */
 namespace RatingSync;
 
+require_once "Constants.php";
+
 /**
  * Store and retrieve film data for one piece of content (film, tv show...)
  * on one source.  Sources like IMDb, RottenTomatoes, Jinni, etc. or a local
