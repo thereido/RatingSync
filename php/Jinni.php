@@ -356,4 +356,12 @@ class Jinni extends Site
     {
         return '';   
     }
+
+    /**
+     * Obsolete class
+     */
+    protected function getSearchUrl($args)
+    {
+        return '';   
+    }
 }

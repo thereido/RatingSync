@@ -8,12 +8,17 @@ require_once "../main.php";
 
 class DatabaseTest extends \PHPUnit_Framework_TestCase
 {
-    public function testResetDb()
+    public static function resetDb()
     {
         $command = "mysql --user=" . Constants::DB_ADMIN_USER . " --password=pwd " . Constants::DB_TEST_DATABASE;
         exec("$command < ..\..\sql\db_tables_drop.sql");
         exec("$command < ..\..\sql\db_tables_create.sql");
         exec("$command < ..\..\sql\db_insert_initial.sql");
+    }
+
+    public function testResetDb()
+    {
+        self::resetDb();
 
         $db = getDatabase(Constants::DB_MODE_TEST);
         $result = $db->query("SELECT count(id) as count FROM film");

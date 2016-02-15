@@ -209,6 +209,9 @@ class SiteChild extends \RatingSync\Site {
         }
         return true;
     }
+
+    // Abstract Function based on \RatingSync\Imdb::getNextRatingPageNumber
+    protected function getSearchUrl($args) { return "/find?ref_=nv_sr_fn&q='Frozen'&s=all'"; }
 }
 
 ?>

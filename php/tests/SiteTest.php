@@ -1202,7 +1202,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
 
     public function testResetDb()
     {
-        DatabaseTest::testResetDb();
+        DatabaseTest::resetDb();
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }

@@ -205,9 +205,19 @@ abstract class Site
     abstract protected function parseDetailPageForDirectors($page, $film, $overwrite);
 
     /**
+     * Return URL within a website for searching films. The URL does not
+     * include the base URL.  
+     *
+     * @param array $args See the child class version of args
+     *
+     * @return string URL of a rating page
+     */
+    abstract protected function getSearchUrl($args);
+
+    /**
      * Return a film's unique attribute.  This the attr available from ratings pages
        and from a film detail page.  In most sites the Film ID is always available, but
-       Jinni is has URL Name and don't always Film ID.  The Site implentation returns
+       Jinni has an URL Name and not always Film ID.  The Site implentation returns
        Film::getFilmName().  Child classes can return something else.
      *
      * @param \RatingSync\Film $film get the attr from this film
@@ -218,6 +228,24 @@ abstract class Site
     {
         if (!is_null($film) && ($film instanceof Film)) {
             return $film->getFilmName($this->sourceName);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Set a film's unique attribute.  This the attr available from ratings pages
+       and from a film detail page.  In most sites the Film ID is always available, but
+       Jinni has an URL Name and not always Film ID.  The Site implentation sets
+       Film::setFilmName().  Child classes can set something else.
+     *
+     * @param \RatingSync\Film $film       get the attr from this film
+     * @param string           $uniqueAttr unique attribute
+     */
+    public function setFilmUniqueAttr($film, $uniqueAttr)
+    {
+        if (!is_null($film) && ($film instanceof Film)) {
+            $film->setFilmName($uniqueAttr, $this->sourceName);
         }
     }
 
@@ -457,10 +485,20 @@ abstract class Site
     {
         $page = $this->getFilmDetailPageFromCache($film, $refreshCache);
         if (empty($page)) {
-            $page = $this->http->getPage($this->getFilmDetailPageUrl($film));
-            $this->cacheFilmDetailPage($page, $film);
+            $uniqueAttr = $this->getFilmUniqueAttr($film);
+            if (empty($uniqueAttr)) {
+                $uniqueAttr = $this->searchWebsiteForUniqueFilm($film);
+                $this->setFilmUniqueAttr($film, $uniqueAttr);
+            }
+            if (!empty($uniqueAttr)) {
+                $page = $this->http->getPage($this->getFilmDetailPageUrl($film));
+                $this->cacheFilmDetailPage($page, $film);
+            }
         }
 
+        if (empty($page)) {
+            return;
+        }
         $this->parseDetailPageForTitle($page, $film, $overwrite);
         $this->parseDetailPageForFilmYear($page, $film, $overwrite);
         $this->parseDetailPageForImage($page, $film, $overwrite);
@@ -739,5 +777,21 @@ abstract class Site
             return true;
         }
         return false;
+    }
+
+    /**
+     * Search website for a unique film and set unique attr on
+     * the param Film object. Class returns null unless a child
+     * implents it.
+     *
+     * @param \RatingSync\Film $film
+     *
+     * @return string unique attr (see Site::getFilmUniqueAttr())
+     */
+    public function searchWebsiteForUniqueFilm($film)
+    {
+        $uniqueAttr = null;
+
+        return $uniqueAttr;
     }
 }

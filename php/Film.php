@@ -29,7 +29,7 @@ class Film {
     public function __construct(Http $http)
     {
         if (! ($http instanceof Http) ) {
-            throw new \InvalidArgumentException('Film contrust must have an Http object');
+            throw new \InvalidArgumentException('Film contruct must have an Http object');
         }
 
         $this->http = $http;
@@ -513,7 +513,7 @@ class Film {
         // Look for an existing film row
         $newRow = false;
         if (empty($filmId)) {
-            $result = $db->query("SELECT id FROM film WHERE title='$title' AND year=$year");
+            $result = $db->query("SELECT id FROM film WHERE title='$title' AND (year=$year OR year IS NULL)");
             if ($result->num_rows == 1) {
                 $row = $result->fetch_assoc();
                 $filmId = $row["id"];
@@ -561,7 +561,7 @@ class Film {
             $userScore = $rating->getUserScore();
             
             $columns = "user_name, source_name, film_id";
-            $values = "'testratingsync', '$sourceName', $filmId";
+            $values = "'$username', '$sourceName', $filmId";
             if (!empty($yourScore)) {
                 $columns .= ", yourScore";
                 $values .= ", $yourScore";

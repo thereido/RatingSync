@@ -156,11 +156,31 @@ class Imdb extends Site
     {
         if (! $film instanceof Film ) {
             throw new \InvalidArgumentException('Function getFilmDetailPageUrl must be given a Film object');
-        } elseif ( is_null($film->getFilmName($this->sourceName)) ) {
-            throw new \InvalidArgumentException('Function getFilmDetailPageUrl must have Film ID');
+        } elseif ( empty($film->getFilmName($this->sourceName)) ) {
+            throw new \InvalidArgumentException('Function getFilmDetailPageUrl must have unique attr (filmName, '.$this->sourceName.')');
         }
 
         return '/title/'.$film->getFilmName($this->sourceName).'/';
+    }
+
+    /**
+     * Return URL within a website for searching films. The URL does not
+     * include the base URL.  
+     *
+     * @param array $args Keys: query
+     *
+     * @return string URL of a rating page
+     */
+    public function getSearchUrl($args)
+    {
+        if (empty($args) || !is_array($args) || !array_key_exists('query', $args) || empty($args['query']))
+        {
+            throw new \InvalidArgumentException('$args must be an array with key "query" (non-empty)');
+        }
+
+        $query = urlencode($args['query']);
+
+        return "/find?ref_=nv_sr_fn&q=".$query."&s=tt";
     }
 
     /**
@@ -268,7 +288,7 @@ class Imdb extends Site
      * @return string Regular expression to find the image in film detail HTML page
      */
     protected function getDetailPageRegexForImage() {
-        return '/title="[^\(]* \(\d\d\d\d\) Poster"\nsrc="([^"]+)"/';
+        return '/title="[^\(]*[ \(\d\d\d\d\)]? Poster"\nsrc="([^"]+)"/';
     }
 
     /**
@@ -369,5 +389,45 @@ class Imdb extends Site
         }
         
         return $success;
+    }
+
+    /**
+     * Search website for a unique film and set unique attr on
+     * the param Film object.
+     *
+     * @param \RatingSync\Film $film
+     *
+     * @return string unique attr (see Site::getFilmUniqueAttr())
+     */
+    public function searchWebsiteForUniqueFilm($film)
+    {
+        if (!($film instanceof Film)) {
+            throw new \InvalidArgumentException('$film must be an array with key "pageIndex" and value an int');
+        }
+        $uniqueAttr = null;
+
+        $title = $film->getTitle();
+        $args = array("query" => $title);
+        $page = $this->http->getPage($this->getSearchUrl($args));
+        $regex = $this->getSearchPageRegexForUniqueAttr($title, $film->getYear());
+        if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
+            return false;
+        }
+        
+        return $matches[1];
+    }
+
+    /**
+     * Regular expression to find the image in film detail HTML page
+     *
+     * @return string Regular expression to find the image in film detail HTML page
+     */
+    protected function getSearchPageRegexForUniqueAttr($title, $year)
+    {
+        $specialChars = "\/\^\.\[\]\|\(\)\?\*\+\{\}"; // need to do '\' too
+        $pattern = "|([$specialChars])|U";
+        $escapedTitle = preg_replace($pattern, '\\\\${1}', $title);
+
+        return '/\"\/title\/([^\/.]*)\/\?ref_=fn_tt_tt_\d\d?\" >'.$escapedTitle.'<\/a>[^\).*]*\)? \('.$year.'\)/';
     }
 }

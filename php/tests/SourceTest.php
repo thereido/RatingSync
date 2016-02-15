@@ -8,6 +8,10 @@ require_once "../Source.php";
 require_once "../Constants.php";
 require_once "../Rating.php";
 
+require_once "SiteChild.php";
+require_once "ImdbTest.php";
+require_once "10DatabaseTest.php";
+
 class SourceTest extends \PHPUnit_Framework_TestCase
 {
     public $debug;
