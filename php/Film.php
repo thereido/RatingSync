@@ -209,7 +209,7 @@ class Film {
         return $needleSxe->__toString();
     }
 
-    protected function getSource($sourceName)
+    public function getSource($sourceName)
     {
         if (! Source::validSource($sourceName) ) {
             throw new \InvalidArgumentException('Getting Source $source invalid');
@@ -607,7 +607,7 @@ class Film {
             }
 
             $columns = "person_id, film_id, position";
-            $values = "$personId, $filmId, '$director'";
+            $values = "$personId, $filmId, 'Director'";
             $db->query("REPLACE INTO credit ($columns) VALUES ($values)");
         }
 
@@ -626,5 +626,104 @@ class Film {
         }
 
         $db->commit();
+    }
+
+    public static function getFilmFromDb($filmId, $http, $username = null)
+    {
+        if (empty($filmId) || !is_int($filmId)) {
+            throw new \InvalidArgumentException("filmId arg must be an int (filmId=$filmId)");
+        } elseif (! ($http instanceof Http) ) {
+            throw new \InvalidArgumentException('Film contruct must have an Http object');
+        }
+        $db = getDatabase();
+        
+        $result = $db->query("SELECT * FROM film WHERE id=$filmId");
+        if ($result->num_rows != 1) {
+            throw new \Exception('Film not found by Film ID: ' .$filmId);
+        }
+        $film = new Film($http);
+        $film->setId($filmId);
+        
+        $row = $result->fetch_assoc();
+        $film->setTitle($row["title"]);
+        $film->setYear($row["year"]);
+        $film->setContentType($row["contentType"]);
+        $film->setImage($row["image"]);
+
+        // Sources
+        $result = $db->query("SELECT * FROM film_source WHERE film_id=$filmId");
+        while ($row = $result->fetch_assoc()) {
+            $source = $film->getSource($row['source_name']);
+            $source->setImage($row['image']);
+            $source->setUrlName($row['urlName']);
+            $source->setFilmName($row['filmName']);
+
+            // Rating
+            if (!empty($username)) {
+                $query = "SELECT * FROM rating WHERE film_id=$filmId AND source_name='".$source->getName()."' AND user_name='".$username."'";
+                $ratingResult = $db->query($query);
+                if ($ratingResult->num_rows == 1) {
+                    $row = $ratingResult->fetch_assoc();
+                    $rating = new Rating($source->getName());
+                    $rating->initFromDbRow($row);
+                    $source->setRating($rating);
+                }
+            }
+        }
+        
+        // Directors
+        $query = "SELECT person.* FROM person, credit WHERE id=person_id" .
+                 "   AND film_id=$filmId" .
+                 "   AND position='Director'";
+        $result = $db->query($query);
+        while ($row = $result->fetch_assoc()) {
+            $film->addDirector($row['fullname']);
+        }
+        
+        // Genres
+        $query = "SELECT * FROM film_genre WHERE film_id=$filmId ORDER BY genre_name ASC";
+        $result = $db->query($query);
+        while ($row = $result->fetch_assoc()) {
+            $film->addGenre($row['genre_name']);
+        }
+
+        return $film;
+    }
+
+    /**
+     * Try to get a image (and save to the db) for films that have none.
+     */
+    public static function reconnectFilmImages()
+    {
+        $db = getDatabase();
+        $query = "SELECT id FROM film WHERE image IS NULL OR image=''";
+        $result = $db->query($query);
+
+        $http = new HttpImdb("empty_username");
+        while ($row = $result->fetch_assoc()) {
+            $film = self::getFilmFromDb($row['id'], $http);
+            $film->reconnectImage();
+        }
+    }
+
+    public function reconnectImage() {
+        foreach ($this->sources as $source) {
+            $image = $source->getImage();
+            if (!empty($image)) {
+                break;
+            }
+        }
+
+        if (empty($image)) {
+            // Get to IMDb site
+            $imdb = new Imdb("empty_userame");
+            $imdb->getFilmDetailFromWebsite($this, false, Constants::USE_CACHE_ALWAYS);
+            $image = $this->getImage(Constants::SOURCE_IMDB);
+        }
+
+        if (!empty($image)) {
+            $this->setImage($image);
+            $this->saveToDb();
+        }
     }
 }

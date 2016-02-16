@@ -509,6 +509,208 @@ class SourceTest extends \PHPUnit_Framework_TestCase
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
+
+    public function testResetDb()
+    {
+        DatabaseTest::resetDb();
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @depends testObjectCanBeConstructed
+     * @expectedException \InvalidArgumentException
+     */
+    public function testAddNewFilmSourceSetNull()
+    {
+        $source = new Source(Constants::SOURCE_IMDB);
+        $source->addFilmSourceToDb(null);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @depends testObjectCanBeConstructed
+     * @expectedException \InvalidArgumentException
+     */
+    public function testAddNewFilmSourceSetEmpty()
+    {
+        $source = new Source(Constants::SOURCE_IMDB);
+        $source->addFilmSourceToDb("");
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @depends testObjectCanBeConstructed
+     * @depends testResetDb
+     * @expectedException \Exception
+     */
+    public function testAddNewFilmSourceFilmNotFound()
+    {
+        DatabaseTest::resetDb();
+        $source = new Source(Constants::SOURCE_IMDB);
+        $source->addFilmSourceToDb(1);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @depends testResetDb
+     */
+    public function testSetupRatings()
+    {
+        DatabaseTest::resetDb();
+        $username_site = TEST_IMDB_USERNAME;
+        $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
+        $site = new SiteChild($username_site);
+        $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
+        $films = $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename, $username_rs);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @depends testObjectCanBeConstructed
+     * @depends testSetupRatings
+     */
+    public function testAddNewFilmSourceDuplicate()
+    {
+        $db = getDatabase();
+        $source = new Source(Constants::SOURCE_IMDB);
+        $filmId = 1;
+        $source->addFilmSourceToDb($filmId);
+        $query = "SELECT * FROM film_source" .
+                 " WHERE film_id=$filmId" .
+                   " AND source_name='".$source->getName()."'";
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @depends testObjectCanBeConstructed
+     * @depends testSetupRatings
+     */
+    public function testAddNewFilmSource()
+    {
+        // There sure be a film_source where film_id=3, but not for IMDb
+        $db = getDatabase();
+        $source = new Source(Constants::SOURCE_IMDB);
+        $filmId = 3;
+        $source->addFilmSourceToDb($filmId);
+        $query = "SELECT * FROM film_source" .
+                 " WHERE film_id=$filmId" .
+                   " AND source_name='".$source->getName()."'";
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
+        $row = $result->fetch_assoc();
+        $this->assertEquals("http://example.com/title2_image.jpeg", $row['image']);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @depends testObjectCanBeConstructed
+     * @depends testSetupRatings
+     */
+    public function testAddNewFilmSourceImageFromSource()
+    {
+        // There is a RS film/source row film_id=5 and no image
+        // There is no IMDb film/source row
+        $db = getDatabase();
+        $source = new Source(Constants::SOURCE_IMDB);
+        $source->setImage('http://example.com/title2_imdb_image.jpeg');
+        $filmId = 5;
+        $source->addFilmSourceToDb($filmId);
+        $query = "SELECT * FROM film_source" .
+                 " WHERE film_id=$filmId" .
+                   " AND source_name='".$source->getName()."'";
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
+        $row = $result->fetch_assoc();
+        $this->assertEquals("http://example.com/title2_imdb_image.jpeg", $row['image']);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @depends testObjectCanBeConstructed
+     * @depends testSetupRatings
+     */
+    public function testAddNewFilmSourceImageFromFilm()
+    {
+        // There is a RS film/source row film_id=2 and an image
+        // There is no IMDb film/source row
+        // No not use $source->setImage()
+        $db = getDatabase();
+        $source = new Source(Constants::SOURCE_IMDB);
+        $filmId = 2;
+        $source->addFilmSourceToDb($filmId);
+        $query = "SELECT * FROM film_source" .
+                 " WHERE film_id=$filmId" .
+                   " AND source_name='".$source->getName()."'";
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
+        $row = $result->fetch_assoc();
+        $this->assertEquals("http://example.com/title1_image.jpeg", $row['image']);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @depends testObjectCanBeConstructed
+     */
+    public function testAddNewFilmSourceImageFromNowhere()
+    {
+        // There is one or more film/source row film_id=6 and none with an image
+        // There is no IMDb film/source row
+        // No not use $source->setImage()
+        $db = getDatabase();
+        $source = new Source(Constants::SOURCE_IMDB);
+        $filmId = 6;
+        $source->addFilmSourceToDb($filmId);
+        $query = "SELECT * FROM film_source" .
+                 " WHERE film_id=$filmId" .
+                   " AND source_name='".$source->getName()."'";
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
+        $row = $result->fetch_assoc();
+        $this->assertEmpty($row['image']);
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @depends testObjectCanBeConstructed
+     * @depends testSetupRatings
+     */
+    public function testAddNewFilmSourceWithNoOtherFilmSource()
+    {
+        // There is no film/source row film_id=8
+        // There is film row id=8
+        $db = getDatabase();
+        $source = new Source(Constants::SOURCE_IMDB);
+        $filmId = 8;
+        $source->addFilmSourceToDb($filmId);
+        $query = "SELECT * FROM film_source" .
+                 " WHERE film_id=$filmId" .
+                   " AND source_name='".$source->getName()."'";
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
 }
 
 ?>

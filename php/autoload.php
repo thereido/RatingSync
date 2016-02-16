@@ -15,6 +15,7 @@ spl_autoload_register(
                 'RatingSync\\jinni' => '/Jinni.php',
                 'RatingSync\\main' => '/main.php',
                 'RatingSync\\rating' => '/Rating.php',
+                'RatingSync\\ratingsyncsite' => 'RatingSyncSite.php',
                 'RatingSync\\site' => '/Site.php',
                 'RatingSync\\source' => '/Source.php',
                 'RatingSync\\httperrorexception' => 'exceptions/HttpErrorException.php',

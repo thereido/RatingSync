@@ -50,6 +50,30 @@ class Rating
     }
 
     /**
+     * Rating data from one source
+     *
+     * @param array  $row    Row from the Rating table (Columns: yourScore, yourRatingDate, suggestedScore, criticScore, userScore)
+     */
+    public function initFromDbRow($row)
+    {
+        if (!empty($row['yourScore'])) {
+            $this->setYourScore($row['yourScore']);
+        }
+        if (!empty($row['yourRatingDate'])) {
+            $this->setYourRatingDate(new \DateTime($row['yourRatingDate']));
+        }
+        if (!empty($row['suggestedScore'])) {
+            $this->setSuggestedScore($row['suggestedScore']);
+        }
+        if (!empty($row['criticScore'])) {
+            $this->setCriticScore($row['criticScore']);
+        }
+        if (!empty($row['userScore'])) {
+            $this->setUserScore($row['userScore']);
+        }
+    }
+
+    /**
      * Website the rating comes from
      *
      * @return string \RatingSync\Constants::SOURCE_***
@@ -220,5 +244,79 @@ class Rating
         } else {
             return false;
         }
+    }
+
+    /**
+     * Save rating data from one source to the RatingSync source rating
+     * if this one is newer (rating date) than the original
+     *
+     * @param string $username Database query from the Rating table
+     * @param int    $filmId   Database id of the film rated
+     */
+    public function saveToRs($username, $filmId)
+    {
+        if (empty($username) || empty($filmId)) {
+            throw new \InvalidArgumentException('username and filmId cannot be empty');
+        }
+        
+        $db = getDatabase();
+        $query = "SELECT * FROM rating" .
+                 " WHERE film_id=$filmId" .
+                   " AND user_name='$username'" .
+                   " AND source_name='" .Constants::SOURCE_RATINGSYNC. "'";
+        $result = $db->query($query);
+        if ($result->num_rows == 1) {
+            // The user has a current RatingSync rating for this film
+            $row = $result->fetch_assoc();
+            $ratingRs = new Rating(Constants::SOURCE_RATINGSYNC);
+            $ratingRs->initFromDbRow($row);
+
+            $yourScore = $this->getYourScore();
+            if (($this->getYourRatingDate() > $ratingRs->getYourRatingDate())
+                && (!empty($yourScore))
+                && ($yourScore != $ratingRs->getYourScore()))
+            {
+                // This rating is newer than the RS one. Update the score
+                $yourScore = $this->getYourScore();
+                $ratingDateSet = "";
+                $ratingDate = $this->getYourRatingDate();
+                if (!empty($ratingDate)) {
+                    $ratingDateSet = ", yourRatingDate='" . date_format($ratingDate, 'Y-m-d') . "'";
+                }
+                $query = "UPDATE rating SET yourScore=$yourScore" . $ratingDateSet .
+                             " WHERE film_id=$filmId" .
+                               " AND user_name='$username'" .
+                               " AND source_name='" .Constants::SOURCE_RATINGSYNC. "'";
+                if (! $db->query($query)) {
+                    throw new \Exception('DB Failure updating to rating. film_id='.$filmId.', user_name='.Constants::SOURCE_RATINGSYNC.', source_name='.$name);
+                }
+            }
+        } else {
+            $ratingRs = new Rating(Constants::SOURCE_RATINGSYNC);
+            $source = new Source(Constants::SOURCE_RATINGSYNC);
+            $source->addFilmSourceToDb($filmId);
+            
+            $yourScore = $this->getYourScore();
+            $ratingDate = null;
+            if (!is_null($this->getYourRatingDate())) {
+                $ratingDate = $this->getYourRatingDate()->format("Y-m-d");
+            }
+
+            $columns = "user_name, source_name, film_id";
+            $values = "'$username', '" .Constants::SOURCE_RATINGSYNC. "', $filmId";
+            if (!empty($yourScore)) {
+                $columns .= ", yourScore";
+                $values .= ", $yourScore";
+            }
+            if (!empty($ratingDate)) {
+                $columns .= ", yourRatingDate";
+                $values .= ", '$ratingDate'";
+            }
+
+            if (! $db->query("INSERT INTO rating ($columns) VALUES ($values)")) {
+                throw new \Exception("DB Failure insert into rating. film_id='$filmId', user_name='$username', source_name='".Constants::SOURCE_RATINGSYNC."'.  SQL Error: ".$db->error);
+            }
+        }
+
     }
 }

@@ -13,33 +13,43 @@ require_once "HttpChild.php";
 class FilmTest extends \PHPUnit_Framework_TestCase
 {
     public $debug;
-    public $lastTestTime;
+    public $timer;
 
     public function setUp()
     {
         $this->debug = false;
-        $this->lastTestTime = new \DateTime();
+    }
+
+    public function start($className, $functionName)
+    {
+        if ($this->debug) {
+            echo " $className::$functionName ";
+            $this->timer = new \DateTime();
+        }
+    }
+
+    public function tearDown()
+    {
+        if ($this->debug) { echo $this->timer->diff(date_create())->format('%s secs') . "\n"; }
     }
 
     /**
      * @covers \RatingSync\Film::__construct
      */
     public function testObjectCanBeConstructedFromHttp()
-    {
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+    {$this->start(__CLASS__, __FUNCTION__);
 
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
     }
 
     /**
      * @covers \RatingSync\Film::validContentType
      */
     public function testValidContentTypeTrue()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $this->assertTrue(Film::validContentType(Film::CONTENT_FILM), Film::CONTENT_FILM . " should be valid");
         $this->assertFalse(Film::validContentType("Bad_Type"), "Bad_Type should be invalid");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -48,7 +58,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetAndGetFilmName()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         
         // Null
@@ -74,8 +85,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         // Mismatch source
         $film->setFilmName("Film 1D", Constants::SOURCE_IMDB);
         $this->assertNull($film->getFilmName(Constants::SOURCE_JINNI));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -83,11 +92,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testFilmNameCanBeRetrievedFromNewObject()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $this->assertNull($film->getFilmName(Constants::SOURCE_IMDB));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -96,8 +104,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testUrlNameCannotBeSetWithInvalidSource()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setUrlName("url_name", "Bad_Source");
     }
@@ -107,11 +115,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testUrlNameCanBeSetWithNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setUrlName(null, Constants::SOURCE_IMDB);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -119,11 +126,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testUrlNameCanBeSetWithEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setUrlName("", Constants::SOURCE_IMDB);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -131,11 +137,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testUrlNameCanBeSetWithNonEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setUrlName("url_name", Constants::SOURCE_IMDB);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -144,8 +149,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testUrlNameCannotBeGottenWithInvalidSource()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->getUrlName("Bad_Source");
     }
@@ -156,12 +161,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testUrlNameCanBeSetWithNonEmpty
      */
     public function testGetUrlName()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setUrlName("url_name", Constants::SOURCE_IMDB);
         $this->assertEquals("url_name", $film->getUrlName(Constants::SOURCE_IMDB));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -169,11 +173,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testGetUrlNameNeverSet()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -182,12 +185,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testUrlNameCanBeSetWithNull
      */
     public function testGetNullUrlName()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setUrlName(null, Constants::SOURCE_IMDB);
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -197,12 +199,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testUrlNameCanBeSetWithEmpty
      */
     public function testSetUrlNameWithEmptySetsToNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setUrlName("", Constants::SOURCE_IMDB);
         $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), "Setting empty URL name should be set to null");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -211,8 +212,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithInvalidSource()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setRating(null, "Bad_Source");
     }
@@ -223,8 +224,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithNullRatingNullSource()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setRating(null, "Bad_Source");
     }
@@ -235,8 +236,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithString()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setRating("Bad_Arg", Constants::SOURCE_IMDB);
     }
@@ -247,8 +248,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithNumber()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setRating(7, Constants::SOURCE_IMDB);
     }
@@ -258,11 +259,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetRatingWithNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setRating(null, Constants::SOURCE_IMDB);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -270,11 +270,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetRatingWithEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setRating("", Constants::SOURCE_IMDB);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -282,12 +281,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetRating()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating, Constants::SOURCE_IMDB);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -295,12 +293,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetRatingWithNoSource()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -309,8 +306,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \Exception
      */
     public function testSetRatingWithIncompatibleSource()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating, Constants::SOURCE_JINNI);
@@ -323,14 +320,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetRating
      */
     public function testGetRating()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $rating = new Rating(Constants::SOURCE_IMDB);
         $rating->setYourScore(6);
         $film->setRating($rating);
         $this->assertEquals(6, $film->getRating(Constants::SOURCE_IMDB)->getYourScore());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -341,7 +337,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testGetRating
      */
     public function testGetRatingWithMultipleRatings()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $ratingJinni = new Rating(Constants::SOURCE_JINNI);
         $ratingImdb = new Rating(Constants::SOURCE_IMDB);
@@ -350,8 +347,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->setRating($ratingJinni);
         $film->setRating($ratingImdb);
         $this->assertEquals(6, $film->getRating(Constants::SOURCE_IMDB)->getYourScore());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -359,12 +354,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testGetRatingNeverSet()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -373,7 +367,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetRatingWithNull
      */
     public function testGetRatingWasSetNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setRating(null, Constants::SOURCE_IMDB);
         $rating = $film->getRating(Constants::SOURCE_IMDB);
@@ -382,8 +377,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getSuggestedScore());
         $this->assertNull($rating->getCriticScore());
         $this->assertNull($rating->getUserScore());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -392,14 +385,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetRatingWithEmpty
      */
     public function testGetRatingWasSetEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setRating("", Constants::SOURCE_IMDB);
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
         $this->assertNull($rating->getYourScore());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -408,12 +400,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testGetRatingWithInvalidSource()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->getRating("Bad_Source");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -422,12 +412,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testSetYourScoreWithInvalidSource()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYourScore("your_score", "Bad_Source");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -436,8 +424,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testSetYourScoreWithBadArg()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYourScore("Bad_Score", Constants::SOURCE_IMDB);
     }
@@ -447,11 +435,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetYourScoreWithNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYourScore(null, Constants::SOURCE_IMDB);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -460,8 +447,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testSetYourScoreWithEmpty()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYourScore("", Constants::SOURCE_IMDB);
     }
@@ -471,11 +458,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetYourScore()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYourScore(7, Constants::SOURCE_IMDB);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -485,12 +471,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetYourScore
      */
     public function testGetYourScore()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYourScore(7, Constants::SOURCE_IMDB);
         $this->assertEquals(7, $film->getYourScore(Constants::SOURCE_IMDB));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -498,11 +483,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testGetYourScoreNeverSet()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $this->assertNull($film->getYourScore(Constants::SOURCE_IMDB));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -511,12 +495,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetYourScoreWithNull
      */
     public function testGetYourScoreWasSetNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYourScore(null, Constants::SOURCE_IMDB);
         $this->assertNull($film->getYourScore(Constants::SOURCE_IMDB));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -525,8 +508,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testGetYourScoreWithInvalidSource()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->getYourScore("Bad_Source");
     }
@@ -536,11 +519,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetTitleWithNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle(null);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -548,11 +530,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetTitleWithEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle("");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -560,11 +541,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetTitle()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle("New_Title");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -574,12 +554,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetTitle
      */
     public function testGetTitle()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle("New_Title");
         $this->assertEquals("New_Title", $film->getTitle());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -587,11 +566,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testGetTitleNeverSet()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $this->assertNull($film->getTitle());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -600,12 +578,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetTitleWithNull
      */
     public function testGetTitleWasSetNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle(null);
         $this->assertNull($film->getTitle());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -614,12 +591,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetTitleWithEmpty
      */
     public function testGetTitleWasSetEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle("");
         $this->assertEquals("", $film->getTitle());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -628,8 +604,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testSetYearWithBadArgFloat()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYear(1999.5);
     }
@@ -640,8 +616,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testSetYearWithBadArgStringCastToInt()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYear("1999.5");
     }
@@ -651,11 +627,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetYearWithNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYear(null);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -663,11 +638,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetYearWithEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYear("");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -675,11 +649,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetYearInt()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYear(1942);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -687,11 +660,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetYearString()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYear("1942");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -701,12 +673,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetYearInt
      */
     public function testGetYear()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYear(1942);
         $this->assertEquals(1942, $film->getYear());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -716,12 +687,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetYearString
      */
     public function testGetYearSetFromString()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYear("1942");
         $this->assertEquals(1942, $film->getYear());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -729,11 +699,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testGetYearNeverSet()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $this->assertNull($film->getYear());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -742,12 +711,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetYearWithNull
      */
     public function testGetYearAfterYearWasSetNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYear(null);
         $this->assertNull($film->getYear());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -756,12 +724,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetYearWithEmpty
      */
     public function testGetYearWasSetEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setYear("");
         $this->assertNull($film->getYear());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -770,8 +737,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testSetContentTypeWithBadArg()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setContentType("Bad_ContentType");
     }
@@ -781,11 +748,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetContentTypeWithNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setContentType(null);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -793,11 +759,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetContentTypeWithEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setContentType("");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -805,11 +770,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetContentType()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setContentType(Film::CONTENT_FILM);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -819,12 +783,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetContentType
      */
     public function testGetContentType()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setContentType(Film::CONTENT_FILM);
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -832,11 +795,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testGetContentTypeNeverSet()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $this->assertNull($film->getContentType());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -845,12 +807,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetContentTypeWithNull
      */
     public function testGetContentTypeWasSetNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setContentType(null);
         $this->assertNull($film->getContentType());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -859,12 +820,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetContentTypeWithEmpty
      */
     public function testGetContentTypeWasSetEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setContentType("");
         $this->assertNull($film->getContentType());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -872,11 +832,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetImageWithNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage(null);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -884,11 +843,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetImageWithEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage("");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -896,11 +854,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetImage()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage("http://example.com/example.jpg");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -910,12 +867,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetImage
      */
     public function testGetImage()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage("http://example.com/example.jpg");
         $this->assertEquals("http://example.com/example.jpg", $film->getImage());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -923,11 +879,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testGetImageNeverSet()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $this->assertNull($film->getImage());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -936,12 +891,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetImageWithNull
      */
     public function testGetImageWasSetNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage(null);
         $this->assertNull($film->getImage());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -950,12 +904,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetImageWithEmpty
      */
     public function testGetImageWasSetEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage("");
         $this->assertEquals("", $film->getImage());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -963,11 +916,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetImageWithNullAndSource()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage(null, Constants::SOURCE_IMDB);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -975,11 +927,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetImageWithEmptyAndSource()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage("", Constants::SOURCE_IMDB);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -987,11 +938,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testSetImageAndSource()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage("http://example.com/example.jpg", Constants::SOURCE_IMDB);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1000,8 +950,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testSetImageAndInvalidSource()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage("http://example.com/example.jpg", "BAD SOURCE");
     }
@@ -1013,12 +963,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetImageAndSource
      */
     public function testGetImageAndSource()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage("http://example.com/example.jpg", Constants::SOURCE_IMDB);
         $this->assertEquals("http://example.com/example.jpg", $film->getImage(Constants::SOURCE_IMDB));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1028,8 +977,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testGetImageAndInvalidSource()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->getImage("BAD SOURCE");
     }
@@ -1039,11 +988,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testGetImageNeverSetAndSource()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $this->assertNull($film->getImage(Constants::SOURCE_IMDB));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1052,12 +1000,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetImageWithNullAndSource
      */
     public function testGetImageWasSetNullAndSource()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage(null, Constants::SOURCE_IMDB);
         $this->assertNull($film->getImage(Constants::SOURCE_IMDB));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1066,12 +1013,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testSetImageWithEmptyAndSource
      */
     public function testGetImageWasSetEmptyAndSource()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setImage("", Constants::SOURCE_IMDB);
         $this->assertEquals("", $film->getImage(Constants::SOURCE_IMDB));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1080,8 +1026,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testAddGenreWithNull()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre(null);
     }
@@ -1092,8 +1038,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testAddGenreWithEmpty()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("");
     }
@@ -1103,11 +1049,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testAddGenre()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1115,12 +1060,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testAddGenreAddSecondGenre()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1128,12 +1072,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testAddGenreDuplicate()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Comedy");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1141,13 +1084,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testAddGenreMultiWithDuplicate()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Comedy");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }    
 
     /**
@@ -1157,12 +1099,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddGenre
      */
     public function testGetGenres()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $this->assertEquals(array('Comedy'), $film->getGenres());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1172,13 +1113,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddGenreAddSecondGenre
      */
     public function testGetGenresTwoGenres()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $this->assertEquals(array('Comedy', 'Horror'), $film->getGenres());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1188,13 +1128,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddGenreDuplicate
      */
     public function testGetGenresDuplicate()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Comedy");
         $this->assertEquals(array('Comedy'), $film->getGenres());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1204,14 +1143,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddGenreMultiWithDuplicate
      */
     public function testGetGenresMultiWithDuplicate()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Comedy");
         $this->assertEquals(array('Comedy', 'Horror'), $film->getGenres());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1221,14 +1159,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddGenre
      */
     public function testGetGenresThreeGenres()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
         $this->assertEquals(array('Comedy', 'Horror', 'Drama'), $film->getGenres());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1237,15 +1174,14 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testGetGenresThreeGenres
      */
     public function testRemoveGenre()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
         $film->removeGenre("Horror");
         $this->assertEquals(array('Comedy', 'Drama'), $film->getGenres());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1254,15 +1190,14 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testGetGenresThreeGenres
      */
     public function testRemoveGenreWithMissingGenre()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
         $film->removeGenre("Sci-Fi");
         $this->assertEquals(array('Comedy', 'Horror', 'Drama'), $film->getGenres());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1271,15 +1206,14 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testGetGenresThreeGenres
      */
     public function testRemoveAllGenres()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
         $film->removeAllGenres();
         $this->assertEmpty($film->getGenres());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1289,14 +1223,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddGenre
      */
     public function testIsGenreTrue()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
         $this->assertTrue($film->isGenre("Horror"));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1306,14 +1239,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddGenre
      */
     public function testIsGenreFalse()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
         $this->assertFalse($film->isGenre("Sci-Fi"));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1325,7 +1257,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testIsGenreTrue
      */
     public function testRemoveAllGenresThenAddOne()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
@@ -1333,8 +1266,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->removeAllGenres();
         $film->addGenre("Comedy");
         $this->assertTrue($film->isGenre("Comedy"));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1343,8 +1274,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testAddDirectorWithNull()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector(null);
     }
@@ -1355,8 +1286,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testAddDirectorWithEmpty()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("");
     }
@@ -1366,11 +1297,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testAddDirector()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Georges Méliès");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1378,12 +1308,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testAddDirectorAddSecondDirector()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Georges Méliès");
         $film->addDirector("Jennifer Lee");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1391,12 +1320,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testAddDirectorDuplicate()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Jennifer Lee");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1404,13 +1332,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testAddDirectorMultiWithDuplicate()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }    
 
     /**
@@ -1420,12 +1347,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddDirector
      */
     public function testGetDirectors()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $this->assertEquals(array('Christopher Nolan'), $film->getDirectors());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1435,13 +1361,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddDirectorAddSecondDirector
      */
     public function testGetDirectorsTwoDirectors()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $this->assertEquals(array('Christopher Nolan', 'Jennifer Lee'), $film->getDirectors());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1451,13 +1376,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddDirectorDuplicate
      */
     public function testGetDirectorsDuplicate()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Christopher Nolan");
         $this->assertEquals(array('Christopher Nolan'), $film->getDirectors());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1467,14 +1391,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddDirectorMultiWithDuplicate
      */
     public function testGetDirectorsMultiWithDuplicate()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Christopher Nolan");
         $this->assertEquals(array('Christopher Nolan', 'Jennifer Lee'), $film->getDirectors());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1484,14 +1407,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddDirector
      */
     public function testGetDirectorsThreeDirectors()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
         $this->assertEquals(array('Christopher Nolan', 'Jennifer Lee', 'Georges Méliès'), $film->getDirectors());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1500,15 +1422,14 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testGetDirectorsThreeDirectors
      */
     public function testRemoveDirector()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
         $film->removeDirector("Jennifer Lee");
         $this->assertEquals(array('Christopher Nolan', 'Georges Méliès'), $film->getDirectors());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1517,15 +1438,14 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testGetDirectorsThreeDirectors
      */
     public function testRemoveDirectorWithMissingDirector()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
         $film->removeDirector("Steven Spielberg");
         $this->assertEquals(array('Christopher Nolan', 'Jennifer Lee', 'Georges Méliès'), $film->getDirectors());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1534,15 +1454,14 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testGetDirectorsThreeDirectors
      */
     public function testRemoveAllDirectors()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
         $film->removeAllDirectors();
         $this->assertEmpty($film->getDirectors());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1550,11 +1469,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testGetDirectorsNeverSet()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $this->assertCount(0, $film->getDirectors());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1563,13 +1481,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testRemoveAllDirectors
      */
     public function testGetDirectorsWithNoDirectors()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->removeAllDirectors();
         $this->assertCount(0, $film->getDirectors());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1579,14 +1496,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddDirector
      */
     public function testIsDirectorTrue()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
         $this->assertTrue($film->isDirector("Jennifer Lee"));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1596,14 +1512,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddDirector
      */
     public function testIsDirectorFalse()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
         $this->assertFalse($film->isDirector("Steven Spielberg"));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1615,7 +1530,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testIsDirectorTrue
      */
     public function testRemoveAllDirectorsThenAddOne()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
@@ -1623,8 +1539,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->removeAllDirectors();
         $film->addDirector("Christopher Nolan");
         $this->assertTrue($film->isDirector("Christopher Nolan"));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1633,8 +1547,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testAddXmlChildFromNullParam()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addXmlChild(null);
     }
@@ -1645,8 +1559,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testAddXmlChildFromString()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->addXmlChild("Bad_Arg_As_A_String");
     }
@@ -1656,7 +1570,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructedFromHttp
      */
     public function testAddXmlChild()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         // Basic test of this function
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle("Film_Title");
@@ -1666,8 +1581,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "<films><film title=\"Film_Title\"><title>Film_Title</title><year/><contentType/><image/><directors/><genres/></film></films>";
         $xmlStr .= "\n";
         $this->assertEquals($xmlStr, $xml->asXml());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1675,7 +1588,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddXmlChild
      */
     public function testAddXmlChildWithEmptyFilmObject()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $xml = new \SimpleXMLElement("<films/>");
         $film->addXmlChild($xml);
@@ -1683,8 +1597,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "<films><film title=\"\"><title/><year/><contentType/><image/><directors/><genres/></film></films>";
         $xmlStr .= "\n";
         $this->assertEquals($xmlStr, $xml->asXml());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1692,7 +1604,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddXmlChild
      */
     public function testAddXmlChildWithAllFields()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         // Film data
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle("Frozen");
@@ -1742,8 +1655,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "</film>";
         $xmlStr .= "</films>\n";
         $this->assertEquals($xmlStr, $xml->asXml());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1751,7 +1662,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddXmlChildWithAllFields
      */
     public function testAddXmlChildWithMultipleRatings()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         // Film data
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle("Frozen");
@@ -1824,8 +1736,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "</film>";
         $xmlStr .= "</films>\n";
         $this->assertEquals($xmlStr, $xml->asXml());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1833,7 +1743,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddXmlChild
      */
     public function testAddXmlChildWithMultipleGenres()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle("Frozen");
         $film->addGenre("Family");
@@ -1853,8 +1764,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "</film>";
         $xmlStr .= "</films>\n";
         $this->assertEquals($xmlStr, $xml->asXml());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1862,7 +1771,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testAddXmlChild
      */
     public function testAddXmlChildWithMultipleDirectors()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle("Frozen");
         $film->addDirector("Chris Buck");
@@ -1882,8 +1792,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .= "</film>";
         $xmlStr .= "</films>\n";
         $this->assertEquals($xmlStr, $xml->asXml());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -1891,8 +1799,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCreateFromXmlArgsNull()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         Film::createFromXml(null, null);
     }
 
@@ -1901,8 +1809,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCreateFromXmlArgsFilmSxeNull()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         Film::createFromXml(null, new HttpChild(TEST_SITE_USERNAME));
     }
 
@@ -1911,8 +1819,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCreateFromXmlArgsHttpNull()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"), null);
     }
 
@@ -1921,8 +1829,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCreateFromXmlArgsFilmSxeWrongType()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         Film::createFromXml("Bad_Type", new HttpChild(TEST_SITE_USERNAME));
     }
 
@@ -1931,8 +1839,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCreateFromXmlArgsHttpWrongType()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"), "Bad_Type");
     }
 
@@ -1941,8 +1849,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @expectedException \Exception
      */
     public function testCreateFromXmlArgsNoTitle()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         Film::createFromXml(new \SimpleXMLElement("<film><year>1900</year></film>"), new HttpChild(TEST_SITE_USERNAME));
     }
 
@@ -1950,10 +1858,9 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @covers  \RatingSync\Film::createFromXml
      */
     public function testCreateFromXmlArgsGood()
-    {
-        Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"), new HttpChild(TEST_SITE_USERNAME));
+    {$this->start(__CLASS__, __FUNCTION__);
 
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+        Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"), new HttpChild(TEST_SITE_USERNAME));
     }
 
     /**
@@ -1961,7 +1868,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testCreateFromXmlArgsGood
      */
     public function testCreateFromXml()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
         $xml = simplexml_load_file($filename);
         $xmlFilmArray = $xml->xpath('/films/film');
@@ -2124,8 +2032,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_IMDB." suggested score");
         $this->assertEquals(7.4, $rating->getCriticScore(), "Frozen ".Constants::SOURCE_IMDB." critic score");
         $this->assertEquals(7.7, $rating->getUserScore(), "Frozen ".Constants::SOURCE_IMDB." user score");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -2147,7 +2053,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @depends testCreateFromXml
      */
     public function testStrangeCharactersInNames()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $film = new Film(new HttpChild(TEST_SITE_USERNAME));
         $film->setTitle("Les Misérables & Gromit's");
         $film->addGenre("Sci-Fi");
@@ -2179,8 +2086,246 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Les Misérables & Gromit's", $readFilm->getTitle(), "Title read from XML");
         $this->assertTrue($readFilm->isGenre("Sci-Fi"), "Genre read from XML");
         $this->assertTrue($readFilm->isDirector("Georges Méliès"), "Director read from XML");
+    }
 
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    /**
+     * @covers  \RatingSync\Film::getFilmFromDb
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testGetFilmFromDbNullFilmId()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = Film::getFilmFromDb(null, new HttpChild(TEST_SITE_USERNAME));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getFilmFromDb
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testGetFilmFromDbNonIntFilmId()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = Film::getFilmFromDb("string", new HttpChild(TEST_SITE_USERNAME));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getFilmFromDb
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testGetFilmFromDbEmptyFilmId()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = Film::getFilmFromDb("", new HttpChild(TEST_SITE_USERNAME));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getFilmFromDb
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testGetFilmFromDbNullHttp()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = Film::getFilmFromDb(1, null);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getFilmFromDb
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testGetFilmFromDbNonObjectHttp()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = Film::getFilmFromDb(1, "string");
+    }
+
+    public function testResetDb()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        DatabaseTest::resetDb();
+    }
+
+    /**
+     * @depends testResetDb
+     */
+    public function testSetupForGetFilmFromDb()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $username_site = TEST_IMDB_USERNAME;
+        $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
+        $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
+
+        $site = new SiteChild($username_site);
+        $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename, $username_rs);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getFilmFromDb
+     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testResetDb
+     */
+    public function testGetFilmFromDbNoError()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = Film::getFilmFromDb(1, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getFilmFromDb
+     * @depends testGetFilmFromDbNoError
+     */
+    public function testGetFilmFromDbBasicData()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = Film::getFilmFromDb(1, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+
+        $this->assertEquals("Frozen", $film->getTitle(), "Title");
+        $this->assertEquals(2013, $film->getYear(), "Year");
+        $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "ContentType");
+        $this->assertEquals(1, preg_match('@(frozen_rs_image)@', $film->getImage(), $matches), 'Image link');
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getFilmFromDb
+     * @depends testGetFilmFromDbNoError
+     */
+    public function testGetFilmFromDbSourceData()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = Film::getFilmFromDb(7, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+
+        $sourceName = Constants::SOURCE_IMDB;
+        $source = $film->getSource($sourceName);
+        $urlName = $source->getUrlName();
+        $filmName = $source->getFilmName();
+        $image = $source->getImage();        
+        $this->assertEquals("UrlName6_imdb", $urlName, "UrlName $sourceName");
+        $this->assertEquals("FilmName6_imdb", $filmName, "FilmName $sourceName");
+        $this->assertEquals(1, preg_match('@(title6_imdb_image)@', $image, $matches), "Image link $sourceName");
+
+        $sourceName = Constants::SOURCE_JINNI;
+        $source = $film->getSource($sourceName);
+        $urlName = $source->getUrlName();
+        $filmName = $source->getFilmName();
+        $image = $source->getImage();        
+        $this->assertEquals("UrlName6_jinni", $urlName, "UrlName $sourceName");
+        $this->assertEquals("FilmName6_jinni", $filmName, "FilmName $sourceName");
+        $this->assertEquals(1, preg_match('@(title6_jinni_image)@', $image, $matches), "Image link $sourceName");
+
+        $sourceName = Constants::SOURCE_RATINGSYNC;
+        $source = $film->getSource($sourceName);
+        $urlName = $source->getUrlName();
+        $filmName = $source->getFilmName();
+        $image = $source->getImage();        
+        $this->assertEquals("UrlName6_rs", $urlName, "UrlName $sourceName");
+        $this->assertEquals("FilmName6_rs", $filmName, "FilmName $sourceName");
+        $this->assertEquals(1, preg_match('@(title6_rs_image)@', $image, $matches), "Image link $sourceName");
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getFilmFromDb
+     * @depends testGetFilmFromDbNoError
+     */
+    public function testGetFilmFromDbRatingData()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = Film::getFilmFromDb(7, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+
+        $sourceName = Constants::SOURCE_IMDB;
+        $rating = $film->getRating($sourceName);
+        $this->assertEquals(5, $rating->getYourScore(), "YourScore $sourceName");
+        $this->assertEquals("2015-01-05", date_format($rating->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceName");
+        $this->assertEquals(6, $rating->getSuggestedScore(), "SuggestedScore $sourceName");
+        $this->assertEquals(7, $rating->getCriticScore(), "CriticScore $sourceName");
+        $this->assertEquals(8, $rating->getUserScore(), "UserScore $sourceName");
+
+        $sourceName = Constants::SOURCE_JINNI;
+        $rating = $film->getRating($sourceName);
+        $this->assertEquals(4, $rating->getYourScore(), "YourScore $sourceName");
+        $this->assertEquals("2015-01-04", date_format($rating->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceName");
+        $this->assertEquals(5, $rating->getSuggestedScore(), "SuggestedScore $sourceName");
+        $this->assertEquals(6, $rating->getCriticScore(), "CriticScore $sourceName");
+        $this->assertEquals(7, $rating->getUserScore(), "UserScore $sourceName");
+
+        $sourceName = Constants::SOURCE_RATINGSYNC;
+        $rating = $film->getRating($sourceName);
+        $this->assertEquals(6, $rating->getYourScore(), "YourScore $sourceName");
+        $this->assertEquals("2015-01-06", date_format($rating->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceName");
+        $this->assertEquals(7, $rating->getSuggestedScore(), "SuggestedScore $sourceName");
+        $this->assertEquals(8, $rating->getCriticScore(), "CriticScore $sourceName");
+        $this->assertEquals(9, $rating->getUserScore(), "UserScore $sourceName");
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getFilmFromDb
+     * @depends testGetFilmFromDbNoError
+     */
+    public function testGetFilmFromDbDirectors()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = Film::getFilmFromDb(1, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+        $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Frozen directors");
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getFilmFromDb
+     * @depends testGetFilmFromDbNoError
+     */
+    public function testGetFilmFromDbGenres()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = Film::getFilmFromDb(1, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+        $this->assertEquals(array("Adventure", "Animation", "Comedy", "Family", "Fantasy", "Musical"), $film->getGenres(), "Frozen genres");
+    }
+    
+    /**
+     * @covers \RatingSync\Film::reconnectImage
+     * @depends testSetupForGetFilmFromDb
+     */
+    public function testReconnectImage()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $db = getDatabase();
+
+        // Insert a new film and review with no image
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
+        $film = new Film(new HttpChild($username));
+        $film->setTitle("Zombeavers");
+        $film->setYear(2014);
+        $film->setContentType(Film::CONTENT_FILM);
+        $rating = new Rating(Constants::SOURCE_RATINGSYNC);
+        $rating->setYourScore(6);
+        $rating->setYourRatingDate(new \DateTime('2015-6-6'));
+        $film->setRating($rating, Constants::SOURCE_RATINGSYNC);
+        $film->saveToDb($username);
+
+        // Get a film id 
+        $query = "SELECT id, image FROM film WHERE title='Zombeavers'";
+        $result = $db->query($query);
+        $row = $result->fetch_assoc();
+        $filmId = intval($row['id']);
+        
+        // Delete the image from the db
+        $this->assertTrue($db->query("UPDATE film SET image=NULL WHERE id=".$filmId), "Delete film image");
+        $this->assertTrue($db->query("UPDATE film_source SET image=NULL WHERE film_id=".$filmId), "Delete film_source image");
+
+        // Get a Film object from the db
+        $http = new HttpImdb("empty_username");
+        $film = Film::getFilmFromDb($filmId, $http);
+
+        // Test
+        $film->reconnectImage();
+
+        // Verify
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There should be one result");
+        $row = $result->fetch_assoc();
+        $image = $row['image'];
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BNTMzMzc4ODc1M15BMl5BanBnXkFtZTgwMTM0MTgxMTE)@', $image, $matches), 'Image link');
     }
 }
 

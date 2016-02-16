@@ -33,7 +33,6 @@ $username = $source = $format = $filename = $success = null;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = test_input($_POST["username"]);
     $source = test_input($_POST["source"]);
-    $format = test_input($_POST["format"]);
 
     // FIXME - input validation
     
@@ -88,12 +87,8 @@ function test_input($data)
       <div class="row">
         <div class="col-lg-offset-1 col-lg-5">
           <label>Export from</label>
-          <label class="radio-inline"><input type="radio" name="source" value="jinni" checked>Jinni</label>
+          <label class="radio-inline"><input type="radio" name="source" value="ratingsync" checked>RatingSync</label>
           <label class="radio-inline"><input type="radio" name="source" value="imdb">IMDb</label>
-        </div><!-- /col -->
-        <div class="col-lg-offset-1 col-lg-5">
-          <label>Format</label>
-          <label class="col-lg-offset-1 radio-inline"><input type="radio" name="format" value="XML" checked>XML</label>
         </div><!-- /col -->
       </div><!-- /row -->
         
@@ -101,7 +96,7 @@ function test_input($data)
       <div class="row">
         <div class="col-sm-12">
           <div class="input-group">
-            <span class="input-group-addon" id="username-addon1">Jinni Username</span>
+            <span class="input-group-addon" id="username-addon1">Username</span>
             <input type="text" class="form-control" placeholder="Username" aria-describedby="username-addon1" name="username" value="<?php echo $username; ?>">
           </div>
         </div>

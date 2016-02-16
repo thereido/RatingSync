@@ -127,6 +127,57 @@ class Source
     {
         return $this->getRating()->getYourScore();
     }
+
+    /**
+     * Create a film/source row in the db if not already exists
+     *
+     * @param int $filmID Database id of the film rated
+     */
+    public function addFilmSourceToDb($filmId)
+    {
+        if (empty($filmId)) {
+            throw new \InvalidArgumentException('filmId cannot be empty');
+        }
+        
+        $db = getDatabase();
+        $emptyImage = true;
+        $name = $this->name;
+
+        $query = "SELECT * FROM film_source" .
+                 " WHERE film_id=$filmId" .
+                   " AND source_name='$name'";
+        $result = $db->query($query);
+        if ($result->num_rows == 0) {
+            // Insert the film/source row
+            $query = "INSERT INTO film_source (film_id, source_name) VALUES ($filmId, '$name')";
+            if (! $db->query($query)) {
+                throw new \Exception('Error inserting to film_source. film_id='.$filmId.', source_name='.$name.'.  SQL Error: '.$db->error);
+            }
+        } else {
+            // The row exists already
+            $row = $result->fetch_assoc();
+            $emptyImage = empty($row['image']);
+        }
+
+        if ($emptyImage) {
+            $image = $this->getImage();
+            if (empty($image)) {
+                $query = "SELECT * FROM film WHERE id=$filmId";
+                $result = $db->query($query);
+                if ($result->num_rows > 0) {
+                    $row = $result->fetch_assoc();
+                    $image = $row['image'];
+                }
+            }
+            if (!empty($image)) {
+                $query = "UPDATE film_source" .
+                            " SET image='$image'" .
+                            " WHERE film_id=$filmId" .
+                            " AND source_name='$name'";
+                $db->query($query);
+            }
+        }
+    }
 }
 
 ?>

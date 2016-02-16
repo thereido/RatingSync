@@ -45,8 +45,8 @@ function export($username, $source, $format)
     $filename = "ratings.xml";
     $site = null;
 
-    if ($source == "jinni") {
-        $site = new Jinni($username);
+    if ($source == "ratingsync") {
+        $site = new RatingSyncSite($username);
     } elseif ($source == "imdb") {
         $site = new Imdb($username);
     } else {
@@ -113,6 +113,18 @@ function logDebug($input, $prefix = null, $showTime = true)
     $fp = fopen($logfilename, "a");
     fwrite($fp, $prefix . $input . PHP_EOL);
     fclose($fp);
+}
+
+/**
+ * Sync ratings. Bring user's ratings in the db from all sources
+ * into sync. 
+ *
+ * @param string $username RatingSync user
+ */
+function sync($username)
+{
+    $site = new RatingSyncSite($username);
+    $site->syncRatings($username);
 }
 
 ?>
