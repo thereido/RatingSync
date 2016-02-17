@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "../Site.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Site.php";
 
 require_once "SiteChild.php";
 require_once "HttpTest.php";
@@ -348,7 +348,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $success = $site->exportRatings(Constants::EXPORT_FORMAT_XML, $testFilename, false);
         $this->assertTrue($success);
 
-        $fullTestFilename = __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . Constants::outputFilePath() . $testFilename;
+        $fullTestFilename = Constants::outputFilePath() . $testFilename;
         $fullVerifyFilename = "testfile/verify_ratings_nodetail_site.xml";
         $this->assertTrue(is_readable($fullTestFilename), 'Need to read downloaded file ' . $fullTestFilename);
         $this->assertTrue(is_readable($fullVerifyFilename), 'Need to read verify file ' . $fullVerifyFilename);
@@ -383,7 +383,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $success = $site->exportRatings("XML", $testFilename, true, 60);
         $this->assertTrue($success);
 
-        $fullTestFilename = __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . Constants::outputFilePath() . $testFilename;
+        $fullTestFilename = Constants::outputFilePath() . $testFilename;
         $fullVerifyFilename = "testfile/verify_ratings_detail_site.xml";
         $this->assertTrue(is_readable($fullTestFilename), 'Need to read downloaded file ' . $fullTestFilename);
         $this->assertTrue(is_readable($fullVerifyFilename), 'Need to read verify file ' . $fullVerifyFilename);
@@ -1180,7 +1180,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $xml->addChild('count', $filmCount);
         
         $testFilename = "test_writing_xml.xml";
-        $fullTestFilename =  __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . Constants::outputFilePath() . $testFilename;
+        $fullTestFilename =  Constants::outputFilePath() . $testFilename;
         $fp = fopen($fullTestFilename, "w");
         fwrite($fp, $xml->asXml());
         fclose($fp);

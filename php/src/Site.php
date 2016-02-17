@@ -433,7 +433,7 @@ abstract class Site
     {
         $films = $this->getRatings(null, 1, $detail, $useCache);
 
-        $filename =  __DIR__ . DIRECTORY_SEPARATOR . ".." . Constants::outputFilePath() . $filename;
+        $filename =  Constants::outputFilePath() . $filename;
         $fp = fopen($filename, "w");
 
         // Write XML

@@ -4,8 +4,8 @@
  */
 namespace RatingSync;
 
-require_once "../Site.php";
-require_once "../Imdb.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Site.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Imdb.php";
 require_once "SiteTest.php";
 
 class SiteChild extends \RatingSync\Site {

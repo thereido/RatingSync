@@ -9,10 +9,10 @@
  */
 namespace RatingSync;
 
-require_once "Constants.php";
-require_once "Jinni.php";
-require_once "Imdb.php";
-require_once "RatingSyncSite.php";
+require_once "src/Constants.php";
+require_once "src/Jinni.php";
+require_once "src/Imdb.php";
+require_once "src/RatingSyncSite.php";
 
 /**
  * Import ratings from a file to the database
@@ -109,7 +109,7 @@ function logDebug($input, $prefix = null, $showTime = true)
         }
         $prefix = $time . " " . $prefix . ":\t";
     }
-    $logfilename =  __DIR__ . DIRECTORY_SEPARATOR . ".." . Constants::outputFilePath() . "logDebug.txt";
+    $logfilename =  Constants::outputFilePath() . "logDebug.txt";
     $fp = fopen($logfilename, "a");
     fwrite($fp, $prefix . $input . PHP_EOL);
     fclose($fp);

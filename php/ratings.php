@@ -1,8 +1,8 @@
 <?php
 namespace RatingSync;
 
-require_once "./main.php";
-require_once "./SessionUtility.php";
+require_once "main.php";
+require_once "src/SessionUtility.php";
 
 $username = "testratingsync";
 logDebug("Begin $username", "rating.php");

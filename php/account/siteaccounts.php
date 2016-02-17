@@ -1,7 +1,7 @@
 <?php
 namespace RatingSync;
 
-require_once "../Constants.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Constants.php";
 
 if(empty($_SESSION['LoggedIn']) || empty($_SESSION['Username'])) {
     // FIXME Redirect to login

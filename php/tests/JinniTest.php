@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "../Jinni.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Jinni.php";
 
 const TEST_JINNI_USERNAME = "testratingsync";
 
@@ -452,7 +452,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $xml->addChild('count', $filmCount);
         
         $testFilename = "test_writing_xml.xml";
-        $fullTestFilename =  __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . Constants::outputFilePath() . $testFilename;
+        $fullTestFilename =  Constants::outputFilePath() . $testFilename;
         $fp = fopen($fullTestFilename, "w");
         fwrite($fp, $xml->asXml());
         fclose($fp);

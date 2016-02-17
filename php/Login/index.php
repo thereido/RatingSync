@@ -1,9 +1,9 @@
 <?php
 namespace RatingSync;
 
-require_once "../main.php";
-require_once "../SessionUtility.php";
-require_once "../Constants.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "SessionUtility.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Constants.php";
 ?>
 
 <!DOCTYPE html>

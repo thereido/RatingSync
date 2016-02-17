@@ -8,7 +8,7 @@ date_default_timezone_set('America/New_York');
 
 class Constants
 {
-    const RS_OUTPUT_URL_PATH            = "/php/output/";
+    const RS_OUTPUT_URL_PATH            = "/php/src/output/";
     const SOURCE_JINNI                  = "Jinni";
     const SOURCE_IMDB                   = "IMDb";
     const SOURCE_RATINGSYNC             = "RatingSync";
@@ -23,15 +23,25 @@ class Constants
     const DB_MODE_TEST                  = "TEST";
     const DB_MODE                       = self::DB_MODE_TEST;
     const TEST_RATINGSYNC_USERNAME      = "testratingsync";
+
+    static function basePath()
+    {
+        $base = __DIR__;
+        if (0 != preg_match('@(.*php).*@', $base, $matches)) {
+            $base = $matches[1];
+        }
+
+        return $base;
+    }
     
     static function outputFilePath()
     {
-        return DIRECTORY_SEPARATOR . "php" . DIRECTORY_SEPARATOR . "output" . DIRECTORY_SEPARATOR;
+        return self::basePath() . DIRECTORY_SEPARATOR . "output" . DIRECTORY_SEPARATOR;
     }
     
     static function cacheFilePath()
     {
-        return __DIR__ .  DIRECTORY_SEPARATOR . "cache" . DIRECTORY_SEPARATOR;
+        return self::basePath() .  DIRECTORY_SEPARATOR . "cache" . DIRECTORY_SEPARATOR;
     }
 }
 ?>

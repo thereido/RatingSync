@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "../HttpImdb.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "HttpImdb.php";
 
 // Child class to expose protected members and functions
 class HttpImdbExt extends \RatingSync\HttpImdb {

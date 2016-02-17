@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "../main.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 
 class DatabaseTest extends \PHPUnit_Framework_TestCase
 {

@@ -1,7 +1,10 @@
 <?php
 namespace RatingSync;
 
-require_once "/php/SessionUtility.php";
+require_once "/php/src/SessionUtility.php";
+
+require_once "/php/main.php";
+require_once "/php/src/Constants.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -10,7 +10,7 @@
  *
  */
 require_once "main.php";
-require_once "Constants.php";
+require_once "src/Constants.php";
 ?>
 
 <!DOCTYPE html>

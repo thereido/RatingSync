@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "../Http.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Http.php";
 
 class HttpChild extends \RatingSync\Http {
     public function __construct($username)
