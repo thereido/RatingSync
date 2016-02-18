@@ -5,6 +5,12 @@ require_once "/php/src/SessionUtility.php";
 
 require_once "/php/main.php";
 require_once "/php/src/Constants.php";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (array_key_exists("reconnect", $_POST) && $_POST["reconnect"] == 1) {
+        Film::reconnectFilmImages();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,7 +31,7 @@ require_once "/php/src/Constants.php";
         <li role="presentation" class="active"><a href="/">Home</a></li>
         <li role="presentation">
             <?php
-            $username = SessionUtility::getUsername();
+            $username = getUsername();
             if (empty($username)) {
                 echo '<a id="myaccount-link" href="/php/Login">Login</a>';
             } else {
@@ -55,15 +61,22 @@ require_once "/php/src/Constants.php";
   </div>
   <div class="row">
     <div class="col-sm-12">
-      <ul>
-        <li><a href="/php/example/exampleSearch.php">Search</a></li>
-        <li><a href="/php/example/exampleRatings.php">Ratings</a></li>
-      </ul>
+        <form id="reconnectForm" role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+            <input hidden id="reconnect" name="reconnect" value="0" />
+            <input type="submit" name="submitBtn" class="btn btn-lg btn-primary" href="#" role="button" value="Reconnect Images" onclick="reconnectImages()">
+        </form>
     </div>
   </div>
 
   <p></p>
   <footer class="footer"></footer>
 </div> <!-- container -->
+    
+<script>
+function reconnectImages() {
+    document.getElementById("reconnect").value = "1";
+}
+</script>
+
 </body>
 </html>
