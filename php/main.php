@@ -127,4 +127,8 @@ function sync($username)
     $site->syncRatings($username);
 }
 
+function getUsername() {
+    return Constants::LOGGED_IN_USERNAME;
+}
+
 ?>

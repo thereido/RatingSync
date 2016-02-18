@@ -3,12 +3,20 @@ namespace RatingSync;
 
 require_once "main.php";
 require_once "src/SessionUtility.php";
+require_once "src/Film.php";
 
-$username = "testratingsync";
-logDebug("Begin $username", "rating.php");
+$username = getUsername();
+
+if (array_key_exists("sync", $_GET) && $_GET["sync"] == 1) {
+    logDebug("sync $username starting", "rating.php");
+    sync($username);
+    logDebug("sync finished", "rating.php");
+}
+
+logDebug("Get ratings $username starting", "rating.php");
 $site = new \RatingSync\RatingSyncSite($username);
 $films = $site->getRatings();
-logDebug("Count films: " . count($films), "rating.php");
+logDebug("Get ratings finished. Count films: " . count($films), "rating.php");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,9 +30,6 @@ logDebug("Count films: " . count($films), "rating.php");
 
 <body>
 <?php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $success = \RatingSync\sync($username);
-}
 
 function test_input($data)
 {
@@ -43,7 +48,6 @@ function test_input($data)
         <li role="presentation" class="active"><a href="/">Home</a></li>
         <li role="presentation">
             <?php
-            $username = SessionUtility::getUsername();
             if (empty($username)) {
                 echo '<a id="myaccount-link" href="/php/Login">Login</a>';
             } else {
@@ -59,12 +63,6 @@ function test_input($data)
   <div class="well well-sm">
     <h2>Ratings</h2>
   </div>
-
-<form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-    <div class="col-lg-12" style="text-align:center">
-        <input type="submit" name="submitBtn" class="btn btn-lg btn-primary" href="#" role="button" value="Sync">
-    </div>
-</form>
     
   <table class="table table-striped">
     <tbody>
@@ -103,7 +101,3 @@ function test_input($data)
 </div>        
 </body>
 </html>
-
-<?php
-logDebug("End", "rating.php");
-?>

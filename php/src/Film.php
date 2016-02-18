@@ -630,11 +630,12 @@ class Film {
 
     public static function getFilmFromDb($filmId, $http, $username = null)
     {
-        if (empty($filmId) || !is_int($filmId)) {
+        if (empty($filmId) || !is_int(intval($filmId))) {
             throw new \InvalidArgumentException("filmId arg must be an int (filmId=$filmId)");
         } elseif (! ($http instanceof Http) ) {
             throw new \InvalidArgumentException('Film contruct must have an Http object');
         }
+        $filmId = intval($filmId);
         $db = getDatabase();
         
         $result = $db->query("SELECT * FROM film WHERE id=$filmId");

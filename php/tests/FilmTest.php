@@ -2307,7 +2307,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $query = "SELECT id, image FROM film WHERE title='Zombeavers'";
         $result = $db->query($query);
         $row = $result->fetch_assoc();
-        $filmId = intval($row['id']);
+        $filmId = $row['id'];
         
         // Delete the image from the db
         $this->assertTrue($db->query("UPDATE film SET image=NULL WHERE id=".$filmId), "Delete film image");
@@ -2321,6 +2321,49 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->reconnectImage();
 
         // Verify
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There should be one result");
+        $row = $result->fetch_assoc();
+        $image = $row['image'];
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BNTMzMzc4ODc1M15BMl5BanBnXkFtZTgwMTM0MTgxMTE)@', $image, $matches), 'Image link');
+    }
+    
+    /**
+     * @covers \RatingSync\Film::reconnectFilmImages
+     * @depends testReconnectImage
+     */
+    public function testReconnectFilmImages()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $db = getDatabase();
+
+        // Get a film ids
+        $query = "SELECT id, image FROM film WHERE title='Frozen'";
+        $result = $db->query($query);
+        $row = $result->fetch_assoc();
+        $filmId1 = intval($row['id']);
+        $query = "SELECT id, image FROM film WHERE title='Zombeavers'";
+        $result = $db->query($query);
+        $row = $result->fetch_assoc();
+        $filmId2 = intval($row['id']);
+        
+        // Delete images from the db
+        $this->assertTrue($db->query("UPDATE film SET image=NULL WHERE id IN ($filmId1, $filmId2)"), "Delete film image");
+        $this->assertTrue($db->query("UPDATE film_source SET image=NULL WHERE film_id IN ($filmId1, $filmId2)"), "Delete film_source image");
+
+        // Test
+        Film::reconnectFilmImages();
+
+        // Verify
+
+        $query = "SELECT id, image FROM film WHERE title='Frozen'";
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There should be one result");
+        $row = $result->fetch_assoc();
+        $image = $row['image'];
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $image, $matches), 'Image link');
+
+        $query = "SELECT id, image FROM film WHERE title='Zombeavers'";
         $result = $db->query($query);
         $this->assertEquals(1, $result->num_rows, "There should be one result");
         $row = $result->fetch_assoc();

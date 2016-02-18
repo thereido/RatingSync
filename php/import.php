@@ -9,8 +9,24 @@
      Format
  *
  */
+namespace RatingSync;
+
 require_once "main.php";
 require_once "src/Constants.php";
+
+// define variables and set to empty values
+$format = $filename = $success = null;
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $filename = $_POST["filename"];
+    $format = $_POST["format"];
+
+    $success = \RatingSync\import(getUsername(), $filename, $format);
+    if ($success) {
+        header('Location: ratings.php?sync=1');
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -24,31 +40,7 @@ require_once "src/Constants.php";
     <script src="../js/bootstrap.min.js"></script>
 </head>
 
-<body>    
-  
-<?php
-// define variables and set to empty values
-$username = $format = $filename = $success = null;
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $db = \RatingSync\getDatabase();
-    $username = $db->real_escape_string($_POST['username']);
-    $filename = $_POST["filename"];
-    $format = test_input($_POST["format"]);
-
-    // FIXME - input validation
-
-    $success = \RatingSync\import($username, $filename, $format);
-}
-
-function test_input($data)
-{
-     $data = trim($data);
-     $data = stripslashes($data);
-     $data = htmlspecialchars($data);
-     return $data;
-}
-?>
+<body>  
 
 <form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
     <div class="container">
@@ -70,11 +62,11 @@ function test_input($data)
         <?php
         if (!is_null($success)) {
             if ($success) {
-                echo '<div class="alert alert-success">';
-                echo '<strong>Success!</strong>';
-                echo '</div>';
+                echo "<div id='successDiv' class='alert alert-success'>\n";
+                echo "  <strong>Success!</strong>\n";
+                echo "</div>\n";
             } else {
-                echo '<div class="alert alert-warning"><strong>Failure!</strong> Something went wrong.</div>\n';
+                echo "<div class='alert alert-warning'><strong>Failure!</strong> Something went wrong.</div>\n";
             }
         }
         ?>
@@ -86,16 +78,6 @@ function test_input($data)
           <label>Format</label>
           <label class="col-lg-offset-1 radio-inline"><input type="radio" name="format" value="XML" checked>XML</label>
         </div><!-- /col -->
-      </div><!-- /row -->
-        
-      <p></p>
-      <div class="row">
-        <div class="col-sm-12">
-          <div class="input-group">
-            <span class="input-group-addon" id="username-addon1">Email</span>
-            <input type="text" class="form-control" placeholder="you@domain.com" aria-describedby="username-addon1" name="username" value="<?php echo $username; ?>">
-          </div>
-        </div>
       </div><!-- /row -->
         
       <p></p>

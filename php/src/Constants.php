@@ -23,6 +23,7 @@ class Constants
     const DB_MODE_TEST                  = "TEST";
     const DB_MODE                       = self::DB_MODE_TEST;
     const TEST_RATINGSYNC_USERNAME      = "testratingsync";
+    const LOGGED_IN_USERNAME            = self::TEST_RATINGSYNC_USERNAME; // Temporary until login works
 
     static function basePath()
     {
