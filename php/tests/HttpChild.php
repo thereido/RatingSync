@@ -18,8 +18,6 @@ class HttpChild extends \RatingSync\Http {
 
     function _getSessionId() { return $this->sessionId; }
     function _getLightweightUrl() { return $this->lightweightUrl; }
-
-    public function searchSuggestions($searchStr, $type = null) {}
 }
 
 ?>

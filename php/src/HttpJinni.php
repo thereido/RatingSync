@@ -21,12 +21,7 @@ class HttpJinni extends Http
         $this->lightweightUrl = "";  // start page
     }
 
-    public function searchSuggestions($searchStr, $type = null)
-    {
-        throw new \Exception('Obsolete website');
-    }
-
-    public function getPage($path, $postData = null, $headersOnly = false)
+    public function getPage($path, $postData = null, $headersOnly = false, $useBase = true)
     {
         throw new \Exception('Obsolete website');
     }

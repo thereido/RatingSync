@@ -19,8 +19,6 @@ class HttpImdb extends Http
         $this->lightweightUrl = "/help/?general/&ref_=hlp_brws";
     }
 
-    public function searchSuggestions($searchStr, $type = null) {}
-
     /**
      * Set whatever cookies a website uses.  The \RatingSync\Http::getPage() calls
        this function before curl_exec.

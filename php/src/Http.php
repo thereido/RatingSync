@@ -18,16 +18,6 @@ abstract class Http
     protected $sessionId;
     protected $baseUrl = null;
     protected $lightweightUrl = null;
-    
-    /**
-     * Suggestions in a search text input while a user types
-     *
-     * @param string $searchStr The current text in the text input
-     * @param string $type      \RatingSync\Film content type
-     *
-     * @return array results ['id', 'title', 'year', 'contentType']
-     */
-    abstract public function searchSuggestions($searchStr, $type = null);
 
     /**
      * Child class construct must set these members...
@@ -62,13 +52,16 @@ abstract class Http
      * @throws \RatingSync\UnauthorizedRedirectException
      * @throws \InvalidArgumentException
      */
-    public function getPage($path, $postData = null, $headersOnly = false)
+    public function getPage($path, $postData = null, $headersOnly = false, $useBase = true)
     {
         if (! (!is_null($path)) ) {
             throw new \InvalidArgumentException("getPage() path cannot be NULL");
         }
         
-        $ch = curl_init($this->baseUrl.$path);
+        if ($useBase) {
+            $path = $this->baseUrl.$path;
+        }
+        $ch = curl_init($path);
         $this->putCookiesInRequest($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
@@ -89,11 +82,11 @@ abstract class Http
         // Verify HTTP Code
         $httpCode = $info['http_code'];
         if (401 == $httpCode) {
-            throw new HttpUnauthorizedRedirectException('Unauthorized Redirect: ' . $this->baseUrl . $path);
+            throw new HttpUnauthorizedRedirectException('Unauthorized Redirect: ' . $path);
         } elseif (404 == $httpCode) {
-            throw new HttpNotFoundException('HTTP Not Found: ' . $this->baseUrl . $path);
+            throw new HttpNotFoundException('HTTP Not Found: ' . $path);
         } elseif (($httpCode < 200) || (299 < $httpCode)) {
-            throw new HttpErrorException('HTTP Error ' . $httpCode . ': ' . $this->baseUrl . $path);
+            throw new HttpErrorException('HTTP Error ' . $httpCode . ': ' . $path);
         }
 
         $headers = substr($result, 0, $info['header_size']);
@@ -106,6 +99,17 @@ abstract class Http
         }
 
         return $page;
+    }
+
+    public function isPageValid($path) {
+        $isValid = true;
+        try {
+            $this->getPage($path, null, true, false);
+        } catch (\Exception $e) {
+            $isValid = false;
+        }
+
+        return $isValid;
     }
 
     /**

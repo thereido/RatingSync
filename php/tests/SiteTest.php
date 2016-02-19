@@ -31,7 +31,6 @@ const TEST_SITE_USERNAME = TEST_IMDB_USERNAME;
    - testGetRatingsBeginPage
    - testGetRatingsDetailsNoCache
    - testGetRatingsDetails
-   - testGetSearchSuggestions
    - testGetFilmDetailFromWebsiteFromNull
    - testGetFilmDetailFromWebsiteFromString
    - testGetFilmDetailFromWebsiteWithoutFilmName
@@ -318,23 +317,6 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
         
     }
-    
-    /**
-     * @covers \RatingSync\Site::getSearchSuggestions
-     * @depends testValidateAfterConstructorGood
-     */
-/*
-    public function testGetSearchSuggestionsWithoutExceptions()
-    {
-        $site = new SiteChild(TEST_SITE_USERNAME);
-        $site->_setSourceName(Constants::SOURCE_IMDB);
-        $site->_setHttp(new HttpImdb(TEST_SITE_USERNAME));
-
-        $films = $site->getSearchSuggestions("Shawshank");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
-    }
-*/
     
     /**
      * @covers \RatingSync\Site::exportRatings

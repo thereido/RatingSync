@@ -317,16 +317,6 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertFileExists($firstRatingsFile, 'First ratings page cache file should exist');
         $this->assertFileExists($firstDetailFile, 'First film detail page cache file should exist');
     }
-    
-    /**
-     * @covers \RatingSync\Imdb::getSearchSuggestions
-     * @depends testObjectCanBeConstructed
-    public function testGetSearchSuggestions()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        // Search suggestions are not implemented for IMDb
-    }
-     */
 
     /**
      * @covers \RatingSync\Imdb::getFilmDetailFromWebsite

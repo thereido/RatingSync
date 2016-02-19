@@ -396,30 +396,6 @@ abstract class Site
     }
 
     /**
-     * Search for a string on Jinni optionally fitered by $type
-     * This searches using search suggestions.
-     *
-     * @param string      $searchStr What goes in the search box
-     * @param string|null $type      Content type (movie,tv,etc)
-     *
-     * @see Film::validContentType()
-     * @return array of \RatingSync\Film
-     */
-    public function getSearchSuggestions($searchStr, $type = null)
-    {
-        $films = array();
-        $results = $this->http->searchSuggestions($searchStr, $type);
-        foreach ($results as $result) {
-            $films[] = $film = new Film($this->http);
-            $film->setFilmName($result['id'], $this->sourceName);
-            $film->setTitle($result['title']);
-            $film->setYear($result['year']);
-            $film->setContentType($result['contentType']);
-        }
-        return $films;
-    }
-
-    /**
      * Get the account's ratings from the website and write to a file/database
      *
      * @param string     $format   File format to write to (or database). Currently only XML.
