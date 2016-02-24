@@ -131,4 +131,12 @@ function getUsername() {
     return Constants::LOGGED_IN_USERNAME;
 }
 
+function searchImdb($uniqueName)
+{
+    $imdb = new Imdb(Constants::LOGGED_IN_USERNAME);
+    $film = $imdb->getFilmByUniqueName($uniqueName);
+
+    return $film;
+}
+
 ?>

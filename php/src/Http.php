@@ -104,7 +104,7 @@ abstract class Http
     public function isPageValid($path) {
         $isValid = true;
         try {
-            $this->getPage($path, null, true, false);
+            $this->getPage($path, null, true, true);
         } catch (\Exception $e) {
             $isValid = false;
         }

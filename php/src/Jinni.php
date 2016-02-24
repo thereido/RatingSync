@@ -35,23 +35,6 @@ class Jinni extends Site
     }
 
     /**
-     * Return a film's unique attribute.  This the attr available from ratings pages
-       and from a film detail page.  In most sites the Film ID is always available, but
-       Jinni is has URL Name and don't always Film ID.  The Site implentation returns
-       Film::getFilmName().  Child classes can return something else.
-     *
-     * @param \RatingSync\Film $film get the attr from this film
-     *
-     * @return string unique attribute
-     */
-    public function getFilmUniqueAttr($film)
-    {
-        if (!is_null($film) && ($film instanceof Film)) {
-            return $film->getUrlName($this->sourceName);
-        }
-    }
-
-    /**
      * Return the rating page's URL within a website. The URL does not
      * include the base URL.  
      *
@@ -118,8 +101,8 @@ class Jinni extends Site
     {
         if (! $film instanceof Film ) {
             throw new \InvalidArgumentException('Function getFilmDetailPageUrl must be given a Film object');
-        } elseif ( is_null($film->getContentType()) || is_null($film->getUrlName($this->sourceName)) ) {
-            throw new \InvalidArgumentException('Function getFilmDetailPageUrl must have Content Type and URL Name');
+        } elseif ( is_null($film->getContentType()) || is_null($film->getUniqueName($this->sourceName)) ) {
+            throw new \InvalidArgumentException('Function getFilmDetailPageUrl must have Content Type and Unique Name');
         }
 
         switch ($film->getContentType()) {
@@ -136,8 +119,8 @@ class Jinni extends Site
             $type = null;
         }
 
-        $urlName = $film->getUrlName(Constants::SOURCE_JINNI);
-        return '/'.$type.'/'.$urlName;
+        $uniqueName = $film->getUniqueName(Constants::SOURCE_JINNI);
+        return '/'.$type.'/'.$uniqueName;
     }
 
     /**
@@ -270,29 +253,15 @@ class Jinni extends Site
     }
 
     /**
-     * Regular expression to find Film Id in film detail HTML page
+     * Regular expression to find Unique Name in film detail HTML page
      *
      * @param \RatingSync\Film $film Film data
      *
      * @return string Regular expression to find Film Id in film detail HTML page
      */
-    protected function getDetailPageRegexForFilmName($film)
+    protected function getDetailPageRegexForUniqueName()
     {
-        if (is_null($film) || !($film instanceof Film) || empty($film->getUrlName($this->sourceName))) {
-            throw new \InvalidArgumentException('Film param must have a URL Name');
-        }
-
-        return '/{[^}]+contentId: \"(.+)\"[^}]+uniqueName: \"' . $film->getUrlName($this->sourceName) . '\"/';
-    }
-
-    /**
-     * Regular expression to find URL Name in film detail HTML page
-     *
-     * @return string Regular expression to find URL Name in film detail HTML page
-     */
-    protected function getDetailPageRegexForUrlName()
-    {
-        return '/<a href=\".*\/(.*)\/\" class.*Overview<\/a>/';   
+        return '';
     }
 
     /**
@@ -304,11 +273,11 @@ class Jinni extends Site
      */
     protected function getDetailPageRegexForYourScore($film)
     {
-        if (is_null($film) || !($film instanceof Film) || empty($film->getUrlName($this->sourceName))) {
-            throw new \InvalidArgumentException('Film param must have a URL Name');
+        if (is_null($film) || !($film instanceof Film) || empty($film->getUniqueName($this->sourceName))) {
+            throw new \InvalidArgumentException('Film param must have a Unique Name');
         }
 
-        return '/uniqueName: \"' . $film->getUrlName($this->sourceName) . '\"[^}]+isRatedRating: true[^}]+RatedORSuggestedValue: (\d[\d]?\.?\d?)/';
+        return '/uniqueName: \"' . $film->getUniqueName($this->sourceName) . '\"[^}]+isRatedRating: true[^}]+RatedORSuggestedValue: (\d[\d]?\.?\d?)/';
     }
 
     /**
@@ -330,11 +299,11 @@ class Jinni extends Site
      */
     protected function getDetailPageRegexForSuggestedScore($film)
     {
-        if (is_null($film) || !($film instanceof Film) || empty($film->getUrlName($this->sourceName))) {
-            throw new \InvalidArgumentException('Film param must have a URL Name');
+        if (is_null($film) || !($film instanceof Film) || empty($film->getUniqueName($this->sourceName))) {
+            throw new \InvalidArgumentException('Film param must have a Unique Name');
         }
 
-        return '/uniqueName: \"' . $film->getUrlName($this->sourceName) . '\"[^}]+isSugggestedRating: true[^}]+RatedORSuggestedValue: (\d[\d]?\.?\d?)/';
+        return '/uniqueName: \"' . $film->getUniqueName($this->sourceName) . '\"[^}]+isSugggestedRating: true[^}]+RatedORSuggestedValue: (\d[\d]?\.?\d?)/';
     }
 
     /**

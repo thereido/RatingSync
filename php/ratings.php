@@ -10,7 +10,7 @@ $username = getUsername();
 if (array_key_exists("sync", $_GET) && $_GET["sync"] == 1) {
     logDebug("sync $username starting", "rating.php");
     sync($username);
-    logDebug("sync finished", "rating.php");
+    logDebug("sync finished", "rating.php ".__LINE__);
 }
 
 logDebug("Get ratings $username starting", "rating.php");
@@ -76,6 +76,7 @@ function test_input($data)
           $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
           $yourScore = $rating->getYourScore();
           $yourRatingDate = $rating->getYourRatingDate();
+          $date = null;
           if (!empty($yourRatingDate)) {
               $date = date_format($yourRatingDate, 'm/d/Y');
           }

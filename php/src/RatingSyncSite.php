@@ -78,8 +78,7 @@ class RatingSyncSite extends Site
     protected function getDetailPageRegexForYear() { }
     protected function getDetailPageRegexForImage() { }
     protected function getDetailPageRegexForContentType() { }
-    protected function getDetailPageRegexForFilmName($film) { }
-    protected function getDetailPageRegexForUrlName() { }
+    protected function getDetailPageRegexForUniqueName() { }
     protected function getDetailPageRegexForYourScore($film) { }
     protected function getDetailPageRegexForRatingDate() { }
     protected function getDetailPageRegexForSuggestedScore($film) { }

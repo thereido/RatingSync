@@ -9,6 +9,7 @@ date_default_timezone_set('America/New_York');
 class Constants
 {
     const RS_OUTPUT_URL_PATH            = "/php/src/output/";
+    const RS_IMAGE_URL_PATH             = "/image/";
     const SOURCE_JINNI                  = "Jinni";
     const SOURCE_IMDB                   = "IMDb";
     const SOURCE_RATINGSYNC             = "RatingSync";
@@ -24,6 +25,7 @@ class Constants
     const DB_MODE                       = self::DB_MODE_TEST;
     const TEST_RATINGSYNC_USERNAME      = "testratingsync";
     const LOGGED_IN_USERNAME            = self::TEST_RATINGSYNC_USERNAME; // Temporary until login works
+    const RS_HOST                       = "http://192.168.1.105:55887";
 
     static function basePath()
     {
@@ -43,6 +45,11 @@ class Constants
     static function cacheFilePath()
     {
         return self::basePath() .  DIRECTORY_SEPARATOR . "cache" . DIRECTORY_SEPARATOR;
+    }
+    
+    static function imagePath()
+    {
+        return self::basePath() .  DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "image" . DIRECTORY_SEPARATOR;
     }
 }
 ?>

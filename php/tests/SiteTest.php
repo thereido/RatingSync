@@ -33,7 +33,7 @@ const TEST_SITE_USERNAME = TEST_IMDB_USERNAME;
    - testGetRatingsDetails
    - testGetFilmDetailFromWebsiteFromNull
    - testGetFilmDetailFromWebsiteFromString
-   - testGetFilmDetailFromWebsiteWithoutFilmName
+   - testGetFilmDetailFromWebsiteWithoutUniqueName
    - testGetFilmDetailFromWebsiteNoMatch
    - testGetFilmDetailFromWebsite
    - testGetFilmDetailFromWebsiteOverwriteTrueOverEmpty
@@ -178,7 +178,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
         $film = new Film($site->http);
-        $film->setFilmName("tt2294629", $site->_getSourceName());
+        $film->setUniqueName("tt2294629", $site->_getSourceName());
         
         $page = "<html><body><h2>Film Detail</h2></body></html>";
         $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_filmdetailpage.xml";
@@ -187,7 +187,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         fclose($fp);
         
         $site->cacheFilmDetailPage($page, $film);
-        $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_SITE_USERNAME . "_film_" . $site->getFilmUniqueAttr($film) . ".html";
+        $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_SITE_USERNAME . "_film_" . $film->getUniqueName($site->_getSourceName()) . ".html";
         $this->assertFileExists($testFilename, 'Cache file exists');
         $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
         
@@ -397,18 +397,17 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $site = new SiteChild(TEST_SITE_USERNAME);
 
         $film = new Film($site->_getHttp());
-        $film->setFilmName("tt2294629", Constants::SOURCE_IMDB);
+        $film->setUniqueName("tt2294629", Constants::SOURCE_IMDB);
         $site->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_NEVER);
 
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertNull($film->getContentType(), 'Content Type');
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Image link');
-        $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), 'URL Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals("tt2294629", $film->getFilmName(Constants::SOURCE_IMDB), 'Film ID');
+        $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), 'Film ID');
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
@@ -435,10 +434,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $film->setImage("Original_Image");
         $film->setImage("Original_JinniImage", Constants::SOURCE_JINNI);
         $film->setImage("Original_IMDbImage", Constants::SOURCE_IMDB);
-        $film->setFilmName("Original_JinniFilmName", Constants::SOURCE_JINNI);
-        $film->setFilmName("Original_IMDbFilmName", Constants::SOURCE_IMDB);
-        $film->setUrlName("Original_JinniUrlName", Constants::SOURCE_JINNI);
-        $film->setUrlName("Original_IMDbUrlName", Constants::SOURCE_IMDB);
+        $film->setUniqueName("Original_JinniUniqueName", Constants::SOURCE_JINNI);
+        $film->setUniqueName("Original_IMDbUniqueName", Constants::SOURCE_IMDB);
         $film->addGenre("Original_Genre1");
         $film->addGenre("Original_Genre2");
         $film->addDirector("Original_Director1");
@@ -459,7 +456,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $film->setRating($ratingImdbOrig, Constants::SOURCE_IMDB);
 
         // Get detail overwriting
-        $film->setFilmName("tt2294629", Constants::SOURCE_IMDB);
+        $film->setUniqueName("tt2294629", Constants::SOURCE_IMDB);
         $site->getFilmDetailFromWebsite($film, true);
 
         // Test the new data
@@ -467,7 +464,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals(Film::CONTENT_TV, $film->getContentType(), 'Content Type');  // SiteChild doesn't get it
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Image link');
-        $this->assertEquals("tt2294629", $film->getFilmName($site->_getSourceName()), 'Film ID');
+        $this->assertEquals("tt2294629", $film->getUniqueName($site->_getSourceName()), 'Unique Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating($site->_getSourceName());
@@ -475,14 +472,13 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(FROZEN_USER_SCORE, $rating->getUserScore(), 'User score');
 
         // The film detail page does not have these fields.  Don't overwrite them.
-        $this->assertEquals("Original_IMDbUrlName", $film->getUrlName($site->_getSourceName()), 'URL Name');
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score');
 
         // Jinni Rating is unchanged
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("Original_JinniFilmName", $film->getFilmName(Constants::SOURCE_JINNI), 'Film ID Jinni unchanged');
+        $this->assertEquals("Original_JinniUniqueName", $film->getUniqueName(Constants::SOURCE_JINNI), 'Unique Name Jinni unchanged');
         $this->assertEquals(1, $rating->getYourScore(), 'Your Score Jinni unchanged');
         $this->assertEquals("1/1/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date Jinni unchanged');
         $this->assertEquals(2, $rating->getSuggestedScore(), 'Suggested score Jinni unchanged');
@@ -501,7 +497,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $site = new SiteChild(TEST_SITE_USERNAME);
 
         $film = new Film($site->_getHttp());
-        $film->setFilmName("tt2294629", Constants::SOURCE_IMDB);
+        $film->setUniqueName("tt2294629", Constants::SOURCE_IMDB);
         $site->getFilmDetailFromWebsite($film, false);
 
         // Same results as testGetFilmDetailFromWebsite or testGetFilmDetailFromWebsiteOverwriteTrueOverEmpty
@@ -509,11 +505,10 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertNull($film->getContentType(), 'Content Type'); // IMDb gets it, but SiteChild doesn't
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Image link');
-        $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), 'URL Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals("tt2294629", $film->getFilmName(Constants::SOURCE_IMDB), 'Film ID');
+        $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
@@ -543,8 +538,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Original_Director1");
         $film->addDirector("Original_Director2");
         $film->setImage("Original_Image", Constants::SOURCE_JINNI);
-        $film->setUrlName("Original_JinniUrlName", Constants::SOURCE_JINNI);
-        $film->setFilmName("Original_JinniFilmName", Constants::SOURCE_JINNI);
+        $film->setUniqueName("Original_JinniUniqueName", Constants::SOURCE_JINNI);
         $ratingJinniOrig = new Rating(Constants::SOURCE_JINNI);
         $ratingJinniOrig->setYourScore(1);
         $ratingJinniOrig->setYourRatingDate(new \DateTime('2000-01-01'));
@@ -553,7 +547,6 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $ratingJinniOrig->setUserScore(4);
         $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
         $film->setImage("Original_Image", Constants::SOURCE_IMDB);
-        $film->setUrlName("Original_IMDbUrlName", Constants::SOURCE_IMDB);
         $ratingImdbOrig = new Rating(Constants::SOURCE_IMDB);
         $ratingImdbOrig->setYourScore(2);
         $ratingImdbOrig->setYourRatingDate(new \DateTime('2000-01-02'));
@@ -563,7 +556,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $film->setRating($ratingImdbOrig, Constants::SOURCE_IMDB);
 
         // Get detail not overwriting
-        $film->setFilmName("tt2294629", Constants::SOURCE_IMDB);
+        $film->setUniqueName("tt2294629", Constants::SOURCE_IMDB);
         $site->getFilmDetailFromWebsite($film, false);
 
         // Same original data
@@ -571,19 +564,17 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1900, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
         $this->assertEquals("Original_Image", $film->getImage(), 'Image link');
-        $this->assertEquals("Original_JinniUrlName", $film->getUrlName(Constants::SOURCE_JINNI), 'Jinni URL Name');
-        $this->assertEquals("Original_IMDbUrlName", $film->getUrlName(Constants::SOURCE_IMDB), 'Jinni URL Name');
         $this->assertEquals(array("Original_Director1", "Original_Director2"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Original_Genre1", "Original_Genre2"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_JINNI);
-        $this->assertEquals("Original_JinniFilmName", $film->getFilmName(Constants::SOURCE_JINNI), 'Film ID');
+        $this->assertEquals("Original_JinniUniqueName", $film->getUniqueName(Constants::SOURCE_JINNI), 'Unique Name');
         $this->assertEquals(1, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/1/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Your Rating Date');
         $this->assertEquals(2, $rating->getSuggestedScore(), 'Suggested score');
         $this->assertEquals(3, $rating->getCriticScore(), 'Critic score');
         $this->assertEquals(4, $rating->getUserScore(), 'User score');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals("tt2294629", $film->getFilmName(Constants::SOURCE_IMDB), 'Film ID');
+        $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Your Rating Date');
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score');
@@ -598,8 +589,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Site::parseDetailPageForFilmYear
      * @covers \RatingSync\Site::parseDetailPageForImage
      * @covers \RatingSync\Site::parseDetailPageForContentType
-     * @covers \RatingSync\Site::parseDetailPageForFilmName
-     * @covers \RatingSync\Site::parseDetailPageForUrlName
+     * @covers \RatingSync\Site::parseDetailPageForUniqueName
      * @covers \RatingSync\Site::parseDetailPageForRating
      * @covers \RatingSync\Site::parseDetailPageForGenres
      * @covers \RatingSync\Site::parseDetailPageForDirectors
@@ -610,7 +600,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $film = new Film($site->_getHttp());
         // Get HTML of the film's detail page
         $findFilm = new Film($site->_getHttp());
-        $findFilm->setFilmName("tt2294629", $site->_getSourceName());
+        $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
@@ -629,12 +619,9 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForContentType($page, $film, true);
         $this->assertFalse($success, 'Parsing film object for Content Type');  // IMDb gets it, but SiteChild does not
         
-        $success = $site->_parseDetailPageForUrlName($page, $film, true);
-        $this->assertFalse($success, 'Parsing film object for URL Name'); // Not available from an IMDb detail page
-        
-        $success = $site->_parseDetailPageForFilmName($page, $film, true);
+        $success = $site->_parseDetailPageForUniqueName($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Film Id');
-        $this->assertEquals("tt2294629", $film->getFilmName($site->_getSourceName()), 'Check matching Film Id (empty film overwrite=true)');
+        $this->assertEquals("tt2294629", $film->getUniqueName($site->_getSourceName()), 'Check matching Unique Name (empty film overwrite=true)');
         
         $success = $site->_parseDetailPageForRating($page, $film, true);
         $rating = $film->getRating($site->_getSourceName());
@@ -660,8 +647,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Site::parseDetailPageForFilmYear
      * @covers \RatingSync\Site::parseDetailPageForImage
      * @covers \RatingSync\Site::parseDetailPageForContentType
-     * @covers \RatingSync\Site::parseDetailPageForFilmName
-     * @covers \RatingSync\Site::parseDetailPageForUrlName
+     * @covers \RatingSync\Site::parseDetailPageForUniqueName
      * @covers \RatingSync\Site::parseDetailPageForRating
      * @covers \RatingSync\Site::parseDetailPageForGenres
      * @covers \RatingSync\Site::parseDetailPageForDirectors
@@ -673,7 +659,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
 
         // Get HTML of the film's detail page
         $findFilm = new Film($site->_getHttp());
-        $findFilm->setFilmName("tt2294629", $site->_getSourceName());
+        $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
@@ -693,12 +679,9 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($success, 'Parsing film object for Content Type'); // ContentType not available in the detail page
         $this->assertNull($film->getContentType(), 'Check matching Content Type (empty film overwrite=false)');
         
-        $success = $site->_parseDetailPageForUrlName($page, $film, false);
-        $this->assertFalse($success, 'Parsing film object for URL Name');
-        
-        $success = $site->_parseDetailPageForFilmName($page, $film, false);
+        $success = $site->_parseDetailPageForUniqueName($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Film Id');
-        $this->assertEquals("tt2294629", $film->getFilmName($site->_getSourceName()), 'Check matching Film Id (empty film overwrite=false)');
+        $this->assertEquals("tt2294629", $film->getUniqueName($site->_getSourceName()), 'Check matching Unique Name (empty film overwrite=false)');
         
         $success = $site->_parseDetailPageForRating($page, $film, false);
         $rating = $film->getRating($site->_getSourceName());
@@ -724,8 +707,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Site::parseDetailPageForFilmYear
      * @covers \RatingSync\Site::parseDetailPageForImage
      * @covers \RatingSync\Site::parseDetailPageForContentType
-     * @covers \RatingSync\Site::parseDetailPageForFilmName
-     * @covers \RatingSync\Site::parseDetailPageForUrlName
+     * @covers \RatingSync\Site::parseDetailPageForUniqueName
      * @covers \RatingSync\Site::parseDetailPageForRating
      * @covers \RatingSync\Site::parseDetailPageForGenres
      * @covers \RatingSync\Site::parseDetailPageForDirectors
@@ -742,10 +724,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $film->setImage("Original_Image");
         $film->setImage("Original_IMDbImage", $site->_getSourceName());
         $film->setImage("Original_JinniImage", Constants::SOURCE_JINNI);
-        $film->setFilmName("Original_IMDbFilmName", $site->_getSourceName());
-        $film->setFilmName("Original_JinniFilmName", Constants::SOURCE_JINNI);
-        $film->setUrlName("Original_IMDbUrlName", $site->_getSourceName());
-        $film->setUrlName("Original_JinniUrlName", Constants::SOURCE_JINNI);
+        $film->setUniqueName("Original_IMDbUniqueName", $site->_getSourceName());
+        $film->setUniqueName("Original_JinniUniqueName", Constants::SOURCE_JINNI);
         $film->addGenre("Original_Genre1");
         $film->addGenre("Original_Genre2");
         $film->addDirector("Original_Director1");
@@ -767,7 +747,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
 
         // Get HTML of the film's detail page
         $findFilm = new Film($site->_getHttp());
-        $findFilm->setFilmName("tt2294629", $site->_getSourceName());
+        $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
@@ -789,15 +769,10 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Original_JinniImage", $film->getImage(Constants::SOURCE_JINNI), 'Check matching Image (full film overwrite=true)');
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching Image (full film overwrite=true)');
         
-        $success = $site->_parseDetailPageForUrlName($page, $film, true);
-        $this->assertFalse($success, 'Parsing film object for URL Name');
-        $this->assertEquals('Original_IMDbUrlName', $film->getUrlName($site->_getSourceName()), 'Check matching URL Name (full film overwrite=true)');
-        $this->assertEquals("Original_JinniUrlName", $film->getUrlName(Constants::SOURCE_JINNI), 'Check matching URL Name (full film overwrite=true)');
-        
-        $success = $site->_parseDetailPageForFilmName($page, $film, true);
+        $success = $site->_parseDetailPageForUniqueName($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Film Id');
-        $this->assertEquals("tt2294629", $film->getFilmName($site->_getSourceName()), 'Check matching Film Id (full film overwrite=true)');
-        $this->assertEquals("Original_JinniFilmName", $film->getFilmName(Constants::SOURCE_JINNI), 'Check matching Film Id (full film overwrite=true)');
+        $this->assertEquals("tt2294629", $film->getUniqueName($site->_getSourceName()), 'Check matching Unique Name (full film overwrite=true)');
+        $this->assertEquals("Original_JinniUniqueName", $film->getUniqueName(Constants::SOURCE_JINNI), 'Check matching Unique Name (full film overwrite=true)');
         
         $success = $site->_parseDetailPageForRating($page, $film, true);
         $rating = $film->getRating($site->_getSourceName());
@@ -829,8 +804,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Site::parseDetailPageForFilmYear
      * @covers \RatingSync\Site::parseDetailPageForImage
      * @covers \RatingSync\Site::parseDetailPageForContentType
-     * @covers \RatingSync\Site::parseDetailPageForFilmName
-     * @covers \RatingSync\Site::parseDetailPageForUrlName
+     * @covers \RatingSync\Site::parseDetailPageForUniqueName
      * @covers \RatingSync\Site::parseDetailPageForRating
      * @covers \RatingSync\Site::parseDetailPageForGenres
      * @covers \RatingSync\Site::parseDetailPageForDirectors
@@ -851,10 +825,8 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $film->setImage("Original_Image");
         $film->setImage("Original_Image_Imdb", $site->_getSourceName());
         $film->setImage("Original_Image_Jinni", Constants::SOURCE_JINNI);
-        $film->setUrlName("Original_UrlName_Imdb", $site->_getSourceName());
-        $film->setUrlName("Original_UrlName_Jinni", Constants::SOURCE_JINNI);
-        $film->setFilmName("Original_FilmName_Imdb", $site->_getSourceName());
-        $film->setFilmName("Original_FilmName_Jinni", Constants::SOURCE_JINNI);
+        $film->setUniqueName("Original_UniqueName_Imdb", $site->_getSourceName());
+        $film->setUniqueName("Original_UniqueName_Jinni", Constants::SOURCE_JINNI);
         $ratingImdbOrig = new Rating($site->_getSourceName());
         $ratingImdbOrig->setYourScore(2);
         $ratingImdbOrig->setYourRatingDate(new \DateTime('2000-01-02'));
@@ -872,7 +844,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
 
         // Get HTML of the film's detail page
         $findFilm = new Film($site->_getHttp());
-        $findFilm->setFilmName("tt2294629", $site->_getSourceName());
+        $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);
         
@@ -894,15 +866,10 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Original_Image_Imdb", $film->getImage($site->_getSourceName()), 'Check matching Image (full film overwrite=false)');
         $this->assertEquals("Original_Image_Jinni", $film->getImage(Constants::SOURCE_JINNI), 'Check matching Image (full film overwrite=false)');
         
-        $success = $site->_parseDetailPageForUrlName($page, $film, false);
-        $this->assertFalse($success, 'Parsing film object for URL Name');
-        $this->assertEquals("Original_UrlName_Imdb", $film->getUrlName($site->_getSourceName()), 'Check matching URL Name (full film overwrite=false)');
-        $this->assertEquals("Original_UrlName_Jinni", $film->getUrlName(Constants::SOURCE_JINNI), 'Check matching URL Name (full film overwrite=false)');
-        
-        $success = $site->_parseDetailPageForFilmName($page, $film, false);
-        $this->assertFalse($success, 'Parsing film object for Film Id');
-        $this->assertEquals("Original_FilmName_Imdb", $film->getFilmName($site->_getSourceName()), 'Check matching Film Id (full film overwrite=false)');
-        $this->assertEquals("Original_FilmName_Jinni", $film->getFilmName(Constants::SOURCE_JINNI), 'Check matching Film Id (full film overwrite=false)');
+        $success = $site->_parseDetailPageForUniqueName($page, $film, false);
+        $this->assertFalse($success, 'Parsing film object for Unique Name');
+        $this->assertEquals("Original_UniqueName_Imdb", $film->getUniqueName($site->_getSourceName()), 'Check matching Unique Name (full film overwrite=false)');
+        $this->assertEquals("Original_UniqueName_Jinni", $film->getUniqueName(Constants::SOURCE_JINNI), 'Check matching Unique Name (full film overwrite=false)');
         
         $success = $site->_parseDetailPageForRating($page, $film, false);
         $rating = $film->getRating($site->_getSourceName());
@@ -951,8 +918,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Frozen directors");
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), "Frozen genres");
         $this->assertEquals("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", $film->getImage(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." image");
-        $this->assertEquals("70785", $film->getFilmName(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." Film ID");
-        $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." URL Name");
+        $this->assertEquals("frozen-2013", $film->getUniqueName(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals(8, $rating->getYourScore(), "Frozen ".Constants::SOURCE_JINNI." your score");
         $this->assertEquals("5/4/15", $rating->getYourRatingDate()->format('n/j/y'), "Frozen ".Constants::SOURCE_JINNI." rating date");
@@ -969,8 +935,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Director1.1"), $film->getDirectors(), "Title1 directors");
         $this->assertEquals(array("Genre1.1"), $film->getGenres(), "Title1 genres");
         $this->assertEquals("http://example.com/title1_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEquals("FilmName1_rs", $film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." Film ID");
-        $this->assertEquals("UrlName1_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $this->assertEquals("UniqueName1_rs", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(1, $rating->getYourScore(), "Title1 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEquals("1/1/15", $rating->getYourRatingDate()->format('n/j/y'), "Title1 ".Constants::SOURCE_RATINGSYNC." rating date");
@@ -987,8 +952,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Director2.1", "Director2.2"), $film->getDirectors(), "Title2 directors");
         $this->assertEquals(array("Genre2.1", "Genre2.2"), $film->getGenres(), "Title2 genres");
         $this->assertEquals("http://example.com/title2_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEquals("FilmName2_rs", $film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." Film ID");
-        $this->assertEquals("UrlName2_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $this->assertEquals("UniqueName2_rs", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(2, $rating->getYourScore(), "Title2 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEquals("1/2/15", $rating->getYourRatingDate()->format('n/j/y'), "Title2 ".Constants::SOURCE_RATINGSYNC." rating date");
@@ -1005,8 +969,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($film->getDirectors(), "Title3 directors");
         $this->assertEmpty($film->getGenres(), "Title3 genres");
         $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEmpty($film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." Film ID");
-        $this->assertEmpty($film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $this->assertEmpty($film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEmpty($rating->getYourScore(), "Title3 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEmpty($rating->getYourRatingDate(), "Title3 ".Constants::SOURCE_RATINGSYNC." rating date");
@@ -1023,8 +986,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($film->getDirectors(), "Title4 directors");
         $this->assertEmpty($film->getGenres(), "Title4 genres");
         $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEmpty($film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." Film ID");
-        $this->assertEmpty($film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $this->assertEmpty($film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEmpty($rating->getYourScore(), "Title4 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEmpty($rating->getYourRatingDate(), "Title4 ".Constants::SOURCE_RATINGSYNC." rating date");
@@ -1041,8 +1003,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($film->getDirectors(), "Title5 directors");
         $this->assertEmpty($film->getGenres(), "Title5 genres");
         $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEmpty($film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." Film ID");
-        $this->assertEmpty($film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $this->assertEmpty($film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEmpty($rating->getYourScore(), "Title5 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEmpty($rating->getYourRatingDate(), "Title5 ".Constants::SOURCE_RATINGSYNC." rating date");
@@ -1059,8 +1020,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Director6.1"), $film->getDirectors(), "Title6 directors");
         $this->assertEquals(array("Genre6.1"), $film->getGenres(), "Title6 genres");
         $this->assertEquals("http://example.com/title6_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEquals("FilmName6_rs", $film->getFilmName(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." Film ID");
-        $this->assertEquals("UrlName6_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $this->assertEquals("UniqueName6_rs", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(6, $rating->getYourScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEquals("1/6/15", $rating->getYourRatingDate()->format('n/j/y'), "Title6 ".Constants::SOURCE_RATINGSYNC." rating date");
@@ -1068,8 +1028,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(8, $rating->getCriticScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." critic score");
         $this->assertEquals(9, $rating->getUserScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." user score");
         $this->assertEquals("http://example.com/title6_imdb_image.jpeg", $film->getImage(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." image");
-        $this->assertEquals("FilmName6_imdb", $film->getFilmName(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." Film ID");
-        $this->assertEquals("UrlName6_imdb", $film->getUrlName(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." URL Name");
+        $this->assertEquals("UniqueName6_imdb", $film->getUniqueName(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(5, $rating->getYourScore(), "Title6 ".Constants::SOURCE_IMDB." your score");
         $this->assertEquals("1/5/15", $rating->getYourRatingDate()->format('n/j/y'), "Title6 ".Constants::SOURCE_IMDB." rating date");
@@ -1092,8 +1051,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Frozen directors");
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), "Frozen genres");
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), "Frozen ".Constants::SOURCE_IMDB." image");
-        $this->assertEquals("tt2294629", $film->getFilmName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Film ID");
-        $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." URL Name");
+        $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_IMDB." your score");
         $this->assertNull($rating->getYourRatingDate(), "Frozen ".Constants::SOURCE_IMDB." rating date");
@@ -1110,8 +1068,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Frozen directors");
         $this->assertEquals(array("Animation", "Adventure", "Comedy", "Fantasy", "Musical", "Family"), $film->getGenres(), "Frozen genres");
         $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." image");
-        $this->assertEquals("Frozen_rs", $film->getFilmName(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." Film ID");
-        $this->assertEquals("UrlNameFrozen_rs", $film->getUrlName(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." URL Name");
+        $this->assertEquals("Frozen_rs", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEquals("1/2/15", $rating->getYourRatingDate()->format('n/j/y'), "Frozen ".Constants::SOURCE_RATINGSYNC." rating date");
@@ -1119,8 +1076,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(4, $rating->getCriticScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." critic score");
         $this->assertEquals(5, $rating->getUserScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." user score");
         $this->assertEquals("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", $film->getImage(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." image");
-        $this->assertEquals("70785", $film->getFilmName(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." Film ID");
-        $this->assertEquals("frozen-2013", $film->getUrlName(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." URL Name");
+        $this->assertEquals("frozen-2013", $film->getUniqueName(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals(8, $rating->getYourScore(), "Frozen ".Constants::SOURCE_JINNI." your score");
         $this->assertEquals("5/4/15", $rating->getYourRatingDate()->format('n/j/y'), "Frozen ".Constants::SOURCE_JINNI." rating date");
@@ -1128,8 +1084,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getCriticScore(), "Frozen ".Constants::SOURCE_JINNI." critic score");
         $this->assertNull($rating->getUserScore(), "Frozen ".Constants::SOURCE_JINNI." user score");
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), "Frozen ".Constants::SOURCE_IMDB." image");
-        $this->assertEquals("tt2294629", $film->getFilmName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Film ID");
-        $this->assertNull($film->getUrlName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." URL Name");
+        $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Unique Name");
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_IMDB." your score");
         $this->assertNull($rating->getYourRatingDate(), "Frozen ".Constants::SOURCE_IMDB." rating date");

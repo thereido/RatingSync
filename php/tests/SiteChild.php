@@ -32,8 +32,7 @@ class SiteChild extends \RatingSync\Site {
     function _parseDetailPageForFilmYear($page, $film, $overwrite) { return $this->parseDetailPageForFilmYear($page, $film, $overwrite); }
     function _parseDetailPageForImage($page, $film, $overwrite) { return $this->parseDetailPageForImage($page, $film, $overwrite); }
     function _parseDetailPageForContentType($page, $film, $overwrite) { return $this->parseDetailPageForContentType($page, $film, $overwrite); }
-    function _parseDetailPageForFilmName($page, $film, $overwrite) { return $this->parseDetailPageForFilmName($page, $film, $overwrite); }
-    function _parseDetailPageForUrlName($page, $film, $overwrite) { return $this->parseDetailPageForUrlName($page, $film, $overwrite); }
+    function _parseDetailPageForUniqueName($page, $film, $overwrite) { return $this->parseDetailPageForUniqueName($page, $film, $overwrite); }
     function _parseDetailPageForRating($page, $film, $overwrite) { return $this->parseDetailPageForRating($page, $film, $overwrite); }
     function _parseDetailPageForGenres($page, $film, $overwrite) { return $this->parseDetailPageForGenres($page, $film, $overwrite); }
     function _parseDetailPageForDirectors($page, $film, $overwrite) { return $this->parseDetailPageForDirectors($page, $film, $overwrite); }
@@ -55,7 +54,7 @@ class SiteChild extends \RatingSync\Site {
         $rating->setYourRatingDate(new \DateTime('2015-01-02'));
         $film->setRating($rating, $this->sourceName);
         $film->setTitle("Site Title1");
-        $film->setFilmName("Site_FilmName1", $this->sourceName);
+        $film->setUniqueName("Site_UniqueName1", $this->sourceName);
         $film->setImage("Site_Image1");
         $film->setImage("Site_Image1", $this->sourceName);
         $film->setContentType(\RatingSync\Film::CONTENT_FILM);
@@ -65,14 +64,13 @@ class SiteChild extends \RatingSync\Site {
         $rating2->setYourRatingDate(new \DateTime('2015-01-03'));
         $film2->setRating($rating2, $this->sourceName);
         $film2->setTitle("Site Title2");
-        $film2->setFilmName("Site_FilmName2", $this->sourceName);
+        $film2->setUniqueName("Site_UniqueName2", $this->sourceName);
         $film2->setImage("Site_Image2");
         $film2->setImage("Site_Image2", $this->sourceName);
         $film2->setContentType(\RatingSync\Film::CONTENT_FILM);
 
         if ($details) {
             $film->setYear(1900);
-            $film->setUrlName("Site_UrlName1", $this->sourceName);
             $film->addGenre("Site_Genre1.1");
             $film->addGenre("Site_Genre1.2");
             $film->addDirector("Site_Director1.1");
@@ -83,7 +81,6 @@ class SiteChild extends \RatingSync\Site {
             $film->setRating($rating, $this->sourceName);
             
             $film2->setYear(1902);
-            $film2->setUrlName("Site_UrlName2", $this->sourceName);
             $film2->addGenre("Site_Genre2.1");
             $film2->addDirector("Site_Director2.1");
             $rating2->setSuggestedScore(3);
@@ -112,7 +109,7 @@ class SiteChild extends \RatingSync\Site {
     }
 
     // Abstract Function based on \RatingSync\Imdb::getFilmDetailPageUrl
-    protected function getFilmDetailPageUrl($film) { return '/title/'.$film->getFilmName($this->sourceName).'/'; }
+    protected function getFilmDetailPageUrl($film) { return '/title/'.$film->getUniqueName($this->sourceName).'/'; }
 
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForTitle
     protected function getDetailPageRegexForTitle() { return '/<title>(.*) \(.*\d\d\d\d[^\)]*\) - IMDb<\/title>/'; }
@@ -126,11 +123,8 @@ class SiteChild extends \RatingSync\Site {
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForContentType
     protected function getDetailPageRegexForContentType() { return '/<div class="infobar">\s*([a-zA-Z \-\/]+)\s*&nbsp;<</'; }
 
-    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForFilmName
-    protected function getDetailPageRegexForFilmName($film) { return '/<meta property="og:url" content=".*\/(.+)\/"/'; }
-
-    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForUrlName
-    protected function getDetailPageRegexForUrlName() { return ''; }
+    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForUniqueName
+    protected function getDetailPageRegexForUniqueName() { return '/<meta property="og:url" content=".*\/(.+)\/"/'; }
 
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForYourScore
     protected function getDetailPageRegexForYourScore($film) { return '/<span class="rating-rating rating-your"><span class="value">(\d\d?)<\/span>/'; }

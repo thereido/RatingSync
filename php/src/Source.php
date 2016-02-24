@@ -15,8 +15,7 @@ class Source
 {
     protected $name;
     protected $image;
-    protected $filmName;
-    protected $urlName;
+    protected $uniqueName;
     protected $rating;
 
     /**
@@ -24,13 +23,18 @@ class Source
      *
      * @param string $source IMDb, RottenTomatoes, Jinni, Local, etc. Options are /RatingSync/Constants::SOURCE_***
      */
-    public function __construct($sourceName)
+    public function __construct($sourceName, $filmId = null)
     {
         if (! self::validSource($sourceName) ) {
             throw new \InvalidArgumentException('Source $sourceName invalid');
         }
 
         $this->name = $sourceName;
+
+        if ($this->name == Constants::SOURCE_RATINGSYNC && !empty($filmId)) {
+            // Default uniqueName
+            $this->uniqueName = "rs$filmId";
+        }
     }
 
     public static function validSource($source)
@@ -59,13 +63,16 @@ class Source
     /**
      * ID to find this film within the source
      *
-     * @param string $filmName ID to find this film within the source
+     * @param string $uniqueName ID to find this film within the source
      *
      * @return none
      */
-    public function setFilmName($filmName)
+    public function setUniqueName($uniqueName)
     {
-        $this->filmName = $filmName;
+        if (0 == strlen($uniqueName)) {
+            $uniqueName = null;
+        }
+        $this->uniqueName = $uniqueName;
     }
 
     /**
@@ -74,22 +81,9 @@ class Source
      *
      * @return string matches id in a /RatingSync/Film
      */
-    public function getFilmName()
+    public function getUniqueName()
     {
-        return $this->filmName;
-    }
-
-    public function setUrlName($urlName)
-    {
-        if (0 == strlen($urlName)) {
-            $urlName = null;
-        }
-        $this->urlName = $urlName;
-    }
-
-    public function getUrlName()
-    {
-        return $this->urlName;
+        return $this->uniqueName;
     }
 
     public function setRating($yourRating)
@@ -133,49 +127,29 @@ class Source
      *
      * @param int $filmID Database id of the film rated
      */
-    public function addFilmSourceToDb($filmId)
+    public function saveFilmSourceToDb($filmId)
     {
         if (empty($filmId)) {
             throw new \InvalidArgumentException('filmId cannot be empty');
         }
         
         $db = getDatabase();
-        $emptyImage = true;
-        $name = $this->name;
-
-        $query = "SELECT * FROM film_source" .
-                 " WHERE film_id=$filmId" .
-                   " AND source_name='$name'";
-        $result = $db->query($query);
-        if ($result->num_rows == 0) {
-            // Insert the film/source row
-            $query = "INSERT INTO film_source (film_id, source_name) VALUES ($filmId, '$name')";
-            if (! $db->query($query)) {
-                throw new \Exception('Error inserting to film_source. film_id='.$filmId.', source_name='.$name.'.  SQL Error: '.$db->error);
-            }
-        } else {
-            // The row exists already
-            $row = $result->fetch_assoc();
-            $emptyImage = empty($row['image']);
+        $sourceName = $this->getName();
+        $sourceImage = $this->getImage();
+        $sourceUniqueName = $this->getUniqueName();
+            
+        $columns = "film_id, source_name";
+        $values = "$filmId, '$sourceName'";
+        if (!empty($sourceImage)) {
+            $columns .= ", image";
+            $values .= ", '$sourceImage'";
         }
-
-        if ($emptyImage) {
-            $image = $this->getImage();
-            if (empty($image)) {
-                $query = "SELECT * FROM film WHERE id=$filmId";
-                $result = $db->query($query);
-                if ($result->num_rows > 0) {
-                    $row = $result->fetch_assoc();
-                    $image = $row['image'];
-                }
-            }
-            if (!empty($image)) {
-                $query = "UPDATE film_source" .
-                            " SET image='$image'" .
-                            " WHERE film_id=$filmId" .
-                            " AND source_name='$name'";
-                $db->query($query);
-            }
+        if (!empty($sourceUniqueName)) {
+            $columns .= ", uniqueName";
+            $values .= ", '$sourceUniqueName'";
+        }
+        if (! $db->query("REPLACE INTO film_source ($columns) VALUES ($values)")) {
+            throw new \Exception('SQL Error ' . $db->errno);
         }
     }
 }

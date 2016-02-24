@@ -21,8 +21,7 @@
 	</genres>
 	<source name="Jinni">
 		<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>
-		<filmName>70785</filmName>
-		<urlName>frozen-2013</urlName>
+		<uniqueName>frozen-2013</uniqueName>
 		<rating>
 			<yourScore>8</yourScore>
 			<yourRatingDate>2015-5-4</yourRatingDate>
@@ -47,8 +46,7 @@
 	</genres>
 	<source name="RatingSync">
 		<image>http://example.com/title1_rs_image.jpeg</image>
-		<filmName>FilmName1_rs</filmName>
-		<urlName>UrlName1_rs</urlName>
+		<uniqueName>UniqueName1_rs</uniqueName>
 		<rating>
 			<yourScore>1</yourScore>
 			<yourRatingDate>2015-1-1</yourRatingDate>
@@ -75,8 +73,7 @@
 	</genres>
 	<source name="RatingSync">
 		<image>http://example.com/title2_rs_image.jpeg</image>
-		<filmName>FilmName2_rs</filmName>
-		<urlName>UrlName2_rs</urlName>
+		<uniqueName>UniqueName2_rs</uniqueName>
 		<rating>
 			<yourScore>2</yourScore>
 			<yourRatingDate>2015-1-2</yourRatingDate>
@@ -112,8 +109,7 @@
 	</genres>
 	<source name="RatingSync">
 		<image/>
-		<filmName/>
-		<urlName/>
+		<uniqueName/>
 		<rating/>
 	</source>
 </film>
@@ -128,8 +124,7 @@
 	<genres/>
 	<source name="RatingSync">
 		<image/>
-		<filmName/>
-		<urlName/>
+		<uniqueName/>
 		<rating>
 			<yourScore/>
 			<yourRatingDate/>
@@ -154,8 +149,7 @@
 	</genres>
 	<source name="RatingSync">
 		<image>http://example.com/title6_rs_image.jpeg</image>
-		<filmName>FilmName6_rs</filmName>
-		<urlName>UrlName6_rs</urlName>
+		<uniqueName>UniqueName6_rs</uniqueName>
 		<rating>
 			<yourScore>6</yourScore>
 			<yourRatingDate>2015-1-6</yourRatingDate>
@@ -166,8 +160,7 @@
 	</source>
 	<source name="IMDb">
 		<image>http://example.com/title6_imdb_image.jpeg</image>
-		<filmName>FilmName6_imdb</filmName>
-		<urlName>UrlName6_imdb</urlName>
+		<uniqueName>UniqueName6_imdb</uniqueName>
 		<rating>
 			<yourScore>5</yourScore>
 			<yourRatingDate>2015-1-5</yourRatingDate>
@@ -178,8 +171,7 @@
 	</source>
 	<source name="Jinni">
 		<image>http://example.com/title6_jinni_image.jpeg</image>
-		<filmName>FilmName6_jinni</filmName>
-		<urlName>UrlName6_jinni</urlName>
+		<uniqueName>UniqueName6_jinni</uniqueName>
 		<rating>
 			<yourScore>4</yourScore>
 			<yourRatingDate>2015-1-4</yourRatingDate>
@@ -218,8 +210,7 @@
 	</genres>
 	<source name="IMDb">
 		<image>http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg</image>
-		<filmName>tt2294629</filmName>
-		<urlName/>
+		<uniqueName>tt2294629</uniqueName>
 		<rating>
 			<yourScore>2</yourScore>
 			<yourRatingDate/>
@@ -250,8 +241,7 @@
 	</genres>
 	<source name="RatingSync">
 		<image>http://example.com/frozen_rs_image.jpeg</image>
-		<filmName>Frozen_rs</filmName>
-		<urlName>UrlNameFrozen_rs</urlName>
+		<uniqueName>Frozen_rs</uniqueName>
 		<rating>
 			<yourScore>2</yourScore>
 			<yourRatingDate>2015-1-2</yourRatingDate>
@@ -262,8 +252,7 @@
 	</source>
 	<source name="IMDb">
 		<image>http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg</image>
-		<filmName>tt2294629</filmName>
-		<urlName/>
+		<uniqueName>tt2294629</uniqueName>
 		<rating>
 			<yourScore>2</yourScore>
 			<yourRatingDate/>
@@ -274,8 +263,7 @@
 	</source>
 	<source name="Jinni">
 		<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>
-		<filmName>70785</filmName>
-		<urlName>frozen-2013</urlName>
+		<uniqueName>frozen-2013</uniqueName>
 		<rating>
 			<yourScore>8</yourScore>
 			<yourRatingDate>2015-5-4</yourRatingDate>

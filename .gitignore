@@ -10,5 +10,6 @@
 /php/tests/testfile/*Copy.xml
 /sql/db_insert_initial_prod.sql
 /php/output/logDebug.txt
-/php/tests/script/script_Import.php
 /web.config
+/php/tests/script/*
+/image/*

@@ -33,7 +33,6 @@ class Film {
         }
 
         $this->http = $http;
-        $this->urlNames = array(static::CONTENT_FILM, static::CONTENT_TV, static::CONTENT_SHORTFILM);
     }
 
     public static function validContentType($type)
@@ -58,8 +57,7 @@ class Film {
            </genres>
            <source name="">
                <image/>
-               <filmName/>
-               <urlName/>
+               <uniqueName/>
                <rating>
                    <yourScore/>
                    <yourRatingDate/>
@@ -102,8 +100,7 @@ class Film {
             $sourceXml = $filmXml->addChild('source');
             $sourceXml->addAttribute('name', $source->getName());
             $sourceXml->addChild('image', $source->getImage());
-            $sourceXml->addChild('filmName', $source->getFilmName());
-            $sourceXml->addChild('urlName', $source->getUrlName());
+            $sourceXml->addChild('uniqueName', $source->getUniqueName());
             $rating = $source->getRating();
             $ratingXml = $sourceXml->addChild('rating');
             $ratingXml->addChild('yourScore', $rating->getYourScore());
@@ -164,8 +161,7 @@ class Film {
             }
             $source = $film->getSource($sourceNameSxe[0]->__toString());
             $source->setImage(Self::xmlStringByKey('image', $sourceSxe));
-            $source->setFilmName(Self::xmlStringByKey('filmName', $sourceSxe));
-            $source->setUrlName(Self::xmlStringByKey('urlName', $sourceSxe));
+            $source->setUniqueName(Self::xmlStringByKey('uniqueName', $sourceSxe));
 
             $ratingSxe = $sourceSxe->xpath('rating')[0];
             $rating = new Rating($source->getName());
@@ -192,7 +188,7 @@ class Film {
 
             $source->setRating($rating);
         }
-
+        
         return $film;
     }
 
@@ -216,46 +212,28 @@ class Film {
         }
         
         if (empty($this->sources[$sourceName])) {
-            $this->sources[$sourceName] = new Source($sourceName);
+            $this->sources[$sourceName] = new Source($sourceName, $this->getId());
         }
 
         return $this->sources[$sourceName];
     }
 
-    public function setFilmName($FilmName, $source)
+    public function setUniqueName($uniqueName, $source)
     {
         if (! Source::validSource($source) ) {
-            throw new \InvalidArgumentException('Source $source invalid setting Film ID');
+            throw new \InvalidArgumentException('Source $source invalid setting Unique Name');
         }
 
-        $this->getSource($source)->setFilmName($FilmName);
+        $this->getSource($source)->setUniqueName($uniqueName);
     }
 
-    public function getFilmName($source)
+    public function getUniqueName($source)
     {
         if (! Source::validSource($source) ) {
-            throw new \InvalidArgumentException('Source $source invalid getting Film ID');
+            throw new \InvalidArgumentException('Source $source invalid getting Unique Name');
         }
 
-        return $this->getSource($source)->getFilmName();
-    }
-
-    public function setUrlName($urlName, $source)
-    {
-        if (! Source::validSource($source) ) {
-            throw new \InvalidArgumentException('Source $source invalid setting URL name');
-        }
-
-        $this->getSource($source)->setUrlName($urlName);
-    }
-
-    public function getUrlName($source)
-    {
-        if (! Source::validSource($source) ) {
-            throw new \InvalidArgumentException('Source $source invalid getting URL name');
-        }
-
-        return $this->getSource($source)->getUrlName();
+        return $this->getSource($source)->getUniqueName();
     }
 
     /**
@@ -524,7 +502,7 @@ class Film {
             }
         }
         
-        // Insert or Update Film row
+        // Insert Film row
         if ($newRow) {
             $columns = "title, year, contentType, image";
             $values = "'$title', $year, '$contentType', '$image'";
@@ -532,22 +510,17 @@ class Film {
                 $filmId = $db->insert_id;
                 $this->id = $filmId;
             }
-        } else {
-            $values = "title='$title', year=$year, contentType='$contentType', image='$image'";
-            $where = "id=$filmId";
-            $db->query("UPDATE film SET $values WHERE $where");
         }
         
         // Sources
         foreach ($this->sources as $source) {
             $sourceName = $source->getName();
-            $sourceImage = $source->getImage();
-            $sourceUrlName = $source->getUrlName();
-            $sourceFilmName = $source->getFilmName();
-            
-            $columns = "film_id, source_name, image, urlName, filmName";
-            $values = "$filmId, '$sourceName', '$sourceImage', '$sourceUrlName', '$sourceFilmName'";
-            $db->query("REPLACE INTO film_source ($columns) VALUES ($values)");
+            if ($sourceName == Constants::SOURCE_RATINGSYNC) {
+                if (empty($source->getUniqueName())) {
+                    $source->setUniqueName("rs$filmId");
+                }
+            }
+            $source->saveFilmSourceToDb($filmId);
 
             // Rating
             $rating = $source->getRating();
@@ -625,6 +598,31 @@ class Film {
             $db->query("REPLACE INTO film_genre ($columns) VALUES ($values)");
         }
 
+        // Make sure the RatingSync source has an image
+        $sourceRs = $this->getSource(Constants::SOURCE_RATINGSYNC);
+        if (empty($image)) {
+            if (empty($sourceRs->getImage())) {
+                // Download an image from another source
+                $film = self::getFilmFromDb($filmId, new HttpImdb("empty_username"));
+                $image = $film->downloadImage();
+            } else {
+                $image = $sourceRs->getImage();
+            }
+        } else {
+            $sourceRs->setImage($image);
+        }
+
+        if (!empty($image) || $image != $sourceRs->getImage()) {
+            $sourceRs->setImage($image);
+            $sourceRs->saveFilmSourceToDb($filmId);
+        }
+        
+        // Update Film row. If this is a new film then this update is
+        // only for setting an image.
+        $values = "title='$title', year=$year, contentType='$contentType', image='$image'";
+        $where = "id=$filmId";
+        $db->query("UPDATE film SET $values WHERE $where");
+
         $db->commit();
     }
 
@@ -656,8 +654,7 @@ class Film {
         while ($row = $result->fetch_assoc()) {
             $source = $film->getSource($row['source_name']);
             $source->setImage($row['image']);
-            $source->setUrlName($row['urlName']);
-            $source->setFilmName($row['filmName']);
+            $source->setUniqueName($row['uniqueName']);
 
             // Rating
             if (!empty($username)) {
@@ -692,39 +689,46 @@ class Film {
     }
 
     /**
-     * Try to get a image (and save to the db) for films that have none.
+     * Try to get a image (and save to the db) for films that have no valid image.
      */
     public static function reconnectFilmImages()
     {
         $db = getDatabase();
-        $query = "SELECT id FROM film WHERE image IS NULL OR image=''";
+        $query = "SELECT id FROM film";
         $result = $db->query($query);
 
-        $http = new HttpImdb("empty_username");
+        $http = new HttpRatingSync("empty_username");
         while ($row = $result->fetch_assoc()) {
             $film = self::getFilmFromDb($row['id'], $http);
-            $film->reconnectImage();
+            $isValid = $http->isPageValid($film->getImage());
+            if (!$isValid) {
+                $film->setImage(null);
+                $film->downloadImage();
+                $film->setImage($film->getImage(), Constants::SOURCE_RATINGSYNC);
+                $film->saveToDb();
+            }
         }
     }
 
-    public function reconnectImage() {
-        foreach ($this->sources as $source) {
-            $image = $source->getImage();
-            if (!empty($image)) {
-                break;
-            }
-        }
-
-        if (empty($image)) {
-            // Get to IMDb site
-            $imdb = new Imdb("empty_userame");
+    public function downloadImage()
+    {
+        $imdb = new Imdb("empty_userame");
+        try {
             $imdb->getFilmDetailFromWebsite($this, false, Constants::USE_CACHE_ALWAYS);
             $image = $this->getImage(Constants::SOURCE_IMDB);
+        } catch (\Exception $e) {
+            // Do nothing, $image will be empty
         }
 
+        // Download the image
         if (!empty($image)) {
-            $this->setImage($image);
-            $this->saveToDb();
+            $uniqueName = $this->getUniqueName(Constants::SOURCE_RATINGSYNC);
+            $filename = "$uniqueName.jpg";
+            file_put_contents(Constants::imagePath() . $filename, file_get_contents($image));
+            
+            $this->setImage(Constants::RS_IMAGE_URL_PATH . $filename);
         }
+
+        return $this->getImage();
     }
 }

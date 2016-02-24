@@ -57,136 +57,69 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers  \RatingSync\Source::setFilmName
-     * @covers  \RatingSync\Source::getFilmName
+     * @covers  \RatingSync\Source::setUniqueName
+     * @covers  \RatingSync\Source::getUniqueName
      * @depends testObjectCanBeConstructed
      */
-    public function testSetAndGetFilmName()
+    public function testSetAndGetUniqueName()
     {
         $source = new Source(Constants::SOURCE_JINNI);
         
         // Null
-        $source->setFilmName(null);
-        $this->assertNull($source->getFilmName());
+        $source->setUniqueName(null);
+        $this->assertNull($source->getUniqueName());
 
         // Empty String
-        $source->setFilmName("");
-        $this->assertEquals("", $source->getFilmName());
+        $source->setUniqueName("");
+        $this->assertEquals("", $source->getUniqueName());
         
         // Int
-        $source->setFilmName(1234);
-        $this->assertEquals(1234, $source->getFilmName());
+        $source->setUniqueName(1234);
+        $this->assertEquals(1234, $source->getUniqueName());
         
         // Number as a string
-        $source->setFilmName("1234");
-        $this->assertEquals(1234, $source->getFilmName());
+        $source->setUniqueName("1234");
+        $this->assertEquals(1234, $source->getUniqueName());
         
         // Alpha-num string
-        $source->setFilmName("Film 1D");
-        $this->assertEquals("Film 1D", $source->getFilmName());
+        $source->setUniqueName("Film 1D");
+        $this->assertEquals("Film 1D", $source->getUniqueName());
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
-     * @covers  \RatingSync\Source::getFilmName
+     * @covers  \RatingSync\Source::getUniqueName
      * @depends testObjectCanBeConstructed
      */
-    public function testFilmNameCanBeRetrievedFromNewObject()
+    public function testUniqueNameCanBeRetrievedFromNewObject()
     {
         $source = new Source(Constants::SOURCE_JINNI);
-        $this->assertNull($source->getFilmName());
+        $this->assertNull($source->getUniqueName());
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
-     * @covers  \RatingSync\Source::setUrlName
+     * @covers  \RatingSync\Source::getUniqueName
      * @depends testObjectCanBeConstructed
      */
-    public function testUrlNameCanBeSetWithNull()
+    public function testUniqueNameCanBeRetrievedFromNewRsObjectNullFilmId()
     {
-        $source = new Source(Constants::SOURCE_JINNI);
-        $source->setUrlName(null);
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $this->assertNull($source->getUniqueName());
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
-     * @covers  \RatingSync\Source::setUrlName
+     * @covers  \RatingSync\Source::getUniqueName
      * @depends testObjectCanBeConstructed
      */
-    public function testUrlNameCanBeSetWithEmpty()
+    public function testUniqueNameCanBeRetrievedFromNewRsObjectWithFilmId()
     {
-        $source = new Source(Constants::SOURCE_JINNI);
-        $source->setUrlName("");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
-    }
-
-    /**
-     * @covers  \RatingSync\Source::setUrlName
-     * @depends testObjectCanBeConstructed
-     */
-    public function testUrlNameCanBeSetWithNonEmpty()
-    {
-        $source = new Source(Constants::SOURCE_JINNI);
-        $source->setUrlName("url_name");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
-    }
-
-    /**
-     * @covers  \RatingSync\Source::getUrlName
-     * @depends testObjectCanBeConstructed
-     * @depends testUrlNameCanBeSetWithNonEmpty
-     */
-    public function testGetUrlName()
-    {
-        $source = new Source(Constants::SOURCE_JINNI);
-        $source->setUrlName("url_name");
-        $this->assertEquals("url_name", $source->getUrlName());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
-    }
-
-    /**
-     * @covers  \RatingSync\Source::getUrlName
-     * @depends testObjectCanBeConstructed
-     */
-    public function testGetUrlNameNeverSet()
-    {
-        $source = new Source(Constants::SOURCE_JINNI);
-        $this->assertNull($source->getUrlName());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
-    }
-
-    /**
-     * @covers  \RatingSync\Source::getUrlName
-     * @depends testObjectCanBeConstructed
-     * @depends testUrlNameCanBeSetWithNull
-     */
-    public function testGetNullUrlName()
-    {
-        $source = new Source(Constants::SOURCE_JINNI);
-        $source->setUrlName(null);
-        $this->assertNull($source->getUrlName());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
-    }
-
-    /**
-     * @covers  \RatingSync\Source::setUrlName
-     * @covers  \RatingSync\Source::getUrlName
-     * @depends testObjectCanBeConstructed
-     * @depends testUrlNameCanBeSetWithEmpty
-     */
-    public function testSetUrlNameWithEmptySetsToNull()
-    {
-        $source = new Source(Constants::SOURCE_JINNI);
-        $source->setUrlName("");
-        $this->assertNull($source->getUrlName(), "Setting empty URL name should be set to null");
+        $source = new Source(Constants::SOURCE_RATINGSYNC, 15);
+        $this->assertEquals("rs15", $source->getUniqueName());
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
@@ -518,42 +451,42 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @covers  \RatingSync\Source::saveFilmSourceToDb
      * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testAddNewFilmSourceSetNull()
     {
         $source = new Source(Constants::SOURCE_IMDB);
-        $source->addFilmSourceToDb(null);
+        $source->saveFilmSourceToDb(null);
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
-     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @covers  \RatingSync\Source::saveFilmSourceToDb
      * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
-    public function testAddNewFilmSourceSetEmpty()
+    public function testSaveNewFilmSourceSetEmpty()
     {
         $source = new Source(Constants::SOURCE_IMDB);
-        $source->addFilmSourceToDb("");
+        $source->saveFilmSourceToDb("");
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
-     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @covers  \RatingSync\Source::saveFilmSourceToDb
      * @depends testObjectCanBeConstructed
      * @depends testResetDb
      * @expectedException \Exception
      */
-    public function testAddNewFilmSourceFilmNotFound()
+    public function testSaveNewFilmSourceFilmNotFound()
     {
         DatabaseTest::resetDb();
         $source = new Source(Constants::SOURCE_IMDB);
-        $source->addFilmSourceToDb(1);
+        $source->saveFilmSourceToDb(1);
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
@@ -574,16 +507,16 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @covers  \RatingSync\Source::saveFilmSourceToDb
      * @depends testObjectCanBeConstructed
      * @depends testSetupRatings
      */
-    public function testAddNewFilmSourceDuplicate()
+    public function testSaveNewFilmSourceDuplicate()
     {
         $db = getDatabase();
         $source = new Source(Constants::SOURCE_IMDB);
         $filmId = 1;
-        $source->addFilmSourceToDb($filmId);
+        $source->saveFilmSourceToDb($filmId);
         $query = "SELECT * FROM film_source" .
                  " WHERE film_id=$filmId" .
                    " AND source_name='".$source->getName()."'";
@@ -594,30 +527,28 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @covers  \RatingSync\Source::saveFilmSourceToDb
      * @depends testObjectCanBeConstructed
      * @depends testSetupRatings
      */
-    public function testAddNewFilmSource()
+    public function testSaveNewFilmSource()
     {
         // There sure be a film_source where film_id=3, but not for IMDb
         $db = getDatabase();
         $source = new Source(Constants::SOURCE_IMDB);
         $filmId = 3;
-        $source->addFilmSourceToDb($filmId);
+        $source->saveFilmSourceToDb($filmId);
         $query = "SELECT * FROM film_source" .
                  " WHERE film_id=$filmId" .
                    " AND source_name='".$source->getName()."'";
         $result = $db->query($query);
         $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
-        $row = $result->fetch_assoc();
-        $this->assertEquals("http://example.com/title2_image.jpeg", $row['image']);
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
-     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @covers  \RatingSync\Source::saveFilmSourceToDb
      * @depends testObjectCanBeConstructed
      * @depends testSetupRatings
      */
@@ -629,7 +560,7 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $source = new Source(Constants::SOURCE_IMDB);
         $source->setImage('http://example.com/title2_imdb_image.jpeg');
         $filmId = 5;
-        $source->addFilmSourceToDb($filmId);
+        $source->saveFilmSourceToDb($filmId);
         $query = "SELECT * FROM film_source" .
                  " WHERE film_id=$filmId" .
                    " AND source_name='".$source->getName()."'";
@@ -642,32 +573,7 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers  \RatingSync\Source::addFilmSourceToDb
-     * @depends testObjectCanBeConstructed
-     * @depends testSetupRatings
-     */
-    public function testAddNewFilmSourceImageFromFilm()
-    {
-        // There is a RS film/source row film_id=2 and an image
-        // There is no IMDb film/source row
-        // No not use $source->setImage()
-        $db = getDatabase();
-        $source = new Source(Constants::SOURCE_IMDB);
-        $filmId = 2;
-        $source->addFilmSourceToDb($filmId);
-        $query = "SELECT * FROM film_source" .
-                 " WHERE film_id=$filmId" .
-                   " AND source_name='".$source->getName()."'";
-        $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
-        $row = $result->fetch_assoc();
-        $this->assertEquals("http://example.com/title1_image.jpeg", $row['image']);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
-    }
-
-    /**
-     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @covers  \RatingSync\Source::saveFilmSourceToDb
      * @depends testObjectCanBeConstructed
      */
     public function testAddNewFilmSourceImageFromNowhere()
@@ -678,7 +584,7 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $db = getDatabase();
         $source = new Source(Constants::SOURCE_IMDB);
         $filmId = 6;
-        $source->addFilmSourceToDb($filmId);
+        $source->saveFilmSourceToDb($filmId);
         $query = "SELECT * FROM film_source" .
                  " WHERE film_id=$filmId" .
                    " AND source_name='".$source->getName()."'";
@@ -691,7 +597,7 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers  \RatingSync\Source::addFilmSourceToDb
+     * @covers  \RatingSync\Source::saveFilmSourceToDb
      * @depends testObjectCanBeConstructed
      * @depends testSetupRatings
      */
@@ -702,7 +608,7 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $db = getDatabase();
         $source = new Source(Constants::SOURCE_IMDB);
         $filmId = 8;
-        $source->addFilmSourceToDb($filmId);
+        $source->saveFilmSourceToDb($filmId);
         $query = "SELECT * FROM film_source" .
                  " WHERE film_id=$filmId" .
                    " AND source_name='".$source->getName()."'";

@@ -94,17 +94,17 @@ class Imdb extends Site
             $year = $matches[1];
             $contentType = $matches[2];
 
-            // Film ID
+            // Unique Name
             preg_match('@\"(tt[\d]+)\"@', $filmSection, $matches);
-            $filmName = $matches[1];
+            $uniqueName = $matches[1];
             
             // Your Score, User Score
-            if (1 === preg_match('@id=\"'.$filmName.'\|your\|(\d\d?)\|(\d\d?\.?\d?)@', $filmSection, $matches)) {
+            if (1 === preg_match('@id=\"'.$uniqueName.'\|your\|(\d\d?)\|(\d\d?\.?\d?)@', $filmSection, $matches)) {
                 $yourScore = $matches[1];
                 $userScore = $matches[2];
             } else {
                 $yourScore = null;
-                $pregRet = preg_match('@id=\"'.$filmName.'\|imdb\|\d\d?\.?\d?\|(\d\d?\.?\d?)@', $filmSection, $matches);
+                $pregRet = preg_match('@id=\"'.$uniqueName.'\|imdb\|\d\d?\.?\d?\|(\d\d?\.?\d?)@', $filmSection, $matches);
                 $userScore = $matches[1];
             }
 
@@ -131,8 +131,7 @@ class Imdb extends Site
             //FIXME $rating->setYourRatingDate(\DateTime::createFromFormat($this->dateFormat, $ratingDate));
 
             $film->setRating($rating, $this->sourceName);
-            $film->setFilmName($filmName, $this->sourceName);
-            //FIXME $film->setUrlName($urlName, $this->sourceName);
+            $film->setUniqueName($uniqueName, $this->sourceName);
             $film->setImage($image);
             $film->setImage($image, $this->sourceName);
 
@@ -156,11 +155,12 @@ class Imdb extends Site
     {
         if (! $film instanceof Film ) {
             throw new \InvalidArgumentException('Function getFilmDetailPageUrl must be given a Film object');
-        } elseif ( empty($film->getFilmName($this->sourceName)) ) {
-            throw new \InvalidArgumentException('Function getFilmDetailPageUrl must have unique attr (filmName, '.$this->sourceName.')');
+        } elseif ( empty($film->getUniqueName($this->sourceName)) ) {
+            throw new \InvalidArgumentException('Function getFilmDetailPageUrl must have unique attr (uniqueName, '.$this->sourceName.')');
         }
 
-        return '/title/'.$film->getFilmName($this->sourceName).'/';
+        $uniqueName = $film->getUniqueName($this->sourceName);
+        return "/title/$uniqueName/";
     }
 
     /**
@@ -303,21 +303,10 @@ class Imdb extends Site
     /**
      * Regular expression to find Film Id in film detail HTML page
      *
-     * @param \RatingSync\Film $film Film data
-     *
      * @return string Regular expression to find Film Id in film detail HTML page
      */
-    protected function getDetailPageRegexForFilmName($film) {
+    protected function getDetailPageRegexForUniqueName() {
         return '/<meta property="og:url" content=".*\/(.+)\/"/';
-    }
-
-    /**
-     * Regular expression to find URL Name in film detail HTML page
-     *
-     * @return string Regular expression to find URL Name in film detail HTML page
-     */
-    protected function getDetailPageRegexForUrlName() {
-        return '';
     }
 
     /**
@@ -397,19 +386,18 @@ class Imdb extends Site
      *
      * @param \RatingSync\Film $film
      *
-     * @return string unique attr (see Site::getFilmUniqueAttr())
+     * @return string Film::uniqueName
      */
     public function searchWebsiteForUniqueFilm($film)
     {
         if (!($film instanceof Film)) {
             throw new \InvalidArgumentException('$film must be an array with key "pageIndex" and value an int');
         }
-        $uniqueAttr = null;
 
         $title = $film->getTitle();
         $args = array("query" => $title);
         $page = $this->http->getPage($this->getSearchUrl($args));
-        $regex = $this->getSearchPageRegexForUniqueAttr($title, $film->getYear());
+        $regex = $this->getSearchPageRegexForUniqueName($title, $film->getYear());
         if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
             return false;
         }
@@ -422,7 +410,7 @@ class Imdb extends Site
      *
      * @return string Regular expression to find the image in film detail HTML page
      */
-    protected function getSearchPageRegexForUniqueAttr($title, $year)
+    protected function getSearchPageRegexForUniqueName($title, $year)
     {
         $specialChars = "\/\^\.\[\]\|\(\)\?\*\+\{\}"; // need to do '\' too
         $pattern = "|([$specialChars])|U";

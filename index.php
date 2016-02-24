@@ -5,9 +5,11 @@ require_once "/php/src/SessionUtility.php";
 
 require_once "/php/main.php";
 require_once "/php/src/Constants.php";
+logDebug("Begin", "/index.php ".__LINE__);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (array_key_exists("reconnect", $_POST) && $_POST["reconnect"] == 1) {
+        logDebug("Film::reconnectFilmImages()", "/index.php ".__LINE__);
         Film::reconnectFilmImages();
     }
 }

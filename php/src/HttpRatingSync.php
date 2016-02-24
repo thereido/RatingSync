@@ -10,7 +10,7 @@ class HttpRatingSync extends \RatingSync\Http {
     public function __construct($username)
     {
         parent::__construct($username);
-        $this->baseUrl = "/";
+        $this->baseUrl = Constants::RS_HOST;
         $this->lightweightUrl = "index.php";
     }
 

@@ -1,7 +1,7 @@
 <?php
 namespace RatingSync;
 
-require_once "../../src/main.php";
+require_once "../../main.php";
 require_once "../../src/Constants.php";
 
 echo "Begin\n";

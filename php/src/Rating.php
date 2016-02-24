@@ -293,8 +293,8 @@ class Rating
             }
         } else {
             $ratingRs = new Rating(Constants::SOURCE_RATINGSYNC);
-            $source = new Source(Constants::SOURCE_RATINGSYNC);
-            $source->addFilmSourceToDb($filmId);
+            $source = new Source(Constants::SOURCE_RATINGSYNC, $filmId);
+            $source->saveFilmSourceToDb($filmId);
             
             $yourScore = $this->getYourScore();
             $ratingDate = null;

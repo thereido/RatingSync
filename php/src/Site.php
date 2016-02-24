@@ -128,18 +128,9 @@ abstract class Site
     /**
      * Regular expression to find Film Id in film detail HTML page
      *
-     * @param \RatingSync\Film $film Film data
-     *
      * @return string Regular expression to find Film Id in film detail HTML page
      */
-    abstract protected function getDetailPageRegexForFilmName($film);
-
-    /**
-     * Regular expression to find URL Name in film detail HTML page
-     *
-     * @return string Regular expression to find URL Name in film detail HTML page
-     */
-    abstract protected function getDetailPageRegexForUrlName();
+    abstract protected function getDetailPageRegexForUniqueName();
 
     /**
      * Regular expression to find your rating score in film detail HTML page
@@ -213,41 +204,6 @@ abstract class Site
      * @return string URL of a rating page
      */
     abstract protected function getSearchUrl($args);
-
-    /**
-     * Return a film's unique attribute.  This the attr available from ratings pages
-       and from a film detail page.  In most sites the Film ID is always available, but
-       Jinni has an URL Name and not always Film ID.  The Site implentation returns
-       Film::getFilmName().  Child classes can return something else.
-     *
-     * @param \RatingSync\Film $film get the attr from this film
-     *
-     * @return string unique attribute
-     */
-    public function getFilmUniqueAttr($film)
-    {
-        if (!is_null($film) && ($film instanceof Film)) {
-            return $film->getFilmName($this->sourceName);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Set a film's unique attribute.  This the attr available from ratings pages
-       and from a film detail page.  In most sites the Film ID is always available, but
-       Jinni has an URL Name and not always Film ID.  The Site implentation sets
-       Film::setFilmName().  Child classes can set something else.
-     *
-     * @param \RatingSync\Film $film       get the attr from this film
-     * @param string           $uniqueAttr unique attribute
-     */
-    public function setFilmUniqueAttr($film, $uniqueAttr)
-    {
-        if (!is_null($film) && ($film instanceof Film)) {
-            $film->setFilmName($uniqueAttr, $this->sourceName);
-        }
-    }
 
     /**
      * Get every rating on $this->username's account
@@ -343,7 +299,7 @@ abstract class Site
             return null;
         }
         
-        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_film_" . $this->getFilmUniqueAttr($film) . ".html";
+        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_film_" . $film->getUniqueName($this->sourceName) . ".html";
 
         if (!file_exists($filename) || (filesize($filename) == 0)) {
             return null;
@@ -389,7 +345,7 @@ abstract class Site
      */
     public function cacheFilmDetailPage($page, $film)
     {
-        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_film_" . $this->getFilmUniqueAttr($film) . ".html";
+        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_film_" . $film->getUniqueName($this->sourceName) . ".html";
         $fp = fopen($filename, "w");
         fwrite($fp, $page);
         fclose($fp);
@@ -459,14 +415,18 @@ abstract class Site
      */
     public function getFilmDetailFromWebsite($film, $overwrite = true, $refreshCache = Constants::USE_CACHE_NEVER)
     {
+        if (is_null($film) || !($film instanceof Film) ) {
+            throw new \InvalidArgumentException('arg1 must be a Film object');
+        }
+
         $page = $this->getFilmDetailPageFromCache($film, $refreshCache);
         if (empty($page)) {
-            $uniqueAttr = $this->getFilmUniqueAttr($film);
-            if (empty($uniqueAttr)) {
-                $uniqueAttr = $this->searchWebsiteForUniqueFilm($film);
-                $this->setFilmUniqueAttr($film, $uniqueAttr);
+            $uniqueName = $film->getUniqueName($this->sourceName);
+            if (empty($uniqueName)) {
+                $uniqueName = $this->searchWebsiteForUniqueFilm($film);
+                $film->setUniqueName($uniqueName, $this->sourceName);
             }
-            if (!empty($uniqueAttr)) {
+            if (!empty($uniqueName)) {
                 $page = $this->http->getPage($this->getFilmDetailPageUrl($film));
                 $this->cacheFilmDetailPage($page, $film);
             }
@@ -479,11 +439,22 @@ abstract class Site
         $this->parseDetailPageForFilmYear($page, $film, $overwrite);
         $this->parseDetailPageForImage($page, $film, $overwrite);
         $this->parseDetailPageForContentType($page, $film, $overwrite);
-        $this->parseDetailPageForUrlName($page, $film, $overwrite);
-        $this->parseDetailPageForFilmName($page, $film, $overwrite);
+        $this->parseDetailPageForUniqueName($page, $film, $overwrite);
         $this->parseDetailPageForRating($page, $film, $overwrite);
         $this->parseDetailPageForGenres($page, $film, $overwrite);
         $this->parseDetailPageForDirectors($page, $film, $overwrite);
+    }
+
+    public function getFilmByUniqueName($uniqueName)
+    {
+        if ( empty($uniqueName) ) {
+            throw new \InvalidArgumentException('Function getFilmByUniqueName must have uniqueName');
+        }
+        $film = new Film($this->http);
+        $film->setUniqueName($uniqueName, $this->sourceName);
+        $this->getFilmDetailFromWebsite($film);
+
+        return $film;
     }
 
     /**
@@ -591,7 +562,7 @@ abstract class Site
     }
 
     /**
-     * Get the Film Id from html of the film's detail page. Set the value
+     * Get the Unique Name from html of the film's detail page. Set the value
      * in the Film param.
      *
      * @param string $page      HTML of the film detail page
@@ -600,41 +571,17 @@ abstract class Site
      *
      * @return bool true is value is written to the Film object
      */
-    protected function parseDetailPageForFilmName($page, $film, $overwrite)
+    protected function parseDetailPageForUniqueName($page, $film, $overwrite)
     {
-        if (!$overwrite && !is_null($film->getFilmName($this->sourceName))) {
+        if (!$overwrite && !is_null($film->getUniqueName($this->sourceName))) {
             return false;
         }
 
-        $regex = $this->getDetailPageRegexForFilmName($film);
+        $regex = $this->getDetailPageRegexForUniqueName();
         if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
             return false;
         }
-        $film->setFilmName($matches[1], $this->sourceName);
-        return true;
-    }
-
-    /**
-     * Get the URL Name from html of the film's detail page. Set the value
-     * in the Film param.
-     *
-     * @param string $page      HTML of the film detail page
-     * @param Film   $film      Set the image link in this Film object
-     * @param bool   $overwrite Only overwrite data if 1) $overwrite=true OR/AND 2) data is null
-     *
-     * @return bool true is value is written to the Film object
-     */
-    protected function parseDetailPageForUrlName($page, $film, $overwrite)
-    {
-        if (!$overwrite && !is_null($film->getUrlName($this->sourceName))) {
-            return false;
-        }
-
-        $regex = $this->getDetailPageRegexForUrlName();
-        if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
-            return false;
-        }
-        $film->setUrlName($matches[1], $this->sourceName);
+        $film->setUniqueName($matches[1], $this->sourceName);
         return true;
     }
 
@@ -722,7 +669,7 @@ abstract class Site
         if (! self::validImportFormat($format) ) {
             throw new \InvalidArgumentException('File parse format '.$format.' invalid');
         }
-
+        
         $xml = simplexml_load_file($filename);
         $xmlFilmArray = $xml->xpath('/films/film');
         
@@ -735,7 +682,7 @@ abstract class Site
                 // Ignore
             }
         }
-
+        
         return $films;
     }
 
@@ -762,12 +709,12 @@ abstract class Site
      *
      * @param \RatingSync\Film $film
      *
-     * @return string unique attr (see Site::getFilmUniqueAttr())
+     * @return string Film::uniqueName
      */
     public function searchWebsiteForUniqueFilm($film)
     {
-        $uniqueAttr = null;
+        $uniqueName = null;
 
-        return $uniqueAttr;
+        return $uniqueName;
     }
 }
