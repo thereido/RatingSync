@@ -131,12 +131,22 @@ function getUsername() {
     return Constants::LOGGED_IN_USERNAME;
 }
 
+function search($searchQuery, $username)
+{
+    $film = Film::searchDb($searchQuery, $username);
+    if (empty($film)) {
+        $film = searchImdb($searchQuery);
+    }
+
+    return $film;
+}
+
 function searchImdb($uniqueName)
 {
-    $imdb = new Imdb(Constants::LOGGED_IN_USERNAME);
+    $imdb = new Imdb(getUsername());
     $film = $imdb->getFilmByUniqueName($uniqueName);
     if (!empty($film)) {
-        $film->saveToDb(Constants::LOGGED_IN_USERNAME);
+        $film->saveToDb(getUsername());
     }
 
     return $film;

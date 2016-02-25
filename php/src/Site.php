@@ -427,8 +427,13 @@ abstract class Site
                 $film->setUniqueName($uniqueName, $this->sourceName);
             }
             if (!empty($uniqueName)) {
-                $page = $this->http->getPage($this->getFilmDetailPageUrl($film));
-                $this->cacheFilmDetailPage($page, $film);
+                try {
+                    $page = $this->http->getPage($this->getFilmDetailPageUrl($film));
+                    $this->cacheFilmDetailPage($page, $film);
+                } catch (\Exception $e) {
+                    logDebug($e, __FUNCTION__." ".__LINE__);
+                    throw $e;
+                }
             }
         }
 
@@ -452,7 +457,11 @@ abstract class Site
         }
         $film = new Film($this->http);
         $film->setUniqueName($uniqueName, $this->sourceName);
-        $this->getFilmDetailFromWebsite($film);
+        try {
+            $this->getFilmDetailFromWebsite($film);
+        } catch (\Exception $e) {
+            $film = null;
+        }
 
         return $film;
     }

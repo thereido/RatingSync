@@ -487,8 +487,6 @@ class Film {
         if (empty($year)) $year = "NULL";
         $contentType = $this->getContentType();
         $image = $this->getImage();
-/*RT*/
-logDebug("film.image=$image", __FUNCTION__." ".__LINE__);
 
         // Look for an existing film row
         $newRow = false;
@@ -736,5 +734,18 @@ logDebug("film.image=$image", __FUNCTION__." ".__LINE__);
         }
 
         return $this->getImage();
+    }
+
+    public static function searchDb($searchQuery, $username)
+    {
+        $film = null;
+        $db = getDatabase();
+        $result = $db->query("SELECT film_id FROM film_source WHERE uniqueName='$searchQuery'");
+        if ($result->num_rows == 1) {
+            $row = $result->fetch_assoc();
+            $film = self::getFilmFromDb($row['film_id'], new HttpRatingSync($username), $username);
+        }
+
+        return $film;
     }
 }

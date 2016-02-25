@@ -8,15 +8,34 @@ require_once "src/Film.php";
 $username = getUsername();
 
 if (array_key_exists("sync", $_GET) && $_GET["sync"] == 1) {
-    logDebug("sync $username starting", "rating.php");
+    logDebug("sync $username starting", "ratings.php");
     sync($username);
-    logDebug("sync finished", "rating.php ".__LINE__);
+    logDebug("sync finished", "ratings.php ".__LINE__);
+}
+$searchFilm = null;
+$searchQuery = null;
+if (array_key_exists("q", $_GET)) {
+    $searchQuery = $_GET['q'];
+    logDebug("Search: $searchQuery", "ratings.php ".__LINE__);
+    $searchFilm = search($searchQuery, $username);
+    if (!empty($searchFilm)) {
+        $searchImage = $searchFilm->getImage();
+        $searchTitle = $searchFilm->getTitle();
+        $searchYear = $searchFilm->getYear();
+        $searchRsScore = $searchFilm->getYourScore(Constants::SOURCE_RATINGSYNC);
+        $searchImdbLabel = "IMDb users";
+        $searchImdbScore = $searchFilm->getRating(Constants::SOURCE_IMDB)->getUserScore();
+        $searchImdbYourScore = $searchFilm->getRating(Constants::SOURCE_IMDB)->getYourScore();
+        if (!empty($searchImdbYourScore)) {
+            $searchImdbLabel = "IMDb you";
+            $searchImdbScore = $searchImdbYourScore;
+        }
+    }
 }
 
-logDebug("Get ratings $username starting", "rating.php");
 $site = new \RatingSync\RatingSyncSite($username);
 $films = $site->getRatings();
-logDebug("Get ratings finished. Count films: " . count($films), "rating.php");
+logDebug("Rating count " . count($films), "ratings.php ".__LINE__);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -62,6 +81,37 @@ function test_input($data)
 
   <div class="well well-sm">
     <h2>Ratings</h2>
+  </div>
+
+  <div>
+    <form method="get" action="ratings.php">
+      <input type="text" class="form-control" placeholder="tt0000001" name="q" value="<?php echo $searchQuery; ?>">
+      <input type="submit" class="btn btn-sm btn-primary" value="Search">
+    </form>
+    <?php
+    if (!empty($searchFilm)) {
+        echo "<table align='center'>\n";
+        echo "  <tr>\n";
+        echo "    <td>\n";
+        echo "      <img src='$searchImage' />\n";
+        echo "    </td>\n";
+        echo "    <td>\n";
+        echo "      <table>\n";
+        echo "        <tr>\n";
+        echo "          <td>$searchTitle ($searchYear)</td><td/>\n";
+        echo "        </tr>\n";
+        echo "        <tr>\n";
+        echo "          <td>You: $searchRsScore</td>\n";
+        echo "          <td>$searchImdbLabel: $searchImdbScore</td>\n";
+        echo "        </tr>\n";
+        echo "      </table>\n";
+        echo "    </td>\n";
+        echo "  </tr>\n";
+        echo "</table>\n";
+    } elseif (!empty($searchQuery)) {
+        echo "<p>No result</p>";
+    }
+    ?>
   </div>
     
   <table class="table table-striped">

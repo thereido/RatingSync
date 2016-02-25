@@ -384,7 +384,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Image link');
+        $this->assertEmpty($film->getImage(), "film image");
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
         $this->assertEquals("tt2294629", $film->getUniqueName($site->_getSourceName()), 'Unique Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
@@ -415,8 +416,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Image link');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Image link');
+        $this->assertEmpty($film->getImage(), "film image");
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
         $this->assertEquals("tt2294629", $film->getUniqueName($site->_getSourceName()), 'Film ID');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
@@ -476,9 +477,10 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Image link');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
+        // Verify - not changed
+        $this->assertEquals("Original_Image", $film->getImage(), 'Film image');
 
         // Verify - new data (IMDb)
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
@@ -590,7 +592,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Image link');
+        $this->assertEmpty($film->getImage(), 'Film image');
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Image link');
         $this->assertEquals("tt2294629", $film->getUniqueName($site->_getSourceName()), 'Unique Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
@@ -651,9 +653,10 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Image link');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
+        // Verify - not changed
+        $this->assertEquals("Original_Image", $film->getImage(), 'Film image');
 
         // Verify - Same original data (IMDb)
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
@@ -940,7 +943,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $success = $site->_parseDetailPageForImage($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Image');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Check matching Image (empty film overwrite=true)');
+        $this->assertEmpty($film->getImage(), 'Check matching film Image (empty film overwrite=true)');
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching source Image (empty film overwrite=true)');
         
         $success = $site->_parseDetailPageForContentType($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Content Type');
@@ -999,7 +1003,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $success = $site->_parseDetailPageForImage($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Image');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Check matching Image (empty film overwrite=false)');
+        $this->assertEmpty($film->getImage(), "Film image (empty film overwrite=false)");
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching source Image (empty film overwrite=false)');
         
         $success = $site->_parseDetailPageForContentType($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Content Type');
@@ -1090,7 +1095,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $success = $site->_parseDetailPageForImage($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Image');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(), $matches), 'Check matching Image (full film overwrite=true)');
+        $this->assertEquals("Original_Image", $film->getImage(), "Check film image (full film overwrite=true)");
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching source Image (full film overwrite=true)');
         
         $success = $site->_parseDetailPageForContentType($page, $film, true);
         $this->assertFalse($success, 'Parsing film object for Content Type');
@@ -1236,7 +1242,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Frozen", $film->getTitle(), "Frozen title");
         $this->assertEquals(2013, $film->getYear(), "Frozen year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Frozen ContentType");
-        $this->assertEquals("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", $film->getImage(), "Frozen image");
+        $this->assertEquals("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", $film->getImage(), "Frozen film image");
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Frozen directors");
         $this->assertEquals(array("Adventure", "Animation", "Fantasy", "Musical", "Family", "Comedy"), $film->getGenres(), "Frozen genres");
         $this->assertEquals("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", $film->getImage(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." image");
@@ -1485,7 +1491,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(8, $row["count"], "Films");
         $result = $db->query("SELECT count(film_id) as count FROM film_source");
         $row = $result->fetch_assoc();
-        $this->assertEquals(10, $row["count"], "Film/Source rows");
+        $this->assertEquals(12, $row["count"], "Film/Source rows");
         $result = $db->query("SELECT count(film_id) as count FROM rating");
         $row = $result->fetch_assoc();
         $this->assertEquals(10, $row["count"], "Ratings");
@@ -1552,6 +1558,8 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $url = $site->getSearchUrl($args);
         $this->assertEquals("/find?ref_=nv_sr_fn&q=Wallace+%26+Gromit%3A+The+Curse+of+the+Were-Rabbit&s=tt", $url);
     }
+
+    /*RT* searchWebsiteForUniqueFilm *RT*/
 }
 
 ?>
