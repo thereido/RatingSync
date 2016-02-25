@@ -135,6 +135,9 @@ function searchImdb($uniqueName)
 {
     $imdb = new Imdb(Constants::LOGGED_IN_USERNAME);
     $film = $imdb->getFilmByUniqueName($uniqueName);
+    if (!empty($film)) {
+        $film->saveToDb(Constants::LOGGED_IN_USERNAME);
+    }
 
     return $film;
 }
