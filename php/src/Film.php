@@ -487,6 +487,8 @@ class Film {
         if (empty($year)) $year = "NULL";
         $contentType = $this->getContentType();
         $image = $this->getImage();
+/*RT*/
+logDebug("film.image=$image", __FUNCTION__." ".__LINE__);
 
         // Look for an existing film row
         $newRow = false;
@@ -600,26 +602,30 @@ class Film {
 
         // Make sure the RatingSync source has an image
         $sourceRs = $this->getSource(Constants::SOURCE_RATINGSYNC);
-        if (empty($image)) {
-            if (empty($sourceRs->getImage())) {
+        $filmImage = $this->getImage();
+        if (empty($sourceRs->getImage())) {
+            if (empty($filmImage)) {
                 // Download an image from another source
-                $film = self::getFilmFromDb($filmId, new HttpImdb("empty_username"));
-                $image = $film->downloadImage();
-            } else {
-                $image = $sourceRs->getImage();
+                $filmImage = $this->downloadImage();
             }
-        } else {
-            $sourceRs->setImage($image);
-        }
-
-        if (!empty($image) || $image != $sourceRs->getImage()) {
-            $sourceRs->setImage($image);
+            $sourceRs->setImage($filmImage);
             $sourceRs->saveFilmSourceToDb($filmId);
+        } else {
+            // RS Source has an image. Film overwrites it unless it's empty.
+            if (empty($filmImage)) {
+                // source overwrites the film's empty image
+                $filmImage = $sourceRs->getImage();
+                $this->setImage($filmImage);
+            } else {
+                // film overwrites the source's non-empty image
+                $sourceRs->setImage($filmImage);
+                $sourceRs->saveFilmSourceToDb($filmId);
+            }
         }
         
         // Update Film row. If this is a new film then this update is
         // only for setting an image.
-        $values = "title='$title', year=$year, contentType='$contentType', image='$image'";
+        $values = "title='$title', year=$year, contentType='$contentType', image='$filmImage'";
         $where = "id=$filmId";
         $db->query("UPDATE film SET $values WHERE $where");
 

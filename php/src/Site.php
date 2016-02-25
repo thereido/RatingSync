@@ -527,9 +527,6 @@ abstract class Site
             return false;
         }
 
-        if ($overwrite || is_null($film->getImage())) {
-            $film->setImage($matches[1]);
-        }
         if ($overwrite || is_null($film->getImage($this->sourceName))) {
             $film->setImage($matches[1], $this->sourceName);
         }
