@@ -69,12 +69,10 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
         DatabaseTest::resetDb();
     }
 
-    /**
-     * @depends testResetDb
-     */
-    public function testSetupRatings()
-    {$this->start(__CLASS__, __FUNCTION__);
+    public static function setupRatings()
+    {
         $db = getDatabase();
+        $success = true;
 
         DatabaseTest::resetDb();
         $username_imdb = TEST_IMDB_USERNAME;
@@ -88,17 +86,25 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
         $username_rs = "rs_user1";
 
         $query = "INSERT INTO user (username, password) VALUES ('$username_rs', 'password')";
-        $success = $db->query($query);
-        $this->assertTrue($success, $query."  SQL Error: ".$db->error);
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
         $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_IMDB."', 'imdb_user1', 'pwd')";
-        $success = $db->query($query);
-        $this->assertTrue($success, $query."  SQL Error: ".$db->error);
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
         $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_JINNI."', 'jinni_user1', 'pwd')";
-        $success = $db->query($query);
-        $this->assertTrue($success, $query."  SQL Error: ".$db->error);
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
         $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_RATINGSYNC."', '$username_rs', 'password')";
-        $success = $db->query($query);
-        $this->assertTrue($success, $query."  SQL Error: ".$db->error);
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
         
         $filmId = 1; $filmId2 = 2; $filmId4 = 4;
         $result = $db->query("SELECT * FROM rating WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."' AND source_name='".Constants::SOURCE_IMDB."'");
@@ -110,18 +116,35 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
         $rating->saveToRs($username_rs, $filmId4);
 
         $query = "UPDATE rating SET source_name='".Constants::SOURCE_IMDB."' WHERE film_id=$filmId4 AND user_name='$username_rs'";
-        $success = $db->query($query);
-        $this->assertTrue($success, $query."  SQL Error: ".$db->error);
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
 
         $filmId = 1;
         $query = "UPDATE rating SET yourRatingDate='2015-1-1' WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."' AND source_name='".Constants::SOURCE_RATINGSYNC."'";
-        $success = $db->query($query);
-        $this->assertTrue($success, $query."  SQL Error: ".$db->error);
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
 
         $filmId = 3;
         $query = "UPDATE rating SET source_name='".Constants::SOURCE_IMDB."' WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."'";
-        $success = $db->query($query);
-        $this->assertTrue($success, $query."  SQL Error: ".$db->error);
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
+
+        return $success;
+    }
+
+    /**
+     * @depends testResetDb
+     */
+    public function testSetupRatings()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->assertTrue(self::setupRatings(), "setupRatings() failed");
     }
 
     /**
