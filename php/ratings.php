@@ -5,32 +5,14 @@ require_once "main.php";
 require_once "src/SessionUtility.php";
 require_once "src/Film.php";
 
+require_once "src/ajax/getRating.php";
+
 $username = getUsername();
 
 if (array_key_exists("sync", $_GET) && $_GET["sync"] == 1) {
     logDebug("sync $username starting", "ratings.php");
     sync($username);
     logDebug("sync finished", "ratings.php ".__LINE__);
-}
-$searchFilm = null;
-$searchQuery = null;
-if (array_key_exists("q", $_GET)) {
-    $searchQuery = $_GET['q'];
-    logDebug("Search: $searchQuery", "ratings.php ".__LINE__);
-    $searchFilm = search($searchQuery, $username);
-    if (!empty($searchFilm)) {
-        $searchImage = $searchFilm->getImage();
-        $searchTitle = $searchFilm->getTitle();
-        $searchYear = $searchFilm->getYear();
-        $searchRsScore = $searchFilm->getYourScore(Constants::SOURCE_RATINGSYNC);
-        $searchImdbLabel = "IMDb users";
-        $searchImdbScore = $searchFilm->getRating(Constants::SOURCE_IMDB)->getUserScore();
-        $searchImdbYourScore = $searchFilm->getRating(Constants::SOURCE_IMDB)->getYourScore();
-        if (!empty($searchImdbYourScore)) {
-            $searchImdbLabel = "IMDb you";
-            $searchImdbScore = $searchImdbYourScore;
-        }
-    }
 }
 
 $site = new \RatingSync\RatingSyncSite($username);
@@ -44,6 +26,7 @@ logDebug("Rating count " . count($films), "ratings.php ".__LINE__);
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>RSync: Your Ratings</title>
     <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
+    <link href="../css/rs.css" rel="stylesheet">
     <script src="../js/bootstrap.min.js"></script>
 </head>
 
@@ -84,34 +67,12 @@ function test_input($data)
   </div>
 
   <div>
-    <form method="get" action="ratings.php">
-      <input type="text" class="form-control" placeholder="tt0000001" name="q" value="<?php echo $searchQuery; ?>">
+    <form onsubmit="return searchFilm()">
+      <input type="text" class="form-control" placeholder="tt0000001" id="searchQuery">
       <input type="submit" class="btn btn-sm btn-primary" value="Search">
     </form>
-    <?php
-    if (!empty($searchFilm)) {
-        echo "<table align='center'>\n";
-        echo "  <tr>\n";
-        echo "    <td>\n";
-        echo "      <img src='$searchImage' />\n";
-        echo "    </td>\n";
-        echo "    <td>\n";
-        echo "      <table>\n";
-        echo "        <tr>\n";
-        echo "          <td>$searchTitle ($searchYear)</td><td/>\n";
-        echo "        </tr>\n";
-        echo "        <tr>\n";
-        echo "          <td>You: $searchRsScore</td>\n";
-        echo "          <td>$searchImdbLabel: $searchImdbScore</td>\n";
-        echo "        </tr>\n";
-        echo "      </table>\n";
-        echo "    </td>\n";
-        echo "  </tr>\n";
-        echo "</table>\n";
-    } elseif (!empty($searchQuery)) {
-        echo "<p>No result</p>";
-    }
-    ?>
+    <p><span id="debug"></span></p>
+    <span id="searchResult"></span>
   </div>
     
   <table class="table table-striped">
@@ -134,21 +95,49 @@ function test_input($data)
           echo "<tr>\n";
           echo "  <td><img src='$image' /></td>\n";
           echo "  <td>\n";
-          echo "  <table>\n";
-          echo "    <tr>\n";
-          echo "      <td colspan=2>$count. $title ($year)</td>\n";
-          echo "    </tr>\n";
-          echo "    <tr>\n";
-          echo "      <td>Rated: $yourScore</td>\n";
-          echo "      <td>$date</td>\n";
-          echo "    </tr>\n";
-          echo "  </table>\n";
+          echo "    <table>\n";
+          echo "      <tr>\n";
+          echo "        <td>$count. $title ($year)</td>\n";
+          echo "      </tr>\n";
+          echo "      <tr>\n";
+          echo "        <td>" . getRatingHtml($rating) . "</td>\n";
+          echo "      </tr>\n";
+          echo "      <tr>\n";
+          echo "        <td>$date</td>\n";
+          echo "      </tr>\n";
+          echo "    </table>\n";
+          echo "  </td>\n";
           echo "</tr>\n";
       }
       ?>
     </tbody>
   </table>
 
-</div>        
+</div>
+
+<script>
+function searchFilm() {
+    if (document.getElementById("searchQuery").value == 0) {
+        document.getElementById("searchResult").innerHTML = "";
+    } else {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                /*RT*/// document.getElementById("debug").innerHTML = "readyState=" + xmlhttp.readyState + " status=" + xmlhttp.status;
+                document.getElementById("searchResult").innerHTML = xmlhttp.responseText;
+            }
+            else {
+                /*RT*/// document.getElementById("debug").innerHTML = "readyState=" + xmlhttp.readyState + " status=" + xmlhttp.status;
+                /*RT*/// document.getElementById("searchResult").innerHTML = xmlhttp.responseText;
+            }
+        }
+        xmlhttp.open("GET", "/php/src/ajax/getSearchFilm.php?q=" + document.getElementById("searchQuery").value, true);
+        xmlhttp.send();
+    }
+
+    return false;
+}
+</script>
+          
 </body>
 </html>
