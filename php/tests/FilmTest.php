@@ -2143,8 +2143,357 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @covers \RatingSync\Film::saveToDb
+     * @expectedException \InvalidArgumentException
+     */
+    public function testSaveToDbEmptyTitle()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Test
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setYear(2015);
+        $film->saveToDb();
+
+        // Verify
+        $db = getDatabase();
+        $query = "SELECT id FROM film WHERE title='' OR title IS NULL";
+        $result = $db->query($query);
+        $this->assertEquals(0, $result->num_rows, "There should be no result");
+    }
+    
+    /**
+     * Expect
+     *   - Success with no year
+     *
+     * @covers \RatingSync\Film::saveToDb
+     */
+    public function testSaveToDbEmptyYear()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Test
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setTitle("Title no year");
+        $film->saveToDb();
+
+        // Verify
+        $db = getDatabase();
+        $query = "SELECT id FROM film WHERE title='Title no year' AND year IS NULL";
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "Should be a result");
+    }
+    
+    /**
+     * - No existing film in the db
+     * - Do not include a rating from RS
+     * - Include a rating & source from another site
+     * - Include an invalid film image
+     * - Include username
+     *
+     * Expect
+     *   - Film in the db
+     *   - Same data as the original object
+     *   - 2 new Film/Source rows (verify data)
+     *   - RS source image is overwritten by film image
+     *   - 1 new rating from the other site (verify data)
+     *   - No RS rating
+     *
+     * @covers \RatingSync\Film::saveToDb
+     * @depends testGetFilmFromDbRatingData
+     */
+    public function testSaveToDb()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $username_site = TEST_IMDB_USERNAME;
+        $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
+        $film = new Film(new HttpChild($username_site));
+        $film->setTitle("Original_Title");
+        $film->setYear(2015);
+        $film->setContentType(Film::CONTENT_SHORTFILM);
+        $film->setImage("Original_InvalidImage");
+        $film->addGenre("Original_Genre");
+        $film->addDirector("Original_Director");
+        $sourceName = Constants::SOURCE_IMDB;
+        $rating = new Rating($sourceName);
+        $rating->setYourScore(1);
+        $rating->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-01"));
+        $rating->setCriticScore(3);
+        $rating->setUserScore(4);
+        $film->setRating($rating, $sourceName);
+        $film->setImage("Original_Image_".$sourceName, $sourceName);
+        $film->setUniqueName("Original_UniqueName", $sourceName);
+
+        // Test
+        $film->saveToDb($username_rs);
+
+        // Verify
+        $db = getDatabase();
+        $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There should be one result");
+        $filmId = $result->fetch_assoc()['id'];
+        $dbFilm = Film::getFilmFromDb($filmId, new HttpChild($username_rs), $username_rs);
+        $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
+        $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
+        $this->assertEquals($film->getContentType(), $dbFilm->getContentType(), "ContentType");
+        $this->assertEquals($film->getImage(), $dbFilm->getImage(), "Film image");
+        $this->assertEquals($film->getGenres(), $dbFilm->getGenres(), "Genres");
+        $this->assertEquals($film->getDirectors(), $dbFilm->getDirectors(), "Directors");
+        $this->assertEquals($film->getImage($sourceName), $dbFilm->getImage($sourceName), "Image $sourceName");
+        $this->assertEquals($film->getUniqueName($sourceName), $dbFilm->getUniqueName($sourceName), "UniqueName $sourceName");
+        $this->assertEquals($film->getImage(), $dbFilm->getImage(Constants::SOURCE_RATINGSYNC), "Image RS");
+        $this->assertEquals("rs$filmId", $dbFilm->getUniqueName(Constants::SOURCE_RATINGSYNC), "UniqueName RS");
+        $dbRating = $dbFilm->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "YourScore $sourceName");
+        $this->assertEquals(date_format($rating->getYourRatingDate(), "Y-m-d"), date_format($dbRating->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceName");
+        $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), "SuggestedScore $sourceName");
+        $this->assertEquals($rating->getCriticScore(), $dbRating->getCriticScore(), "CriticScore $sourceName");
+        $this->assertEquals($rating->getUserScore(), $dbRating->getUserScore(), "UserScore $sourceName");
+        $sourceName = Constants::SOURCE_RATINGSYNC;
+        $this->assertEmpty($dbFilm->getYourScore($sourceName), "Should be no RS rating");
+        $query = "SELECT film_id FROM rating WHERE film_id=$filmId AND source_name='$sourceName'";
+        $result = $db->query($query);
+        $this->assertEquals(0, $result->num_rows, "There should be no $sourceName rating");
+    }
+    
+    /**
+     * No username arg
+     * - No existing film in the db
+     * - Include a rating from RS
+     * - Include a rating from another site
+     *
+     * Expect
+     *   - Film in the db
+     *   - Same data as the original object
+     *   - 2 new Film/Source rows (verify data)
+     *   - No ratings
+     *
+     * @covers \RatingSync\Film::saveToDb
+     * @depends testSaveToDb
+     */
+    public function testSaveToDbEmptyUsername()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $username_site = TEST_IMDB_USERNAME;
+        $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
+        $film = new Film(new HttpChild($username_site));
+        $film->setTitle("Original_Title2");
+        $film->setYear(2012);
+        $film->setContentType(Film::CONTENT_SHORTFILM);
+        $film->setImage("Original_Image2");
+        $film->addGenre("Original_Genre2");
+        $film->addDirector("Original_Director2");
+        $sourceName = Constants::SOURCE_IMDB;
+        $rating = new Rating($sourceName);
+        $rating->setYourScore(2);
+        $rating->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-02"));
+        $rating->setCriticScore(4);
+        $rating->setUserScore(5);
+        $film->setRating($rating, $sourceName);
+        $film->setImage("Original_Image2_".$sourceName, $sourceName);
+        $film->setUniqueName("Original_UniqueName2", $sourceName);
+        $sourceRs = Constants::SOURCE_RATINGSYNC;
+        $ratingRs = new Rating($sourceRs);
+        $ratingRs->setYourScore(3);
+        $ratingRs->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-03"));
+        $film->setRating($ratingRs, $sourceRs);
+        $film->setImage("Original_Image2_".$sourceRs, $sourceRs);
+        $film->setUniqueName("Original_UniqueName2", $sourceRs);
+
+        // Test
+        $film->saveToDb();
+
+        // Verify
+        $db = getDatabase();
+        $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There should be one result");
+        $filmId = $result->fetch_assoc()['id'];
+        $dbFilm = Film::getFilmFromDb($filmId, new HttpChild($username_rs), $username_rs);
+        $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
+        $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
+        $this->assertEquals($film->getContentType(), $dbFilm->getContentType(), "ContentType");
+        $this->assertEquals($film->getImage(), $dbFilm->getImage(), "Film image");
+        $this->assertEquals($film->getGenres(), $dbFilm->getGenres(), "Genres");
+        $this->assertEquals($film->getDirectors(), $dbFilm->getDirectors(), "Directors");
+        $this->assertEquals($film->getImage($sourceName), $dbFilm->getImage($sourceName), "Image $sourceName");
+        $this->assertEquals($film->getUniqueName($sourceName), $dbFilm->getUniqueName($sourceName), "UniqueName $sourceName");
+        $this->assertEquals($film->getImage(), $dbFilm->getImage($sourceRs), "Image RS");
+        $this->assertEquals($film->getUniqueName($sourceRs), $dbFilm->getUniqueName($sourceRs), "UniqueName RS");
+        $query = "SELECT film_id FROM rating WHERE film_id=$filmId";
+        $result = $db->query($query);
+        $this->assertEquals(0, $result->num_rows, "There should be no ratings");
+    }
+    
+    /**
+     * - No existing film in the db
+     * - Do not include a rating from RS
+     * - Include an valid film image
+     *
+     * Expect
+     *   - Film in the db
+     *   - Same film image as the original object
+     *   - RS image same as film image
+     *   - New RS Film/Source row (verify data)
+     *
+     * @covers \RatingSync\Film::saveToDb
+     * @depends testSaveToDb
+     */
+    public function testSaveToDbWithImage()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $username_site = TEST_IMDB_USERNAME;
+        $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
+        $sourceRsName = Constants::SOURCE_RATINGSYNC;
+        $film = new Film(new HttpChild($username_site));
+        $film->setTitle("Original_Title3");
+        $film->setYear(2015);
+        $film->setContentType(Film::CONTENT_SHORTFILM);
+        $film->setImage("Original_InvalidImage3");
+        $film->addGenre("Original_Genre3");
+        $film->addDirector("Original_Director3");
+
+        // Test
+        $film->saveToDb($username_rs);
+
+        // Verify
+        $db = getDatabase();
+        $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There should be one result");
+        $filmId = $result->fetch_assoc()['id'];
+        $dbFilm = Film::getFilmFromDb($filmId, new HttpChild($username_rs), $username_rs);
+        $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
+        $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
+        $this->assertEquals($film->getContentType(), $dbFilm->getContentType(), "ContentType");
+        $this->assertEquals($film->getImage(), $dbFilm->getImage(), "Film image");
+        $this->assertEquals($film->getGenres(), $dbFilm->getGenres(), "Genres");
+        $this->assertEquals($film->getDirectors(), $dbFilm->getDirectors(), "Directors");
+        $this->assertEquals($film->getImage(), $dbFilm->getImage($sourceRsName), "Image $sourceRsName");
+        $this->assertEquals($film->getUniqueName($sourceRsName), $dbFilm->getUniqueName($sourceRsName), "UniqueName $sourceRsName");
+        $this->assertEquals($film->getImage(), $dbFilm->getImage($sourceRsName), "Image RS");
+        $this->assertEquals("rs$filmId", $dbFilm->getUniqueName($sourceRsName), "UniqueName RS");
+        $query = "SELECT film_id FROM rating WHERE film_id=$filmId AND source_name='$sourceRsName'";
+        $result = $db->query($query);
+        $this->assertEquals(0, $result->num_rows, "There should be no $sourceRsName rating");
+    }
+    
+    /**
+     * - Existing film in the db with example data
+     * - Existing RS rating in the db with example data
+     * - Existing other site rating in the db with example data
+     * - Film object with different data
+     * - Rating RS object with different data
+     * - Rating other site object with different data
+     *
+     * Expect
+     *   - Db film with new data from the object
+     *   - Db RS rating with new data from the object
+     *   - Db Other Site rating with new data from the object
+     *
+     * @covers \RatingSync\Film::saveToDb
+     */
+    public function testSaveToDbExistingFilm()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $username_site = TEST_IMDB_USERNAME;
+        $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
+        // Existing Film
+        $existingFilm = new Film(new HttpChild($username_site));
+        $existingFilm->setTitle("Original_Title4");
+        $existingFilm->setYear(2014);
+        $existingFilm->setContentType(Film::CONTENT_SHORTFILM);
+        $existingFilm->setImage("Original_InvalidImage4");
+        $existingFilm->addGenre("Original_Genre4");
+        $existingFilm->addDirector("Original_Director4");
+        $sourceName = Constants::SOURCE_IMDB;
+        $existingRating = new Rating($sourceName);
+        $existingRating->setYourScore(4);
+        $existingRating->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-04"));
+        $existingRating->setCriticScore(6);
+        $existingRating->setUserScore(7);
+        $existingFilm->setRating($existingRating, $sourceName);
+        $existingFilm->setImage("Original_Image4_".$sourceName, $sourceName);
+        $existingFilm->setUniqueName("Original_UniqueName4_".$sourceName, $sourceName);
+        $sourceRsName = Constants::SOURCE_RATINGSYNC;
+        $existingRatingRs = new Rating($sourceRsName);
+        $existingRatingRs->setYourScore(4);
+        $existingRatingRs->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-04"));
+        $existingRatingRs->setCriticScore(6);
+        $existingRatingRs->setUserScore(7);
+        $existingFilm->setRating($existingRatingRs, $sourceRsName);
+        $existingFilm->setImage("Original_Image4_".$sourceRsName, $sourceRsName);
+        $existingFilm->setUniqueName("Original_UniqueName4_".$sourceRsName, $sourceRsName);
+        // Save existingFilm to it will exist in the db
+        $existingFilm->saveToDb($username_rs);
+        // New Film
+        $film = new Film(new HttpChild($username_site));
+        $film->setTitle("New_Title4");
+        $film->setYear(2009);
+        $film->setContentType(Film::CONTENT_FILM);
+        $film->setImage("New_InvalidImage4");
+        $film->addGenre("New_Genre4");
+        $film->addDirector("New_Director4");
+        $sourceName = Constants::SOURCE_IMDB;
+        $rating = new Rating($sourceName);
+        $rating->setYourScore(5);
+        $rating->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-08"));
+        $rating->setCriticScore(7);
+        $rating->setUserScore(8);
+        $film->setRating($rating, $sourceName);
+        $film->setImage("New_Image4_".$sourceName, $sourceName);
+        $film->setUniqueName("New_UniqueName4_".$sourceName, $sourceName);
+        $sourceNameRs = Constants::SOURCE_RATINGSYNC;
+        $ratingRs = new Rating($sourceNameRs);
+        $ratingRs->setYourScore(6);
+        $ratingRs->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-09"));
+        $ratingRs->setCriticScore(8);
+        $ratingRs->setUserScore(9);
+        $film->setRating($ratingRs, $sourceNameRs);
+        $film->setImage("New_Image4_".$sourceNameRs, $sourceNameRs);
+        $film->setUniqueName("New_UniqueName4_".$sourceNameRs, $sourceNameRs);
+
+        // Test
+        $film->saveToDb($username_rs);
+
+        // Verify
+        $db = getDatabase();
+        $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There should be one result");
+        $filmId = $result->fetch_assoc()['id'];
+        $dbFilm = Film::getFilmFromDb($filmId, new HttpChild($username_rs), $username_rs);
+        $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
+        $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
+        $this->assertEquals($film->getContentType(), $dbFilm->getContentType(), "ContentType");
+        $this->assertEquals($film->getImage(), $dbFilm->getImage(), "Film image");
+        $this->assertEquals($film->getGenres(), $dbFilm->getGenres(), "Genres");
+        $this->assertEquals($film->getDirectors(), $dbFilm->getDirectors(), "Directors");
+        $this->assertEquals($film->getImage($sourceName), $dbFilm->getImage($sourceName), "Image $sourceName");
+        $this->assertEquals($film->getUniqueName($sourceName), $dbFilm->getUniqueName($sourceName), "UniqueName $sourceName");
+        $this->assertEquals($film->getImage(), $dbFilm->getImage($sourceRsName), "Image RS");
+        $this->assertEquals($film->getUniqueName($sourceRsName), $dbFilm->getUniqueName($sourceRsName), "UniqueName RS");
+        $dbRating = $dbFilm->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "YourScore $sourceName");
+        $this->assertEquals(date_format($rating->getYourRatingDate(), "Y-m-d"), date_format($dbRating->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceName");
+        $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), "SuggestedScore $sourceName");
+        $this->assertEquals($rating->getCriticScore(), $dbRating->getCriticScore(), "CriticScore $sourceName");
+        $this->assertEquals($rating->getUserScore(), $dbRating->getUserScore(), "UserScore $sourceName");
+        $dbRatingRs = $dbFilm->getRating($sourceNameRs);
+        $this->assertEquals($ratingRs->getYourScore(), $dbRatingRs->getYourScore(), "YourScore $sourceNameRs");
+        $this->assertEquals(date_format($ratingRs->getYourRatingDate(), "Y-m-d"), date_format($dbRatingRs->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceNameRs");
+        $this->assertEquals($ratingRs->getSuggestedScore(), $dbRatingRs->getSuggestedScore(), "SuggestedScore $sourceNameRs");
+        $this->assertEquals($ratingRs->getCriticScore(), $dbRatingRs->getCriticScore(), "CriticScore $sourceNameRs");
+        $this->assertEquals($ratingRs->getUserScore(), $dbRatingRs->getUserScore(), "UserScore $sourceNameRs");
+    }
+    
+    /**
      * @covers \RatingSync\Film::downloadImage
      * @depends testSetupForGetFilmFromDb
+     * @depends testSaveToDb
      */
     public function testDownloadImage()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -2181,8 +2530,53 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $image = $film->downloadImage();
 
         // Verify
-        $this->assertEquals("/image/rs9.jpg", $image, "downloadImage() return");
-        $this->assertEquals("/image/rs9.jpg", $film->getImage(), "film image set");
+        $this->assertEquals("/image/rs$filmId.jpg", $image, "downloadImage() return");
+        $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), "film image set");
+    }
+    
+    /**
+     * Empty Image
+     * - Film does not exist in the db
+     * - Include uniqueName (IMDb)
+     * - Do not include a film image
+     * - Do not include a RS source or rating
+     *
+     * Expect
+     *   - Db film exists
+     *   - Db film has an image
+     *   - Db Film/Source RS has an image
+     *
+     * @covers \RatingSync\Film::saveToDb
+     *
+     * @depends testSaveToDb
+     * @depends testDownloadImage
+     */
+    public function testSaveToDbEmptyImage()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
+        $sourceName = Constants::SOURCE_IMDB;
+        $sourceNameRs = Constants::SOURCE_RATINGSYNC;
+        $film = new Film(new HttpChild($username_rs));
+        $film->setTitle("Original_Title5");
+        $film->setYear(2015);
+        $film->setUniqueName("tt0094819", $sourceName);
+
+        // Test
+        $film->saveToDb($username_rs);
+
+        // Verify
+        $db = getDatabase();
+        $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
+        $result = $db->query($query);
+        $this->assertEquals(1, $result->num_rows, "There should be one result");
+        $filmId = $result->fetch_assoc()['id'];
+        $dbFilm = Film::getFilmFromDb($filmId, new HttpChild($username_rs), $username_rs);
+        $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
+        $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
+        $this->assertEquals("/image/rs$filmId.jpg", $dbFilm->getImage(), "Film image");
+        $this->assertEquals($dbFilm->getImage(), $dbFilm->getImage($sourceNameRs), "Image $sourceNameRs");
     }
     
     /**

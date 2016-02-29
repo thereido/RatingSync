@@ -479,6 +479,9 @@ class Film {
 
     public function saveToDb($username = null)
     {
+        if (empty($this->getTitle())) {
+            throw new \InvalidArgumentException("Film must have a title");
+        }
         $db = getDatabase();
 
         $filmId = $this->id;
@@ -743,7 +746,7 @@ class Film {
         $result = $db->query("SELECT film_id FROM film_source WHERE uniqueName='$searchQuery'");
         if ($result->num_rows == 1) {
             $row = $result->fetch_assoc();
-            $film = self::getFilmFromDb($row['film_id'], new HttpRatingSync($username), $username);
+            $film = self::getFilmFromDb($row['film_id'], new HttpRatingSync("empty_username"), $username);
         }
 
         return $film;
