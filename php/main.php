@@ -160,4 +160,23 @@ function searchImdb($uniqueName)
     return $film;
 }
 
+function setRating($uniqueName, $score)
+{
+    if (empty($uniqueName)) {
+        return null;
+    }
+
+    $username = getUsername();
+    $film = Film::searchDb($uniqueName, $username);
+    if (!empty($film)) {
+        $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+        $rating->setYourScore($score);
+        $rating->setYourRatingDate(new \DateTime());
+        $film->setRating($rating);
+        $film->saveToDb($username);
+    }
+
+    return $film;
+}
+
 ?>

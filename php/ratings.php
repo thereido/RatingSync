@@ -5,7 +5,8 @@ require_once "main.php";
 require_once "src/SessionUtility.php";
 require_once "src/Film.php";
 
-require_once "src/ajax/getRating.php";
+require_once "src/ajax/getHtmlRating.php";
+require_once "src/ajax/getHtmlFilm.php";
 
 $username = getUsername();
 
@@ -84,28 +85,16 @@ function test_input($data)
           $image = $film->getImage();
           $title = $film->getTitle();
           $year = $film->getYear();
+          $uniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
           $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
           $yourScore = $rating->getYourScore();
           $yourRatingDate = $rating->getYourRatingDate();
-          $date = null;
-          if (!empty($yourRatingDate)) {
-              $date = date_format($yourRatingDate, 'm/d/Y');
-          }
           $imdbScore = $film->getRating(Constants::SOURCE_IMDB)->getUserScore();
           echo "<tr>\n";
-          echo "  <td><img src='$image' /></td>\n";
           echo "  <td>\n";
-          echo "    <table>\n";
-          echo "      <tr>\n";
-          echo "        <td>$count. $title ($year)</td>\n";
-          echo "      </tr>\n";
-          echo "      <tr>\n";
-          echo "        <td>" . getRatingHtml($rating) . "</td>\n";
-          echo "      </tr>\n";
-          echo "      <tr>\n";
-          echo "        <td>$date</td>\n";
-          echo "      </tr>\n";
-          echo "    </table>\n";
+          echo "    <span id='$uniqueName'>\n";
+          echo getHtmlFilm($film, $count);
+          echo "    </span>\n";
           echo "  </td>\n";
           echo "</tr>\n";
       }

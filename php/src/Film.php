@@ -558,7 +558,7 @@ class Film {
                 $columns .= ", yourRatingDate";
                 $values .= ", '$ratingDate'";
             }
-
+            
             if (!empty($username)) {
                 $result = $db->query("SELECT 1 FROM user WHERE username='$username'");
                 if ($result->num_rows == 1) {
