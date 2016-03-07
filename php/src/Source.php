@@ -151,6 +151,8 @@ class Source
         if (! $db->query("REPLACE INTO film_source ($columns) VALUES ($values)")) {
             throw new \Exception('SQL Error ' . $db->errno);
         }
+
+        return true;
     }
 }
 

@@ -143,7 +143,7 @@ class MainTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEmpty($rating->getYourScore(), 'Your Score not available from searchImdb');
+        $this->assertEquals(2, $rating->getYourScore(), 'Your Score not available from searchImdb');
         $this->assertEmpty($rating->getYourRatingDate(), 'Rating date not available from searchImdb');
         $this->assertEmpty($rating->getSuggestedScore(), 'Suggested score not available from searchImdb');
         $this->assertEquals(7, $rating->getCriticScore(), 'Critic score');

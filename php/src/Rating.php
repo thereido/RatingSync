@@ -246,6 +246,135 @@ class Rating
         }
     }
 
+    public function saveToDb($username, $filmId, $overwriteIfDateEmpty = true)
+    {
+        if (empty($username) || empty($filmId)) {
+            throw new \InvalidArgumentException("\$username ($username) and \$filmId ($filmId) must not be empty");
+        } elseif (empty($this->sourceName)) {
+            throw new \InvalidArgumentException("Rating must have a sourceName");
+        }
+
+        $originalThis = $this;
+        $sourceName = $this->sourceName;
+        $ratingDate = $this->getYourRatingDate();
+        $db = getDatabase();
+
+        $existingRating = null;
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId'";
+        $result = $db->query($query);
+        if (!empty($result) && $result->num_rows == 1) {
+            if (empty($ratingDate) && !$overwriteIfDateEmpty) {
+                return false;
+            }
+            $existingRating = new Rating($sourceName);
+            $existingRating->initFromDbRow($result->fetch_assoc());
+
+            if (empty($this->getYourScore())) {
+                $this->setYourScore($existingRating->getYourScore());
+            }
+            if (empty($this->getSuggestedScore())) {
+                $this->setSuggestedScore($existingRating->getSuggestedScore());
+            }
+            if (empty($this->getCriticScore())) {
+                $this->setCriticScore($existingRating->getCriticScore());
+            }
+            if (empty($this->getUserScore())) {
+                $this->setUserScore($existingRating->getUserScore());
+            }
+            if (empty($ratingDate)) {
+                $ratingDate = $existingRating->getYourRatingDate();
+                $this->setYourRatingDate($ratingDate);
+            }
+        }
+
+        $saveSuccess = false;
+        if (empty($existingRating)) {
+            // This is a new rating. Simply insert it to the db.
+            $thisValues = self::setColumnsAndValues($this, $username, $filmId);
+            $insertThisRating = "REPLACE INTO rating (".$thisValues['columns'].") VALUES (".$thisValues['values'].")";
+            $saveSuccess = $db->query($insertThisRating);
+        } else {
+            // There is an existing rating. Existing vs. This. One goes to the rating
+            // table and the other goes the archive table.
+            $existingRatingDate = $existingRating->getYourRatingDate();
+            if (empty($existingRatingDate) || $originalThis->getYourRatingDate() > $existingRatingDate) {
+                // This rating is newer than the existing one. Archive the existing
+                // one and update this to the rating table.
+                $existingValues = self::setColumnsAndValues($existingRating, $username, $filmId);
+                $archive = "INSERT rating_archive (".$existingValues['columns'].") VALUES (".$existingValues['values'].")";
+                // Archive
+                if ($db->query($archive)) {
+                    // Replace
+                    if ($this->getYourScore() == $existingRating->getYourScore()) {
+                        // The score the score didn't change. Use the existing rating date,
+                        // because you don't want to look like the user changed their opinion
+                        // today
+                        $this->setYourRatingDate($existingRating->getYourRatingDate());
+                    }
+                    $thisValues = self::setColumnsAndValues($this, $username, $filmId);
+                    $replaceThisRating = "REPLACE INTO rating (".$thisValues['columns'].") VALUES (".$thisValues['values'].")";
+                    $saveSuccess = $db->query($replaceThisRating);
+                }
+            } else {
+                // This is not newer then the existing rating. Archive this one
+                // and leave the rating table alone.
+                $originalThisValues = self::setColumnsAndValues($originalThis, $username, $filmId);
+                $archive = "INSERT rating_archive (".$originalThisValues['columns'].") VALUES (".$originalThisValues['values'].")";
+                $saveSuccess = $db->query($archive);
+            }
+        }
+        
+        return $saveSuccess;
+    }
+
+    public static function setColumnsAndValues($rating, $username, $filmId)
+    {
+        if (empty($rating) || !($rating instanceof Rating)) {
+            throw new \InvalidArgumentException("\$rating must be a Rating object");
+        } elseif (empty($username) || empty($filmId)) {
+            throw new \InvalidArgumentException("\$username ($username) and \$filmId ($filmId) must not be empty");
+        } elseif (empty($rating->sourceName)) {
+            throw new \InvalidArgumentException("Rating must have a sourceName");
+        }
+        
+        $sourceName = $rating->getSource();
+        $yourScore = $rating->getYourScore();
+        $suggestedScore = $rating->getSuggestedScore();
+        $criticScore = $rating->getCriticScore();
+        $userScore = $rating->getUserScore();
+        $ratingDate = $rating->getYourRatingDate();
+        $ratingDateStr = null;
+        if (!empty($ratingDate)) {
+            $ratingDateStr = $ratingDate->format("Y-m-d");
+        }
+        
+        $columns = "user_name, source_name, film_id";
+        $values = "'$username', '$sourceName', $filmId";
+        if (!empty($yourScore)) {
+            $columns .= ", yourScore";
+            $values .= ", $yourScore";
+        }
+        if (!empty($suggestedScore)) {
+            $columns .= ", suggestedScore";
+            $values .= ", $suggestedScore";
+        }
+        if (!empty($criticScore)) {
+            $columns .= ", criticScore";
+            $values .= ", $criticScore";
+        }
+        if (!empty($userScore)) {
+            $columns .= ", userScore";
+            $values .= ", $userScore";
+        }
+        if (!empty($ratingDateStr)) {
+            $columns .= ", yourRatingDate";
+            $values .= ", '$ratingDateStr'";
+        }
+
+        $arr = array("columns" => $columns, "values" => $values);
+        return $arr;
+    }
+
     /**
      * Save rating data from one source to the RatingSync source rating
      * if this one is newer (rating date) than the original
@@ -259,64 +388,21 @@ class Rating
             throw new \InvalidArgumentException('username and filmId cannot be empty');
         }
         
-        $db = getDatabase();
-        $query = "SELECT * FROM rating" .
-                 " WHERE film_id=$filmId" .
-                   " AND user_name='$username'" .
-                   " AND source_name='" .Constants::SOURCE_RATINGSYNC. "'";
-        $result = $db->query($query);
-        if ($result->num_rows == 1) {
-            // The user has a current RatingSync rating for this film
-            $row = $result->fetch_assoc();
-            $ratingRs = new Rating(Constants::SOURCE_RATINGSYNC);
-            $ratingRs->initFromDbRow($row);
-
-            $yourScore = $this->getYourScore();
-            if (($this->getYourRatingDate() > $ratingRs->getYourRatingDate())
-                && (!empty($yourScore))
-                && ($yourScore != $ratingRs->getYourScore()))
-            {
-                // This rating is newer than the RS one. Update the score
-                $yourScore = $this->getYourScore();
-                $ratingDateSet = "";
-                $ratingDate = $this->getYourRatingDate();
-                if (!empty($ratingDate)) {
-                    $ratingDateSet = ", yourRatingDate='" . date_format($ratingDate, 'Y-m-d') . "'";
-                }
-                $query = "UPDATE rating SET yourScore=$yourScore" . $ratingDateSet .
-                             " WHERE film_id=$filmId" .
-                               " AND user_name='$username'" .
-                               " AND source_name='" .Constants::SOURCE_RATINGSYNC. "'";
-                if (! $db->query($query)) {
-                    throw new \Exception('DB Failure updating to rating. film_id='.$filmId.', user_name='.Constants::SOURCE_RATINGSYNC.', source_name='.$name);
-                }
-            }
-        } else {
-            $ratingRs = new Rating(Constants::SOURCE_RATINGSYNC);
-            $source = new Source(Constants::SOURCE_RATINGSYNC, $filmId);
-            $source->saveFilmSourceToDb($filmId);
+        $source = new Source(Constants::SOURCE_RATINGSYNC, $filmId);
+        $source->saveFilmSourceToDb($filmId);
             
-            $yourScore = $this->getYourScore();
-            $ratingDate = null;
-            if (!is_null($this->getYourRatingDate())) {
-                $ratingDate = $this->getYourRatingDate()->format("Y-m-d");
-            }
-
-            $columns = "user_name, source_name, film_id";
-            $values = "'$username', '" .Constants::SOURCE_RATINGSYNC. "', $filmId";
-            if (!empty($yourScore)) {
-                $columns .= ", yourScore";
-                $values .= ", $yourScore";
-            }
-            if (!empty($ratingDate)) {
-                $columns .= ", yourRatingDate";
-                $values .= ", '$ratingDate'";
-            }
-
-            if (! $db->query("INSERT INTO rating ($columns) VALUES ($values)")) {
-                throw new \Exception("DB Failure insert into rating. film_id='$filmId', user_name='$username', source_name='".Constants::SOURCE_RATINGSYNC."'.  SQL Error: ".$db->error);
-            }
+        $ratingRs = new Rating(Constants::SOURCE_RATINGSYNC);
+        try {
+            $ratingRs->setYourScore($this->getYourScore());
+        } catch (\Exception $e) {
+            return; // Don't save a rating without a score
         }
-
+        try {
+            $ratingRs->setYourRatingDate($this->getYourRatingDate());
+        } catch (\InvalidArgumentException $e) {
+            // Ignore
+        }
+        
+        return $ratingRs->saveToDb($username, $filmId, false);
     }
 }

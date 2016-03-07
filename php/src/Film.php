@@ -483,6 +483,7 @@ class Film {
             throw new \InvalidArgumentException("Film must have a title");
         }
         $db = getDatabase();
+        $errorFree = true;
 
         $filmId = $this->id;
         $title = $db->real_escape_string($this->getTitle());
@@ -523,46 +524,17 @@ class Film {
                     $source->setUniqueName("rs$filmId");
                 }
             }
-            $source->saveFilmSourceToDb($filmId);
+            $success = $source->saveFilmSourceToDb($filmId);
+            if (!$success) {
+                $errorFree = false;
+            }
 
             // Rating
-            $rating = $source->getRating();
-            $yourScore = $rating->getYourScore();
-            $ratingDate = null;
-            if (!is_null($rating->getYourRatingDate())) {
-                $ratingDate = $rating->getYourRatingDate()->format("Y-m-d");
-            }
-            $suggestedScore = $rating->getSuggestedScore();
-            $criticScore = $rating->getCriticScore();
-            $userScore = $rating->getUserScore();
-            
-            $columns = "user_name, source_name, film_id";
-            $values = "'$username', '$sourceName', $filmId";
-            if (!empty($yourScore)) {
-                $columns .= ", yourScore";
-                $values .= ", $yourScore";
-            }
-            if (!empty($suggestedScore)) {
-                $columns .= ", suggestedScore";
-                $values .= ", $suggestedScore";
-            }
-            if (!empty($criticScore)) {
-                $columns .= ", criticScore";
-                $values .= ", $criticScore";
-            }
-            if (!empty($userScore)) {
-                $columns .= ", userScore";
-                $values .= ", $userScore";
-            }
-            if (!empty($ratingDate)) {
-                $columns .= ", yourRatingDate";
-                $values .= ", '$ratingDate'";
-            }
-            
             if (!empty($username)) {
-                $result = $db->query("SELECT 1 FROM user WHERE username='$username'");
-                if ($result->num_rows == 1) {
-                    $db->query("REPLACE INTO rating ($columns) VALUES ($values)");
+                $rating = $source->getRating();
+                $success = $rating->saveToDb($username, $filmId);
+                if (!$success) {
+                    $errorFree = false;
                 }
             }
         }
@@ -578,13 +550,19 @@ class Film {
             } else {
                 $columns = "fullname, lastname";
                 $values = "'$director', '$director'";
-                $db->query("INSERT INTO person ($columns) VALUES ($values)");
+                $success = $db->query("INSERT INTO person ($columns) VALUES ($values)");
+                if (!$success) {
+                    $errorFree = false;
+                }
                 $personId = $db->insert_id;
             }
 
             $columns = "person_id, film_id, position";
             $values = "$personId, $filmId, 'Director'";
-            $db->query("REPLACE INTO credit ($columns) VALUES ($values)");
+            $success = $db->query("REPLACE INTO credit ($columns) VALUES ($values)");
+            if (!$success) {
+                $errorFree = false;
+            }
         }
 
         // Genres
@@ -593,12 +571,18 @@ class Film {
             if ($result->num_rows == 0) {
                 $columns = "name";
                 $values = "'$genre'";
-                $db->query("INSERT INTO genre ($columns) VALUES ($values)");
+                $success = $db->query("INSERT INTO genre ($columns) VALUES ($values)");
+                if (!$success) {
+                    $errorFree = false;
+                }
             }
 
             $columns = "film_id, genre_name";
             $values = "$filmId, '$genre'";
-            $db->query("REPLACE INTO film_genre ($columns) VALUES ($values)");
+            $success = $db->query("REPLACE INTO film_genre ($columns) VALUES ($values)");
+            if (!$success) {
+                $errorFree = false;
+            }
         }
 
         // Make sure the RatingSync source has an image
@@ -610,7 +594,10 @@ class Film {
                 $filmImage = $this->downloadImage();
             }
             $sourceRs->setImage($filmImage);
-            $sourceRs->saveFilmSourceToDb($filmId);
+            $success = $sourceRs->saveFilmSourceToDb($filmId);
+            if (!$success) {
+                $errorFree = false;
+            }
         } else {
             // RS Source has an image. Film overwrites it unless it's empty.
             if (empty($filmImage)) {
@@ -620,7 +607,10 @@ class Film {
             } else {
                 // film overwrites the source's non-empty image
                 $sourceRs->setImage($filmImage);
-                $sourceRs->saveFilmSourceToDb($filmId);
+                $success = $sourceRs->saveFilmSourceToDb($filmId);
+                if (!$success) {
+                    $errorFree = false;
+                }
             }
         }
         
@@ -628,9 +618,13 @@ class Film {
         // only for setting an image.
         $values = "title='$title', year=$year, contentType='$contentType', image='$filmImage'";
         $where = "id=$filmId";
-        $db->query("UPDATE film SET $values WHERE $where");
+        $success = $db->query("UPDATE film SET $values WHERE $where");
+        if (!$success) {
+            $errorFree = false;
+        }
 
         $db->commit();
+        return $errorFree;
     }
 
     public static function getFilmFromDb($filmId, $http, $username = null)

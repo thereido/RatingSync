@@ -84,6 +84,31 @@ CREATE TABLE IF NOT EXISTS rating
             REFERENCES film(id)
     );
   
+CREATE TABLE IF NOT EXISTS rating_archive
+    (
+        user_name VARCHAR(50) NOT NULL,
+        source_name VARCHAR(50) NOT NULL,
+        film_id INT NOT NULL,
+        yourScore INT NULL DEFAULT NULL,
+        yourRatingDate DATE NULL DEFAULT NULL,
+        suggestedScore INT NULL DEFAULT NULL,
+        criticScore INT NULL DEFAULT NULL,
+        userScore INT NULL DEFAULT NULL,
+        ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        KEY (user_name, source_name, film_id, ts),
+        KEY (user_name),
+        KEY (source_name),
+        KEY (film_id),
+
+        FOREIGN KEY (user_name)
+            REFERENCES user(username),
+        FOREIGN KEY (source_name)
+            REFERENCES source(name),
+        FOREIGN KEY (film_id)
+            REFERENCES film(id)
+    );
+  
 CREATE TABLE IF NOT EXISTS genre
     (
         name VARCHAR(50) NOT NULL PRIMARY KEY
