@@ -29,6 +29,7 @@ logDebug("Rating count " . count($films), "ratings.php ".__LINE__);
     <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
     <link href="../css/rs.css" rel="stylesheet">
     <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/ratings.js"></script>
 </head>
 
 <body>
@@ -82,14 +83,7 @@ function test_input($data)
       $count = 0;
       foreach($films as $film) {
           $count = $count + 1;
-          $image = $film->getImage();
-          $title = $film->getTitle();
-          $year = $film->getYear();
           $uniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
-          $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
-          $yourScore = $rating->getYourScore();
-          $yourRatingDate = $rating->getYourRatingDate();
-          $imdbScore = $film->getRating(Constants::SOURCE_IMDB)->getUserScore();
           echo "<tr>\n";
           echo "  <td>\n";
           echo "    <span id='$uniqueName'>\n";
@@ -103,30 +97,6 @@ function test_input($data)
   </table>
 
 </div>
-
-<script>
-function searchFilm() {
-    if (document.getElementById("searchQuery").value == 0) {
-        document.getElementById("searchResult").innerHTML = "";
-    } else {
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                /*RT*/// document.getElementById("debug").innerHTML = "readyState=" + xmlhttp.readyState + " status=" + xmlhttp.status;
-                document.getElementById("searchResult").innerHTML = xmlhttp.responseText;
-            }
-            else {
-                /*RT*/// document.getElementById("debug").innerHTML = "readyState=" + xmlhttp.readyState + " status=" + xmlhttp.status;
-                /*RT*/// document.getElementById("searchResult").innerHTML = xmlhttp.responseText;
-            }
-        }
-        xmlhttp.open("GET", "/php/src/ajax/getSearchFilm.php?q=" + document.getElementById("searchQuery").value, true);
-        xmlhttp.send();
-    }
-
-    return false;
-}
-</script>
           
 </body>
 </html>

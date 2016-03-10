@@ -43,91 +43,15 @@ class MainTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
-     * @covers \RatingSync\searchImdb
-     */
-    public function testSearchImdbEmptyUniqueName()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $film = searchImdb(null);
-        $this->assertEmpty($film, "Film from uniqueName=null should be empty");
-        $film = searchImdb("");
-        $this->assertEmpty($film, "Film from uniqueName='' should be empty");
-    }
-    
-    /**
-     * @covers \RatingSync\searchImdb
-     */
-    public function testSearchImdbNoMatch()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $film = searchImdb("garbage_query");
-        $this->assertEmpty($film, "Film from uniqueName=garbage_query should be empty");
-    }
-    
-    /**
-     * @covers \RatingSync\searchImdb
+     * @covers \RatingSync\search
      * @depends testSetup
      */
-    public function testSearchImdb()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        // Test
-        $film = searchImdb("tt0094819"); // Buster (1988)
-        $filmId = $film->getId();
-
-        // Verify film object
-        $this->assertEquals("Buster", $film->getTitle(), "Title");
-        $this->assertEquals(1988, $film->getYear(), "Year");
-        $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
-        $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTY1ODA3NjU0NV5BMl5BanBnXkFtZTcwMDU1NTQyMQ)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
-        $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(array("Adventure", "Biography", "Comedy"), $film->getGenres(), 'Genres');
-        $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals("tt0094819", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
-        $this->assertNull($rating->getYourScore(), 'Your Score');
-        $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
-        $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
-        $this->assertNull($rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(5.8, $rating->getUserScore(), 'User score');
-
-        // Verify database
-
-        $film = null;
-        $film = Film::getFilmFromDb($filmId, new HttpRatingSync(getUsername()), getUsername());
-
-        // Verify the db film the same way as the object before
-        $this->assertEquals("Buster", $film->getTitle(), "Title");
-        $this->assertEquals(1988, $film->getYear(), "Year");
-        $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
-        $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTY1ODA3NjU0NV5BMl5BanBnXkFtZTcwMDU1NTQyMQ)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
-        $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(array("Adventure", "Biography", "Comedy"), $film->getGenres(), 'Genres');
-        $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals("tt0094819", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
-        $this->assertNull($rating->getYourScore(), 'Your Score');
-        $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
-        $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
-        $this->assertNull($rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(6, $rating->getUserScore(), 'User score');
-
-        // RS source created
-        $source = $film->getSource(Constants::SOURCE_RATINGSYNC);
-        $this->assertEquals("rs$filmId", $source->getUniqueName(), "RS uniqueName");
-        $this->assertEquals("/image/rs$filmId.jpg", $source->getImage(), "RS uniqueName");
-    }
-    
-    /**
-     * @covers \RatingSync\searchImdb
-     * @depends testSearchImdb
-     */
-    public function testSearchImdbDbExists()
+    public function testSearchDbExists()
     {$this->start(__CLASS__, __FUNCTION__);
         $db = getDatabase();
 
         // Test
-        $film = searchImdb("tt2294629"); // Frozen (2013)
+        $film = search("tt2294629"); // Frozen (2013)
         $filmId = $film->getId();
 
         // Verify database - film
@@ -135,7 +59,7 @@ class MainTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Frozen", $film->getTitle(), "Title");
         $this->assertEquals(2013, $film->getYear(), "Year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
-        $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), 'Image link (film)');
+        $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(), 'Image link (film)');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Animation", "Comedy", "Family", "Fantasy", "Musical"), $film->getGenres(), 'Genres');
 
@@ -151,23 +75,13 @@ class MainTest extends \PHPUnit_Framework_TestCase
 
         // Verify database - RS
         $this->assertEquals("rs$filmId", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "RS uniqueName");
-        $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(Constants::SOURCE_RATINGSYNC), "RS uniqueName");
+        $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "RS image");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("2015-01-01", date_format($rating->getYourRatingDate(), "Y-m-d"), "YourRatingDate");
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score');
         $this->assertEquals(4, $rating->getCriticScore(), 'Critic score');
         $this->assertEquals(5, $rating->getUserScore(), 'User score');
-
-    }
-    
-    /**
-     * @covers \RatingSync\searchImdb
-     * @depends testSearchImdb
-     */
-    public function testSearchImdbDbDoesNotExist()
-    {$this->start(__CLASS__, __FUNCTION__);
-        // Covered by testSearchImdb
     }
     
     /**
@@ -177,7 +91,6 @@ class MainTest extends \PHPUnit_Framework_TestCase
      *   - return null
      *
      * @covers \RatingSync\search
-     * @depends testSearchImdbEmptyUniqueName
      */
     public function testSearchEmptyArgs()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -194,7 +107,6 @@ class MainTest extends \PHPUnit_Framework_TestCase
      *   - return null
      *
      * @covers \RatingSync\search
-     * @depends testSearchImdbEmptyUniqueName
      */
     public function testSearchEmptyQuery()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -212,7 +124,6 @@ class MainTest extends \PHPUnit_Framework_TestCase
      *   - same as testSearchImdb
      *
      * @covers \RatingSync\search
-     * @depends testSearchImdb
      */
     public function testSearch()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -352,7 +263,6 @@ class MainTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @covers \RatingSync\search
-     * @depends testSearchImdbNoMatch
      */
     public function testSearchDbNoMatchSiteNoMatch()
     {$this->start(__CLASS__, __FUNCTION__);

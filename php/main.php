@@ -131,7 +131,7 @@ function getUsername() {
     return Constants::LOGGED_IN_USERNAME;
 }
 
-function search($searchQuery, $username = null)
+function search($searchQuery, $username = null, $sourceName = null)
 {
     if (empty($searchQuery)) {
         return null;
@@ -139,22 +139,19 @@ function search($searchQuery, $username = null)
 
     $film = Film::searchDb($searchQuery, $username);
     if (empty($film)) {
-        $film = searchImdb($searchQuery);
-    }
+        $site = new Imdb(getUsername());
+        /*RT*
+        if ($sourceName == Constants::SOURCE_NETFLIX)) {
+            $site = new Netflix(getUsername());
+        } elseif ($sourceName == Constants::SOURCE_RT)) {
+            $site = new RottenTomatoes(getUsername());
+        }
+        *RT*/
 
-    return $film;
-}
-
-function searchImdb($uniqueName)
-{
-    if (empty($uniqueName)) {
-        return null;
-    }
-
-    $imdb = new Imdb(getUsername());
-    $film = $imdb->getFilmByUniqueName($uniqueName);
-    if (!empty($film)) {
-        $film->saveToDb(getUsername());
+        $film = $site->getFilmByUniqueName($searchQuery);
+        if (!empty($film)) {
+            $film->saveToDb(getUsername());
+        }
     }
 
     return $film;

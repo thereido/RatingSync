@@ -1,19 +1,23 @@
-.rating {
+.rating-stars,
+.rating-stars-noclick {
     unicode-bidi: bidi-override;
     direction: rtl;
     font-size: 200%;
 }
-.rating > span {
+.rating-stars > span,
+.rating-stars-noclick {
     display: inline-block;
     position: relative;
     width: 1.1em;
     color: orange;
 }
-.rating > span:hover:before,
-.rating > span:hover ~ span:before {
+.rating-stars > span:hover:before,
+.rating-stars > span:hover ~ span:before {
     content: "\2605";
     position: absolute;
     color: #0094ff;
+}
+.rating-star {
 }
 .rating-date {
     font-size: 100%;

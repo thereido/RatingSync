@@ -21,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>RatingSync</title>
     <link href="css/bootstrap_rs.min.css" rel="stylesheet">
-    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap_rs.min.js"></script>
 </head>
 
 <body>

@@ -5,7 +5,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." .
 require_once "getHtmlFilm.php";
 
 $film = null;
-$titleNum = null;
+$titleNum = "";
 if (array_key_exists("un", $_GET) && array_key_exists("s", $_GET)) {
     $uniqueName = $_GET['un'];
     $score = $_GET['s'];
@@ -15,10 +15,17 @@ if (array_key_exists("un", $_GET) && array_key_exists("s", $_GET)) {
 if (array_key_exists("tn", $_GET)) {
     $titleNum = $_GET['tn'];
 }
+$withImage = true;
+if (array_key_exists("i", $_GET)) {
+    $i = $_GET['i'];
+    if ($i == 0) {
+        $withImage = false;
+    }
+}
 
 $response = "";
 if (!empty($film)) {
-    $response  .= getHtmlFilm($film, $titleNum);
+    $response  .= getHtmlFilm($film, $titleNum, $withImage);
 }
 
 echo $response;
