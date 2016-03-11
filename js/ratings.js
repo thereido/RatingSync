@@ -44,6 +44,7 @@ function searchFilm() {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 /*RT*/// document.getElementById("debug").innerHTML = "readyState=" + xmlhttp.readyState + " status=" + xmlhttp.status;
                 document.getElementById("searchResult").innerHTML = xmlhttp.responseText;
+                addStarListeners(document.getElementById("searchResult"));
             }
             else {
                 /*RT*/// document.getElementById("debug").innerHTML = "readyState=" + xmlhttp.readyState + " status=" + xmlhttp.status;
