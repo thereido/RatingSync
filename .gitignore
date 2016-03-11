@@ -1,9 +1,8 @@
 
 /phpinfo.php
 /PHPPage.php
-/php/cache/*
-/php/output/*.xml
-/php/output/Temp*
+/php/cache/*.*
+/php/output/*.*
 /php/tests/unit_tests.cmd
 /php/tests/Temp*
 /php/tests/cache/*
@@ -12,4 +11,4 @@
 /php/output/logDebug.txt
 /web.config
 /php/tests/script/*
-/image/*
+/image/*.*
