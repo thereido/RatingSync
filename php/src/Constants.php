@@ -12,6 +12,8 @@ class Constants
     const RS_IMAGE_URL_PATH             = "/image/";
     const SOURCE_JINNI                  = "Jinni";
     const SOURCE_IMDB                   = "IMDb";
+    const SOURCE_NETFLIX                = "Netflix";
+    const SOURCE_RT                     = "RottenTomatoes";
     const SOURCE_RATINGSYNC             = "RatingSync";
     const EXPORT_FORMAT_XML             = "XML";
     const IMPORT_FORMAT_XML             = "XML";
