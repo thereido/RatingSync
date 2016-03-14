@@ -58,12 +58,12 @@ class Film {
            <source name="">
                <image/>
                <uniqueName/>
+               <criticScore/>
+               <userScore/>
                <rating>
                    <yourScore/>
                    <yourRatingDate/>
                    <suggestedScore/>
-                   <criticScore/>
-                   <userScore/>
                </rating>
            </source>
        </film>
@@ -101,6 +101,8 @@ class Film {
             $sourceXml->addAttribute('name', $source->getName());
             $sourceXml->addChild('image', $source->getImage());
             $sourceXml->addChild('uniqueName', $source->getUniqueName());
+            $sourceXml->addChild('criticScore', $source->getCriticScore());
+            $sourceXml->addChild('userScore', $source->getUserScore());
             $rating = $source->getRating();
             $ratingXml = $sourceXml->addChild('rating');
             $ratingXml->addChild('yourScore', $rating->getYourScore());
@@ -162,6 +164,14 @@ class Film {
             $source = $film->getSource($sourceNameSxe[0]->__toString());
             $source->setImage(Self::xmlStringByKey('image', $sourceSxe));
             $source->setUniqueName(Self::xmlStringByKey('uniqueName', $sourceSxe));
+            $criticScore = Self::xmlStringByKey('criticScore', $sourceSxe);
+            if (Rating::validRatingScore($criticScore)) {
+                $source->setCriticScore($criticScore);
+            }
+            $userScore = Self::xmlStringByKey('userScore', $sourceSxe);
+            if (Rating::validRatingScore($userScore)) {
+                $source->setUserScore($userScore);
+            }
 
             $ratingSxe = $sourceSxe->xpath('rating')[0];
             $rating = new Rating($source->getName());
@@ -304,6 +314,42 @@ class Film {
         }
 
         return $this->getRating($source)->getYourScore();
+    }
+
+    public function setCriticScore($score, $source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid setting Critic Score');
+        }
+
+        $this->getSource($source)->setCriticScore($score);
+    }
+
+    public function getCriticScore($source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid getting Critic Score');
+        }
+
+        return $this->getSource($source)->getCriticScore();
+    }
+
+    public function setUserScore($score, $source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid setting User Score');
+        }
+
+        $this->getSource($source)->setUserScore($score);
+    }
+
+    public function getUserScore($source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid getting User Score');
+        }
+
+        return $this->getSource($source)->getUserScore();
     }
 
     public function setId($id)
@@ -656,6 +702,8 @@ class Film {
             $source = $film->getSource($row['source_name']);
             $source->setImage($row['image']);
             $source->setUniqueName($row['uniqueName']);
+            $source->setCriticScore($row['criticScore']);
+            $source->setUserScore($row['userScore']);
 
             // Rating
             if (!empty($username)) {

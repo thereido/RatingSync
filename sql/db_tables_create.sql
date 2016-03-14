@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS film_source
         source_name VARCHAR(50) NOT NULL,
         image VARCHAR(150) NULL DEFAULT NULL,
         uniqueName VARCHAR(50) NULL DEFAULT NULL,
+        criticScore INT NULL DEFAULT NULL,
+        userScore INT NULL DEFAULT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
         PRIMARY KEY (film_id, source_name),

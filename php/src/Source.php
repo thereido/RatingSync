@@ -17,6 +17,8 @@ class Source
     protected $image;
     protected $uniqueName;
     protected $rating;
+    protected $criticScore;     // Average rating by critics through the source
+    protected $userScore;       // Average rating by users through the source
 
     /**
      * Film data from one source
@@ -39,7 +41,7 @@ class Source
 
     public static function validSource($source)
     {
-        if (in_array($source, array(Constants::SOURCE_JINNI, Constants::SOURCE_IMDB, Constants::SOURCE_RATINGSYNC))) {
+        if (in_array($source, array(Constants::SOURCE_JINNI, Constants::SOURCE_IMDB, Constants::SOURCE_RATINGSYNC, Constants::SOURCE_NETFLIX))) {
             return true;
         }
         return false;
@@ -123,6 +125,66 @@ class Source
     }
 
     /**
+     * What the source's critics scored it
+     *
+     * @param int $score What the source's critics scored it
+     *
+     * @return none
+     */
+    public function setCriticScore($score)
+    {
+        if (! (is_null($score) ||  Rating::validRatingScore($score)) ) {
+            throw new \InvalidArgumentException("setCriticScore ($score) must be a number between 1 to 10");
+        }
+
+        if (is_null($score)) {
+            $this->criticScore = null;
+        } else {
+            $this->criticScore = (float)$score;
+        }
+    }
+
+    /**
+     * What the source's critics scored it
+     *
+     * @return int
+     */
+    public function getCriticScore()
+    {
+        return $this->criticScore;
+    }
+
+    /**
+     * What the source's users scored it
+     *
+     * @param int $score What the source's users scored it
+     *
+     * @return none
+     */
+    public function setUserScore($score)
+    {
+        if (! (is_null($score) ||  Rating::validRatingScore($score)) ) {
+            throw new \InvalidArgumentException("setUserScore ($score) must be a number between 0 to 10");
+        }
+
+        if (is_null($score)) {
+            $this->userScore = null;
+        } else {
+            $this->userScore = (float)$score;
+        }
+    }
+
+    /**
+     * What the source's users scored it
+     *
+     * @return 1 to 10
+     */
+    public function getUserScore()
+    {
+        return $this->userScore;
+    }
+
+    /**
      * Create a film/source row in the db if not already exists
      *
      * @param int $filmID Database id of the film rated
@@ -137,6 +199,8 @@ class Source
         $sourceName = $this->getName();
         $sourceImage = $this->getImage();
         $sourceUniqueName = $this->getUniqueName();
+        $criticScore = $this->getCriticScore();
+        $userScore = $this->getUserScore();
             
         $columns = "film_id, source_name";
         $values = "$filmId, '$sourceName'";
@@ -147,6 +211,14 @@ class Source
         if (!empty($sourceUniqueName)) {
             $columns .= ", uniqueName";
             $values .= ", '$sourceUniqueName'";
+        }
+        if (!empty($criticScore)) {
+            $columns .= ", criticScore";
+            $values .= ", '$criticScore'";
+        }
+        if (!empty($userScore)) {
+            $columns .= ", userScore";
+            $values .= ", '$userScore'";
         }
         if (! $db->query("REPLACE INTO film_source ($columns) VALUES ($values)")) {
             throw new \Exception('SQL Error ' . $db->errno);

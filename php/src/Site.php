@@ -377,7 +377,7 @@ abstract class Site
         $xml->addChild('count', $filmCount);
         fwrite($fp, $xml->asXml());
         fclose($fp);
-
+        
         return true;
     }
 
@@ -644,6 +644,7 @@ abstract class Site
                     $score = $score*10/$this->maxCriticScore;
                 }
                 $rating->setCriticScore($score);
+                $film->setCriticScore($score, $this->sourceName);
             }
         }
 
@@ -656,9 +657,10 @@ abstract class Site
                     $score = $score*10/$this->maxUserScore;
                 }
                 $rating->setUserScore($score);
+                $film->setUserScore($score, $this->sourceName);
             }
         }
-
+        
         $film->setRating($rating);
     }
 

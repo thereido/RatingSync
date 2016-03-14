@@ -1510,6 +1510,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         // Source data
         $film->setImage("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", Constants::SOURCE_JINNI);
         $film->setUniqueName("frozen-2013", Constants::SOURCE_JINNI);
+        $film->setCriticScore(8, Constants::SOURCE_JINNI);
+        $film->setUserScore(10, Constants::SOURCE_JINNI);
 
         // Rating data
         $rating = new Rating(Constants::SOURCE_JINNI);
@@ -1534,6 +1536,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=     "<source name=\"Jinni\">";
         $xmlStr .=         "<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>";
         $xmlStr .=         "<uniqueName>frozen-2013</uniqueName>";
+        $xmlStr .=         "<criticScore>8</criticScore>";
+        $xmlStr .=         "<userScore>10</userScore>";
         $xmlStr .=         "<rating>";
         $xmlStr .=             "<yourScore>8</yourScore>";
         $xmlStr .=             "<yourRatingDate>2015-5-1</yourRatingDate>";
@@ -1566,6 +1570,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         // Jinni data
         $film->setImage("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", Constants::SOURCE_JINNI);
         $film->setUniqueName("frozen-2013", Constants::SOURCE_JINNI);
+        $film->setCriticScore(8, Constants::SOURCE_JINNI);
+        $film->setUserScore(10, Constants::SOURCE_JINNI);
 
         // Jinni Rating data
         $rating = new Rating(Constants::SOURCE_JINNI);
@@ -1578,6 +1584,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
         // IMDb data
         $film->setUniqueName("tt2294629", Constants::SOURCE_IMDB);
+        $film->setCriticScore(8, Constants::SOURCE_IMDB);
+        $film->setUserScore(7, Constants::SOURCE_IMDB);
 
         // IMDb Rating data
         $rating = new Rating(Constants::SOURCE_IMDB);
@@ -1601,6 +1609,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=     "<source name=\"Jinni\">";
         $xmlStr .=         "<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>";
         $xmlStr .=         "<uniqueName>frozen-2013</uniqueName>";
+        $xmlStr .=         "<criticScore>8</criticScore>";
+        $xmlStr .=         "<userScore>10</userScore>";
         $xmlStr .=         "<rating>";
         $xmlStr .=             "<yourScore>8</yourScore>";
         $xmlStr .=             "<yourRatingDate>2015-5-1</yourRatingDate>";
@@ -1612,6 +1622,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=     "<source name=\"IMDb\">";
         $xmlStr .=         "<image/>";
         $xmlStr .=         "<uniqueName>tt2294629</uniqueName>";
+        $xmlStr .=         "<criticScore>8</criticScore>";
+        $xmlStr .=         "<userScore>7</userScore>";
         $xmlStr .=         "<rating>";
         $xmlStr .=             "<yourScore>4</yourScore>";
         $xmlStr .=             "<yourRatingDate>2015-5-4</yourRatingDate>";

@@ -117,6 +117,7 @@ class Imdb extends Site
             $films[] = $film = new Film($this->http);
             $film->setTitle($title);
             $film->setYear($year);
+            $film->setImage($image);
             if ($contentType == 'TV Series') {
                 $film->setContentType(Film::CONTENT_TV);
             } elseif ($contentType == 'Short Film') {
@@ -125,15 +126,15 @@ class Imdb extends Site
                 $film->setContentType(Film::CONTENT_FILM);
             }
 
+            $film->setUniqueName($uniqueName, $this->sourceName);
+            $film->setImage($image, $this->sourceName);
+            $film->setUserScore($userScore, $this->sourceName);
+
             $rating = new Rating($this->sourceName);
             $rating->setYourScore($yourScore);
             $rating->setUserScore($userScore);
             //FIXME $rating->setYourRatingDate(\DateTime::createFromFormat($this->dateFormat, $ratingDate));
-
             $film->setRating($rating, $this->sourceName);
-            $film->setUniqueName($uniqueName, $this->sourceName);
-            $film->setImage($image);
-            $film->setImage($image, $this->sourceName);
 
             if ($details) {
                 $this->getFilmDetailFromWebsite($film, false, $refreshCache);

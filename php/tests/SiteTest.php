@@ -1135,7 +1135,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($testFileSize, $verifyFileSize, 'File sizes - test (written) vs verify (original)');
         $test = fread($fp_test, filesize($fullTestFilename));
         $verify = fread($fp_verify, filesize($fullOriginalFilename));
-        $this->assertEquals($test, $verify, 'Match test file (written) vs verify file (original)');
+        $this->assertEquals($verify, $test, 'Match test file (written) vs verify file (original)');
         fclose($fp_test);
         fclose($fp_verify);
 

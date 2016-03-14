@@ -79,6 +79,8 @@ class SiteChild extends \RatingSync\Site {
             $rating->setCriticScore(3);
             $rating->setUserScore(4);
             $film->setRating($rating, $this->sourceName);
+            $film->setCriticScore($rating->getCriticScore(), $this->sourceName);
+            $film->setUserScore($rating->getUserScore(), $this->sourceName);
             
             $film2->setYear(1902);
             $film2->addGenre("Site_Genre2.1");
@@ -87,6 +89,8 @@ class SiteChild extends \RatingSync\Site {
             $rating2->setCriticScore(4);
             $rating2->setUserScore(5);
             $film2->setRating($rating2, $this->sourceName);
+            $film2->setCriticScore($rating->getCriticScore(), $this->sourceName);
+            $film2->setUserScore($rating->getUserScore(), $this->sourceName);
         }
 
         $films = array($film, $film2);
