@@ -47,12 +47,12 @@
 	<source name="RatingSync">
 		<image>http://example.com/title1_rs_image.jpeg</image>
 		<uniqueName>UniqueName1_rs</uniqueName>
+		<criticScore>3</criticScore>
+		<userScore>4</userScore>
 		<rating>
 			<yourScore>1</yourScore>
 			<yourRatingDate>2015-1-1</yourRatingDate>
 			<suggestedScore>2</suggestedScore>
-			<criticScore>3</criticScore>
-			<userScore>4</userScore>
 		</rating>
 	</source>
 </film>
@@ -74,12 +74,12 @@
 	<source name="RatingSync">
 		<image>http://example.com/title2_rs_image.jpeg</image>
 		<uniqueName>UniqueName2_rs</uniqueName>
+		<criticScore>4</criticScore>
+		<userScore>5</userScore>
 		<rating>
 			<yourScore>2</yourScore>
 			<yourRatingDate>2015-1-2</yourRatingDate>
 			<suggestedScore>3</suggestedScore>
-			<criticScore>4</criticScore>
-			<userScore>5</userScore>
 		</rating>
 	</source>
 </film>
@@ -125,12 +125,12 @@
 	<source name="RatingSync">
 		<image/>
 		<uniqueName/>
+		<criticScore/>
+		<userScore/>
 		<rating>
 			<yourScore/>
 			<yourRatingDate/>
 			<suggestedScore/>
-			<criticScore/>
-			<userScore/>
 		</rating>
 	</source>
 </film>
@@ -150,34 +150,34 @@
 	<source name="RatingSync">
 		<image>http://example.com/title6_rs_image.jpeg</image>
 		<uniqueName>UniqueName6_rs</uniqueName>
+		<criticScore>8</criticScore>
+		<userScore>9</userScore>
 		<rating>
 			<yourScore>6</yourScore>
 			<yourRatingDate>2015-1-6</yourRatingDate>
 			<suggestedScore>7</suggestedScore>
-			<criticScore>8</criticScore>
-			<userScore>9</userScore>
 		</rating>
 	</source>
 	<source name="IMDb">
 		<image>http://example.com/title6_imdb_image.jpeg</image>
 		<uniqueName>UniqueName6_imdb</uniqueName>
+		<criticScore>7</criticScore>
+		<userScore>8</userScore>
 		<rating>
 			<yourScore>5</yourScore>
 			<yourRatingDate>2015-1-5</yourRatingDate>
 			<suggestedScore>6</suggestedScore>
-			<criticScore>7</criticScore>
-			<userScore>8</userScore>
 		</rating>
 	</source>
 	<source name="Jinni">
 		<image>http://example.com/title6_jinni_image.jpeg</image>
 		<uniqueName>UniqueName6_jinni</uniqueName>
+		<criticScore>6</criticScore>
+		<userScore>7</userScore>
 		<rating>
 			<yourScore>4</yourScore>
 			<yourRatingDate>2015-1-4</yourRatingDate>
 			<suggestedScore>5</suggestedScore>
-			<criticScore>6</criticScore>
-			<userScore>7</userScore>
 		</rating>
 	</source>
 </film>
@@ -211,12 +211,12 @@
 	<source name="IMDb">
 		<image>http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg</image>
 		<uniqueName>tt2294629</uniqueName>
+		<criticScore>7.4</criticScore>
+		<userScore>7.7</userScore>
 		<rating>
 			<yourScore>2</yourScore>
 			<yourRatingDate/>
 			<suggestedScore/>
-			<criticScore>7.4</criticScore>
-			<userScore>7.7</userScore>
 		</rating>
 	</source>
 </film>
@@ -242,34 +242,34 @@
 	<source name="RatingSync">
 		<image>http://example.com/frozen_rs_image.jpeg</image>
 		<uniqueName>Frozen_rs</uniqueName>
+		<criticScore>4</criticScore>
+		<userScore>5</userScore>
 		<rating>
 			<yourScore>2</yourScore>
 			<yourRatingDate>2015-1-2</yourRatingDate>
 			<suggestedScore>3</suggestedScore>
-			<criticScore>4</criticScore>
-			<userScore>5</userScore>
 		</rating>
 	</source>
 	<source name="IMDb">
 		<image>http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg</image>
 		<uniqueName>tt2294629</uniqueName>
+		<criticScore>7.4</criticScore>
+		<userScore>7.7</userScore>
 		<rating>
 			<yourScore>2</yourScore>
 			<yourRatingDate/>
 			<suggestedScore/>
-			<criticScore>7.4</criticScore>
-			<userScore>7.7</userScore>
 		</rating>
 	</source>
 	<source name="Jinni">
 		<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>
 		<uniqueName>frozen-2013</uniqueName>
+		<criticScore/>
+		<userScore/>
 		<rating>
 			<yourScore>8</yourScore>
 			<yourRatingDate>2015-5-4</yourRatingDate>
 			<suggestedScore/>
-			<criticScore/>
-			<userScore/>
 		</rating>
 	</source>
 </film>

@@ -125,6 +125,248 @@ class SourceTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers  \RatingSync\Source::setCriticScore
+     * @covers  \RatingSync\Source::getCriticScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCriticScoreCannotBeSetWithFloat()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setCriticScore(6.5);
+        $this->assertEquals(6.5, $source->getCriticScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setCriticScore
+     * @covers  \RatingSync\Source::getCriticScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCriticScoreCannotBeSetWithFloatString()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setCriticScore("6.5");
+        $this->assertEquals(6.5, $source->getCriticScore());
+
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setCriticScore
+     * @depends testObjectCanBeConstructed
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCriticScoreCannotBeSetWithNonNumericalString()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setCriticScore("Not an int");
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setCriticScore
+     * @depends testObjectCanBeConstructed
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCriticScoreCannotBeSetWithNegative()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setCriticScore(-1);
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setCriticScore
+     * @depends testObjectCanBeConstructed
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCriticScoreCannotBeSetWithHigherThan10()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setCriticScore(11);
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setCriticScore
+     * @covers  \RatingSync\Source::getCriticScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCriticScoreCanBeSetWithInt()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setCriticScore(6);
+        $this->assertEquals(6, $source->getCriticScore());
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setCriticScore
+     * @covers  \RatingSync\Source::getCriticScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCriticScoreCanBeSetWithIntString()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setCriticScore("6");
+        $this->assertEquals(6, $source->getCriticScore());
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setCriticScore
+     * @covers  \RatingSync\Source::getCriticScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCriticScoreCanBeSetWithNull()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setCriticScore(null);
+        $this->assertNull($source->getCriticScore());
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::getCriticScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCriticScoreCanBeRetrievedFromNewObject()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $this->assertNull($source->getCriticScore());
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setUserScore
+     * @covers  \RatingSync\Source::getUserScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testUserScoreCanBeSetWithFloat()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setUserScore(6.5);
+        $this->assertEquals(6.5, $source->getUserScore());
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setUserScore
+     * @covers  \RatingSync\Source::getUserScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testUserScoreCanBeSetWithFloatString()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setUserScore("6.5");
+        $this->assertEquals(6.5, $source->getUserScore());
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setUserScore
+     * @depends testObjectCanBeConstructed
+     * @expectedException \InvalidArgumentException
+     */
+    public function testUserScoreCannotBeSetWithNonNumericalString()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setUserScore("Not an int");
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setUserScore
+     * @depends testObjectCanBeConstructed
+     * @expectedException \InvalidArgumentException
+     */
+    public function testUserScoreCannotBeSetWithNegative()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setUserScore(-1);
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setUserScore
+     * @depends testObjectCanBeConstructed
+     * @expectedException \InvalidArgumentException
+     */
+    public function testUserScoreCannotBeSetWithHigherThan10()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setUserScore(11);
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setUserScore
+     * @covers  \RatingSync\Source::getUserScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testUserScoreCanBeSetWithInt()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setUserScore(6);
+        $this->assertEquals(6, $source->getUserScore());
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setUserScore
+     * @covers  \RatingSync\Source::getUserScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testUserScoreCanBeSetWithIntString()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setUserScore("6");
+        $this->assertEquals(6, $source->getUserScore());
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::setUserScore
+     * @covers  \RatingSync\Source::getUserScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testUserScoreCanBeSetWithNull()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $source->setUserScore(null);
+        $this->assertNull($source->getUserScore());
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
+     * @covers  \RatingSync\Source::getUserScore
+     * @depends testObjectCanBeConstructed
+     */
+    public function testUserScoreCanBeRetrievedFromNewObject()
+    {
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $this->assertNull($source->getUserScore());
+    
+        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+    }
+
+    /**
      * @covers  \RatingSync\Source::setRating
      * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
@@ -241,8 +483,6 @@ class SourceTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(Constants::SOURCE_JINNI, $rating->getSource());
         $this->assertNull($rating->getYourScore());
         $this->assertNull($rating->getSuggestedScore());
-        $this->assertNull($rating->getCriticScore());
-        $this->assertNull($rating->getUserScore());
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }

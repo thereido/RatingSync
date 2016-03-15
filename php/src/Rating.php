@@ -32,8 +32,6 @@ class Rating
     protected $yourScore;       // Rating (or score) from you - 1 to 10
     protected $yourRatingDate;  // The day you rated it
     protected $suggestedScore;  // How much they think you would like. Suggested by the source.
-    protected $criticScore;     // Average rating by critics through the source
-    protected $userScore;       // Average rating by users through the source
 
     /**
      * Rating data from one source
@@ -52,7 +50,7 @@ class Rating
     /**
      * Rating data from one source
      *
-     * @param array  $row    Row from the Rating table (Columns: yourScore, yourRatingDate, suggestedScore, criticScore, userScore)
+     * @param array  $row    Row from the Rating table (Columns: yourScore, yourRatingDate, suggestedScore)
      */
     public function initFromDbRow($row)
     {
@@ -64,12 +62,6 @@ class Rating
         }
         if (!empty($row['suggestedScore'])) {
             $this->setSuggestedScore($row['suggestedScore']);
-        }
-        if (!empty($row['criticScore'])) {
-            $this->setCriticScore($row['criticScore']);
-        }
-        if (!empty($row['userScore'])) {
-            $this->setUserScore($row['userScore']);
         }
     }
 
@@ -170,66 +162,6 @@ class Rating
     }
 
     /**
-     * What the source's critics scored it
-     *
-     * @param int $criticScore What the source's critics scored it
-     *
-     * @return none
-     */
-    public function setCriticScore($score)
-    {
-        if (! (is_null($score) ||  $this->validRatingScore($score)) ) {
-            throw new \InvalidArgumentException("setCriticScore ($score) must be a number between 1 to 10");
-        }
-
-        if (is_null($score)) {
-            $this->criticScore = null;
-        } else {
-            $this->criticScore = (float)$score;
-        }
-    }
-
-    /**
-     * What the source's critics scored it
-     *
-     * @return int
-     */
-    public function getCriticScore()
-    {
-        return $this->criticScore;
-    }
-
-    /**
-     * What the source's users scored it
-     *
-     * @param int $userScore What the source's users scored it
-     *
-     * @return none
-     */
-    public function setUserScore($score)
-    {
-        if (! (is_null($score) ||  $this->validRatingScore($score)) ) {
-            throw new \InvalidArgumentException("setUserScore ($score) must be a number between 0 to 10");
-        }
-
-        if (is_null($score)) {
-            $this->userScore = null;
-        } else {
-            $this->userScore = (float)$score;
-        }
-    }
-
-    /**
-     * What the source's users scored it
-     *
-     * @return 1 to 10
-     */
-    public function getUserScore()
-    {
-        return $this->userScore;
-    }
-
-    /**
      * Valid scores are numbers 1 to 10.  Strings can be casted.
      *
      * @param float $score 1 to 10
@@ -274,12 +206,6 @@ class Rating
             }
             if (empty($this->getSuggestedScore())) {
                 $this->setSuggestedScore($existingRating->getSuggestedScore());
-            }
-            if (empty($this->getCriticScore())) {
-                $this->setCriticScore($existingRating->getCriticScore());
-            }
-            if (empty($this->getUserScore())) {
-                $this->setUserScore($existingRating->getUserScore());
             }
             if (empty($ratingDate)) {
                 $ratingDate = $existingRating->getYourRatingDate();
@@ -340,8 +266,6 @@ class Rating
         $sourceName = $rating->getSource();
         $yourScore = $rating->getYourScore();
         $suggestedScore = $rating->getSuggestedScore();
-        $criticScore = $rating->getCriticScore();
-        $userScore = $rating->getUserScore();
         $ratingDate = $rating->getYourRatingDate();
         $ratingDateStr = null;
         if (!empty($ratingDate)) {
@@ -357,14 +281,6 @@ class Rating
         if (!empty($suggestedScore)) {
             $columns .= ", suggestedScore";
             $values .= ", $suggestedScore";
-        }
-        if (!empty($criticScore)) {
-            $columns .= ", criticScore";
-            $values .= ", $criticScore";
-        }
-        if (!empty($userScore)) {
-            $columns .= ", userScore";
-            $values .= ", $userScore";
         }
         if (!empty($ratingDateStr)) {
             $columns .= ", yourRatingDate";

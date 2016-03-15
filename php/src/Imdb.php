@@ -132,7 +132,6 @@ class Imdb extends Site
 
             $rating = new Rating($this->sourceName);
             $rating->setYourScore($yourScore);
-            $rating->setUserScore($userScore);
             //FIXME $rating->setYourRatingDate(\DateTime::createFromFormat($this->dateFormat, $ratingDate));
             $film->setRating($rating, $this->sourceName);
 

@@ -204,24 +204,51 @@ class Source
             
         $columns = "film_id, source_name";
         $values = "$filmId, '$sourceName'";
+        $set = "SET";
+        $setEmpty = $set;
+        $setComma = "";
         if (!empty($sourceImage)) {
             $columns .= ", image";
             $values .= ", '$sourceImage'";
+            $set .= "$setComma image='$sourceImage'";
+            $setComma = ",";
         }
         if (!empty($sourceUniqueName)) {
             $columns .= ", uniqueName";
             $values .= ", '$sourceUniqueName'";
+            $set .= "$setComma uniqueName='$sourceUniqueName'";
+            $setComma = ",";
         }
         if (!empty($criticScore)) {
             $columns .= ", criticScore";
-            $values .= ", '$criticScore'";
+            $values .= ", $criticScore";
+            $set .= "$setComma criticScore=$criticScore";
+            $setComma = ",";
         }
         if (!empty($userScore)) {
             $columns .= ", userScore";
-            $values .= ", '$userScore'";
+            $values .= ", $userScore";
+            $set .= "$setComma userScore=$userScore";
+            $setComma = ",";
         }
-        if (! $db->query("REPLACE INTO film_source ($columns) VALUES ($values)")) {
-            throw new \Exception('SQL Error ' . $db->errno);
+        
+        // Look for an existing film row
+        $newRow = false;
+        $result = $db->query("SELECT 1 FROM film_source WHERE film_id=$filmId AND source_name='$sourceName'");
+        if ($result->num_rows == 0) {
+            $newRow = true;
+        }
+
+        if ($newRow) {
+            if (! $db->query("INSERT INTO film_source ($columns) VALUES ($values)")) {
+                throw new \Exception('SQL Error ' . $db->errno . ". " . $db->error);
+            }
+        } else {
+            if ($set != $setEmpty) {
+                if (! $db->query("UPDATE film_source $set WHERE film_id=$filmId AND source_name='$sourceName'")) {
+                    throw new \Exception('SQL Error ' . $db->errno . ". " . $db->error);
+                }
+            }
         }
 
         return true;

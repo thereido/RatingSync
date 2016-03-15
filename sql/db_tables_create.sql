@@ -69,8 +69,6 @@ CREATE TABLE IF NOT EXISTS rating
         yourScore INT NULL DEFAULT NULL,
         yourRatingDate DATE NULL DEFAULT NULL,
         suggestedScore INT NULL DEFAULT NULL,
-        criticScore INT NULL DEFAULT NULL,
-        userScore INT NULL DEFAULT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
         PRIMARY KEY (user_name, source_name, film_id),
@@ -94,8 +92,6 @@ CREATE TABLE IF NOT EXISTS rating_archive
         yourScore INT NULL DEFAULT NULL,
         yourRatingDate DATE NULL DEFAULT NULL,
         suggestedScore INT NULL DEFAULT NULL,
-        criticScore INT NULL DEFAULT NULL,
-        userScore INT NULL DEFAULT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
         KEY (user_name, source_name, film_id, ts),

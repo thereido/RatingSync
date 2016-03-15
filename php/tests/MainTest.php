@@ -66,22 +66,22 @@ class MainTest extends \PHPUnit_Framework_TestCase
         // Verify database - IMDb
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
+        $this->assertEquals(7, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
+        $this->assertEquals(8, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score not available from searchImdb');
         $this->assertEmpty($rating->getYourRatingDate(), 'Rating date not available from searchImdb');
         $this->assertEmpty($rating->getSuggestedScore(), 'Suggested score not available from searchImdb');
-        $this->assertEquals(7, $rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(8, $rating->getUserScore(), 'User score');
 
         // Verify database - RS
         $this->assertEquals("rs$filmId", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "RS uniqueName");
-        $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "RS image");
+        $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "RS image");
+        $this->assertEquals(4, $film->getCriticScore(Constants::SOURCE_RATINGSYNC), 'Critic score');
+        $this->assertEquals(5, $film->getUserScore(Constants::SOURCE_RATINGSYNC), 'User score');
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("2015-01-01", date_format($rating->getYourRatingDate(), "Y-m-d"), "YourRatingDate");
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score');
-        $this->assertEquals(4, $rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(5, $rating->getUserScore(), 'User score');
     }
     
     /**
@@ -141,6 +141,8 @@ class MainTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
         $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), 'Image link (film)');
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTY1ODA3NjU0NV5BMl5BanBnXkFtZTcwMDU1NTQyMQ)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
+        $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
+        $this->assertEquals(5.8, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
         $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Biography", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
@@ -148,8 +150,6 @@ class MainTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
-        $this->assertNull($rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(5.8, $rating->getUserScore(), 'User score');
 
         // Verify database
 
@@ -162,6 +162,8 @@ class MainTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
         $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), 'Image link (film)');
         $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTY1ODA3NjU0NV5BMl5BanBnXkFtZTcwMDU1NTQyMQ)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
+        $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
+        $this->assertEquals(6, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
         $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Biography", "Comedy"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
@@ -169,8 +171,6 @@ class MainTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
-        $this->assertNull($rating->getCriticScore(), 'Critic score');
-        $this->assertEquals(6, $rating->getUserScore(), 'User score');
 
         // RS source created
         $source = $film->getSource(Constants::SOURCE_RATINGSYNC);

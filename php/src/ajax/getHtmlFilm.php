@@ -14,7 +14,7 @@ function getHtmlFilm($film, $titleNum = null, $withImage = true) {
     $title = $film->getTitle();
     $year = $film->getYear();
     $imdbLabel = "IMDb users";
-    $imdbScore = $film->getRating(Constants::SOURCE_IMDB)->getUserScore();
+    $imdbScore = $film->getUserScore(Constants::SOURCE_IMDB);
     $yourRatingDate = $film->getRating(Constants::SOURCE_RATINGSYNC)->getYourRatingDate();
     $dateStr = null;
     if (!empty($yourRatingDate)) {

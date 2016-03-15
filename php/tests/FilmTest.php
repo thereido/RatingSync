@@ -99,6 +99,230 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers  \RatingSync\Film::setCriticScore
+     * @covers  \RatingSync\Film::getCriticScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testCriticScoreCannotBeSetWithFloat()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setCriticScore(6.5, Constants::SOURCE_IMDB);
+        $this->assertEquals(6.5, $film->getCriticScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setCriticScore
+     * @covers  \RatingSync\Film::getCriticScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testCriticScoreCannotBeSetWithFloatString()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setCriticScore("6.5", Constants::SOURCE_IMDB);
+        $this->assertEquals(6.5, $film->getCriticScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setCriticScore
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCriticScoreCannotBeSetWithNonNumericalString()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setCriticScore("Not an int", Constants::SOURCE_IMDB);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setCriticScore
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCriticScoreCannotBeSetWithNegative()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setCriticScore(-1, Constants::SOURCE_IMDB);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setCriticScore
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCriticScoreCannotBeSetWithHigherThan10()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setCriticScore(11, Constants::SOURCE_IMDB);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setCriticScore
+     * @covers  \RatingSync\Film::getCriticScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testCriticScoreCanBeSetWithInt()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setCriticScore(6, Constants::SOURCE_IMDB);
+        $this->assertEquals(6, $film->getCriticScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setCriticScore
+     * @covers  \RatingSync\Film::getCriticScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testCriticScoreCanBeSetWithIntString()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setCriticScore("6", Constants::SOURCE_IMDB);
+        $this->assertEquals(6, $film->getCriticScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setCriticScore
+     * @covers  \RatingSync\Film::getCriticScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testCriticScoreCanBeSetWithNull()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setCriticScore(null, Constants::SOURCE_IMDB);
+        $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getCriticScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testCriticScoreCanBeRetrievedFromNewObject()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setUserScore
+     * @covers  \RatingSync\Film::getUserScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testUserScoreCanBeSetWithFloat()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setUserScore(6.5, Constants::SOURCE_IMDB);
+        $this->assertEquals(6.5, $film->getUserScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setUserScore
+     * @covers  \RatingSync\Film::getUserScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testUserScoreCanBeSetWithFloatString()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setUserScore("6.5", Constants::SOURCE_IMDB);
+        $this->assertEquals(6.5, $film->getUserScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setUserScore
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testUserScoreCannotBeSetWithNonNumericalString()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setUserScore("Not an int", Constants::SOURCE_IMDB);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setUserScore
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testUserScoreCannotBeSetWithNegative()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setUserScore(-1, Constants::SOURCE_IMDB);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setUserScore
+     * @depends testObjectCanBeConstructedFromHttp
+     * @expectedException \InvalidArgumentException
+     */
+    public function testUserScoreCannotBeSetWithHigherThan10()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setUserScore(11, Constants::SOURCE_IMDB);
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setUserScore
+     * @covers  \RatingSync\Film::getUserScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testUserScoreCanBeSetWithInt()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setUserScore(6, Constants::SOURCE_IMDB);
+        $this->assertEquals(6, $film->getUserScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setUserScore
+     * @covers  \RatingSync\Film::getUserScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testUserScoreCanBeSetWithIntString()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setUserScore("6", Constants::SOURCE_IMDB);
+        $this->assertEquals(6, $film->getUserScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::setUserScore
+     * @covers  \RatingSync\Film::getUserScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testUserScoreCanBeSetWithNull()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film->setUserScore(null, Constants::SOURCE_IMDB);
+        $this->assertNull($film->getUserScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
+     * @covers  \RatingSync\Film::getUserScore
+     * @depends testObjectCanBeConstructedFromHttp
+     */
+    public function testUserScoreCanBeRetrievedFromNewObject()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $this->assertNull($film->getUserScore(Constants::SOURCE_IMDB));
+    }
+
+    /**
      * @covers  \RatingSync\Film::setRating
      * @depends testObjectCanBeConstructedFromHttp
      * @expectedException \InvalidArgumentException
@@ -265,10 +489,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $film->setRating(null, Constants::SOURCE_IMDB);
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
+        $this->assertNull($film->getCriticScore($rating->getSource()));
+        $this->assertNull($film->getUserScore($rating->getSource()));
         $this->assertNull($rating->getYourScore());
         $this->assertNull($rating->getSuggestedScore());
-        $this->assertNull($rating->getCriticScore());
-        $this->assertNull($rating->getUserScore());
     }
 
     /**
@@ -1518,8 +1742,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(8);
         $rating->setYourRatingDate(\DateTime::createFromFormat("n/j/Y", "5/1/2015"));
         $rating->setSuggestedScore(7);
-        $rating->setCriticScore(8);
-        $rating->setUserScore(10);
         $film->setRating($rating, Constants::SOURCE_JINNI);
 
         $xml = new \SimpleXMLElement("<films/>");
@@ -1542,8 +1764,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=             "<yourScore>8</yourScore>";
         $xmlStr .=             "<yourRatingDate>2015-5-1</yourRatingDate>";
         $xmlStr .=             "<suggestedScore>7</suggestedScore>";
-        $xmlStr .=             "<criticScore>8</criticScore>";
-        $xmlStr .=             "<userScore>10</userScore>";
         $xmlStr .=         "</rating>";
         $xmlStr .=     "</source>";
         $xmlStr .= "</film>";
@@ -1578,8 +1798,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(8);
         $rating->setYourRatingDate(\DateTime::createFromFormat("n/j/Y", "5/1/2015"));
         $rating->setSuggestedScore(7);
-        $rating->setCriticScore(8);
-        $rating->setUserScore(10);
         $film->setRating($rating, Constants::SOURCE_JINNI);
 
         // IMDb data
@@ -1591,8 +1809,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $rating = new Rating(Constants::SOURCE_IMDB);
         $rating->setYourScore(4);
         $rating->setYourRatingDate(\DateTime::createFromFormat("n/j/Y", "5/4/2015"));
-        $rating->setCriticScore(8);
-        $rating->setUserScore(7);
         $film->setRating($rating, Constants::SOURCE_IMDB);
 
         $xml = new \SimpleXMLElement("<films/>");
@@ -1615,8 +1831,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=             "<yourScore>8</yourScore>";
         $xmlStr .=             "<yourRatingDate>2015-5-1</yourRatingDate>";
         $xmlStr .=             "<suggestedScore>7</suggestedScore>";
-        $xmlStr .=             "<criticScore>8</criticScore>";
-        $xmlStr .=             "<userScore>10</userScore>";
         $xmlStr .=         "</rating>";
         $xmlStr .=     "</source>";
         $xmlStr .=     "<source name=\"IMDb\">";
@@ -1628,8 +1842,6 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlStr .=             "<yourScore>4</yourScore>";
         $xmlStr .=             "<yourRatingDate>2015-5-4</yourRatingDate>";
         $xmlStr .=             "<suggestedScore/>";
-        $xmlStr .=             "<criticScore>8</criticScore>";
-        $xmlStr .=             "<userScore>7</userScore>";
         $xmlStr .=         "</rating>";
         $xmlStr .=     "</source>";
         $xmlStr .= "</film>";
@@ -1783,12 +1995,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Genre1.1"), $film->getGenres(), "Title1 genres");
         $this->assertEquals("http://example.com/title1_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." image");
         $this->assertEquals("UniqueName1_rs", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." Unique Name");
+        $this->assertEquals(3, $film->getCriticScore(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEquals(4, $film->getUserScore(Constants::SOURCE_RATINGSYNC), "Title1 ".Constants::SOURCE_RATINGSYNC." user score");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(1, $rating->getYourScore(), "Title1 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEquals("1/1/15", $rating->getYourRatingDate()->format('n/j/y'), "Title1 ".Constants::SOURCE_RATINGSYNC." rating date");
         $this->assertEquals(2, $rating->getSuggestedScore(), "Title1 ".Constants::SOURCE_RATINGSYNC." suggested score");
-        $this->assertEquals(3, $rating->getCriticScore(), "Title1 ".Constants::SOURCE_RATINGSYNC." critic score");
-        $this->assertEquals(4, $rating->getUserScore(), "Title1 ".Constants::SOURCE_RATINGSYNC." user score");
 
         // Title2
         $film = Film::createFromXml($xmlFilmArray[2], new HttpChild(TEST_SITE_USERNAME));
@@ -1800,12 +2012,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Genre2.1", "Genre2.2"), $film->getGenres(), "Title2 genres");
         $this->assertEquals("http://example.com/title2_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." image");
         $this->assertEquals("UniqueName2_rs", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." Unique Name");
+        $this->assertEquals(4, $film->getCriticScore(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEquals(5, $film->getUserScore(Constants::SOURCE_RATINGSYNC), "Title2 ".Constants::SOURCE_RATINGSYNC." user score");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(2, $rating->getYourScore(), "Title2 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEquals("1/2/15", $rating->getYourRatingDate()->format('n/j/y'), "Title2 ".Constants::SOURCE_RATINGSYNC." rating date");
         $this->assertEquals(3, $rating->getSuggestedScore(), "Title2 ".Constants::SOURCE_RATINGSYNC." suggested score");
-        $this->assertEquals(4, $rating->getCriticScore(), "Title2 ".Constants::SOURCE_RATINGSYNC." critic score");
-        $this->assertEquals(5, $rating->getUserScore(), "Title2 ".Constants::SOURCE_RATINGSYNC." user score");
 
         // Title3
         $film = Film::createFromXml($xmlFilmArray[3], new HttpChild(TEST_SITE_USERNAME));
@@ -1817,12 +2029,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($film->getGenres(), "Title3 genres");
         $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." image");
         $this->assertEmpty($film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." Unique Name");
+        $this->assertEmpty($film->getCriticScore(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEmpty($film->getUserScore(Constants::SOURCE_RATINGSYNC), "Title3 ".Constants::SOURCE_RATINGSYNC." user score");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEmpty($rating->getYourScore(), "Title3 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEmpty($rating->getYourRatingDate(), "Title3 ".Constants::SOURCE_RATINGSYNC." rating date");
         $this->assertEmpty($rating->getSuggestedScore(), "Title3 ".Constants::SOURCE_RATINGSYNC." suggested score");
-        $this->assertEmpty($rating->getCriticScore(), "Title3 ".Constants::SOURCE_RATINGSYNC." critic score");
-        $this->assertEmpty($rating->getUserScore(), "Title3 ".Constants::SOURCE_RATINGSYNC." user score");
 
         // Title4
         $film = Film::createFromXml($xmlFilmArray[4], new HttpChild(TEST_SITE_USERNAME));
@@ -1834,12 +2046,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($film->getGenres(), "Title4 genres");
         $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." image");
         $this->assertEmpty($film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." Unique Name");
+        $this->assertEmpty($film->getCriticScore(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEmpty($film->getUserScore(Constants::SOURCE_RATINGSYNC), "Title4 ".Constants::SOURCE_RATINGSYNC." user score");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEmpty($rating->getYourScore(), "Title4 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEmpty($rating->getYourRatingDate(), "Title4 ".Constants::SOURCE_RATINGSYNC." rating date");
         $this->assertEmpty($rating->getSuggestedScore(), "Title4 ".Constants::SOURCE_RATINGSYNC." suggested score");
-        $this->assertEmpty($rating->getCriticScore(), "Title4 ".Constants::SOURCE_RATINGSYNC." critic score");
-        $this->assertEmpty($rating->getUserScore(), "Title4 ".Constants::SOURCE_RATINGSYNC." user score");
 
         // Title5
         $film = Film::createFromXml($xmlFilmArray[5], new HttpChild(TEST_SITE_USERNAME));
@@ -1851,12 +2063,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($film->getGenres(), "Title5 genres");
         $this->assertEmpty($film->getImage(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." image");
         $this->assertEmpty($film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." Unique Name");
+        $this->assertEmpty($film->getCriticScore(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEmpty($film->getUserScore(Constants::SOURCE_RATINGSYNC), "Title5 ".Constants::SOURCE_RATINGSYNC." user score");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEmpty($rating->getYourScore(), "Title5 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEmpty($rating->getYourRatingDate(), "Title5 ".Constants::SOURCE_RATINGSYNC." rating date");
         $this->assertEmpty($rating->getSuggestedScore(), "Title5 ".Constants::SOURCE_RATINGSYNC." suggested score");
-        $this->assertEmpty($rating->getCriticScore(), "Title5 ".Constants::SOURCE_RATINGSYNC." critic score");
-        $this->assertEmpty($rating->getUserScore(), "Title5 ".Constants::SOURCE_RATINGSYNC." user score");
 
         // Title6
         $film = Film::createFromXml($xmlFilmArray[6], new HttpChild(TEST_SITE_USERNAME));
@@ -1868,20 +2080,20 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Genre6.1"), $film->getGenres(), "Title6 genres");
         $this->assertEquals("http://example.com/title6_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." image");
         $this->assertEquals("UniqueName6_rs", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." Unique Name");
+        $this->assertEquals(8, $film->getCriticScore(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEquals(9, $film->getUserScore(Constants::SOURCE_RATINGSYNC), "Title6 ".Constants::SOURCE_RATINGSYNC." user score");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(6, $rating->getYourScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEquals("1/6/15", $rating->getYourRatingDate()->format('n/j/y'), "Title6 ".Constants::SOURCE_RATINGSYNC." rating date");
         $this->assertEquals(7, $rating->getSuggestedScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." suggested score");
-        $this->assertEquals(8, $rating->getCriticScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." critic score");
-        $this->assertEquals(9, $rating->getUserScore(), "Title6 ".Constants::SOURCE_RATINGSYNC." user score");
         $this->assertEquals("http://example.com/title6_imdb_image.jpeg", $film->getImage(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." image");
         $this->assertEquals("UniqueName6_imdb", $film->getUniqueName(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." Unique Name");
+        $this->assertEquals(7, $film->getCriticScore(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." critic score");
+        $this->assertEquals(8, $film->getUserScore(Constants::SOURCE_IMDB), "Title6 ".Constants::SOURCE_IMDB." user score");
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(5, $rating->getYourScore(), "Title6 ".Constants::SOURCE_IMDB." your score");
         $this->assertEquals("1/5/15", $rating->getYourRatingDate()->format('n/j/y'), "Title6 ".Constants::SOURCE_IMDB." rating date");
         $this->assertEquals(6, $rating->getSuggestedScore(), "Title6 ".Constants::SOURCE_IMDB." suggested score");
-        $this->assertEquals(7, $rating->getCriticScore(), "Title6 ".Constants::SOURCE_IMDB." critic score");
-        $this->assertEquals(8, $rating->getUserScore(), "Title6 ".Constants::SOURCE_IMDB." user score");
 
         // Title7
         $film = Film::createFromXml($xmlFilmArray[7], new HttpChild(TEST_SITE_USERNAME));
@@ -1899,28 +2111,28 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Animation", "Adventure", "Comedy", "Fantasy", "Musical", "Family"), $film->getGenres(), "Frozen genres");
         $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." image");
         $this->assertEquals("Frozen_rs", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." Unique Name");
+        $this->assertEquals(4, $film->getCriticScore(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." critic score");
+        $this->assertEquals(5, $film->getUserScore(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." user score");
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." your score");
         $this->assertEquals("1/2/15", $rating->getYourRatingDate()->format('n/j/y'), "Frozen ".Constants::SOURCE_RATINGSYNC." rating date");
         $this->assertEquals(3, $rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." suggested score");
-        $this->assertEquals(4, $rating->getCriticScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." critic score");
-        $this->assertEquals(5, $rating->getUserScore(), "Frozen ".Constants::SOURCE_RATINGSYNC." user score");
         $this->assertEquals("http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg", $film->getImage(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." image");
         $this->assertEquals("frozen-2013", $film->getUniqueName(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." Unique Name");
+        $this->assertNull($film->getCriticScore(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." critic score");
+        $this->assertNull($film->getUserScore(Constants::SOURCE_JINNI), "Frozen ".Constants::SOURCE_JINNI." user score");
         $rating = $film->getRating(Constants::SOURCE_JINNI);
         $this->assertEquals(8, $rating->getYourScore(), "Frozen ".Constants::SOURCE_JINNI." your score");
         $this->assertEquals("5/4/15", $rating->getYourRatingDate()->format('n/j/y'), "Frozen ".Constants::SOURCE_JINNI." rating date");
         $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_JINNI." suggested score");
-        $this->assertNull($rating->getCriticScore(), "Frozen ".Constants::SOURCE_JINNI." critic score");
-        $this->assertNull($rating->getUserScore(), "Frozen ".Constants::SOURCE_JINNI." user score");
         $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Unique Name");
+        $this->assertEquals(7.4, $film->getCriticScore(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." critic score");
+        $this->assertEquals(7.7, $film->getUserScore(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." user score");
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_IMDB." your score");
         $this->assertNull($rating->getYourRatingDate(), "Frozen ".Constants::SOURCE_IMDB." rating date");
         $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_IMDB." suggested score");
-        $this->assertEquals(7.4, $rating->getCriticScore(), "Frozen ".Constants::SOURCE_IMDB." critic score");
-        $this->assertEquals(7.7, $rating->getUserScore(), "Frozen ".Constants::SOURCE_IMDB." user score");
     }
 
     /**
@@ -2112,24 +2324,18 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(5, $rating->getYourScore(), "YourScore $sourceName");
         $this->assertEquals("2015-01-05", date_format($rating->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceName");
         $this->assertEquals(6, $rating->getSuggestedScore(), "SuggestedScore $sourceName");
-        $this->assertEquals(7, $rating->getCriticScore(), "CriticScore $sourceName");
-        $this->assertEquals(8, $rating->getUserScore(), "UserScore $sourceName");
 
         $sourceName = Constants::SOURCE_JINNI;
         $rating = $film->getRating($sourceName);
         $this->assertEquals(4, $rating->getYourScore(), "YourScore $sourceName");
         $this->assertEquals("2015-01-04", date_format($rating->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceName");
         $this->assertEquals(5, $rating->getSuggestedScore(), "SuggestedScore $sourceName");
-        $this->assertEquals(6, $rating->getCriticScore(), "CriticScore $sourceName");
-        $this->assertEquals(7, $rating->getUserScore(), "UserScore $sourceName");
 
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $rating = $film->getRating($sourceName);
         $this->assertEquals(6, $rating->getYourScore(), "YourScore $sourceName");
         $this->assertEquals("2015-01-06", date_format($rating->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceName");
         $this->assertEquals(7, $rating->getSuggestedScore(), "SuggestedScore $sourceName");
-        $this->assertEquals(8, $rating->getCriticScore(), "CriticScore $sourceName");
-        $this->assertEquals(9, $rating->getUserScore(), "UserScore $sourceName");
     }
 
     /**
@@ -2229,11 +2435,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $rating = new Rating($sourceName);
         $rating->setYourScore(1);
         $rating->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-01"));
-        $rating->setCriticScore(3);
-        $rating->setUserScore(4);
         $film->setRating($rating, $sourceName);
         $film->setImage("Original_Image_".$sourceName, $sourceName);
         $film->setUniqueName("Original_UniqueName", $sourceName);
+        $film->setCriticScore(3, $sourceName);
+        $film->setUserScore(4, $sourceName);
 
         // Test
         $film->saveToDb($username_rs);
@@ -2253,14 +2459,14 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($film->getDirectors(), $dbFilm->getDirectors(), "Directors");
         $this->assertEquals($film->getImage($sourceName), $dbFilm->getImage($sourceName), "Image $sourceName");
         $this->assertEquals($film->getUniqueName($sourceName), $dbFilm->getUniqueName($sourceName), "UniqueName $sourceName");
+        $this->assertEquals($film->getCriticScore($sourceName), $dbFilm->getCriticScore($sourceName), "CriticScore $sourceName");
+        $this->assertEquals($film->getUserScore($sourceName), $dbFilm->getUserScore($sourceName), "UserScore $sourceName");
         $this->assertEquals($film->getImage(), $dbFilm->getImage(Constants::SOURCE_RATINGSYNC), "Image RS");
         $this->assertEquals("rs$filmId", $dbFilm->getUniqueName(Constants::SOURCE_RATINGSYNC), "UniqueName RS");
         $dbRating = $dbFilm->getRating($sourceName);
         $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "YourScore $sourceName");
         $this->assertEquals(date_format($rating->getYourRatingDate(), "Y-m-d"), date_format($dbRating->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceName");
         $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), "SuggestedScore $sourceName");
-        $this->assertEquals($rating->getCriticScore(), $dbRating->getCriticScore(), "CriticScore $sourceName");
-        $this->assertEquals($rating->getUserScore(), $dbRating->getUserScore(), "UserScore $sourceName");
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $this->assertEmpty($dbFilm->getYourScore($sourceName), "Should be no RS rating");
         $query = "SELECT film_id FROM rating WHERE film_id=$filmId AND source_name='$sourceName'";
@@ -2300,11 +2506,11 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $rating = new Rating($sourceName);
         $rating->setYourScore(2);
         $rating->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-02"));
-        $rating->setCriticScore(4);
-        $rating->setUserScore(5);
         $film->setRating($rating, $sourceName);
         $film->setImage("Original_Image2_".$sourceName, $sourceName);
         $film->setUniqueName("Original_UniqueName2", $sourceName);
+        $film->setCriticScore(4, $sourceName);
+        $film->setUserScore(5, $sourceName);
         $sourceRs = Constants::SOURCE_RATINGSYNC;
         $ratingRs = new Rating($sourceRs);
         $ratingRs->setYourScore(3);
@@ -2333,6 +2539,8 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($film->getUniqueName($sourceName), $dbFilm->getUniqueName($sourceName), "UniqueName $sourceName");
         $this->assertEquals($film->getImage(), $dbFilm->getImage($sourceRs), "Image RS");
         $this->assertEquals($film->getUniqueName($sourceRs), $dbFilm->getUniqueName($sourceRs), "UniqueName RS");
+        $this->assertEquals($film->getCriticScore($sourceRs), $dbFilm->getCriticScore($sourceRs), "CriticScore RS");
+        $this->assertEquals($film->getUserScore($sourceRs), $dbFilm->getUserScore($sourceRs), "UserScore RS");
         $query = "SELECT film_id FROM rating WHERE film_id=$filmId";
         $result = $db->query($query);
         $this->assertEquals(0, $result->num_rows, "There should be no ratings");
@@ -2425,20 +2633,20 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $existingRating = new Rating($sourceName);
         $existingRating->setYourScore(4);
         $existingRating->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-04"));
-        $existingRating->setCriticScore(6);
-        $existingRating->setUserScore(7);
         $existingFilm->setRating($existingRating, $sourceName);
         $existingFilm->setImage("Original_Image4_".$sourceName, $sourceName);
         $existingFilm->setUniqueName("Original_UniqueName4_".$sourceName, $sourceName);
+        $existingFilm->setCriticScore(6, $sourceName);
+        $existingFilm->setUserScore(7, $sourceName);
         $sourceRsName = Constants::SOURCE_RATINGSYNC;
         $existingRatingRs = new Rating($sourceRsName);
         $existingRatingRs->setYourScore(4);
         $existingRatingRs->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-04"));
-        $existingRatingRs->setCriticScore(6);
-        $existingRatingRs->setUserScore(7);
         $existingFilm->setRating($existingRatingRs, $sourceRsName);
         $existingFilm->setImage("Original_Image4_".$sourceRsName, $sourceRsName);
         $existingFilm->setUniqueName("Original_UniqueName4_".$sourceRsName, $sourceRsName);
+        $existingFilm->setCriticScore(6, $sourceRsName);
+        $existingFilm->setUserScore(7, $sourceRsName);
         // Save existingFilm to it will exist in the db
         $existingFilm->saveToDb($username_rs);
         // New Film
@@ -2453,20 +2661,20 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $rating = new Rating($sourceName);
         $rating->setYourScore(5);
         $rating->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-08"));
-        $rating->setCriticScore(7);
-        $rating->setUserScore(8);
         $film->setRating($rating, $sourceName);
         $film->setImage("New_Image4_".$sourceName, $sourceName);
         $film->setUniqueName("New_UniqueName4_".$sourceName, $sourceName);
+        $film->setCriticScore(7, $sourceName);
+        $film->setUserScore(8, $sourceName);
         $sourceNameRs = Constants::SOURCE_RATINGSYNC;
         $ratingRs = new Rating($sourceNameRs);
         $ratingRs->setYourScore(6);
         $ratingRs->setYourRatingDate(\DateTime::createFromFormat("Y-m-d", "2015-05-09"));
-        $ratingRs->setCriticScore(8);
-        $ratingRs->setUserScore(9);
         $film->setRating($ratingRs, $sourceNameRs);
         $film->setImage("New_Image4_".$sourceNameRs, $sourceNameRs);
         $film->setUniqueName("New_UniqueName4_".$sourceNameRs, $sourceNameRs);
+        $film->setCriticScore(8, $sourceNameRs);
+        $film->setUserScore(9, $sourceNameRs);
 
         // Test
         $film->saveToDb($username_rs);
@@ -2486,20 +2694,20 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($film->getDirectors(), $dbFilm->getDirectors(), "Directors");
         $this->assertEquals($film->getImage($sourceName), $dbFilm->getImage($sourceName), "Image $sourceName");
         $this->assertEquals($film->getUniqueName($sourceName), $dbFilm->getUniqueName($sourceName), "UniqueName $sourceName");
+        $this->assertEquals($film->getCriticScore($sourceName), $dbFilm->getCriticScore($sourceName), "CriticScore $sourceName");
+        $this->assertEquals($film->getUserScore($sourceName), $dbFilm->getUserScore($sourceName), "UserScore $sourceName");
         $this->assertEquals($film->getImage(), $dbFilm->getImage($sourceRsName), "Image RS");
         $this->assertEquals($film->getUniqueName($sourceRsName), $dbFilm->getUniqueName($sourceRsName), "UniqueName RS");
+        $this->assertEquals($film->getCriticScore($sourceRsName), $dbFilm->getCriticScore($sourceRsName), "CriticScore $sourceRsName");
+        $this->assertEquals($film->getUserScore($sourceRsName), $dbFilm->getUserScore($sourceRsName), "UserScore $sourceRsName");
         $dbRating = $dbFilm->getRating($sourceName);
         $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "YourScore $sourceName");
         $this->assertEquals(date_format($rating->getYourRatingDate(), "Y-m-d"), date_format($dbRating->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceName");
         $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), "SuggestedScore $sourceName");
-        $this->assertEquals($rating->getCriticScore(), $dbRating->getCriticScore(), "CriticScore $sourceName");
-        $this->assertEquals($rating->getUserScore(), $dbRating->getUserScore(), "UserScore $sourceName");
         $dbRatingRs = $dbFilm->getRating($sourceNameRs);
         $this->assertEquals($ratingRs->getYourScore(), $dbRatingRs->getYourScore(), "YourScore $sourceNameRs");
         $this->assertEquals(date_format($ratingRs->getYourRatingDate(), "Y-m-d"), date_format($dbRatingRs->getYourRatingDate(), "Y-m-d"), "YourRatingDate $sourceNameRs");
         $this->assertEquals($ratingRs->getSuggestedScore(), $dbRatingRs->getSuggestedScore(), "SuggestedScore $sourceNameRs");
-        $this->assertEquals($ratingRs->getCriticScore(), $dbRatingRs->getCriticScore(), "CriticScore $sourceNameRs");
-        $this->assertEquals($ratingRs->getUserScore(), $dbRatingRs->getUserScore(), "UserScore $sourceNameRs");
     }
     
     /**

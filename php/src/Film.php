@@ -112,8 +112,6 @@ class Film {
             }
             $ratingXml->addChild('yourRatingDate', $ratingDate);
             $ratingXml->addChild('suggestedScore', $rating->getSuggestedScore());
-            $ratingXml->addChild('criticScore', $rating->getCriticScore());
-            $ratingXml->addChild('userScore', $rating->getUserScore());
         }
     }
 
@@ -186,14 +184,6 @@ class Film {
             $suggestedScore = Self::xmlStringByKey('suggestedScore', $ratingSxe);
             if (Rating::validRatingScore($suggestedScore)) {
                 $rating->setSuggestedScore($suggestedScore);
-            }
-            $criticScore = Self::xmlStringByKey('criticScore', $ratingSxe);
-            if (Rating::validRatingScore($criticScore)) {
-                $rating->setCriticScore($criticScore);
-            }
-            $userScore = Self::xmlStringByKey('userScore', $ratingSxe);
-            if (Rating::validRatingScore($userScore)) {
-                $rating->setUserScore($userScore);
             }
 
             $source->setRating($rating);

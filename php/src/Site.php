@@ -636,27 +636,25 @@ abstract class Site
         }
 
         // Critic Score
-        if ($overwrite || is_null($rating->getCriticScore())) {
+        if ($overwrite || is_null($film->getCriticScore($this->sourceName))) {
             $regex = $this->getDetailPageRegexForCriticScore();
             if (!empty($regex) && 0 < preg_match($regex, $page, $matches)) {
                 $score = $matches[1];
                 if (is_numeric($score)) {
                     $score = $score*10/$this->maxCriticScore;
                 }
-                $rating->setCriticScore($score);
                 $film->setCriticScore($score, $this->sourceName);
             }
         }
 
         // User Score
-        if ($overwrite || is_null($rating->getUserScore())) {
+        if ($overwrite || is_null($film->getUserScore($this->sourceName))) {
             $regex = $this->getDetailPageRegexForUserScore();
             if (!empty($regex) && 0 < preg_match($regex, $page, $matches)) {
                 $score = $matches[1];
                 if (is_numeric($score)) {
                     $score = $score*10/$this->maxUserScore;
                 }
-                $rating->setUserScore($score);
                 $film->setUserScore($score, $this->sourceName);
             }
         }

@@ -182,6 +182,8 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
                 $this->assertEquals(2013, $film->getYear(), "Year");
                 $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "ContentType");
                 $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(), "Image");
+                $this->assertEquals(4, $film->getCriticScore($sourceName), "CriticScore");
+                $this->assertEquals(5, $film->getUserScore($sourceName), "UserScore");
                 $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Directors");
                 $this->assertEquals(array("Adventure", "Animation", "Comedy", "Family", "Fantasy", "Musical"), $film->getGenres(), "Genres");
                 $rating = $film->getRating($sourceName);
@@ -189,13 +191,13 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
                 $this->assertEquals(2, $rating->getYourScore(), "YourScore");
                 $this->assertEquals("2015-01-01", date_format($rating->getYourRatingDate(), "Y-m-d"), "YourRatingDate");
                 $this->assertEquals(3, $rating->getSuggestedScore(), "SuggestedScore");
-                $this->assertEquals(4, $rating->getCriticScore(), "CriticScore");
-                $this->assertEquals(5, $rating->getUserScore(), "UserScore");
             } elseif ($title == $film7Title) {
                 $foundFilmId7 = true;
                 $this->assertEquals(2006, $film->getYear(), "Year");
                 $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "ContentType");
                 $this->assertEquals("http://example.com/title6_image.jpeg", $film->getImage(), "Image");
+                $this->assertEquals(8, $film->getCriticScore($sourceName), "CriticScore");
+                $this->assertEquals(9, $film->getUserScore($sourceName), "UserScore");
                 $this->assertEquals(array("Director6.1"), $film->getDirectors(), "Directors");
                 $this->assertEquals(array("Genre6.1"), $film->getGenres(), "Genres");
                 $rating = $film->getRating($sourceName);
@@ -203,8 +205,6 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
                 $this->assertEquals(6, $rating->getYourScore(), "YourScore");
                 $this->assertEquals("2015-01-06", date_format($rating->getYourRatingDate(), "Y-m-d"), "YourRatingDate");
                 $this->assertEquals(7, $rating->getSuggestedScore(), "SuggestedScore");
-                $this->assertEquals(8, $rating->getCriticScore(), "CriticScore");
-                $this->assertEquals(9, $rating->getUserScore(), "UserScore");
             }
         }
 

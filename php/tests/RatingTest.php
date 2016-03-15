@@ -338,230 +338,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers  \RatingSync\Rating::setCriticScore
-     * @covers  \RatingSync\Rating::getCriticScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testCriticScoreCannotBeSetWithFloat()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setCriticScore(6.5);
-        $this->assertEquals(6.5, $r->getCriticScore());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setCriticScore
-     * @covers  \RatingSync\Rating::getCriticScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testCriticScoreCannotBeSetWithFloatString()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setCriticScore("6.5");
-        $this->assertEquals(6.5, $r->getCriticScore());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setCriticScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
-     */
-    public function testCriticScoreCannotBeSetWithNonNumericalString()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setCriticScore("Not an int");
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setCriticScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
-     */
-    public function testCriticScoreCannotBeSetWithNegative()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setCriticScore(-1);
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setCriticScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
-     */
-    public function testCriticScoreCannotBeSetWithHigherThan10()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setCriticScore(11);
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setCriticScore
-     * @covers  \RatingSync\Rating::getCriticScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testCriticScoreCanBeSetWithInt()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setCriticScore(6);
-        $this->assertEquals(6, $r->getCriticScore());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setCriticScore
-     * @covers  \RatingSync\Rating::getCriticScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testCriticScoreCanBeSetWithIntString()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setCriticScore("6");
-        $this->assertEquals(6, $r->getCriticScore());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setCriticScore
-     * @covers  \RatingSync\Rating::getCriticScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testCriticScoreCanBeSetWithNull()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setCriticScore(null);
-        $this->assertNull($r->getCriticScore());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::getCriticScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testCriticScoreCanBeRetrievedFromNewObject()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $this->assertNull($r->getCriticScore());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setUserScore
-     * @covers  \RatingSync\Rating::getUserScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testUserScoreCanBeSetWithFloat()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setUserScore(6.5);
-        $this->assertEquals(6.5, $r->getUserScore());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setUserScore
-     * @covers  \RatingSync\Rating::getUserScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testUserScoreCanBeSetWithFloatString()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setUserScore("6.5");
-        $this->assertEquals(6.5, $r->getUserScore());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setUserScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
-     */
-    public function testUserScoreCannotBeSetWithNonNumericalString()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setUserScore("Not an int");
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setUserScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
-     */
-    public function testUserScoreCannotBeSetWithNegative()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setUserScore(-1);
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setUserScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
-     */
-    public function testUserScoreCannotBeSetWithHigherThan10()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setUserScore(11);
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setUserScore
-     * @covers  \RatingSync\Rating::getUserScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testUserScoreCanBeSetWithInt()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setUserScore(6);
-        $this->assertEquals(6, $r->getUserScore());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setUserScore
-     * @covers  \RatingSync\Rating::getUserScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testUserScoreCanBeSetWithIntString()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setUserScore("6");
-        $this->assertEquals(6, $r->getUserScore());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::setUserScore
-     * @covers  \RatingSync\Rating::getUserScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testUserScoreCanBeSetWithNull()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $r->setUserScore(null);
-        $this->assertNull($r->getUserScore());
-    }
-
-    /**
-     * @covers  \RatingSync\Rating::getUserScore
-     * @depends testObjectCanBeConstructedFromStringValue
-     */
-    public function testUserScoreCanBeRetrievedFromNewObject()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
-        $this->assertNull($r->getUserScore());
-    }
-
-    /**
      * @covers  \RatingSync\Rating::validRatingScore
      * @depends testObjectCanBeConstructedFromStringValue
      */
@@ -646,8 +422,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $rating->getYourScore(), "Your Score");
         $this->assertEquals("2015-01-02", date_format($rating->getYourRatingDate(), 'Y-m-d'), "Your Rating Date");
         $this->assertEquals(3, $rating->getSuggestedScore(), "Suggested Score");
-        $this->assertEquals(4, $rating->getCriticScore(), "Critic Score");
-        $this->assertEquals(5, $rating->getUserScore(), "User Score");
     }
     
     public function testAddFilms()
@@ -699,6 +473,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
         $film->setImage("FilmImage");
+        $film->setCriticScore(2, Constants::SOURCE_IMDB);
+        $film->setUserScore(2, Constants::SOURCE_IMDB);
         $film->addGenre("Comedy");
         $film->addDirector("Director");
         $rating = new Rating(Constants::SOURCE_IMDB);
@@ -706,8 +482,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $ratingDate = new \DateTime('2015-11-30');
         $rating->setYourRatingDate($ratingDate);
         $rating->setSuggestedScore(2);
-        $rating->setCriticScore(2);
-        $rating->setUserScore(2);
         $film->setRating($rating, Constants::SOURCE_IMDB);
         $this->assertTrue($film->saveToDb($username), "Saving film $title");
         $db = getDatabase();
@@ -718,6 +492,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
         $film->setImage("FilmImage");
+        $film->setCriticScore(1, Constants::SOURCE_RATINGSYNC);
+        $film->setUserScore(1, Constants::SOURCE_RATINGSYNC);
         $film->addGenre("Comedy");
         $film->addDirector("Director");
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
@@ -725,8 +501,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $ratingDate = new \DateTime('2015-12-01');
         $rating->setYourRatingDate($ratingDate);
         $rating->setSuggestedScore(1);
-        $rating->setCriticScore(1);
-        $rating->setUserScore(1);
         $film->setRating($rating, Constants::SOURCE_RATINGSYNC);
         $this->assertTrue($film->saveToDb($newUsername), "Saving film $title");
         
@@ -738,6 +512,8 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
         $film->setImage("FilmImage");
+        $film->setCriticScore(1, Constants::SOURCE_RATINGSYNC);
+        $film->setUserScore(1, Constants::SOURCE_RATINGSYNC);
         $film->addGenre("Comedy");
         $film->addDirector("Director");
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
@@ -745,8 +521,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $ratingDate = new \DateTime('2015-12-01');
         $rating->setYourRatingDate($ratingDate);
         $rating->setSuggestedScore(1);
-        $rating->setCriticScore(1);
-        $rating->setUserScore(1);
         $film->setRating($rating, Constants::SOURCE_RATINGSYNC);
         $this->assertTrue($film->saveToDb($username), "Saving film $title");
         
@@ -758,13 +532,13 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
         $film->setImage("FilmImage");
+        $film->setCriticScore(1, Constants::SOURCE_RATINGSYNC);
+        $film->setUserScore(1, Constants::SOURCE_RATINGSYNC);
         $film->addGenre("Comedy");
         $film->addDirector("Director");
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         $rating->setYourScore(1);
         $rating->setSuggestedScore(1);
-        $rating->setCriticScore(1);
-        $rating->setUserScore(1);
         $film->setRating($rating, Constants::SOURCE_RATINGSYNC);
         $this->assertTrue($film->saveToDb($username), "Saving film $title");
     }
@@ -882,8 +656,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(5);
         $rating->setYourRatingDate(new \DateTime('2015-12-05'));
         $rating->setSuggestedScore(5);
-        $rating->setCriticScore(5);
-        $rating->setUserScore(5);
 
         // Get the new Film ID
         $db = getDatabase();
@@ -907,8 +679,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), 'Your score');
         $this->assertEquals(date_format($rating->getYourRatingDate(), 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), 'Your score');
-        $this->assertEquals($rating->getCriticScore(), $dbRating->getCriticScore(), 'Your score');
-        $this->assertEquals($rating->getUserScore(), $dbRating->getUserScore(), 'Your score');
     }
     
     /**
@@ -950,8 +720,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($dbRating->getYourScore(), 'Your score');
         $this->assertEmpty($dbRating->getYourRatingDate(), "Your rating date");
         $this->assertEmpty($dbRating->getSuggestedScore(), 'Your score');
-        $this->assertEmpty($dbRating->getCriticScore(), 'Your score');
-        $this->assertEmpty($dbRating->getUserScore(), 'Your score');
     }
     
     /**
@@ -975,8 +743,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(6);
         $rating->setYourRatingDate(new \DateTime('2015-12-06'));
         $rating->setSuggestedScore(6);
-        $rating->setCriticScore(6);
-        $rating->setUserScore(6);
 
         // Get the new Film ID
         $db = getDatabase();
@@ -999,8 +765,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), 'Your score');
         $this->assertEquals(date_format($rating->getYourRatingDate(), 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), 'Your score');
-        $this->assertEquals($rating->getCriticScore(), $dbRating->getCriticScore(), 'Your score');
-        $this->assertEquals($rating->getUserScore(), $dbRating->getUserScore(), 'Your score');
     }
     
     /**
@@ -1027,8 +791,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(5);
         $rating->setYourRatingDate(new \DateTime());
         $rating->setSuggestedScore(5);
-        $rating->setCriticScore(5);
-        $rating->setUserScore(5);
 
         // Get the new Film ID
         $db = getDatabase();
@@ -1057,31 +819,23 @@ class RatingTest extends \PHPUnit_Framework_TestCase
                 $dbRatingDateStr = date_format($dbRating->getYourRatingDate(), 'Y-m-d');
             }
             $dbSuggestedScore = $dbRating->getSuggestedScore();
-            $dbCriticScore = $dbRating->getCriticScore();
-            $dbUserScore = $dbRating->getUserScore();
 
             if ($dbSource == $rating->getSource()) {
                 if ($dbUsername == $username) {
                     $this->assertEquals($rating->getYourScore(), $dbYourScore, 'Your score');
                     $this->assertEquals(date_format($rating->getYourRatingDate(), 'Y-m-d'), $dbRatingDateStr, "Your rating date");
                     $this->assertEquals($rating->getSuggestedScore(), $dbSuggestedScore, 'Your score');
-                    $this->assertEquals($rating->getCriticScore(), $dbCriticScore, 'Your score');
-                    $this->assertEquals($rating->getUserScore(), $dbUserScore, 'Your score');
                 }
                 elseif ($dbUsername == "rs_user1") {
                     $this->assertEquals(1, $dbYourScore, 'Your score');
                     $this->assertEquals('2015-12-01', $dbRatingDateStr, "Your rating date");
                     $this->assertEquals(1, $dbSuggestedScore, 'Your score');
-                    $this->assertEquals(1, $dbCriticScore, 'Your score');
-                    $this->assertEquals(1, $dbUserScore, 'Your score');
                 }
             }
             elseif ($dbSource == Constants::SOURCE_IMDB) {
                 $this->assertEquals(2, $dbYourScore, 'Your score');
                 $this->assertEquals('2015-11-30', $dbRatingDateStr, "Your rating date");
                 $this->assertEquals(2, $dbSuggestedScore, 'Your score');
-                $this->assertEquals(2, $dbCriticScore, 'Your score');
-                $this->assertEquals(2, $dbUserScore, 'Your score');
             }
         }
     }
@@ -1110,8 +864,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(5);
         $rating->setYourRatingDate(new \DateTime());
         $rating->setSuggestedScore(5);
-        $rating->setCriticScore(5);
-        $rating->setUserScore(5);
 
         // Get the new Film ID
         $db = getDatabase();
@@ -1134,8 +886,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), 'Your score');
         $this->assertEquals(date_format($rating->getYourRatingDate(), 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), 'Your score');
-        $this->assertEquals($rating->getCriticScore(), $dbRating->getCriticScore(), 'Your score');
-        $this->assertEquals($rating->getUserScore(), $dbRating->getUserScore(), 'Your score');
         
         $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
                    " AND yourRatingDate='2015-12-01'";
@@ -1145,8 +895,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $dbRating->initFromDbRow($result->fetch_assoc());
         $this->assertEquals(1, $dbRating->getYourScore(), 'Your score');
         $this->assertEquals(1, $dbRating->getSuggestedScore(), 'Your score');
-        $this->assertEquals(1, $dbRating->getCriticScore(), 'Your score');
-        $this->assertEquals(1, $dbRating->getUserScore(), 'Your score');
     }
     
     /**
@@ -1193,8 +941,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(6, $dbRating->getYourScore(), 'Your score');
         $this->assertEquals("2015-12-06", date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals(6, $dbRating->getSuggestedScore(), 'Suggested score');
-        $this->assertEquals(6, $dbRating->getCriticScore(), 'Critic score');
-        $this->assertEquals(6, $dbRating->getUserScore(), 'User score');
         
         $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
                    " AND yourRatingDate='".date_format($rating->getYourRatingDate(), 'Y-m-d')."'";
@@ -1205,8 +951,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($dbRating->getYourScore(), $dbArchiveRating->getYourScore(), 'Your score (archived)');
         $this->assertEquals(date_format($dbRating->getYourRatingDate(), 'Y-m-d'), date_format($dbArchiveRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals($dbRating->getSuggestedScore(), $dbArchiveRating->getSuggestedScore(), 'Suggested score (archived)');
-        $this->assertEquals($dbRating->getCriticScore(), $dbArchiveRating->getCriticScore(), 'Critic score (archived)');
-        $this->assertEquals($dbRating->getUserScore(), $dbArchiveRating->getUserScore(), 'User score (archived)');
     }
     
     /**
@@ -1231,8 +975,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(5);
         $rating->setYourRatingDate(new \DateTime('2015-12-05'));
         $rating->setSuggestedScore(5);
-        $rating->setCriticScore(5);
-        $rating->setUserScore(5);
 
         // Get the new Film ID
         $db = getDatabase();
@@ -1255,8 +997,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), 'Your score');
         $this->assertEquals(date_format($rating->getYourRatingDate(), 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), 'Your score');
-        $this->assertEquals($rating->getCriticScore(), $dbRating->getCriticScore(), 'Your score');
-        $this->assertEquals($rating->getUserScore(), $dbRating->getUserScore(), 'Your score');
         
         $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
                    " AND yourRatingDate IS NULL";
@@ -1267,8 +1007,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $dbArchiveRating->getYourScore(), 'Your score');
         $this->assertEmpty($dbArchiveRating->getYourRatingDate(), 'Your rating date');
         $this->assertEquals(1, $dbArchiveRating->getSuggestedScore(), 'Suggested score');
-        $this->assertEquals(1, $dbArchiveRating->getCriticScore(), 'Critic score');
-        $this->assertEquals(1, $dbArchiveRating->getUserScore(), 'User score');
     }
     
     /**
@@ -1293,8 +1031,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(7);
         $rating->setYourRatingDate(new \DateTime('2015-06-07'));
         $rating->setSuggestedScore(7);
-        $rating->setCriticScore(7);
-        $rating->setUserScore(7);
 
         // Get the new Film ID
         $db = getDatabase();
@@ -1317,8 +1053,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(5, $dbRating->getYourScore(), 'Your score');
         $this->assertEquals("2015-12-05", date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals(5, $dbRating->getSuggestedScore(), 'Suggested score');
-        $this->assertEquals(5, $dbRating->getCriticScore(), 'Critic score');
-        $this->assertEquals(5, $dbRating->getUserScore(), 'User score');
         
         $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
                    " AND yourRatingDate='".date_format($rating->getYourRatingDate(), 'Y-m-d')."' ORDER BY ts LIMIT 1";
@@ -1329,8 +1063,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($rating->getYourScore(), $dbArchiveRating->getYourScore(), 'Your score');
         $this->assertEquals(date_format($rating->getYourRatingDate(), 'Y-m-d'), date_format($dbArchiveRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals($rating->getSuggestedScore(), $dbArchiveRating->getSuggestedScore(), 'Suggested score');
-        $this->assertEquals($rating->getCriticScore(), $dbArchiveRating->getCriticScore(), 'Critic score');
-        $this->assertEquals($rating->getUserScore(), $dbArchiveRating->getUserScore(), 'User score');
     }
     
     /**
@@ -1357,8 +1089,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(5);
         $rating->setYourRatingDate(new \DateTime('2015-12-08'));
         $rating->setSuggestedScore(8);
-        $rating->setCriticScore(8);
-        $rating->setUserScore(8);
 
         // Get the new Film ID
         $db = getDatabase();
@@ -1381,8 +1111,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), 'Your score');
         $this->assertEquals("2015-12-05", date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), 'Suggested score');
-        $this->assertEquals($rating->getCriticScore(), $dbRating->getCriticScore(), 'Critic score');
-        $this->assertEquals($rating->getUserScore(), $dbRating->getUserScore(), 'User score');
         
         $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
                    " AND yourRatingDate='".date_format($rating->getYourRatingDate(), 'Y-m-d')."' ORDER BY ts LIMIT 1";
@@ -1393,8 +1121,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(5, $dbArchiveRating->getYourScore(), 'Your score');
         $this->assertEquals("2015-12-05", date_format($dbArchiveRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals(5, $dbArchiveRating->getSuggestedScore(), 'Your score');
-        $this->assertEquals(5, $dbArchiveRating->getCriticScore(), 'Your score');
-        $this->assertEquals(5, $dbArchiveRating->getUserScore(), 'Your score');
     }
 
     /**
@@ -1722,8 +1448,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $rating->setYourScore(1);
         $rating->setYourRatingDate(new \DateTime('2016-02-04'));
         $rating->setSuggestedScore(2);
-        $rating->setCriticScore(3);
-        $rating->setUserScore(4);
         $rating->saveToRs($username, $filmId);
         
         $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
@@ -1733,8 +1457,6 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $row['yourScore'], 'Your score');
         $this->assertEquals('2016-02-04', $row['yourRatingDate'], "Your rating date");
         $this->assertEmpty($row['suggestedScore'], 'Your score');
-        $this->assertEmpty($row['criticScore'], 'Your score');
-        $this->assertEmpty($row['userScore'], 'Your score');
     }
 
     /**
