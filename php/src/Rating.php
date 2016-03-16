@@ -218,6 +218,7 @@ class Rating
             // This is a new rating. Simply insert it to the db.
             $thisValues = self::setColumnsAndValues($this, $username, $filmId);
             $insertThisRating = "REPLACE INTO rating (".$thisValues['columns'].") VALUES (".$thisValues['values'].")";
+            logDebug($insertThisRating, __FUNCTION__." ".__LINE__);
             $saveSuccess = $db->query($insertThisRating);
         } else {
             // There is an existing rating. Existing vs. This. One goes to the rating
@@ -229,6 +230,7 @@ class Rating
                 $existingValues = self::setColumnsAndValues($existingRating, $username, $filmId);
                 $archive = "INSERT rating_archive (".$existingValues['columns'].") VALUES (".$existingValues['values'].")";
                 // Archive
+                logDebug($archive, __FUNCTION__." ".__LINE__);
                 if ($db->query($archive)) {
                     // Replace
                     if ($this->getYourScore() == $existingRating->getYourScore()) {
@@ -239,6 +241,7 @@ class Rating
                     }
                     $thisValues = self::setColumnsAndValues($this, $username, $filmId);
                     $replaceThisRating = "REPLACE INTO rating (".$thisValues['columns'].") VALUES (".$thisValues['values'].")";
+                    logDebug($replaceThisRating, __FUNCTION__." ".__LINE__);
                     $saveSuccess = $db->query($replaceThisRating);
                 }
             } else {
@@ -246,6 +249,7 @@ class Rating
                 // and leave the rating table alone.
                 $originalThisValues = self::setColumnsAndValues($originalThis, $username, $filmId);
                 $archive = "INSERT rating_archive (".$originalThisValues['columns'].") VALUES (".$originalThisValues['values'].")";
+                logDebug($archive, __FUNCTION__." ".__LINE__);
                 $saveSuccess = $db->query($archive);
             }
         }

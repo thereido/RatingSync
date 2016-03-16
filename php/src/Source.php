@@ -240,12 +240,16 @@ class Source
         }
 
         if ($newRow) {
-            if (! $db->query("INSERT INTO film_source ($columns) VALUES ($values)")) {
+            $query = "INSERT INTO film_source ($columns) VALUES ($values)";
+            logDebug($query, __FUNCTION__." ".__LINE__);
+            if (! $db->query($query)) {
                 throw new \Exception('SQL Error ' . $db->errno . ". " . $db->error);
             }
         } else {
             if ($set != $setEmpty) {
-                if (! $db->query("UPDATE film_source $set WHERE film_id=$filmId AND source_name='$sourceName'")) {
+                $query = "UPDATE film_source $set WHERE film_id=$filmId AND source_name='$sourceName'";
+                logDebug($query, __FUNCTION__." ".__LINE__);
+                if (! $db->query($query)) {
                     throw new \Exception('SQL Error ' . $db->errno . ". " . $db->error);
                 }
             }

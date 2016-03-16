@@ -546,7 +546,9 @@ class Film {
         if ($newRow) {
             $columns = "title, year, contentType, image";
             $values = "'$title', $year, '$contentType', '$image'";
-            if ($db->query("INSERT INTO film ($columns) VALUES ($values)")) {
+            $query = "INSERT INTO film ($columns) VALUES ($values)";
+            logDebug($query, __FUNCTION__." ".__LINE__);
+            if ($db->query($query)) {
                 $filmId = $db->insert_id;
                 $this->id = $filmId;
             }
@@ -586,7 +588,9 @@ class Film {
             } else {
                 $columns = "fullname, lastname";
                 $values = "'$director', '$director'";
-                $success = $db->query("INSERT INTO person ($columns) VALUES ($values)");
+                $query = "INSERT INTO person ($columns) VALUES ($values)";
+                logDebug($query, __FUNCTION__." ".__LINE__);
+                $success = $db->query($query);
                 if (!$success) {
                     $errorFree = false;
                 }
@@ -595,7 +599,9 @@ class Film {
 
             $columns = "person_id, film_id, position";
             $values = "$personId, $filmId, 'Director'";
-            $success = $db->query("REPLACE INTO credit ($columns) VALUES ($values)");
+            $query = "REPLACE INTO credit ($columns) VALUES ($values)";
+            logDebug($query, __FUNCTION__." ".__LINE__);
+            $success = $db->query($query);
             if (!$success) {
                 $errorFree = false;
             }
@@ -607,7 +613,9 @@ class Film {
             if ($result->num_rows == 0) {
                 $columns = "name";
                 $values = "'$genre'";
-                $success = $db->query("INSERT INTO genre ($columns) VALUES ($values)");
+                $query = "INSERT INTO genre ($columns) VALUES ($values)";
+                logDebug($query, __FUNCTION__." ".__LINE__);
+                $success = $db->query($query);
                 if (!$success) {
                     $errorFree = false;
                 }
@@ -615,7 +623,9 @@ class Film {
 
             $columns = "film_id, genre_name";
             $values = "$filmId, '$genre'";
-            $success = $db->query("REPLACE INTO film_genre ($columns) VALUES ($values)");
+            $query = "REPLACE INTO film_genre ($columns) VALUES ($values)";
+            logDebug($query, __FUNCTION__." ".__LINE__);
+            $success = $db->query($query);
             if (!$success) {
                 $errorFree = false;
             }
@@ -654,7 +664,9 @@ class Film {
         // only for setting an image.
         $values = "title='$title', year=$year, contentType='$contentType', image='$filmImage'";
         $where = "id=$filmId";
-        $success = $db->query("UPDATE film SET $values WHERE $where");
+        $query = "UPDATE film SET $values WHERE $where";
+        logDebug($query, __FUNCTION__." ".__LINE__);
+        $success = $db->query($query);
         if (!$success) {
             $errorFree = false;
         }
