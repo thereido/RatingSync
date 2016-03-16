@@ -1,89 +1,7 @@
 
 document.addEventListener('DOMContentLoaded', function () {
-    getCurrentTabUrl(startPopup);
+    chrome.tabs.executeScript(null, {file: "getSearchTerms.js"}, function() { });
 });
-
-function getCurrentTabUrl(callback) {
-  var queryInfo = {
-    active: true,
-    currentWindow: true
-  };
-
-  chrome.tabs.query(queryInfo, function(tabs) {
-    var tab = tabs[0];
-    var url = tab.url;
-    console.assert(typeof url == 'string', 'tab.url should be a string');
-
-    callback(url);
-  });
-}
-
-function startPopup(url) {
-    var uniqueName;
-    var source;
-	if (url && -1 < url.indexOf("imdb")) {
-        var source = "IM";
-		var index = url.indexOf("/tt");
-        if (-1 < index) {
-            var indexBegin = index + 1;
-            var indexEnd = url.indexOf("/", indexBegin);
-            uniqueName = url.substring(indexBegin, indexEnd);
-        } else {
-            notFound("IMDb");
-        }
-	}
-    else if (url && -1 < url.indexOf("netflix")) {
-        var source = "NF";
-        var indexBegin = -1;
-        var indexEnd;
-		var index = url.indexOf("/title/");
-        if (-1 < index) {
-            indexBegin = index + 7;
-            indexEnd = url.indexOf("?", indexBegin);
-        } else {
-            index = url.indexOf("jbv=");
-            if (-1 < index) {
-                indexBegin = index + 4;
-                indexEnd = url.indexOf("&", indexBegin);
-            }
-        }
-
-        if (indexBegin != -1) {
-		    uniqueName = url.substring(indexBegin, indexEnd);
-        } else {
-            notFound("Netflix");
-        }
-	}
-    else if (url && -1 < url.indexOf("rottentomatoes")) {
-        var source = "RT";
-        var indexBegin = -1;
-        var indexEnd;
-		var index = url.indexOf("/m/");
-        if (-1 < index) {
-            indexBegin = index + 3;
-            indexEnd = url.indexOf("/", indexBegin);
-        } else {
-            index = url.indexOf("/tv/");
-            if (-1 < index) {
-                indexBegin = index + 4;
-                indexEnd = url.indexOf("/", indexBegin);
-            }
-        }
-
-        if (indexBegin != -1) {
-		    uniqueName = url.substring(indexBegin, indexEnd);
-        } else {
-            notFound("RottenTomatoes");
-        }
-	}
-
-    if (uniqueName) {
-        searchFilm(uniqueName, source);
-    } else if (!source) {
-        var msg = "<div>Here are the sites currently supported<ul><li>IMDb</li><li>Rotten Tomatoes</li><li>Netflix</li></ul></div>";
-        document.getElementById("searchResult").innerHTML = msg;
-    }
-}
 
 function renderStatus(statusText) {
   document.getElementById('status').textContent = statusText;
@@ -95,7 +13,13 @@ function notFound(source)
     document.getElementById("searchResult").innerHTML = msg;
 }
 
-function searchFilm(searchTerm, source)
+function notSupported(source)
+{
+    var msg = "<div>Here are the sites currently supported<ul><li>IMDb</li><li>Rotten Tomatoes</li><li>Netflix</li></ul></div>";
+    document.getElementById("searchResult").innerHTML = msg;
+}
+
+function searchFilm(searchTerms)
 {
     renderStatus('Searching...');
 	var xmlhttp = new XMLHttpRequest();
@@ -109,7 +33,14 @@ function searchFilm(searchTerm, source)
 	        renderStatus('Not found ' + searchTerm + ' at ' + source);
 	    }
 	}
-	xmlhttp.open("GET", "http://192.168.1.105:55887/php/src/ajax/getSearchFilm.php?q=" + searchTerm + "&source=" + source + "&i=0", true);
+
+    var params = "?q=" + searchTerms.uniqueName;
+    params = params + "&source=" + searchTerms.source;
+    params = params + "&t=" + searchTerms.title;
+    params = params + "&y=" + searchTerms.year;
+    params = params + "&ct=" + searchTerms.contentType;
+    params = params + "&i=0";
+	xmlhttp.open("GET", "http://192.168.1.105:55887/php/src/ajax/getSearchFilm.php" + params, true);
 	xmlhttp.send();
 }
 
@@ -148,3 +79,8 @@ function rateFilm(uniqueName, score) {
     renderStatus('Saving...');
 }
 
+chrome.runtime.onMessage.addListener(function (request, sender) {
+    if (request.action == "setSearchTerms") {
+        searchFilm(request.search);
+    }
+});

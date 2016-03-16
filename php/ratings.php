@@ -28,7 +28,7 @@ logDebug("Rating count " . count($films), "ratings.php ".__LINE__);
     <title>RSync: Your Ratings</title>
     <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
     <link href="../css/rs.css" rel="stylesheet">
-    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/bootstrap_rs.min.js"></script>
     <script src="../js/ratings.js"></script>
 </head>
 

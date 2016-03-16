@@ -51,7 +51,8 @@ class MainTest extends \PHPUnit_Framework_TestCase
         $db = getDatabase();
 
         // Test
-        $film = search("tt2294629"); // Frozen (2013)
+        $searchTerms = array("uniqueName" => "tt2294629");
+        $film = search($searchTerms); // Frozen (2013)
         $filmId = $film->getId();
 
         // Verify database - film
@@ -132,7 +133,8 @@ class MainTest extends \PHPUnit_Framework_TestCase
         DatabaseTest::resetDb();
 
         // Test
-        $film = search("tt0094819"); // Buster (1988)
+        $searchTerms = array("uniqueName" => "tt0094819");
+        $film = search($searchTerms); // Buster (1988)
         $filmId = $film->getId();
 
         // Verify film object
@@ -198,7 +200,8 @@ class MainTest extends \PHPUnit_Framework_TestCase
         // Use the film in db from testSearch
 
         // Test
-        $film = search("rs1"); // Buster (1988)
+        $searchTerms = array("uniqueName" => "rs1");
+        $film = search($searchTerms); // Buster (1988)
 
         // Verify
         $this->assertEquals("Buster", $film->getTitle(), "Title");
@@ -224,7 +227,8 @@ class MainTest extends \PHPUnit_Framework_TestCase
         // Use the film in db from testSearch
 
         // Test
-        $film = search("rs1", getUsername());
+        $searchTerms = array("uniqueName" => "rs1");
+        $film = search($searchTerms, getUsername());
 
         // Verify
         $this->assertEquals("Buster", $film->getTitle(), "Title");
@@ -240,12 +244,13 @@ class MainTest extends \PHPUnit_Framework_TestCase
 
         // Set up
         $username = getUsername();
-        $setupFilm = search("rs1", $username); // Buster (1988)
+        $searchTerms = array("uniqueName" => "rs1");
+        $setupFilm = search($searchTerms, $username); // Buster (1988)
         $setupFilm->setYourScore(5, Constants::SOURCE_RATINGSYNC);
         $setupFilm->saveToDb($username);
 
         // Test
-        $film = search("rs1", $username);
+        $film = search($searchTerms, $username);
 
         // Verify
         $this->assertEquals("Buster", $film->getTitle(), "Title");
@@ -267,7 +272,8 @@ class MainTest extends \PHPUnit_Framework_TestCase
     public function testSearchDbNoMatchSiteNoMatch()
     {$this->start(__CLASS__, __FUNCTION__);
     
-        $film = search("garbage_query");
+        $searchTerms = array("uniqueName" => "garbage_query");
+        $film = search($searchTerms);
         $this->assertEmpty($film, "Film from uniqueName=garbage_query should be empty");
     }
 }

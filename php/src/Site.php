@@ -466,6 +466,51 @@ abstract class Site
         return $film;
     }
 
+    public function getFilmBySearch($searchTerms)
+    {
+        if (empty($searchTerms) || !is_array($searchTerms)) {
+            throw new \InvalidArgumentException('Function getFilmBySearch must have a searchTerms array');
+        }
+
+        $uniqueName = null;
+        $title = null;
+        $year = null;
+        $contentType = null;
+
+        if (array_key_exists("uniqueName", $searchTerms)) {
+            $uniqueName = $searchTerms['uniqueName'];
+        }
+        if (array_key_exists("title", $searchTerms)) {
+            $title = $searchTerms['title'];
+        }
+        if (array_key_exists("year", $searchTerms)) {
+            $year = $searchTerms['year'];
+        }
+        if (array_key_exists("contentType", $searchTerms)) {
+            $contentType = $searchTerms['contentType'];
+        }
+        
+        if (empty($uniqueName) && (empty($title) || empty($year))) {
+            throw new \InvalidArgumentException('Function getFilmBySearch searchTerms must have uniqueName or (title and year)');
+        }
+
+        if (!empty($uniqueName)) {
+            return $this->getFilmByUniqueName($uniqueName);
+        }
+
+        $film = new Film($this->http);
+        $film->setTitle($title);
+        $film->setYear($year);
+        $film->setContentType($contentType);
+        try {
+            $this->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_ALWAYS);
+        } catch (\Exception $e) {
+            $film = null;
+        }
+
+        return $film;
+    }
+
     /**
      * Get the title from html of the film's detail page. Set the value
      * in the Film param.

@@ -3,7 +3,7 @@
 
   "name": "RatingSync",
   "description": "This extension shows a Google Image search result for the current page",
-  "version": "1.0",
+  "version": "1.0.1",
 
   "browser_action": {
     "default_icon": "icon.png",
@@ -11,8 +11,6 @@
   },
   "permissions": [
     "activeTab",
-    "http://192.168.1.105:55887/",
-    "http://google.com/",
-    "https://ajax.googleapis.com/"
+    "<all_urls>"
   ]
 }

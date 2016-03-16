@@ -131,29 +131,51 @@ function getUsername() {
     return Constants::LOGGED_IN_USERNAME;
 }
 
-function search($searchQuery, $username = null, $sourceName = null)
+function search($searchTerms, $username = null)
 {
-    if (empty($searchQuery)) {
+    if (empty($searchTerms) || !is_array($searchTerms) || !array_key_exists("uniqueName", $searchTerms)) {
         return null;
     }
+    
+    $uniqueName = $searchTerms['uniqueName'];
+    $sourceName = Constants::SOURCE_RATINGSYNC;
+    if (array_key_exists("sourceName", $searchTerms)) {
+        $sourceName = $searchTerms['sourceName'];
+    }
 
-    $film = Film::searchDb($searchQuery, $username);
+    $film = null;
+    if (!empty($uniqueName)) {
+        $film = Film::searchDb($uniqueName, $username);
+    }
+
     if (empty($film)) {
-        $site = new Imdb(getUsername());
-        /*RT*
-        if ($sourceName == Constants::SOURCE_NETFLIX)) {
-            $site = new Netflix(getUsername());
-        } elseif ($sourceName == Constants::SOURCE_RT)) {
-            $site = new RottenTomatoes(getUsername());
+        $imdb = new Imdb(getUsername());
+
+        if ($sourceName == Constants::SOURCE_RATINGSYNC || $sourceName == Constants::SOURCE_IMDB) {
+            $film = $imdb->getFilmBySearch($searchTerms);
+        }
+        elseif ($sourceName == Constants::SOURCE_NETFLIX) {
+            $searchTerms['uniqueName'] = null;
+            $film = $imdb->getFilmBySearch($searchTerms);
+        }
+        /*RT* elseif ($sourceName == Constants::SOURCE_RT)) {
+            $rt = new RottenTomatoes(getUsername());
         }
         *RT*/
 
-        $film = $site->getFilmByUniqueName($searchQuery);
         if (!empty($film)) {
             $film->saveToDb(getUsername());
         }
     }
-
+    
+    if (!empty($film) && !empty($film->getId()) && !empty($uniqueName)) {
+        $source = $film->getSource($sourceName);
+        if (empty($source->getUniqueName())) {
+            $source->setUniqueName($uniqueName);
+            $source->saveFilmSourceToDb($film->getId());
+        }
+    }
+    
     return $film;
 }
 
