@@ -472,23 +472,10 @@ abstract class Site
             throw new \InvalidArgumentException('Function getFilmBySearch must have a searchTerms array');
         }
 
-        $uniqueName = null;
-        $title = null;
-        $year = null;
-        $contentType = null;
-
-        if (array_key_exists("uniqueName", $searchTerms)) {
-            $uniqueName = $searchTerms['uniqueName'];
-        }
-        if (array_key_exists("title", $searchTerms)) {
-            $title = $searchTerms['title'];
-        }
-        if (array_key_exists("year", $searchTerms)) {
-            $year = $searchTerms['year'];
-        }
-        if (array_key_exists("contentType", $searchTerms)) {
-            $contentType = $searchTerms['contentType'];
-        }
+        $uniqueName = array_value_by_key("uniqueName", $searchTerms);
+        $title = array_value_by_key("title", $searchTerms);
+        $year = array_value_by_key("year", $searchTerms);
+        $contentType = array_value_by_key("contentType", $searchTerms);
         
         if (empty($uniqueName) && (empty($title) || empty($year))) {
             throw new \InvalidArgumentException('Function getFilmBySearch searchTerms must have uniqueName or (title and year)');

@@ -133,36 +133,32 @@ function getUsername() {
 
 function search($searchTerms, $username = null)
 {
-    if (empty($searchTerms) || !is_array($searchTerms) || !array_key_exists("uniqueName", $searchTerms)) {
+    if (empty($searchTerms) || !is_array($searchTerms)) {
         return null;
     }
-    
-    $uniqueName = $searchTerms['uniqueName'];
-    $sourceName = Constants::SOURCE_RATINGSYNC;
-    if (array_key_exists("sourceName", $searchTerms)) {
-        $sourceName = $searchTerms['sourceName'];
+
+    $uniqueName = array_value_by_key("uniqueName", $searchTerms);
+    $title = array_value_by_key("title", $searchTerms);
+    $year = array_value_by_key("year", $searchTerms);
+    $sourceName = array_value_by_key("sourceName", $searchTerms);
+    // Need uniqueName or both title and year
+    if (empty($uniqueName) && (empty($title) || empty($year))) {
+        return null;
     }
 
-    $film = null;
-    if (!empty($uniqueName)) {
-        $film = Film::searchDb($uniqueName, $username);
-    }
+    $film = Film::searchDb($searchTerms, $username);
 
     if (empty($film)) {
         $imdb = new Imdb(getUsername());
-
-        if ($sourceName == Constants::SOURCE_RATINGSYNC || $sourceName == Constants::SOURCE_IMDB) {
-            $film = $imdb->getFilmBySearch($searchTerms);
+        
+        if (empty($sourceName)) {
+            $sourceName = Constants::SOURCE_RATINGSYNC;
         }
-        elseif ($sourceName == Constants::SOURCE_NETFLIX) {
+        if ($sourceName != Constants::SOURCE_RATINGSYNC && $sourceName != Constants::SOURCE_IMDB) {
             $searchTerms['uniqueName'] = null;
-            $film = $imdb->getFilmBySearch($searchTerms);
         }
-        /*RT* elseif ($sourceName == Constants::SOURCE_RT)) {
-            $rt = new RottenTomatoes(getUsername());
-        }
-        *RT*/
-
+        
+        $film = $imdb->getFilmBySearch($searchTerms);
         if (!empty($film)) {
             $film->saveToDb(getUsername());
         }
@@ -179,6 +175,14 @@ function search($searchTerms, $username = null)
     return $film;
 }
 
+function array_value_by_key($key, $a) {
+    if (array_key_exists($key, $a)) {
+        return $a[$key];
+    } else {
+        return null;
+    }
+}
+
 function setRating($uniqueName, $score)
 {
     if (empty($uniqueName)) {
@@ -186,7 +190,7 @@ function setRating($uniqueName, $score)
     }
 
     $username = getUsername();
-    $film = Film::searchDb($uniqueName, $username);
+    $film = Film::searchDb(array("uniqueName" => $uniqueName), $username);
     if (!empty($film)) {
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $rating->setYourScore($score);

@@ -783,14 +783,41 @@ class Film {
         return $this->getImage();
     }
 
-    public static function searchDb($searchQuery, $username)
+    public static function searchDb($searchTerms, $username)
     {
+        if (empty($searchTerms) || !is_array($searchTerms)) {
+            return null;
+        }
+
+        $uniqueName = array_value_by_key("uniqueName", $searchTerms);
+        $title = array_value_by_key("title", $searchTerms);
+        $year = array_value_by_key("year", $searchTerms);
+        $sourceName = array_value_by_key("sourceName", $searchTerms);
+
         $film = null;
         $db = getDatabase();
-        $result = $db->query("SELECT film_id FROM film_source WHERE uniqueName='$searchQuery'");
-        if ($result->num_rows == 1) {
-            $row = $result->fetch_assoc();
-            $film = self::getFilmFromDb($row['film_id'], new HttpRatingSync("empty_username"), $username);
+        if (!empty($uniqueName)) {
+            $result = $db->query("SELECT film_id FROM film_source WHERE uniqueName='$uniqueName'");
+            if ($result->num_rows == 1) {
+                $row = $result->fetch_assoc();
+                $film = self::getFilmFromDb($row['film_id'], new HttpRatingSync("empty_username"), $username);
+            }
+        }
+        
+        if (empty($film) && !empty($title) && !empty($year)) {
+            $result = $db->query("SELECT id FROM film WHERE title='$title' AND year='$year'");
+            if ($result->num_rows == 1) {
+                $row = $result->fetch_assoc();
+                $filmId = $row['id'];
+
+                if (!empty($filmId) && !empty($uniqueName) && !empty($sourceName)) {
+                    $source = new Source($sourceName, $filmId);
+                    $source->setUniqueName($uniqueName);
+                    $source->saveFilmSourceToDb($filmId);
+                }
+
+                $film = self::getFilmFromDb($filmId, new HttpRatingSync("empty_username"), $username);
+            }
         }
 
         return $film;
