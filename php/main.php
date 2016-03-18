@@ -164,7 +164,7 @@ function search($searchTerms, $username = null)
         }
     }
     
-    if (!empty($film) && !empty($film->getId()) && !empty($uniqueName)) {
+    if (!empty($film) && !empty($film->getId()) && !empty($uniqueName) && !empty($sourceName)) {
         $source = $film->getSource($sourceName);
         if (empty($source->getUniqueName())) {
             $source->setUniqueName($uniqueName);

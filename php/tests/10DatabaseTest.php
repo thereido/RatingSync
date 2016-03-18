@@ -26,7 +26,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $row["count"], "Film rows (should be none)");
         $result = $db->query("SELECT count(user_source.source_name) as count FROM user, source, user_source WHERE user.username='testratingsync' AND user.username=user_source.user_name AND user_source.source_name=source.name");
         $row = $result->fetch_assoc();
-        $this->assertEquals(5, $row["count"], "Test user with sources");
+        $this->assertGreaterThan(0, $row["count"], "Test user with sources");
     }
 
 }

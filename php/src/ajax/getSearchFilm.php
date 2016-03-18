@@ -6,47 +6,46 @@ require_once "getHtmlFilm.php";
 
 $username = getUsername();
 
-$searchQuery = "";
-if (array_key_exists("q", $_GET) && $_GET['q'] != "undefined") {
-    $searchQuery = $_GET['q'];
+$searchQuery = array_value_by_key("q", $_GET);
+if ($searchQuery == "undefined") {
+    $searchQuery = null;
 }
 
-$searchTitle = "";
-if (array_key_exists("t", $_GET) && $_GET['t'] != "undefined") {
-    $searchTitle = $_GET['t'];
+$searchTitle = array_value_by_key("t", $_GET);
+if ($searchTitle == "undefined") {
+    $searchTitle = null;
 }
 
-$searchYear = "";
-if (array_key_exists("y", $_GET) && $_GET['y'] != "undefined") {
-    $searchYear = $_GET['y'];
+$searchYear = array_value_by_key("y", $_GET);
+if ($searchYear == "undefined") {
+    $searchYear = null;
 }
 
-$searchContentType = "";
-if (array_key_exists("ct", $_GET) && $_GET['ct'] != "undefined") {
-    $searchContentType = $_GET['ct'];
+$searchContentType = array_value_by_key("ct", $_GET);
+if ($searchContentType == "undefined") {
+    $searchContentType = null;
 }
 
-$withImage = true;
-if (array_key_exists("i", $_GET) && $_GET['i'] != "undefined") {
-    $i = $_GET['i'];
-    if ($i != 1) {
-        $withImage = false;
-    }
+$withImage = array_value_by_key("i", $_GET);
+if ($withImage == 0) {
+    $withImage = false;
+} else {
+    $withImage = true;
 }
 
 $sourceName = Constants::SOURCE_RATINGSYNC;
-if (array_key_exists("source", $_GET)) {
-    $searchSource = $_GET['source'];
-    if ($searchSource == "IM") {
-        $sourceName = Constants::SOURCE_IMDB;
-    } else if ($searchSource == "NF") {
-        $sourceName = Constants::SOURCE_NETFLIX;
-    } else if ($searchSource == "RT") {
-        $sourceName = Constants::SOURCE_RT;
-    }
+$searchSource = array_value_by_key("source", $_GET);
+if ($searchSource == "IM") {
+    $sourceName = Constants::SOURCE_IMDB;
+} else if ($searchSource == "NF") {
+    $sourceName = Constants::SOURCE_NETFLIX;
+} else if ($searchSource == "RT") {
+    $sourceName = Constants::SOURCE_RT;
+} else if ($searchSource == "XF") {
+    $sourceName = Constants::SOURCE_XFINITY;
 }
     
-logDebug("Search: $searchQuery", "getSearchFilm.php ".__LINE__);
+logDebug("Search: $sourceName $searchQuery $searchTitle $searchYear", "getSearchFilm.php ".__LINE__);
 $searchTerms = array('uniqueName' => $searchQuery,
                      'sourceName' => $sourceName,
                      'title' => $searchTitle,

@@ -469,16 +469,16 @@ abstract class Site
     public function getFilmBySearch($searchTerms)
     {
         if (empty($searchTerms) || !is_array($searchTerms)) {
-            throw new \InvalidArgumentException('Function getFilmBySearch must have a searchTerms array');
+            throw new \InvalidArgumentException('Function '.__FUNCTION__.' must have a searchTerms array');
         }
-
+        
         $uniqueName = array_value_by_key("uniqueName", $searchTerms);
         $title = array_value_by_key("title", $searchTerms);
         $year = array_value_by_key("year", $searchTerms);
         $contentType = array_value_by_key("contentType", $searchTerms);
         
         if (empty($uniqueName) && (empty($title) || empty($year))) {
-            throw new \InvalidArgumentException('Function getFilmBySearch searchTerms must have uniqueName or (title and year)');
+            throw new \InvalidArgumentException('Function '.__FUNCTION__.' searchTerms must have uniqueName or (title and year)');
         }
 
         if (!empty($uniqueName)) {

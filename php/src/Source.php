@@ -28,7 +28,7 @@ class Source
     public function __construct($sourceName, $filmId = null)
     {
         if (! self::validSource($sourceName) ) {
-            throw new \InvalidArgumentException('Source $sourceName invalid');
+            throw new \InvalidArgumentException("Source \$sourceName ($sourceName) invalid");
         }
 
         $this->name = $sourceName;
@@ -41,7 +41,14 @@ class Source
 
     public static function validSource($source)
     {
-        if (in_array($source, array(Constants::SOURCE_JINNI, Constants::SOURCE_IMDB, Constants::SOURCE_RATINGSYNC, Constants::SOURCE_NETFLIX))) {
+        $validSources = array(Constants::SOURCE_JINNI,
+                                Constants::SOURCE_IMDB,
+                                Constants::SOURCE_RATINGSYNC,
+                                Constants::SOURCE_NETFLIX,
+                                Constants::SOURCE_RT,
+                                Constants::SOURCE_XFINITY);
+
+        if (in_array($source, $validSources)) {
             return true;
         }
         return false;
