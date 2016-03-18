@@ -6,6 +6,7 @@ function getSearchTerms(document_root) {
     var source;
     var title;
     var year;
+    var contentType;
 
     var url = window.location.href;
 	if (url && -1 < url.indexOf("imdb")) {
@@ -83,12 +84,6 @@ function getSearchTerms(document_root) {
             index = index + 7;
             indexBegin = url.indexOf("/", index) + 1;
             indexEnd = url.indexOf("/", indexBegin);
-        } else {
-            index = url.indexOf("/tv/");
-            if (-1 < index) {
-                indexBegin = index + 4;
-                indexEnd = url.indexOf("/", indexBegin);
-            }
         }
 
         if (indexBegin != -1) {
@@ -105,8 +100,36 @@ function getSearchTerms(document_root) {
             year = reYear.exec(html)[1];
         }
 	}
+    else if (url && -1 < url.indexOf("hulu")) {
+        var source = "H";
+        var indexBegin = -1;
+        var indexEnd;
+		var index = url.indexOf("/watch/");
+        if (-1 < index) {
+            indexBegin = index + 7;
+            indexEnd = url.indexOf("/", indexBegin);
+        }
 
-    var text = '{"uniqueName": "' + uniqueName + '", "source": "' + source + '", "title": "' + title +  '", "year": "' + year + '"}';
+        if (indexBegin != -1) {
+            if (indexBegin < indexEnd) {
+                uniqueName = url.substring(indexBegin, indexEnd);
+            } else {
+                uniqueName = url.substring(indexBegin);
+            }
+        }
+
+        var html = document_root.getElementsByClassName("episode-title")[0].innerHTML;
+        var reTitle = new RegExp("(.*) .[0-9]{4}.");
+        if (reTitle.test(html)) {
+            title = reTitle.exec(html)[1];
+        }
+        var reYear = new RegExp("([0-9]{4}).$");
+        if (reYear.test(html)) {
+            year = reYear.exec(html)[1];
+        }
+	}
+
+    var text = '{"uniqueName": "' + uniqueName + '", "source": "' + source + '", "title": "' + title +  '", "year": "' + year + '", "contentType": "' + contentType + '"}';
     var json = JSON.parse(text);
     return json;
 }

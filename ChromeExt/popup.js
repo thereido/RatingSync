@@ -34,12 +34,12 @@ function searchFilm(searchTerms)
 	    }
 	}
 
-    var params = "?q=" + searchTerms.uniqueName;
-    params = params + "&source=" + searchTerms.source;
-    params = params + "&t=" + searchTerms.title;
-    params = params + "&y=" + searchTerms.year;
-    params = params + "&ct=" + searchTerms.contentType;
-    params = params + "&i=0";
+    var params = "?i=0";
+    if (searchTerms.uniqueName != "undefined") { params = params + "&q=" + searchTerms.uniqueName; }
+    if (searchTerms.source != "undefined") { params = params + "&source=" + searchTerms.source; }
+    if (searchTerms.title != "undefined") { params = params + "&t=" + searchTerms.title; }
+    if (searchTerms.year != "undefined") { params = params + "&y=" + searchTerms.year; }
+    if (searchTerms.contentType != "undefined") { params = params + "&ct=" + searchTerms.contentType; }
 	xmlhttp.open("GET", "http://192.168.1.105:55887/php/src/ajax/getSearchFilm.php" + params, true);
 	xmlhttp.send();
 }

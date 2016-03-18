@@ -46,7 +46,8 @@ class Source
                                 Constants::SOURCE_RATINGSYNC,
                                 Constants::SOURCE_NETFLIX,
                                 Constants::SOURCE_RT,
-                                Constants::SOURCE_XFINITY);
+                                Constants::SOURCE_XFINITY,
+                                Constants::SOURCE_HULU);
 
         if (in_array($source, $validSources)) {
             return true;

@@ -6,6 +6,7 @@ INSERT INTO source (name) VALUES ('IMDb');
 INSERT INTO source (name) VALUES ('Netflix');
 INSERT INTO source (name) VALUES ('RottenTomatoes');
 INSERT INTO source (name) VALUES ('xfinity');
+INSERT INTO source (name) VALUES ('Hulu');
 
 INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'RatingSync', 'testratingsync', 'password');
 INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'Jinni', 'testratingsync', 'password');
@@ -13,3 +14,4 @@ INSERT INTO user_source (user_name, source_name, username, password) VALUES ('te
 INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'Netflix', 'testratingsync', 'password');
 INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'RottenTomatoes', 'testratingsync', 'password');
 INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'xfinity', 'testratingsync', 'password');
+INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'Hulu', 'testratingsync', 'password');

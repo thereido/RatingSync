@@ -43,6 +43,8 @@ if ($searchSource == "IM") {
     $sourceName = Constants::SOURCE_RT;
 } else if ($searchSource == "XF") {
     $sourceName = Constants::SOURCE_XFINITY;
+} else if ($searchSource == "H") {
+    $sourceName = Constants::SOURCE_HULU;
 }
     
 logDebug("Search: $sourceName $searchQuery $searchTitle $searchYear", "getSearchFilm.php ".__LINE__);
