@@ -17,6 +17,7 @@ class Constants
     const SOURCE_XFINITY                = "xfinity";
     const SOURCE_HULU                   = "Hulu";
     const SOURCE_RATINGSYNC             = "RatingSync";
+    const LIST_DEFAULT                  = "Watchlist";
     const EXPORT_FORMAT_XML             = "XML";
     const IMPORT_FORMAT_XML             = "XML";
     const USE_CACHE_ALWAYS              = -1;

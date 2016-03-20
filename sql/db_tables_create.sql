@@ -157,7 +157,7 @@ CREATE TABLE IF NOT EXISTS credit
             REFERENCES film(id)
     );
   
-CREATE TABLE IF NOT EXISTS userlist
+CREATE TABLE IF NOT EXISTS filmlist
     (
         user_name VARCHAR(50) NOT NULL,
         film_id INT NOT NULL,
@@ -168,6 +168,7 @@ CREATE TABLE IF NOT EXISTS userlist
         PRIMARY KEY (user_name, film_id, listname),
         KEY (user_name),
         KEY (film_id),
+        KEY (user_name, listname),
 
         FOREIGN KEY (user_name)
             REFERENCES user(username),
