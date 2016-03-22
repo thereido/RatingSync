@@ -17,7 +17,14 @@ function addStarListener(elementId) {
 		var score = star.getAttribute('data-score');
 		var titleNum = star.getAttribute('data-title-num');
 		var withImage = star.getAttribute('data-image');
-		star.addEventListener('click', function(){rateFilm(uniqueName, score, titleNum, withImage);});
+
+		var mouseoverHandler = function () { showYourScore(uniqueName, score, 'new'); };
+		var mouseoutHandler = function () { showYourScore(uniqueName, score, 'original'); };
+		var clickHandler = function () { rateFilm(uniqueName, score, titleNum, withImage); };
+
+        star.addEventListener("mouseover", mouseoverHandler);
+        star.addEventListener("mouseout", mouseoutHandler);
+        star.addEventListener("click", clickHandler);
 	}
 }
 
@@ -27,12 +34,22 @@ function rateFilm(uniqueName, score, titleNum, withImage) {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             document.getElementById(uniqueName).innerHTML = xmlhttp.responseText;
             addStarListeners(document.getElementById(uniqueName));
-        } else {
-            /*RT*/// document.getElementById(uniqueName).innerHTML = xmlhttp.responseText;
         }
     }
     xmlhttp.open("GET", "/php/src/ajax/setRating.php?un=" + uniqueName + "&s=" + score + "&tn=" + titleNum + "&i=" + withImage, true);
     xmlhttp.send();
+}
+
+function showYourScore(uniqueName, hoverScore, mousemove) {
+    var score = hoverScore;
+    if (mousemove == "original") {
+        score = document.getElementById("original-score-" + uniqueName).getAttribute("data-score");
+    }
+
+    if (score == "10") {
+        score = "01";
+    }
+    document.getElementById("your-score-" + uniqueName).innerHTML = score;
 }
 
 function searchFilm() {

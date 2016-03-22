@@ -137,4 +137,9 @@ abstract class Http
     {
         // No-op. Made for a child class
     }
+
+    public function getBaseUrl()
+    {
+        return $this->baseUrl;
+    }
 }

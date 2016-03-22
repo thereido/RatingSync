@@ -34,7 +34,7 @@ function searchFilm(searchTerms)
 	    }
 	}
 
-    var params = "?i=0";
+    var params = "?i=1";
     if (searchTerms.uniqueName != "undefined") { params = params + "&q=" + searchTerms.uniqueName; }
     if (searchTerms.source != "undefined") { params = params + "&source=" + searchTerms.source; }
     if (searchTerms.title != "undefined") { params = params + "&t=" + searchTerms.title; }
@@ -58,11 +58,18 @@ function addStarListener(elementId) {
 		var score = star.getAttribute('data-score');
 		var titleNum = star.getAttribute('data-title-num');
 		var withImage = star.getAttribute('data-image');
-		star.addEventListener('click', function(){rateFilm(uniqueName, score, titleNum, withImage);});
+
+		var mouseoverHandler = function () { showYourScore(uniqueName, score, 'new'); };
+		var mouseoutHandler = function () { showYourScore(uniqueName, score, 'original'); };
+		var clickHandler = function () { rateFilm(uniqueName, score, titleNum, withImage); };
+
+        star.addEventListener("mouseover", mouseoverHandler);
+        star.addEventListener("mouseout", mouseoutHandler);
+        star.addEventListener("click", clickHandler);
 	}
 }
 
-function rateFilm(uniqueName, score) {
+function rateFilm(uniqueName, score, titleNum, withImage) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -70,13 +77,23 @@ function rateFilm(uniqueName, score) {
 	        searchResultElement.innerHTML = xmlhttp.responseText;
             addStarListeners(searchResultElement);
     		renderStatus('Rating Saved');
-        }else {
-            /*RT*/// document.getElementById(uniqueName).innerHTML = xmlhttp.responseText;
         }
     }
-    xmlhttp.open("GET", "http://192.168.1.105:55887/php/src/ajax/setRating.php?un=" + uniqueName + "&s=" + score + "&i=0", true);
+    xmlhttp.open("GET", "http://192.168.1.105:55887/php/src/ajax/setRating.php?un=" + uniqueName + "&s=" + score + "&i=" + withImage, true);
     xmlhttp.send();
     renderStatus('Saving...');
+}
+
+function showYourScore(uniqueName, hoverScore, mousemove) {
+    var score = hoverScore;
+    if (mousemove == "original") {
+        score = document.getElementById("original-score-" + uniqueName).getAttribute("data-score");
+    }
+
+    if (score == "10") {
+        score = "01";
+    }
+    document.getElementById("your-score-" + uniqueName).innerHTML = score;
 }
 
 chrome.runtime.onMessage.addListener(function (request, sender) {

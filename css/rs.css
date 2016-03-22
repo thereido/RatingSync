@@ -2,13 +2,12 @@
 .rating-stars-noclick {
     unicode-bidi: bidi-override;
     direction: rtl;
-    font-size: 200%;
+    font-size: 150%;
 }
 .rating-stars > span,
 .rating-stars-noclick {
     display: inline-block;
     position: relative;
-    width: 1.1em;
     color: orange;
 }
 .rating-stars > span:hover:before,
@@ -17,12 +16,41 @@
     position: absolute;
     color: #0094ff;
 }
+.rating-stars > score {
+    font-weight: bold;
+    color: orange;
+}
+.rating-stars > score > of-possible  {
+    font-size: 75%;
+    font-weight: lighter;
+    color: grey;
+}
 .rating-star {
+    font-size: 125%;
 }
 .rating-date {
     font-size: 100%;
 }
 
-.film-title {
+.rating-background {
+    background-image: url("/image/gold_circle.png");
+}
+
+.film-line {
     font-size: 125%;
+}
+.film-line > .film-title {
+    font-size: 125%;
+    font-weight: bold;
+}
+
+poster {
+    float: left;
+    padding: 5px;
+}
+
+detail {
+    float: left;
+    vertical-align: middle;
+    padding: 15px;
 }

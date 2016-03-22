@@ -13,8 +13,11 @@ function getHtmlFilm($film, $titleNum = null, $withImage = true) {
 
     $title = $film->getTitle();
     $year = $film->getYear();
-    $imdbLabel = "IMDb users";
+    $uniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
+    $imdbLabel = "IMDb";
     $imdbScore = $film->getUserScore(Constants::SOURCE_IMDB);
+    $imdb = new Imdb(getUsername());
+    $imdbFilmUrl = $imdb->getFilmUrl($film);
     $yourRatingDate = $film->getRating(Constants::SOURCE_RATINGSYNC)->getYourRatingDate();
     $dateStr = null;
     if (!empty($yourRatingDate)) {
@@ -28,36 +31,18 @@ function getHtmlFilm($film, $titleNum = null, $withImage = true) {
     
     $response = "";
     if ($withImage) {
-        $image = $film->getImage();
-    
-        $response .= "<table>\n";
-        $response .= "  <tr>\n";
-        $response .= "    <td>\n";
-        $response .= "      <img src='$image' />\n";
-        $response .= "    </td>\n";
-        $response .= "    <td>\n";
+        $image = Constants::RS_HOST . $film->getImage(Constants::SOURCE_RATINGSYNC);
+        $response .= "<poster><img src='$image' width='150px'/></poster>\n";
     }
-    $response .= "      <table>\n";
-    $response .= "        <tr>\n";
-    $response .= "          <td class='film-title'>$titleNumStr$title ($year)</td>\n";
-    $response .= "        </tr>\n";
-    $response .= "        <tr>\n";
-    $response .= "          <td align='left'>\n";
-    $response .= getHtmlRatingStars($film, $titleNum, $withImage);
-    $response .= "          </td>\n";
-    $response .= "        </tr>\n";
-    $response .= "        <tr>\n";
-    $response .= "          <td class='rating-date'>$dateStr</td>\n";
-    $response .= "        </tr>\n";
-    $response .= "        <tr>\n";
-    $response .= "          <td>$imdbLabel: $imdbScore</td>\n";
-    $response .= "        </tr>\n";
-    $response .= "      </table>\n";
-    if ($withImage) {
-        $response .= "    </td>\n";
-        $response .= "  </tr>\n";
-        $response .= "</table>\n";
-    }
+
+    $response .= "<detail>";
+    $response .= "  <div class='film-line'>$titleNumStr<span class='film-title'>$title</span> ($year)</div>\n";
+    $response .= "  <div align='left'>\n";
+    $response .=      getHtmlRatingStars($film, $titleNum, $withImage);
+    $response .= "  </div>\n";
+    $response .= "  <div class='rating-date'>$dateStr</div>\n";
+    $response .= "  <div><a href='$imdbFilmUrl' target='_blank'>$imdbLabel:</a> $imdbScore</div>\n";
+    $response .= "</detail>";
     
     return $response;
 }

@@ -14,10 +14,40 @@
     position: absolute;
     color: #0094ff;
 }
+.rating-stars > score {
+    font-weight: bold;
+    color: orange;
+}
+.rating-stars > score > of-possible  {
+    font-size: 75%;
+    font-weight: lighter;
+    color: grey;
+}
+.rating-star {
+    font-size: 125%;
+}
 .rating-date {
     font-size: 100%;
 }
 
-.film-title {
+.rating-background {
+    background-image: url("/image/gold_circle.png");
+}
+
+.film-line {
     font-size: 125%;
+}
+.film-line > .film-title {
+    font-weight: bold;
+}
+
+poster {
+    float: left;
+    padding: 5px;
+}
+
+detail {
+    float: left;
+    vertical-align: middle;
+    padding: 15px;
 }

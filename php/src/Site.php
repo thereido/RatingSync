@@ -755,4 +755,9 @@ abstract class Site
 
         return $uniqueName;
     }
+
+    public function getFilmUrl($film)
+    {
+        return $this->http->getBaseUrl() . $this->getFilmDetailPageUrl($film);
+    }
 }

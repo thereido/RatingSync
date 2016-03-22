@@ -9,6 +9,14 @@ function getHtmlRatingStars($film, $titleNum = null, $withImage = true) {
     $starsHtml = "";
     $starScore = 10;
 
+    // Double digit score needs be reversed
+    $showYourScore = $yourScore;
+    if ($showYourScore == 10) {
+        $showYourScore = "01";
+    } elseif (empty($showYourScore)) {
+        $showYourScore = "-";
+    }
+
     if (is_numeric($titleNum)) {
         $titleNum = "data-title-num='$titleNum'";
     } else {
@@ -33,7 +41,9 @@ function getHtmlRatingStars($film, $titleNum = null, $withImage = true) {
     }
 
     $response  = "<div class='rating-stars'>\n";
+    $response .= "  <score><of-possible>01/</of-possible><your-score id='your-score-$uniqueName'>$showYourScore</your-score></score>";
     $response .= "  $starsHtml\n";
+    $response .= "  <div id='original-score-$uniqueName' data-score='$showYourScore' hidden />";
     $response .= "</div>\n";
 
     return $response;
