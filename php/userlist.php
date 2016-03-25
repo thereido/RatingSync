@@ -6,54 +6,29 @@ require_once "src/SessionUtility.php";
 require_once "src/Film.php";
 require_once "src/Filmlist.php";
 
-require_once "src/ajax/getHtmlRating.php";
 require_once "src/ajax/getHtmlFilm.php";
 
 $username = getUsername();
-
-if (array_key_exists("sync", $_GET) && $_GET["sync"] == 1) {
-    logDebug("sync $username starting", "ratings.php");
-    sync($username);
-    logDebug("sync finished", "ratings.php ".__LINE__);
-}
 $listname = array_value_by_key("l", $_GET);
 
 $site = new \RatingSync\RatingSyncSite($username);
-$films = array();
-if (empty($listname)) {
-    $films = $site->getRatings();
-} else {
-    $list = Filmlist::getListFromDb($username, $listname);
-    $films = Film::getFilmsByFilmlist($username, $list);
-}
+$list = Filmlist::getListFromDb($username, $listname);
+$films = Film::getFilmsByFilmlist($username, $list);
 logDebug("Count " . count($films), "ratings.php ".__LINE__);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>RSync: Your Ratings</title>
+    <title>RS <?php echo $listname ?></title>
     <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
     <link href="../css/rs.css" rel="stylesheet">
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="../js/bootstrap_rs.min.js"></script>
     <script src="../js/ratings.js"></script>
 </head>
 
 <body>
-<?php
-
-function test_input($data)
-{
-     $data = trim($data);
-     $data = stripslashes($data);
-     $data = htmlspecialchars($data);
-     return $data;
-}
-?>
 
 <div class="container">
   <!-- Header -->
@@ -76,8 +51,7 @@ function test_input($data)
   </div> <!-- header -->
 
   <div class="well well-sm">
-    <h2>Ratings</h2>
-    <div><?php echo getHtmlFilmlistsHeader("Your Ratings"); ?></div>
+    <?php echo getHtmlFilmlistsHeader($listname); ?>
   </div>
 
   <div>

@@ -209,7 +209,7 @@ class Filmlist
         $this->removeAllItems();
 
         $db = getDatabase();
-
+        
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         while ($row = $result->fetch_assoc()) {
@@ -246,6 +246,51 @@ class Filmlist
             $lists[$listname]->addItem($filmId);
         }
 
+        if (!array_key_exists(Constants::LIST_DEFAULT, $lists)) {
+            $watchlist = new Filmlist($username, Constants::LIST_DEFAULT);
+            $lists[Constants::LIST_DEFAULT] = $watchlist;
+        }
+
         return $lists;
+    }
+
+    public static function saveToDbUserFilmlistsByFilmObjectLists($username, $film)
+    {
+        if (empty($username) || empty($film) || empty($film->getId())) {
+            throw new \InvalidArgumentException(__FUNCTION__." \$username ($username) and \$film with an ID must not be empty");
+        }
+        
+        $filmId = $film->getId();
+        $dbLists = self::getUserListsFromDb($username);
+        $dbListnames = array();
+        $objectListnames = $film->getFilmlists();
+
+        foreach ($dbLists as $dbList) {
+            // Remove an item that the object does not have this listname
+            if (!in_array($dbList->getListname(), $objectListnames)) {
+                $dbList->removeItem($filmId);
+                $dbList->saveToDb();
+            }
+
+            $dbListnames[] = $dbList->getListname();
+        }
+
+        // Add items from the object that the dbLists do not have
+        foreach ($objectListnames as $name) {
+            if (!in_array($name, $dbListnames)) {
+                $newList = new Filmlist($username, $name);
+                $newList->addItem($filmId);
+                $newList->saveToDb();
+            }
+        }
+    }
+
+    public function setFilmlist($filmId, $remove = false)
+    {
+        if ($remove) {
+            $this->removeItem($filmId);
+        } else {
+            $this->addItem($filmId);
+        }
     }
 }

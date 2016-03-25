@@ -1,7 +1,7 @@
 <?php
 namespace RatingSync;
 
-function getHtmlRatingStars($film, $titleNum = null, $withImage = true) {
+function getHtmlRatingStars($film, $titleNum = null) {
     $yourScore = $film->getYourScore(Constants::SOURCE_RATINGSYNC);
     $uniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
     $fullStars = $yourScore;
@@ -23,27 +23,21 @@ function getHtmlRatingStars($film, $titleNum = null, $withImage = true) {
         $titleNum = "";
     }
 
-    if ($withImage) {
-        $withImage = "data-image='1'";
-    } else {
-        $withImage = "data-image='0'";
-    }
-
     while ($emptyStars > 0) {
-        $starsHtml .= "<span class='rating-star' id='rate-$uniqueName-$starScore' data-uniquename='$uniqueName' data-score='$starScore' $titleNum $withImage>☆</span>";
+        $starsHtml .= "<span class='rating-star' id='rate-$uniqueName-$starScore' data-uniquename='$uniqueName' data-score='$starScore' $titleNum>☆</span>";
         $emptyStars = $emptyStars - 1;
         $starScore = $starScore - 1;
     }
     while ($fullStars > 0) {
-        $starsHtml .= "<span class='rating-star' id='rate-$uniqueName-$starScore' data-uniquename='$uniqueName' data-score='$starScore' $titleNum $withImage>★</span>";
+        $starsHtml .= "<span class='rating-star' id='rate-$uniqueName-$starScore' data-uniquename='$uniqueName' data-score='$starScore' $titleNum>★</span>";
         $fullStars = $fullStars - 1;
         $starScore = $starScore - 1;
     }
 
     $response  = "<div class='rating-stars'>\n";
-    $response .= "  <score><of-possible>01/</of-possible><your-score id='your-score-$uniqueName'>$showYourScore</your-score></score>";
+    $response .= "  <score><of-possible>01/</of-possible><your-score id='your-score-$uniqueName'>$showYourScore</your-score></score>\n";
     $response .= "  $starsHtml\n";
-    $response .= "  <div id='original-score-$uniqueName' data-score='$showYourScore' hidden />";
+    $response .= "  <div id='original-score-$uniqueName' data-score='$showYourScore' hidden />\n";
     $response .= "</div>\n";
 
     return $response;

@@ -54,3 +54,13 @@ detail {
     vertical-align: middle;
     padding: 15px;
 }
+
+.checkmark-off {
+    font-weight: bold;
+    color: grey;    
+}
+
+.checkmark-on {
+    font-weight: bold;
+    color: #10b33c;    
+}

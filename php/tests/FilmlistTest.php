@@ -802,8 +802,29 @@ class FilmlistTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Filmlist::getUserListsFromDb
+     */
+    public function testGetUserListsFromDbOnlyDefault()
+    {$this->start(__CLASS__, __FUNCTION__);
+        $db = getDatabase();
+    
+        // Set up
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
+        $query = "DELETE FROM filmlist WHERE user_name='$username'";
+        $this->assertTrue($db->query($query));
+
+        // Set no lists
+
+        // Test
+        $lists = Filmlist::getUserListsFromDb($username);
+
+        // Verify
+        $this->assertEquals(1, count($lists), "Should be a default list");
+    }
+
+    /**
+     * @covers  \RatingSync\Filmlist::getUserListsFromDb
      * @depends testSaveToDbSecondList
-     * @depends testGetListFromDb
+     * @depends testGetUserListsFromDbOnlyDefault
      */
     public function testGetUserListsFromDb()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -831,9 +852,9 @@ class FilmlistTest extends \PHPUnit_Framework_TestCase
         $lists = Filmlist::getUserListsFromDb($username);
 
         // Verify
-        $this->assertEquals(2, count($lists), "Should be 2 lists");
+        $this->assertEquals(3, count($lists), "Should be 3 lists (2 set here plus the default 1");
         $this->assertTrue(array_key_exists($listname, $lists), "First list ($listname) should be in the db");
-        $this->assertTrue(array_key_exists($listname2, $lists), "First list ($listname2) should be in the db");
+        $this->assertTrue(array_key_exists($listname2, $lists), "Second list ($listname2) should be in the db");
         $this->assertEquals($list->getItems(), $lists[$listname]->getItems(), "First list should match the db");
         $this->assertEquals($list2->getItems(), $lists[$listname2]->getItems(), "Second list should match the db");
     }

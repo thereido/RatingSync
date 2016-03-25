@@ -5,6 +5,7 @@
 namespace RatingSync;
 
 require_once "Http.php";
+require_once "Filmlist.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 
 class Film {
@@ -25,6 +26,7 @@ class Film {
     protected $sources = array();
     protected $genres = array();
     protected $directors = array();
+    protected $filmlists = array();
 
     public function __construct(Http $http)
     {
@@ -66,6 +68,9 @@ class Film {
                    <suggestedScore/>
                </rating>
            </source>
+           <filmlists>
+               <listname/>
+           </filmlists>
        </film>
      *
      * @param SimpleXMLElement $xml Add new <film> into this param
@@ -113,6 +118,70 @@ class Film {
             $ratingXml->addChild('yourRatingDate', $ratingDate);
             $ratingXml->addChild('suggestedScore', $rating->getSuggestedScore());
         }
+
+        $filmlists = $this->getFilmlists();
+        if (count($filmlists) > 0) {
+            $listsXml = $filmXml->addChild('filmlists');
+            foreach ($filmlists as $listname) {
+                $listsXml->addChild('listname', htmlentities($listname, ENT_COMPAT, "utf-8"));
+            }
+        }
+    }
+
+    public function json_encode()
+    {
+        $arr = array();
+        $arr['title'] = $this->getTitle();
+        $arr['year'] = $this->getYear();
+        $arr['contentType'] = $this->getContentType();
+        $arr['image'] = $this->getImage();
+
+        $arrDirectors = array();
+        foreach ($this->getDirectors() as $director) {
+            $arrDirectors[] = htmlspecialchars($director);
+        }
+        $arr['directors'] = $arrDirectors;
+        
+        $arrGenres = array();
+        foreach ($this->getGenres() as $genre) {
+            $arrGenres[] = htmlentities($genre, ENT_COMPAT, "utf-8");
+        }
+        $arr['genres'] = $arrGenres;
+
+        $arrSources = array();
+        foreach ($this->sources as $source) {
+            $name = $source->getName();
+            $arrSource = array();
+            $arrSource['name'] = $name;
+            $arrSource['image'] = $source->getImage();
+            $arrSource['uniqueName'] = $source->getUniqueName();
+            $arrSource['criticScore'] = $source->getCriticScore();
+            $arrSource['userScore'] = $source->getUserScore();
+            
+            $rating = $source->getRating();
+            $arrRating = array();
+            $arrRating['yourScore'] = $rating->getYourScore();
+            $ratingDate = null;
+            if (!is_null($rating->getYourRatingDate())) {
+                $ratingDate = $rating->getYourRatingDate()->format("Y-n-j");
+            }
+            $arrRating['yourRatingDate'] = $ratingDate;
+            $arrRating['suggestedScore'] = $rating->getSuggestedScore();
+
+            $arrSource['rating'] = $arrRating;
+            $arrSources[$name] = $arrSource;
+        }
+        $arr['sources'] = $arrSources;
+        
+        $arrFilmlists = array();
+        foreach ($this->getFilmlists() as $listname) {
+            $arrFilmlists[] = htmlentities($listname, ENT_COMPAT, "utf-8");
+        }
+        if (count($arrFilmlists) > 0) {
+            $arr['filmlists'] = $arrFilmlists;
+        }
+        
+        return json_encode($arr);
     }
 
     /**
@@ -187,6 +256,14 @@ class Film {
             }
 
             $source->setRating($rating);
+        }
+
+        foreach ($filmSxe->xpath('filmlists') as $filmlistsSxe) {
+            foreach ($filmlistsSxe[0]->children() as $listnameSxe) {
+                if (!empty($listnameSxe->__toString())) {
+                    $film->addFilmlist($listnameSxe->__toString());
+                }
+            }
         }
         
         return $film;
@@ -513,6 +590,43 @@ class Film {
         return in_array($director, $this->directors);
     }
 
+    public function addFilmlist($new_listname)
+    {
+        if (empty($new_listname)) {
+            throw new \InvalidArgumentException(__FUNCTION__.' param must not be empty');
+        }
+
+        if (!in_array($new_listname, $this->filmlists)) {
+            $this->filmlists[] = $new_listname;
+        }
+    }
+
+    public function removeFilmlist($removeThisListname)
+    {
+        $remainingFilmlists = array();
+        for ($x = 0; $x < count($this->filmlists); $x++) {
+            if ($removeThisListname != $this->filmlists[$x]) {
+                $remainingFilmlists[] = $this->filmlists[$x];
+            }
+        }
+        $this->filmlists = $remainingFilmlists;
+    }
+
+    public function removeAllFilmlists()
+    {
+        $this->filmlists = array();
+    }
+
+    public function getFilmlists()
+    {
+        return $this->filmlists;
+    }
+
+    public function inFilmlist($listname)
+    {
+        return in_array($listname, $this->filmlists);
+    }
+
     public function saveToDb($username = null)
     {
         if (empty($this->getTitle())) {
@@ -631,6 +745,11 @@ class Film {
             }
         }
 
+        // Filmlists
+        if (!empty($username)) {
+            Filmlist::saveToDbUserFilmlistsByFilmObjectLists($username, $this);
+        }
+
         // Make sure the RatingSync source has an image
         $sourceRs = $this->getSource(Constants::SOURCE_RATINGSYNC);
         $filmImage = $this->getImage();
@@ -735,6 +854,15 @@ class Film {
         while ($row = $result->fetch_assoc()) {
             $film->addGenre($row['genre_name']);
         }
+        
+        // Filmlists
+        if (!empty($username)) {
+            $query = "SELECT listname FROM filmlist WHERE user_name='$username' AND film_id=$filmId";
+            $result = $db->query($query);
+            while ($row = $result->fetch_assoc()) {
+                $film->addFilmlist($row['listname']);
+            }
+        }
 
         return $film;
     }
@@ -821,5 +949,21 @@ class Film {
         }
 
         return $film;
+    }
+
+    public static function getFilmsByFilmlist($username, $list)
+    {
+        if (empty($username) || !($list instanceof Filmlist)) {
+            return null;
+        }
+        $films = array();
+
+        $http = new HttpRatingSync($username);
+        foreach ($list->getItems() as $filmId) {
+            $film = self::getFilmFromDb($filmId, $http, $username);
+            $films[] = $film;
+        }
+
+        return $films;
     }
 }
