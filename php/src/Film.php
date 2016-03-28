@@ -131,6 +131,7 @@ class Film {
     public function json_encode()
     {
         $arr = array();
+        $arr['filmId'] = $this->getId();
         $arr['title'] = $this->getTitle();
         $arr['year'] = $this->getYear();
         $arr['contentType'] = $this->getContentType();

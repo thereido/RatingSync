@@ -26,7 +26,6 @@ if (empty($listname)) {
     $list = Filmlist::getListFromDb($username, $listname);
     $films = Film::getFilmsByFilmlist($username, $list);
 }
-logDebug("Count " . count($films), "ratings.php ".__LINE__);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -82,8 +81,16 @@ function test_input($data)
 
   <div>
     <form onsubmit="return searchFilm()">
-      <input type="text" class="form-control" placeholder="tt0000001" id="searchQuery">
-      <input type="submit" class="btn btn-sm btn-primary" value="Search">
+        <div class="row">
+        <div class="col-lg-6">
+        <div class="input-group">
+            <span class="input-group-btn">
+                <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+            </span>
+            <input type="text" class="form-control" placeholder="tt0000001">
+        </div>
+        </div>
+        </div>
     </form>
     <p><span id="debug"></span></p>
     <span id="searchResult"></span>

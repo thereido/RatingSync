@@ -151,7 +151,7 @@ class Filmlist
             }
         }
 
-        // Remove
+        // Remove items
         if (!empty($removeFilmIds)) {
             $query = "DELETE FROM filmlist" .
                      " WHERE user_name='$username'" .
@@ -163,7 +163,15 @@ class Filmlist
             }
         }
 
-        // Replace (or insert)
+        // Replace (or insert) the filmlist
+        $query = "REPLACE INTO user_filmlist (user_name, listname)" .
+                    " VALUES ('$username', '$listname')";
+        if (! $db->query($query)) {
+            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+            $errorFree = false;
+        }
+
+        // Replace (or insert) items
         $position = 1;
         foreach ($this->listItems as $filmId) {
             $query = "REPLACE INTO filmlist (user_name, listname, film_id, position)" .
@@ -224,7 +232,7 @@ class Filmlist
         return $list;
     }
 
-    public static function getUserListsFromDb($username)
+    public static function getUserListsFromDb($username, $asJson = false)
     {
         if (empty($username)) {
             throw new \InvalidArgumentException(__FUNCTION__." \$username (".$username.") must not be empty");
@@ -233,25 +241,40 @@ class Filmlist
         $db = getDatabase();
         $lists = array();
 
+        $query = "SELECT * FROM user_filmlist WHERE user_name='$username' ORDER BY listname ASC";
+        $result = $db->query($query);
+        while ($row = $result->fetch_assoc()) {
+            $listname = $row['listname'];
+            $list = new Filmlist($username, $listname);
+            $lists[$listname] = $list;
+        }
+
         $query = "SELECT * FROM filmlist WHERE user_name='$username' ORDER BY listname ASC, position ASC";
         $result = $db->query($query);
         while ($row = $result->fetch_assoc()) {
             $list = null;
             $listname = $row['listname'];
             $filmId = $row['film_id'];
-            if (!array_key_exists($listname, $lists)) {
-                $list = new Filmlist($username, $listname);
-                $lists[$listname] = $list;
-            }
             $lists[$listname]->addItem($filmId);
         }
-
-        if (!array_key_exists(Constants::LIST_DEFAULT, $lists)) {
-            $watchlist = new Filmlist($username, Constants::LIST_DEFAULT);
-            $lists[Constants::LIST_DEFAULT] = $watchlist;
+        
+        if ($asJson) {
+            $arr = array();
+            foreach ($lists as $list) {
+                $arrList = array();
+                $arrList['listname'] = $list->getListname();
+                $arrList['username'] = $list->getUsername();
+                $arrItems = array();
+                foreach ($list->getItems() as $item) {
+                    $arrItems[] = $item;
+                }
+                $arrList['items'] = $arrItems;
+                $arr[] = $arrList;
+            }
+            return json_encode($arr);
+        } else {
+            return $lists;
         }
-
-        return $lists;
     }
 
     public static function saveToDbUserFilmlistsByFilmObjectLists($username, $film)

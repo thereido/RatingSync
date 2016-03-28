@@ -27,6 +27,8 @@ function getHtmlFilmlistsHeader($currentListname = null) {
         $response .= "$delimiter<span class='filmlist-header' id='list-$safeListname'>$link</span>";
         $delimiter = " | ";
     }
+
+    $response .= "$delimiter<span><a href='/php/userlist.php?nl=1'>New List</a></span>";
     
     return $response;
 }
@@ -38,9 +40,11 @@ function getHtmlFilmlistsByFilm($film) {
     
     $username = getUsername();
     $filmId = $film->getId();
+    $classCheckmarkOn = "glyphicon glyphicon-check checkmark-on";
+    $classCheckmarkOff = "glyphicon glyphicon-check checkmark-off";
     $defaultList = Constants::LIST_DEFAULT;
     $defaultListHtmlSafe = htmlentities($defaultList, ENT_COMPAT, "utf-8");
-    $defaultListClass = "checkmark-off";
+    $defaultListClass = $classCheckmarkOff;
     $response = "";
     $listItemsHtml = "";
 
@@ -48,28 +52,31 @@ function getHtmlFilmlistsByFilm($film) {
         $listname = $list->getListname();
         if ($list->getListname() == $defaultList) {
             if ($list->inList($filmId)) {
-                $defaultListClass = "checkmark-on";
+                $defaultListClass = $classCheckmarkOn;
             }
         } else {
             $listnameHtmlSafe = htmlentities($listname, ENT_COMPAT, "utf-8");
             $viewListUrl = "/php/userlist.php?l=$listnameHtmlSafe";
-            $checkmarkClass = "checkmark-off";
+            $checkmarkClass = $classCheckmarkOff;
             if ($list->inList($filmId)) {
-                $checkmarkClass = "checkmark-on";
+                $checkmarkClass = $classCheckmarkOn;
             }
-
-            $listItemsHtml .= "        <div class='filmlist' id='filmlist-$listnameHtmlSafe-$filmId'>\n";
-            $listItemsHtml .= "            <span><button class='btn btn-sm btn-secondary' onClick='toggleFilmlist(\"$listnameHtmlSafe\", $filmId, \"filmlist-btn-$listnameHtmlSafe-$filmId\")' id='filmlist-btn-$listnameHtmlSafe-$filmId' type='button'><span class='$checkmarkClass' id='filmlist-checkmark-$filmId'>&#10003;</span> $listname</button></span>\n";
-            $listItemsHtml .= "            <span><a href='$viewListUrl'>»</a><span>\n";
-            $listItemsHtml .= "        </div>\n";
+            $listItemsHtml .= "        <li class='filmlist' id='filmlist-$listnameHtmlSafe-$filmId'>\n";
+            $listItemsHtml .= "            <a href='#' onClick='toggleFilmlist(\"$listnameHtmlSafe\", $filmId, \"filmlist-btn-$listnameHtmlSafe-$filmId\")' id='filmlist-btn-$listnameHtmlSafe-$filmId'><span class='$checkmarkClass' id='filmlist-checkmark-$filmId'></span> $listname</a>\n";
+            $listItemsHtml .= "        </li>\n";
         }
     }
 
-    $response .= "<div>\n";
-    $response .= "    <button class='btn btn-sm btn-primary' onClick='toggleFilmlist(\"$defaultListHtmlSafe\", $filmId, \"filmlist-btn-default-$filmId\")' id='filmlist-btn-default-$filmId' data-listname='$defaultList' type='button'><span class='$defaultListClass' id='filmlist-checkmark-$filmId'>&#10003;</span> $defaultList</button>\n";
-    $response .= "    <button class='btn btn-sm btn-primary' onClick='toggleHideFilmlists(\"filmlists-$filmId\")' id='filmlist-btn-others-$filmId' type='button'>»</button>\n";
-    $response .= "    <div class='film-filmlists' id='filmlists-$filmId' hidden >\n";
+    $listItemsHtml .= "        <li class='divider'></li>\n";
+    $listItemsHtml .= "        <li><a href='/php/userlist.php?id=$filmId'>New list</a></li>\n";
+
+    $response .= "<div class='btn-group-vertical'>\n";
+    $response .= "    <button class='btn btn-sm btn-primary' onClick='toggleFilmlist(\"$defaultListHtmlSafe\", $filmId, \"filmlist-btn-default-$filmId\")' id='filmlist-btn-default-$filmId' data-listname='$defaultList' type='button'><span class='$defaultListClass' id='filmlist-checkmark-$filmId'></span> $defaultList</button>\n";
+    $response .= "    <div class='btn-group'>\n";
+    $response .= "      <button class='btn btn-sm btn-primary dropdown-toggle' id='filmlist-btn-others-$filmId' data-toggle='dropdown' type='button'>More lists <span class='caret'></span></button>\n";
+    $response .= "      <ul class='film-filmlists dropdown-menu' id='filmlists-$filmId' role='menu'  >\n";
     $response .=          $listItemsHtml;
+    $response .= "      </ul>\n";
     $response .= "    </div>\n";
     $response .= "</div>\n";
     

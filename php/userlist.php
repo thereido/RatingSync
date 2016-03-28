@@ -10,11 +10,26 @@ require_once "src/ajax/getHtmlFilm.php";
 
 $username = getUsername();
 $listname = array_value_by_key("l", $_GET);
+$filmId = array_value_by_key("id", $_GET);
+$newList = array_value_by_key("nl", $_GET);
 
-$site = new \RatingSync\RatingSyncSite($username);
-$list = Filmlist::getListFromDb($username, $listname);
-$films = Film::getFilmsByFilmlist($username, $list);
-logDebug("Count " . count($films), "ratings.php ".__LINE__);
+if (!empty($listname) && !empty($filmId)) {
+}
+
+$films = array();
+$offerToAddFilmThisList = false;
+if (empty($listname) && !empty($filmId)) {
+    $offerToAddFilmThisList = true;
+    $http = new HttpRatingSync($username);
+    $film = Film::getFilmFromDb($filmId, $http, $username);
+    if (!empty($film)) {
+        $films[] = $film;
+    }
+} elseif (!empty($listname)) {
+    $site = new \RatingSync\RatingSyncSite($username);
+    $list = Filmlist::getListFromDb($username, $listname);
+    $films = Film::getFilmsByFilmlist($username, $list);
+}
 ?>
 
 <!DOCTYPE html>
@@ -25,6 +40,10 @@ logDebug("Count " . count($films), "ratings.php ".__LINE__);
     <title>RS <?php echo $listname ?></title>
     <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
     <link href="../css/rs.css" rel="stylesheet">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../js/bootstrap_rs.min.js"></script>
     <script src="../js/ratings.js"></script>
 </head>
 
@@ -55,12 +74,31 @@ logDebug("Count " . count($films), "ratings.php ".__LINE__);
   </div>
 
   <div>
-    <form onsubmit="return searchFilm()">
-      <input type="text" class="form-control" placeholder="tt0000001" id="searchQuery">
-      <input type="submit" class="btn btn-sm btn-primary" value="Search">
+    <form onsubmit="return createFilmlist()">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit"><span>New list</span></button>
+                    </span>
+                    <input type="text" class="form-control" id="filmlist-listname">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-1"></div>
+            <div class="col-lg-5">
+                <?php
+                if ($offerToAddFilmThisList) {
+                    echo "<input type='checkbox' class='checkbox' id='filmlist-add-this' checked>Add the film to this new list?</input>\n";
+                    echo "<input id='filmlist-filmid' value='$filmId' hidden></input>\n";
+                }
+                ?>
+            </div>
+        </div>
     </form>
     <p><span id="debug"></span></p>
-    <span id="searchResult"></span>
+    <span id="filmlist-create-result"></span>
   </div>
     
   <table class="table table-striped">

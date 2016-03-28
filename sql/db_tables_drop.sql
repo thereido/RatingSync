@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS user_filmlist;
 DROP TABLE IF EXISTS filmlist;
 DROP TABLE IF EXISTS credit;
 DROP TABLE IF EXISTS person;

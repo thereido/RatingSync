@@ -69,7 +69,7 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
     var checkmark = activeBtn.getElementsByTagName("span")[0];
     var filmIsInTheList = false;
     var addToList = 1; //yes
-    if (checkmark.className == "checkmark-on") {
+    if (checkmark.className == "glyphicon glyphicon-check checkmark-on") {
         filmIsInTheList = true;
         var addToList = 0; //no (remove)
     }
@@ -79,9 +79,9 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             filmIsInTheList = !filmIsInTheList;
             if (filmIsInTheList) {
-                checkmark.className = "checkmark-on";
+                checkmark.className = "glyphicon glyphicon-check checkmark-on";
             } else {
-                checkmark.className = "checkmark-off";
+                checkmark.className = "glyphicon glyphicon-check checkmark-off";
             }
 
             defaultBtn.disabled = false;
@@ -93,28 +93,6 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
     xmlhttp.open("GET", "/php/src/ajax/api.php?action=setFilmlist&l=" + listname + "&id=" + filmId + "&c=" + addToList, true);
     xmlhttp.send();
 }
-/*RT*
-function filmlistCheckboxOnChange(elementId) {
-	var checkbox = document.getElementById(elementId);
-	var filmId = checkbox.getAttribute('data-filmid');
-	var listname = checkbox.getAttribute('data-listname');
-	var checked = checkbox.checked;
-	var checkParam = 0;
-    if (checked) {
-        checkParam = 1;
-    }
-
-	checkbox.disabled = true;
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-	        checkbox.disabled = false;
-        }
-    }
-    xmlhttp.open("GET", "/php/src/ajax/api.php?action=setFilmlist&l=" + listname + "&id=" + filmId + "&c=" + checkParam, true);
-    xmlhttp.send();
-}
-*RT*/
 
 function searchFilm() {
     if (document.getElementById("searchQuery").value == 0) {
@@ -123,18 +101,44 @@ function searchFilm() {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                /*RT*/// document.getElementById("debug").innerHTML = "readyState=" + xmlhttp.readyState + " status=" + xmlhttp.status;
                 document.getElementById("searchResult").innerHTML = xmlhttp.responseText;
                 addStarListeners(document.getElementById("searchResult"));
-            }
-            else {
-                /*RT*/// document.getElementById("debug").innerHTML = "readyState=" + xmlhttp.readyState + " status=" + xmlhttp.status;
-                /*RT*/// document.getElementById("searchResult").innerHTML = xmlhttp.responseText;
             }
         }
         xmlhttp.open("GET", "/php/src/ajax/api.php?action=getSearchFilm&q=" + document.getElementById("searchQuery").value, true);
         xmlhttp.send();
     }
+
+    return false;
+}
+
+function createFilmlist() {
+    var listname = document.getElementById("filmlist-listname").value;
+    if (listname == 0) {
+        document.getElementById("filmlist-create-result").innerHTML = "";
+        return;
+    }
+    
+    var params = "&l="+listname;
+    var filmIdEl = document.getElementById("filmlist-filmid");
+    if (filmIdEl != null) {
+        params = params + "&id=" + filmIdEl.value;
+        var addThisEl = document.getElementById("filmlist-add-this");
+        if (addThisEl != null && addThisEl.value == "0") {
+            params = params + "&a=0";
+        } else {
+            params = params + "&a=1";
+        }
+    }
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            window.location = "/php/userlist.php?l="+listname;
+        }
+    }
+    xmlhttp.open("GET", "/php/src/ajax/api.php?action=createFilmlist"+params, true);
+    xmlhttp.send();
 
     return false;
 }

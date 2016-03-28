@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS filmlist
     (
         user_name VARCHAR(50) NOT NULL,
         film_id INT NOT NULL,
-        listname VARCHAR(50) NOT NULL DEFAULT 'Wishlist',
+        listname VARCHAR(50) NOT NULL,
         position INT NULL DEFAULT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
@@ -174,4 +174,18 @@ CREATE TABLE IF NOT EXISTS filmlist
             REFERENCES user(username),
         FOREIGN KEY (film_id)
             REFERENCES film(id)
+    );
+  
+CREATE TABLE IF NOT EXISTS user_filmlist
+    (
+        user_name VARCHAR(50) NOT NULL,
+        listname VARCHAR(50) NOT NULL,
+        ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        PRIMARY KEY (user_name, listname),
+        KEY (user_name),
+        KEY (listname),
+
+        FOREIGN KEY (user_name)
+            REFERENCES user(username)
     );

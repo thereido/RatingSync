@@ -9,12 +9,17 @@ $username = getUsername();
 $response = "";
 
 $action = array_value_by_key("action", $_GET);
+logDebug("API action: $action", "api.php");
 if ($action == "getSearchFilm") {
     $response = api_getSearchFilm($username);
 } elseif ($action == "setRating") {
     $response = api_setRating($username);
 } elseif ($action == "setFilmlist") {
     $response = api_setFilmlist($username);
+} elseif ($action == "getUserLists") {
+    $response = api_getUserLists($username);
+} elseif ($action == "createFilmlist") {
+    $response = api_createFilmlist($username);
 }
 
 echo $response;
@@ -46,7 +51,7 @@ function api_getSearchFilm($username)
         $sourceName = Constants::SOURCE_HULU;
     }
     
-    logDebug("Search: $sourceName $searchQuery $searchTitle $searchYear", __FUNCTION__." ".__LINE__);
+    logDebug("Params q=$searchQuery, t=$searchTitle, y=$searchYear, ct=$searchContentType, json=$asJson, source=$searchSource", __FUNCTION__." ".__LINE__);
     $searchTerms = array('uniqueName' => $searchQuery,
                          'sourceName' => $sourceName,
                          'title' => $searchTitle,
@@ -95,6 +100,7 @@ function api_setRating($username)
     if (array_value_by_key("json", $_GET) == 1) {
         $asJson = true;
     }
+    logDebug("Params un=$uniqueName, s=$score, tn=$titleNum, json=$asJson", __FUNCTION__." ".__LINE__);
 
     if (!empty($uniqueName) && !empty($score)) {
         logDebug("uniqueName: $uniqueName, score: $score", __FUNCTION__." ".__LINE__);
@@ -126,8 +132,35 @@ function api_setFilmlist($username)
     if ($checked == 0) {
         $remove = true;
     }
+    logDebug("Params l=$listname, id=$filmId, c=$checked", __FUNCTION__." ".__LINE__);
     $filmlist = Filmlist::getListFromDb($username, $listname);
     $filmlist->setFilmlist($filmId, $remove);
+    $filmlist->saveToDb();
+}
+
+/**
+ * return {[{"listname": "name1", "username": "username", "items":[filmId1, filmId2, ...]}], ...}
+ */
+function api_getUserLists($username)
+{
+    $json = Filmlist::getUserListsFromDb($username, true);
+    return $json;
+}
+
+function api_createFilmlist($username)
+{
+    $listname = array_value_by_key("l", $_GET);
+    $filmId = array_value_by_key("id", $_GET);
+    $checked = array_value_by_key("a", $_GET);
+    $add = false;
+    if ($checked == 1) {
+        $add = true;
+    }
+    logDebug("Params l=$listname, id=$filmId, a=$checked", __FUNCTION__." ".__LINE__);
+    $filmlist = Filmlist::getListFromDb($username, $listname);
+    if ($add) {
+        $filmlist->setFilmlist($filmId);
+    }
     $filmlist->saveToDb();
 }
 

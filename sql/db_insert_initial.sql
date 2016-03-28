@@ -15,3 +15,5 @@ INSERT INTO user_source (user_name, source_name, username, password) VALUES ('te
 INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'RottenTomatoes', 'testratingsync', 'password');
 INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'xfinity', 'testratingsync', 'password');
 INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'Hulu', 'testratingsync', 'password');
+
+INSERT INTO user_filmlist (user_name, listname) VALUES ('testratingsync', 'Watchlist');
