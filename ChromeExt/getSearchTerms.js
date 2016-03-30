@@ -20,30 +20,30 @@ function getSearchTerms(document_root) {
 	}
     else if (url && -1 < url.indexOf("netflix")) {
         var source = "NF";
-        var indexBegin = -1;
-        var indexEnd;
-        var index = url.indexOf("jbv=");
-        if (-1 < index) {
-            indexBegin = index + 4;
-            indexEnd = url.indexOf("&", indexBegin);
+        
+        var regex = new RegExp("jbv=([0-9]+)");
+        if (regex.test(url)) {
+            uniqueName = regex.exec(url)[1];
         } else {
-            index = url.indexOf("/title/");
-            if (-1 < index) {
-                indexBegin = index + 7;
-                indexEnd = url.indexOf("?", indexBegin);
+            regex = new RegExp("/title/([0-9]+)");
+            if (regex.test(url)) {
+                uniqueName = regex.exec(url)[1];
+                titleEl = document_root.getElementsByClassName("title has-jawbone-nav-transition")[0];
+                yearEl = document_root.getElementsByClassName("year")[0];
+                if (titleEl) {
+                    titleHtml = titleEl.innerHTML;
+                    regex = new RegExp("<img alt=\"([^\"]+)");
+                    if (regex.test(titleHtml)) {
+                        title = regex.exec(titleHtml)[1];
+                    } else {
+                        title = titleHtml;
+                    }
+                }
+                if (yearEl) {
+                    year = yearEl.innerHTML;
+                }
             }
         }
-
-        if (indexBegin != -1) {
-            if (indexBegin < indexEnd) {
-                uniqueName = url.substring(indexBegin, indexEnd);
-            } else {
-                uniqueName = url.substring(indexBegin);
-            }
-        }
-
-        year = document_root.getElementsByClassName("year")[0].innerHTML;
-        title = document_root.getElementsByClassName("title has-jawbone-nav-transition")[0].innerHTML;
 	}
     else if (url && -1 < url.indexOf("rottentomatoes")) {
         var source = "RT";
@@ -65,7 +65,11 @@ function getSearchTerms(document_root) {
 		    uniqueName = url.substring(indexBegin, indexEnd);
         }
 
-        var html = document_root.getElementsByClassName("title hidden-xs")[0].innerHTML;
+        var html = "";
+        var titleEl = document_root.getElementById("movie-title");
+        if (titleEl) {
+            html = titleEl.innerHTML;
+        }
         var reTitle = new RegExp(" ([^<]+)<");
         if (reTitle.test(html)) {
             title = reTitle.exec(html)[1];

@@ -1,10 +1,16 @@
 
-var RS_URL_BASE = "http://192.168.1.105:55887";
+var RS_URL_BASE = "http://localhost:55887";
 var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
 var IMDB_FILM_BASEURL = "http://www.imdb.com/title/";
 
 document.addEventListener('DOMContentLoaded', function () {
     chrome.tabs.executeScript(null, {file: "getSearchTerms.js"}, function() { });
+});
+
+chrome.runtime.onMessage.addListener(function (request, sender) {
+    if (request.action == "setSearchTerms") {
+        searchFilm(request.search);
+    }
 });
 
 function renderStatus(statusText) {
@@ -328,9 +334,3 @@ function addFilmlistListener(elementId) {
         button.addEventListener("click", clickHandler);
 	}
 }
-
-chrome.runtime.onMessage.addListener(function (request, sender) {
-    if (request.action == "setSearchTerms") {
-        searchFilm(request.search);
-    }
-});

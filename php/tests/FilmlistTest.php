@@ -810,7 +810,9 @@ class FilmlistTest extends \PHPUnit_Framework_TestCase
         // Set up
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $query = "DELETE FROM filmlist WHERE user_name='$username'";
-        $this->assertTrue($db->query($query));
+        $this->assertTrue($db->query($query), "Delete from filmlist");
+        $query = "DELETE FROM user_filmlist WHERE user_name='$username' AND listname!='".Constants::LIST_DEFAULT."'";
+        $this->assertTrue($db->query($query), "Delete from user_filmlist");
 
         // Set no lists
 

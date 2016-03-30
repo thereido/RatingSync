@@ -12,6 +12,7 @@ namespace RatingSync;
 require_once "src/Constants.php";
 require_once "src/Jinni.php";
 require_once "src/Imdb.php";
+require_once "src/Netflix.php";
 require_once "src/RatingSyncSite.php";
 
 /**
@@ -137,6 +138,7 @@ function search($searchTerms, $username = null)
         return null;
     }
 
+    $username = getUsername();
     $uniqueName = array_value_by_key("uniqueName", $searchTerms);
     $title = array_value_by_key("title", $searchTerms);
     $year = array_value_by_key("year", $searchTerms);
@@ -149,18 +151,29 @@ function search($searchTerms, $username = null)
     $film = Film::searchDb($searchTerms, $username);
 
     if (empty($film)) {
-        $imdb = new Imdb(getUsername());
+        $imdb = new Imdb($username);
         
         if (empty($sourceName)) {
             $sourceName = Constants::SOURCE_RATINGSYNC;
         }
+
+        if ($sourceName == Constants::SOURCE_NETFLIX && (empty($title) || empty($year))) {
+            $netflix = new Netflix($username);
+            $film = new Film(new HttpNetflix($username));
+            $film->setUniqueName($uniqueName, Constants::SOURCE_NETFLIX);
+            $netflix->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_ALWAYS);
+            $film->saveToDb($username);
+            $searchTerms["title"] = $film->getTitle();
+            $searchTerms["year"] = $film->getYear();
+        }
+        
         if ($sourceName != Constants::SOURCE_RATINGSYNC && $sourceName != Constants::SOURCE_IMDB) {
             $searchTerms['uniqueName'] = null;
         }
         
         $film = $imdb->getFilmBySearch($searchTerms);
         if (!empty($film)) {
-            $film->saveToDb(getUsername());
+            $film->saveToDb($username);
         }
     }
     

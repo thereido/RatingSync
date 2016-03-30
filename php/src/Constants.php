@@ -30,7 +30,7 @@ class Constants
     const DB_MODE                       = self::DB_MODE_TEST;
     const TEST_RATINGSYNC_USERNAME      = "testratingsync";
     const LOGGED_IN_USERNAME            = self::TEST_RATINGSYNC_USERNAME; // Temporary until login works
-    const RS_HOST                       = "http://192.168.1.105:55887";
+    const RS_HOST                       = "http://localhost:55887";
 
     static function basePath()
     {
