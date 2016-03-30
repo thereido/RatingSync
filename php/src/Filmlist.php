@@ -200,6 +200,11 @@ class Filmlist
         if (! $db->query($query)) {
             logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
         }
+        
+        $query = "DELETE FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
+        if (! $db->query($query)) {
+            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+        }
     }
 
     public static function removeListFromDb($username, $listname) {

@@ -185,7 +185,7 @@ class Netflix extends Site
      * @return string Regular expression to find the film year in film detail HTML page
      */
     protected function getDetailPageRegexForYear() {
-        return '/<span class="year"[^>]*>([^<]+)/';
+        return '/class=\"title\"[^>]*>[^<]+<\/span> <p><span class="year"[^>]*><a[^>]+>([^<]+)</';
     }
 
     /**

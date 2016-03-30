@@ -16,7 +16,7 @@ class HttpNetflix extends Http
     {
         parent::__construct($username);
         $this->baseUrl = "http://instantwatcher.com";
-        $this->lightweightUrl = "/login";
+        $this->lightweightUrl = "/about";
     }
 
     /**
