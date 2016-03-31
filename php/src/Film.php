@@ -917,14 +917,14 @@ class Film {
         if (empty($searchTerms) || !is_array($searchTerms)) {
             return null;
         }
-
+        
+        $db = getDatabase();
         $uniqueName = array_value_by_key("uniqueName", $searchTerms);
-        $title = array_value_by_key("title", $searchTerms);
+        $title = $db->real_escape_string(array_value_by_key("title", $searchTerms));
         $year = array_value_by_key("year", $searchTerms);
         $sourceName = array_value_by_key("sourceName", $searchTerms);
 
         $film = null;
-        $db = getDatabase();
         if (!empty($uniqueName)) {
             $result = $db->query("SELECT film_id FROM film_source WHERE uniqueName='$uniqueName'");
             if ($result->num_rows == 1) {

@@ -54,7 +54,7 @@ function api_getSearchFilm($username)
     logDebug("Params q=$searchQuery, t=$searchTitle, y=$searchYear, ct=$searchContentType, json=$asJson, source=$searchSource", __FUNCTION__." ".__LINE__);
     $searchTerms = array('uniqueName' => $searchQuery,
                          'sourceName' => $sourceName,
-                         'title' => $searchTitle,
+                         'title' => htmlspecialchars_decode($searchTitle),
                          'year' => $searchYear,
                          'contentType' => $searchContentType);
     $searchFilm = null;
@@ -65,7 +65,7 @@ function api_getSearchFilm($username)
                     "\nsearchTerms keys: " . implode(",", array_keys($searchTerms)) .
                     "\nsearchTerms values: " . implode(",", $searchTerms) .
                     "\nException " . $e->getCode() . " " . $e->getMessage();
-        logDebug($errorMsg, "getSearchFilm.php ".__LINE__);
+        logDebug($errorMsg, __FUNCTION__." ".__LINE__);
     }
 
     $response = "<p>No result</p>";
@@ -86,7 +86,7 @@ function api_getSearchFilm($username)
             $response  .= "</td></tr></table>\n";
         }
     }
-
+    
     return $response;
 }
 

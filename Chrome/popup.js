@@ -47,7 +47,7 @@ function searchFilm(searchTerms)
     var params = "&json=1";
     if (searchTerms.uniqueName != "undefined") { params = params + "&q=" + searchTerms.uniqueName; }
     if (searchTerms.source != "undefined") { params = params + "&source=" + searchTerms.source; }
-    if (searchTerms.title != "undefined") { params = params + "&t=" + searchTerms.title; }
+    if (searchTerms.title != "undefined") { params = params + "&t=" + encodeURIComponent(searchTerms.title); }
     if (searchTerms.year != "undefined") { params = params + "&y=" + searchTerms.year; }
     if (searchTerms.contentType != "undefined") { params = params + "&ct=" + searchTerms.contentType; }
 	xmlhttp.open("GET", RS_URL_API + "?action=getSearchFilm" + params, true);
