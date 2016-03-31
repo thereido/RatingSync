@@ -288,7 +288,7 @@ class Imdb extends Site
      * @return string Regular expression to find the image in film detail HTML page
      */
     protected function getDetailPageRegexForImage() {
-        return '/title="[^\(]*[ \(\d\d\d\d\)]? Poster"\nsrc="([^"]+)"/';
+        return '/title=".* Poster"\nsrc="([^"]+)"/';
     }
 
     /**
