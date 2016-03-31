@@ -541,10 +541,12 @@ class FilmlistTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveFromDb()
     {$this->start(__CLASS__, __FUNCTION__);
+        $db = getDatabase();
     
         // Set up
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
         $listname = "testRemoveFromDb";
-        $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, $listname);
+        $list = new Filmlist($username, $listname);
         $list->addItem(1);
         $list->addItem(2);
         $list->saveToDb();
@@ -553,8 +555,11 @@ class FilmlistTest extends \PHPUnit_Framework_TestCase
         $list->removeFromDb();
 
         // Verify
-        $listDb = Filmlist::getListFromDb(Constants::TEST_RATINGSYNC_USERNAME, $listname);
-        $this->assertEquals(0, $listDb->count());
+        $listDb = Filmlist::getListFromDb($username, $listname);
+        $this->assertEquals(0, $listDb->count(), "filmlist should have no items");
+        $query = "SELECT 1 FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
+        $result = $db->query($query);
+        $this->assertEquals(0, $result->num_rows, "User_filmlist should be gone");
     }
 
     /**
@@ -567,20 +572,25 @@ class FilmlistTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveFilmlistFromDb()
     {$this->start(__CLASS__, __FUNCTION__);
+        $db = getDatabase();
     
         // Set up
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
         $listname = "testRemoveListFromDb";
-        $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, $listname);
+        $list = new Filmlist($username, $listname);
         $list->addItem(1);
         $list->addItem(2);
         $list->saveToDb();
 
         // Test
-        Filmlist::removeListFromDb(Constants::TEST_RATINGSYNC_USERNAME, $listname);
+        Filmlist::removeListFromDb($username, $listname);
 
         // Verify
-        $listDb = Filmlist::getListFromDb(Constants::TEST_RATINGSYNC_USERNAME, $listname);
-        $this->assertEquals(0, $listDb->count());
+        $listDb = Filmlist::getListFromDb($username, $listname);
+        $this->assertEquals(0, $listDb->count(), "filmlist should have no items");
+        $query = "SELECT 1 FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
+        $result = $db->query($query);
+        $this->assertEquals(0, $result->num_rows, "User_filmlist should be gone");
     }
 
     /**
