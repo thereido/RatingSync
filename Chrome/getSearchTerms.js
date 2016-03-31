@@ -47,17 +47,24 @@ function getSearchTerms(document_root) {
 	}
     else if (url && -1 < url.indexOf("rottentomatoes")) {
         var source = "RT";
+        var titleElement;
+        var titleRegex;
+        var yearRegex;
         var indexBegin = -1;
         var indexEnd;
 		var index = url.indexOf("/m/");
         if (-1 < index) {
             indexBegin = index + 3;
             indexEnd = url.indexOf("/", indexBegin);
+            titleElement = document_root.getElementById("movie-title");
+            titleRegex = new RegExp("[ ]?([^<]+)<span");
         } else {
             index = url.indexOf("/tv/");
             if (-1 < index) {
                 indexBegin = index + 4;
                 indexEnd = url.indexOf("/", indexBegin);
+                titleElement = document_root.getElementById("super_series_header");
+                titleRegex = new RegExp("<h1>[ ]?([^<]+)<span");
             }
         }
 
@@ -66,17 +73,15 @@ function getSearchTerms(document_root) {
         }
 
         var html = "";
-        var titleEl = document_root.getElementById("movie-title");
-        if (titleEl) {
-            html = titleEl.innerHTML;
+        if (titleElement) {
+            html = titleElement.innerHTML;
         }
-        var reTitle = new RegExp(" ([^<]+)<");
-        if (reTitle.test(html)) {
-            title = reTitle.exec(html)[1];
+        if (titleRegex || titleRegex.test(html)) {
+            title = titleRegex.exec(html)[1];
         }
-        var reYear = new RegExp(">..([0-9]+).<");
-        if (reYear.test(html)) {
-            year = reYear.exec(html)[1];
+        yearRegex = new RegExp(">..([0-9][0-9][0-9][0-9])");
+        if (yearRegex || yearRegex.test(html)) {
+            year = yearRegex.exec(html)[1];
         }
 	}
     else if (url && -1 < url.indexOf("xfinitytv")) {
@@ -132,7 +137,7 @@ function getSearchTerms(document_root) {
             year = reYear.exec(html)[1];
         }
 	}
-
+    
     var text = '{"uniqueName": "' + uniqueName + '", "source": "' + source + '", "title": "' + title +  '", "year": "' + year + '", "contentType": "' + contentType + '"}';
     var json = JSON.parse(text);
     return json;
