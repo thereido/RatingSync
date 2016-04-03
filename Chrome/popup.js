@@ -54,30 +54,6 @@ function searchFilm(searchTerms)
 	xmlhttp.send();
 }
 
-function addStarListeners(el) {
-    var stars = el.getElementsByClassName("rating-star");
-    for (i = 0; i < stars.length; i++) {
-        addStarListener(stars[i].getAttribute("id"));
-    }
-}
-
-function addStarListener(elementId) {    
-	var star = document.getElementById(elementId);
-	if (star != null) {
-		var uniqueName = star.getAttribute('data-uniquename');
-		var score = star.getAttribute('data-score');
-		var titleNum = star.getAttribute('data-title-num');
-
-		var mouseoverHandler = function () { renderYourScore(uniqueName, score, 'new'); };
-		var mouseoutHandler = function () { renderYourScore(uniqueName, score, 'original'); };
-		var clickHandler = function () { rateFilm(uniqueName, score, titleNum); };
-
-        star.addEventListener("mouseover", mouseoverHandler);
-        star.addEventListener("mouseout", mouseoutHandler);
-        star.addEventListener("click", clickHandler);
-	}
-}
-
 function rateFilm(uniqueName, score, titleNum) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
@@ -141,10 +117,7 @@ function renderFilm(json) {
     r = r + "  <poster><img src='" + image + "' width='150px'/></poster>";
     r = r + "  <detail>";
     r = r + "    <div><a href='" + imdbFilmUrl + "' target='_blank'>" + imdbLabel + ":</a> " + imdbScore + "</div>";
-/*RT*
-    r = r + "    <div class='btn-group' id='filmlist-container'></div>";
-*RT*/
-    r = r + "    <div id='filmlist-container'></div>";
+    r = r + "    <div id='filmlist-container' align='left'></div>";
     r = r + "  </detail>";
     r = r + "</div>";
 
@@ -200,63 +173,46 @@ function renderFilmlists(userlistsJson, includedListnames, filmId) {
     
     var listItemsHtml = "";
     for (var x = 0; x < userlists.length; x++) {
+        var viewListsUrl = RS_URL_BASE + "/php/userlist.php?l=" + defaultList;
+        var viewNewListUrl = RS_URL_BASE + "/php/userlist.php?nl=0";
         var currentUserlist = userlists[x].listname;
         if (currentUserlist == defaultList) {
             if (-1 != includedListnames.indexOf(currentUserlist)) {
                 defaultListClass = "checkmark-on";
             }
         } else {
-            var viewListUrl = RS_URL_BASE + "/php/userlist.php?l=" + currentUserlist;
             var checkmarkClass = "checkmark-off";
             if (-1 != includedListnames.indexOf(currentUserlist)) {
                 checkmarkClass = "checkmark-on";
             }
-
-            listItemsHtml = listItemsHtml + "  <div class='filmlist' id='filmlist-"+currentUserlist+"-"+filmId+"'>";
-            listItemsHtml = listItemsHtml + "    <span><button class='btn-filmlist btn btn-sm btn-secondary' id='filmlist-btn-"+currentUserlist+"-"+filmId+"' data-listname='"+currentUserlist+"' data-filmId='"+filmId+"' type='button'><span class='"+checkmarkClass+"' id='filmlist-checkmark-"+filmId+"'>&#10003;</span> "+currentUserlist+"</button></span>";
-            listItemsHtml = listItemsHtml + "    <span><button class='btn btn-sm btn-secondary' type='button'><a href='"+viewListUrl+"' target='_blank'>»</a></button><span>";
-            listItemsHtml = listItemsHtml + "  </div>";
-/*RT*
-            listItemsHtml = listItemsHtml + "  <li class='filmlist' id='filmlist-"+currentUserlist+"-"+filmId+"'><a href='#'>";
-            listItemsHtml = listItemsHtml + "    <span><button class='btn-filmlist btn btn-sm btn-secondary' id='filmlist-btn-"+currentUserlist+"-"+filmId+"' data-listname='"+currentUserlist+"' data-filmId='"+filmId+"' type='button'><span class='"+checkmarkClass+"' id='filmlist-checkmark-"+filmId+"'>&#10003;</span> "+currentUserlist+"</button></span>\n";
-            listItemsHtml = listItemsHtml + "    <span><a href='"+viewListUrl+"' target='_blank'>»</a><span>";
-            listItemsHtml = listItemsHtml + "  </a></li>\n";
-*RT*/
+            
+            listItemsHtml = listItemsHtml + "  <li class='btn-filmlist' id='filmlist-btn-"+currentUserlist+"-"+filmId+"' data-listname='"+currentUserlist+"' data-filmId='"+filmId+"'>";
+            listItemsHtml = listItemsHtml + "      <span class='"+checkmarkClass+"' id='filmlist-checkmark-"+filmId+"'>&#10003;</span> "+currentUserlist;
+            listItemsHtml = listItemsHtml + "  </li>";
         }
     }
     
     var html = "";
-    html = html + "<button class='btn btn-sm btn-primary' id='filmlist-btn-default-"+filmId+"' data-listname='"+defaultList+"' data-filmId='"+filmId+"' type='button'><span class='"+defaultListClass+"' id='filmlist-checkmark-"+filmId+"'>&#10003;</span> "+defaultList+"</button>";
+    html = html + "<div class='btn-group-vertical'>";
+    html = html + "  <button class='btn btn-sm btn-primary' width='100%' id='filmlist-btn-default-"+filmId+"' data-listname='"+defaultList+"' data-filmId='"+filmId+"' type='button'><span class='"+defaultListClass+"' id='filmlist-checkmark-"+filmId+"'>&#10003;</span> "+defaultList+"</button>";
+    html = html + "  <button class='btn btn-sm btn-primary' width='100%' id='filmlist-btn-others-"+filmId+"' type='button'>More lists \u25BC</button>";
+    html = html + "</div>";
     html = html + "<div>";
-    html = html + "  <button class='btn btn-sm btn-primary' id='filmlist-btn-others-"+filmId+"' type='button'>More lists \u25BC</button>";
-    html = html + "  <div class='film-filmlists' id='filmlists-"+filmId+"' hidden >";
+    html = html + "  <ul class='film-filmlists rs-dropdown-menu' id='filmlists-"+filmId+"' hidden >";
     html = html +      listItemsHtml;
-    html = html + "  </div>";
-    html = html + "</div>";
-/*RT*
-    html = html + "<button class='btn btn-sm btn-primary' id='filmlist-btn-default-"+filmId+"' data-listname='"+defaultList+"' data-filmId='"+filmId+"' type='button'><span class='"+defaultListClass+"' id='filmlist-checkmark-"+filmId+"'>&#10003;</span> "+defaultList+"</button>";
-    html = html + "<div class='btn-group'>";
-    html = html + "  <button class='btn btn-sm btn-primary' id='filmlist-btn-others-"+filmId+"' type='button'>\u25BC</button>";
-    html = html + "  <div class='film-filmlists' id='filmlists-"+filmId+"' hidden >";
-    html = html +      listItemsHtml;
-    html = html + "  </div>";
-    html = html + "</div>";
-*RT*/
-/*RT*
-    html = html + "<button class='btn btn-sm btn-primary' id='filmlist-btn-default-"+filmId+"' data-listname='"+defaultList+"' data-filmId='"+filmId+"' type='button'><span class='"+defaultListClass+"' id='filmlist-checkmark-"+filmId+"'>&#10003;</span> "+defaultList+"</button>";
-    html = html + "<div class='btn-group'>";
-    html = html + "  <button class='btn btn-sm btn-primary' id='filmlist-btn-others-"+filmId+"' type='button'>More lists \u25BC</button>";
-    html = html + "  <ul class='rs-dropdown-menu film-filmlists' role='menu' id='filmlists-"+filmId+"' >";
-    html = html +      listItemsHtml;
+    html = html + "    <li class='divider'></li>";
+    html = html + "    <li>";
+    html = html + "      <a href='"+viewNewListUrl+"' target='_blank'>New List</a>";
+    html = html + "    </li>";
+    html = html + "    <li>";
+    html = html + "      <a href='"+viewListsUrl+"' target='_blank'>View Lists</a>";
+    html = html + "    </li>";
     html = html + "  </ul>";
     html = html + "</div>";
-*RT*/
 
     var container = document.getElementById("filmlist-container");
     container.innerHTML = html;
     addFilmlistListeners(container, filmId);
-
-    // Show a button link to page for creating a new list
 }
 
 function toggleFilmlist(listname, filmId, activeBtnId) {
@@ -299,6 +255,30 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
 function toggleHideFilmlists(elementId) {
 	var el = document.getElementById(elementId);
     el.hidden = !el.hidden;
+}
+
+function addStarListeners(el) {
+    var stars = el.getElementsByClassName("rating-star");
+    for (i = 0; i < stars.length; i++) {
+        addStarListener(stars[i].getAttribute("id"));
+    }
+}
+
+function addStarListener(elementId) {    
+	var star = document.getElementById(elementId);
+	if (star != null) {
+		var uniqueName = star.getAttribute('data-uniquename');
+		var score = star.getAttribute('data-score');
+		var titleNum = star.getAttribute('data-title-num');
+
+		var mouseoverHandler = function () { renderYourScore(uniqueName, score, 'new'); };
+		var mouseoutHandler = function () { renderYourScore(uniqueName, score, 'original'); };
+		var clickHandler = function () { rateFilm(uniqueName, score, titleNum); };
+
+        star.addEventListener("mouseover", mouseoverHandler);
+        star.addEventListener("mouseout", mouseoutHandler);
+        star.addEventListener("click", clickHandler);
+	}
 }
 
 function addFilmlistListeners(el, filmId) {
