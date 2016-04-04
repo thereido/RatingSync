@@ -206,6 +206,12 @@ abstract class Site
     abstract protected function getSearchUrl($args);
 
     /**
+     * Return getFilmDetailPageUrl($film) if it is available for streaming.
+     * The return includes base URL.
+     */
+    abstract public function getStreamingUrl($film, $onlyFree = true);
+
+    /**
      * Get every rating on $this->username's account
      *
      * @param int|null $limitPages   Limit the number of pages of ratings
@@ -419,10 +425,30 @@ abstract class Site
             throw new \InvalidArgumentException('arg1 must be a Film object');
         }
 
+        $page = $this->getFilmDetailPage($film, $refreshCache, true);
+
+        if (empty($page)) {
+            return;
+        }
+        $this->parseDetailPageForTitle($page, $film, $overwrite);
+        $this->parseDetailPageForFilmYear($page, $film, $overwrite);
+        $this->parseDetailPageForImage($page, $film, $overwrite);
+        $this->parseDetailPageForContentType($page, $film, $overwrite);
+        $this->parseDetailPageForUniqueName($page, $film, $overwrite);
+        $this->parseDetailPageForRating($page, $film, $overwrite);
+        $this->parseDetailPageForGenres($page, $film, $overwrite);
+        $this->parseDetailPageForDirectors($page, $film, $overwrite);
+    }
+
+    public function getFilmDetailPage($film, $refreshCache = Constants::USE_CACHE_NEVER, $search = false) {
+        if (is_null($film) || !($film instanceof Film) ) {
+            throw new \InvalidArgumentException('arg1 must be a Film object');
+        }
+
         $page = $this->getFilmDetailPageFromCache($film, $refreshCache);
         if (empty($page)) {
             $uniqueName = $film->getUniqueName($this->sourceName);
-            if (empty($uniqueName)) {
+            if (empty($uniqueName) && $search) {
                 $uniqueName = $this->searchWebsiteForUniqueFilm($film);
                 $film->setUniqueName($uniqueName, $this->sourceName);
             }
@@ -437,17 +463,7 @@ abstract class Site
             }
         }
 
-        if (empty($page)) {
-            return;
-        }
-        $this->parseDetailPageForTitle($page, $film, $overwrite);
-        $this->parseDetailPageForFilmYear($page, $film, $overwrite);
-        $this->parseDetailPageForImage($page, $film, $overwrite);
-        $this->parseDetailPageForContentType($page, $film, $overwrite);
-        $this->parseDetailPageForUniqueName($page, $film, $overwrite);
-        $this->parseDetailPageForRating($page, $film, $overwrite);
-        $this->parseDetailPageForGenres($page, $film, $overwrite);
-        $this->parseDetailPageForDirectors($page, $film, $overwrite);
+        return $page;
     }
 
     public function getFilmByUniqueName($uniqueName)

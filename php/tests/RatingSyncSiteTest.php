@@ -9,6 +9,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 
 require_once "SiteChild.php";
 require_once "ImdbTest.php";
+require_once "NetflixTest.php";
 require_once "10DatabaseTest.php";
 
 class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
@@ -263,6 +264,81 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
                 $this->assertEquals("2015-01-06", date_format($rating->getYourRatingDate(), 'Y-m-d'), "Rating date");
             }
         }
+    }
+
+    /**
+     * @covers \RatingSync\RatingSyncSite::getStreamingUrl
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetStreamUrl()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
+        $film = new Film($site->http);
+        $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, Constants::SOURCE_NETFLIX);
+
+        // Test
+        $url = $site->getStreamingUrl($film);
+
+        // Verify
+        $this->assertEquals("http://www.netflix.com/title/80047396", $url, Constants::SOURCE_NETFLIX." streaming URL");
+    }
+
+    /**
+     * @covers \RatingSync\RatingSyncSite::getStreamingUrl
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetStreamUrlEmptyUniqueName()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
+        $film = new Film($site->http);
+
+        // Test
+        $url = $site->getStreamingUrl($film);
+
+        // Verify
+        $this->assertEmpty($url, "Should be no stream URL found ($url)");
+    }
+
+    /**
+     * @covers \RatingSync\RatingSyncSite::getStreamingUrl
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetStreamUrlFilmNoLongerAvailable()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
+        $film = new Film($site->http);
+        $film->setUniqueName("100000000", Constants::SOURCE_NETFLIX);
+
+        // Test
+        $url = $site->getStreamingUrl($film);
+
+        // Verify
+        $this->assertEmpty($url, "Should be empty ($url)");
+    }
+
+    /**
+     * @covers \RatingSync\RatingSyncSite::getStreams
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetStreams()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
+        $film = new Film($site->http);
+        $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, Constants::SOURCE_NETFLIX);
+
+        // Test
+        $urls = $site->getStreams($film);
+
+        // Verify
+        $this->assertEquals("http://www.netflix.com/title/80047396", $urls[Constants::SOURCE_NETFLIX], Constants::SOURCE_NETFLIX." streaming URL");
     }
 }
 

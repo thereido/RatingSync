@@ -152,4 +152,81 @@ class RatingSyncSite extends Site
             $rating->saveToRs($username, $row["film_id"]);
         }
     }
+
+    /**
+     * Return getFilmDetailPageUrl($film) if it is available for streaming.
+     * The return includes base URL. Use the first source with a return.
+     * Order: Netflix, Amazon, xfinity, Hulu
+     */
+    public function getStreamingUrl($film, $onlyFree = true)
+    {
+        $url = null;
+        $username = "empty_username";
+
+        $site = new Netflix($username);
+        try {
+            $url = $site->getStreamingUrl($film, $onlyFree);
+        } catch (\Exception $e) {
+            $url = null;
+        }
+        /*RT*
+        if (empty($url)) {
+            $site = new Amazon($username);
+            try {
+                $url = $site->getStreamingUrl($film, $onlyFree);
+            } catch (\Exception $e) {
+                $url = null;
+            }
+        } elseif (empty($url)) {
+            $site = new Amazon($username);
+            try {
+                $url = $site->getStreamingUrl($film, $onlyFree);
+            } catch (\Exception $e) {
+                $url = null;
+            }
+        } elseif (empty($url)) {
+            $site = new Xfinity($username);
+            try {
+                $url = $site->getStreamingUrl($film, $onlyFree);
+            } catch (\Exception $e) {
+                $url = null;
+            }
+        } elseif (empty($url)) {
+            $site = new Hulu($username);
+            try {
+                $url = $site->getStreamingUrl($film, $onlyFree);
+            } catch (\Exception $e) {
+                $url = null;
+            }
+        }
+        *RT*/
+
+        return $url;
+    }
+
+    /**
+     * Return available URLs for all sources
+     *
+     * @return array keys are sourceNames, values are full URLs
+     */
+    public function getStreams($film, $onlyFree = true)
+    {
+        $urls = array();
+        $username = "empty_username";
+
+        $site = new Netflix($username);
+        $urls[Constants::SOURCE_NETFLIX] = $site->getStreamingUrl($film, $onlyFree);
+        /*RT*
+        $site = new Amazon($username);
+        $urls[Constants::SOURCE_AMAZON] = $site->getStreamingUrl($film, $onlyFree);
+
+        $site = new Xfinity($username);
+        $urls[Constants::SOURCE_XFINITY] = $site->getStreamingUrl($film, $onlyFree);
+
+        $site = new Hulu($username);
+        $urls[Constants::SOURCE_HULU] = $site->getStreamingUrl($film, $onlyFree);
+        *RT*/
+
+        return $urls;
+    }
 }

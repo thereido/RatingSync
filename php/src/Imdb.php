@@ -418,4 +418,12 @@ class Imdb extends Site
 
         return '/\"\/title\/([^\/.]*)\/\?ref_=fn_tt_tt_\d\d?\" >'.$escapedTitle.'<\/a>[^\).*]*\)? \('.$year.'\)/';
     }
+
+    /**
+     * Return null
+     */
+    public function getStreamingUrl($film, $onlyFree = true)
+    {
+        return null;
+    }
 }

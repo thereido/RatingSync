@@ -280,4 +280,35 @@ class Netflix extends Site
         
         return null;
     }
+
+    /**
+     * Return getFilmDetailPageUrl($film) if it is available for streaming.
+     * The return includes base URL.
+     */
+    public function getStreamingUrl($film, $onlyFree = true)
+    {
+        if (is_null($film) || !($film instanceof Film) ) {
+            throw new \InvalidArgumentException('\$film must be a Film object');
+        } elseif (empty($film->getUniqueName($this->sourceName))) {
+            throw new \InvalidArgumentException('\$film uniqueName must be set');
+        }
+
+        $url = null;
+        $available = false;
+        
+        $page = null;
+        try {
+            $page = $this->getFilmDetailPage($film, 60); // use cache within 60 minutes            
+        } catch (\Exception $e) {
+            $url = null;
+        }
+        if (!empty($page)) {
+            $regex = '/href="([^"]+)">Netflix Page</';
+            if (0 != preg_match($regex, $page, $matches)) {
+                $url = $matches[1];
+            }
+        }
+
+        return $url;
+    }
 }

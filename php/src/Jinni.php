@@ -333,4 +333,12 @@ class Jinni extends Site
     {
         return '';   
     }
+
+    /**
+     * Obsolete class
+     */
+    public function getStreamingUrl($film, $onlyFree = true)
+    {
+        return null;
+    }
 }

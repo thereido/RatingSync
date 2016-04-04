@@ -208,6 +208,60 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, count($film->getDirectors()), 'Director(s)');
         $this->assertEquals(0, count($film->getGenres()), 'Genres');
     }
+
+    /**
+     * @covers \RatingSync\Netflix::getStreamingUrl
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetStreamUrl()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $film = new Film($site->http);
+        $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, $site->_getSourceName());
+
+        // Test
+        $url = $site->getStreamingUrl($film);
+
+        // Verify
+        $this->assertEquals("http://www.netflix.com/title/80047396", $url, $site->_getSourceName()." streaming URL");
+    }
+
+    /**
+     * @covers \RatingSync\Netflix::getStreamingUrl
+     * @depends testObjectCanBeConstructed
+     * @expectedException \InvalidArgumentException
+     */
+    public function testGetStreamUrlEmptyUniqueName()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $film = new Film($site->http);
+
+        // Test
+        $url = $site->getStreamingUrl($film);
+    }
+
+    /**
+     * @covers \RatingSync\Netflix::getStreamingUrl
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetStreamUrlFilmNoLongerAvailable()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $film = new Film($site->http);
+        $film->setUniqueName("100000000", $site->_getSourceName());
+
+        // Test
+        $url = $site->getStreamingUrl($film);
+
+        // Verify
+        $this->assertEmpty($url, "Should be empty ($url)");
+    }
 }
 
 ?>
