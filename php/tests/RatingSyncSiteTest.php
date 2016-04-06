@@ -277,12 +277,14 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
         $film = new Film($site->http);
         $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, Constants::SOURCE_NETFLIX);
+        $film->setTitle("testGetStreamUrl");
+        $film->saveToDb();
 
         // Test
-        $url = $site->getStreamingUrl($film);
+        $url = $site->getStreamingUrl($film->getId());
 
         // Verify
-        $this->assertEquals("http://www.netflix.com/title/80047396", $url, Constants::SOURCE_NETFLIX." streaming URL");
+        $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $url, Constants::SOURCE_NETFLIX." streaming URL");
     }
 
     /**
@@ -295,12 +297,35 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
         // Setup
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
         $film = new Film($site->http);
+        $film->setTitle("Experimenter");
+        $film->setYear(2015);
+        $film->saveToDb();
 
         // Test
-        $url = $site->getStreamingUrl($film);
+        $url = $site->getStreamingUrl($film->getId());
 
         // Verify
-        $this->assertEmpty($url, "Should be no stream URL found ($url)");
+        $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $url, "streaming URL");
+    }
+
+    /**
+     * @covers \RatingSync\Netflix::getStreamingUrl
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetStreamUrlEmptyUniqueNameEmptyYear()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
+        $film = new Film($site->http);
+        $film->setTitle("Experimenter");
+        $film->saveToDb();
+
+        // Test
+        $url = $site->getStreamingUrl($film->getId());
+
+        // Verify
+        $this->assertEmpty($url, "Should be empty ($url)");
     }
 
     /**
@@ -314,9 +339,11 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
         $film = new Film($site->http);
         $film->setUniqueName("100000000", Constants::SOURCE_NETFLIX);
+        $film->setTitle("testGetStreamUrlFilmNoLongerAvailable");
+        $film->saveToDb();
 
         // Test
-        $url = $site->getStreamingUrl($film);
+        $url = $site->getStreamingUrl($film->getId());
 
         // Verify
         $this->assertEmpty($url, "Should be empty ($url)");
@@ -333,6 +360,8 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
         $film = new Film($site->http);
         $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, Constants::SOURCE_NETFLIX);
+        $film->setTitle("testGetStreams");
+        $film->saveToDb();
 
         // Test
         $urls = $site->getStreams($film);

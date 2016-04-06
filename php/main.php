@@ -14,6 +14,7 @@ require_once "src/Jinni.php";
 require_once "src/Imdb.php";
 require_once "src/Netflix.php";
 require_once "src/RatingSyncSite.php";
+require_once "src/Stream.php";
 
 /**
  * Import ratings from a file to the database
@@ -138,7 +139,9 @@ function search($searchTerms, $username = null)
         return null;
     }
 
-    $username = getUsername();
+    if (empty($username)) {
+        $username = getUsername();
+    }
     $uniqueName = array_value_by_key("uniqueName", $searchTerms);
     $title = array_value_by_key("title", $searchTerms);
     $year = array_value_by_key("year", $searchTerms);
@@ -148,6 +151,7 @@ function search($searchTerms, $username = null)
         return null;
     }
 
+    $newFilm = false;
     $film = Film::searchDb($searchTerms, $username);
 
     if (empty($film)) {
@@ -174,6 +178,7 @@ function search($searchTerms, $username = null)
         $film = $imdb->getFilmBySearch($searchTerms);
         if (!empty($film)) {
             $film->saveToDb($username);
+            $newFilm = true;
         }
     }
     
@@ -183,6 +188,10 @@ function search($searchTerms, $username = null)
             $source->setUniqueName($uniqueName);
             $source->saveFilmSourceToDb($film->getId());
         }
+    }
+
+    if (!empty($film) && $newFilm) {
+        Stream::refreshStreamsByFilm($film->getId());
     }
     
     return $film;

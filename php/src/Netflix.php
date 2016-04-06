@@ -107,7 +107,7 @@ class Netflix extends Site
 
         $query = urlencode($args['query']);
 
-        return "/search/$query";
+        return "/search?q=$query";
     }
 
     /**
@@ -277,28 +277,49 @@ class Netflix extends Site
         if (!($film instanceof Film)) {
             throw new \InvalidArgumentException('$film must be an array with key "pageIndex" and value an int');
         }
+
+        $title = $film->getTitle();
+        $args = array("query" => $title);
+        $page = $this->http->getPage($this->getSearchUrl($args));
+        $regex = $this->getSearchPageRegexForUniqueName($title, $film->getYear());
+        if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
+            return false;
+        }
         
-        return null;
+        return $matches[1];
+    }
+
+    protected function getSearchPageRegexForUniqueName($title, $year)
+    {
+        $specialChars = "\/\^\.\[\]\|\(\)\?\*\+\{\}"; // need to do '\' too
+        $pattern = "|([$specialChars])|U";
+        $escapedTitle = preg_replace($pattern, '\\\\${1}', $title);
+
+        return '/class="title-link"[^>]*data-title-id="([^"]*)"[^>]*>'.$escapedTitle.'<\/a><\/span> <span class="year"[^>]*><a[^>]*>'.$year.'</';
     }
 
     /**
-     * Return getFilmDetailPageUrl($film) if it is available for streaming.
+     * Return getFilmDetailPageUrl($filmId) if it is available for streaming.
      * The return includes base URL.
      */
-    public function getStreamingUrl($film, $onlyFree = true)
+    public function getStreamingUrl($filmId, $onlyFree = true)
     {
-        if (is_null($film) || !($film instanceof Film) ) {
-            throw new \InvalidArgumentException('\$film must be a Film object');
-        } elseif (empty($film->getUniqueName($this->sourceName))) {
-            throw new \InvalidArgumentException('\$film uniqueName must be set');
+        if (empty($filmId) || !is_int(intval($filmId))) {
+            throw new \InvalidArgumentException(__FUNCTION__." \$filmId must be an int (filmId=$filmId)");
         }
 
         $url = null;
-        $available = false;
         
+        $film = Film::getFilmFromDb($filmId, new HttpRatingSync("empty_username"));
+        if (empty($film->getUniqueName($this->sourceName))) {
+            $searchTerms = array();
+            $searchTerms["title"] = $film->getTitle();
+            $searchTerms["year"] = $film->getYear();
+            $film = $this->getFilmBySearch($searchTerms);
+        }
         $page = null;
         try {
-            $page = $this->getFilmDetailPage($film, 60); // use cache within 60 minutes            
+            $page = $this->getFilmDetailPage($film, 60); // use cache within 60 minutes
         } catch (\Exception $e) {
             $url = null;
         }

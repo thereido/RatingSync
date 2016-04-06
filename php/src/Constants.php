@@ -17,6 +17,12 @@ class Constants
     const SOURCE_XFINITY                = "xfinity";
     const SOURCE_HULU                   = "Hulu";
     const SOURCE_RATINGSYNC             = "RatingSync";
+    const PROVIDER_NETFLIX              = "Netflix";
+    const PROVIDER_AMAZON               = "Amazon";
+    const PROVIDER_XFINITY              = "xfinity";
+    const PROVIDER_HULU                 = "Hulu";
+    const PROVIDER_YOUTUBE              = "YouTube";
+    const PROVIDER_HBO                  = "HBO";
     const LIST_DEFAULT                  = "Watchlist";
     const EXPORT_FORMAT_XML             = "XML";
     const IMPORT_FORMAT_XML             = "XML";

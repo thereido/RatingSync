@@ -4,6 +4,7 @@ namespace RatingSync;
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 require_once "getHtmlRating.php";
 require_once "getHtmlFilmlists.php";
+require_once "getHtmlStreams.php";
 
 $username = getUsername();
 
@@ -42,6 +43,7 @@ function getHtmlFilm($film, $titleNum = null, $listname = null) {
     $response .= "  <div class='rating-date'>$dateStr</div>\n";
     $response .= "  <div><a href='$imdbFilmUrl' target='_blank'>$imdbLabel:</a> $imdbScore</div>\n";
     $response .=    getHtmlFilmlistsByFilm($film, $listname);
+    $response .=    getHtmlStreams($film);
     $response .= "</detail>";
     
     return $response;

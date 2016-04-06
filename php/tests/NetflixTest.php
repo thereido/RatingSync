@@ -220,18 +220,19 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
         $site = new NetflixExt(TEST_NETFLIX_USERNAME);
         $film = new Film($site->http);
         $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, $site->_getSourceName());
+        $film->setTitle("empty_title");
+        $film->saveToDb();
 
         // Test
-        $url = $site->getStreamingUrl($film);
+        $url = $site->getStreamingUrl($film->getId());
 
         // Verify
-        $this->assertEquals("http://www.netflix.com/title/80047396", $url, $site->_getSourceName()." streaming URL");
+        $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $url, $site->_getSourceName()." streaming URL");
     }
 
     /**
      * @covers \RatingSync\Netflix::getStreamingUrl
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testGetStreamUrlEmptyUniqueName()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -239,9 +240,33 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
         // Setup
         $site = new NetflixExt(TEST_NETFLIX_USERNAME);
         $film = new Film($site->http);
+        $film->setTitle("Experimenter");
+        $film->setYear(2015);
+        $film->saveToDb();
 
         // Test
-        $url = $site->getStreamingUrl($film);
+        $url = $site->getStreamingUrl($film->getId());
+
+        // Verify
+        $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $url, $site->_getSourceName()." streaming URL");
+    }
+
+    /**
+     * @covers \RatingSync\Netflix::getStreamingUrl
+     * @depends testObjectCanBeConstructed
+     * @expectedException \InvalidArgumentException
+     */
+    public function testGetStreamUrlEmptyUniqueNameEmptyYear()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $film = new Film($site->http);
+        $film->setTitle("Experimenter");
+        $film->saveToDb();
+
+        // Test
+        $url = $site->getStreamingUrl($film->getId());
     }
 
     /**
@@ -255,9 +280,11 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
         $site = new NetflixExt(TEST_NETFLIX_USERNAME);
         $film = new Film($site->http);
         $film->setUniqueName("100000000", $site->_getSourceName());
+        $film->setTitle("empty_title");
+        $film->saveToDb();
 
         // Test
-        $url = $site->getStreamingUrl($film);
+        $url = $site->getStreamingUrl($film->getId());
 
         // Verify
         $this->assertEmpty($url, "Should be empty ($url)");

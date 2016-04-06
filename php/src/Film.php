@@ -6,6 +6,7 @@ namespace RatingSync;
 
 require_once "Http.php";
 require_once "Filmlist.php";
+require_once "Stream.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 
 class Film {
@@ -27,6 +28,7 @@ class Film {
     protected $genres = array();
     protected $directors = array();
     protected $filmlists = array();
+    protected $streams = array();
 
     public function __construct(Http $http)
     {
@@ -37,9 +39,9 @@ class Film {
         $this->http = $http;
     }
 
-    public static function validContentType($type)
-    {       
-        if (in_array($type, array(static::CONTENT_FILM, static::CONTENT_TV, static::CONTENT_SHORTFILM))) {
+    public static function validContentType($contentType)
+    {
+        if (in_array($contentType, array(static::CONTENT_FILM, static::CONTENT_TV, static::CONTENT_SHORTFILM))) {
             return true;
         }
         return false;
@@ -71,6 +73,11 @@ class Film {
            <filmlists>
                <listname/>
            </filmlists>
+           <stream name="">
+               <providerName/>
+               <streamId/>
+               <url/>
+           </stream>
        </film>
      *
      * @param SimpleXMLElement $xml Add new <film> into this param
@@ -126,6 +133,14 @@ class Film {
                 $listsXml->addChild('listname', htmlentities($listname, ENT_COMPAT, "utf-8"));
             }
         }
+
+        foreach ($this->streams as $stream) {
+            $streamXml = $filmXml->addChild('stream');
+            $streamXml->addAttribute('name', $stream->getProviderName());
+            $streamXml->addChild('providerName', $stream->getProviderName());
+            $streamXml->addChild('streamId', $stream->getStreamId());
+            $streamXml->addChild('url', $stream->getUrl());
+        }
     }
 
     public function json_encode()
@@ -180,6 +195,18 @@ class Film {
         }
         if (count($arrFilmlists) > 0) {
             $arr['filmlists'] = $arrFilmlists;
+        }
+
+        $arrStreams = array();
+        foreach ($this->streams as $stream) {
+            $arrStream = array();
+            $providerName = $stream->getProviderName();
+            $arrStream['streamId'] = $stream->getStreamId();
+            $arrStream['url'] = $stream->getUrl();
+            $arrStreams[$providerName] = $arrStream;
+        }
+        if (count($arrStreams) > 0) {
+            $arr['streams'] = $arrStreams;
         }
         
         return json_encode($arr);
@@ -264,6 +291,16 @@ class Film {
                 if (!empty($listnameSxe->__toString())) {
                     $film->addFilmlist($listnameSxe->__toString());
                 }
+            }
+        }
+
+        foreach ($filmSxe->xpath('stream') as $streamSxe) {
+            $providerName = Self::xmlStringByKey('providerName', $streamSxe);
+            if (self::validProvider($providerName)) {
+                $stream = new Stream($providerName);
+                $stream->setStreamId(Self::xmlStringByKey('streamId', $streamSxe));
+                $stream->setUrl(Self::xmlStringByKey('url', $streamSxe));
+                $film->streams[$providerName] = $stream;
             }
         }
         
@@ -628,6 +665,26 @@ class Film {
         return in_array($listname, $this->filmlists);
     }
 
+    public function getStream($providerName)
+    {
+        if (! Stream::validProvider($providerName) ) {
+            throw new \InvalidArgumentException(__FUNCTION__." provider name ($providerName) invalid");
+        }
+        
+        if (empty($this->streams[$providerName])) {
+            $stream = new Stream($providerName);
+            $stream->setFilmId($this->getId());
+            $this->streams[$providerName] = $stream;
+        }
+
+        return $this->streams[$providerName];
+    }
+
+    public function getStreams()
+    {
+        return $this->streams;
+    }
+
     public function saveToDb($username = null)
     {
         if (empty($this->getTitle())) {
@@ -751,6 +808,15 @@ class Film {
             Filmlist::saveToDbUserFilmlistsByFilmObjectLists($username, $this);
         }
 
+        // Streams
+        foreach ($this->streams as $stream) {
+            $stream->setFilmId($filmId);
+            $success = $stream->saveToDb();
+            if (!$success) {
+                $errorFree = false;
+            }
+        }
+
         // Make sure the RatingSync source has an image
         $sourceRs = $this->getSource(Constants::SOURCE_RATINGSYNC);
         $filmImage = $this->getImage();
@@ -863,6 +929,16 @@ class Film {
             while ($row = $result->fetch_assoc()) {
                 $film->addFilmlist($row['listname']);
             }
+        }
+
+        // Streams
+        $query = "SELECT * FROM stream WHERE film_id=$filmId";
+        $result = $db->query($query);
+        while ($row = $result->fetch_assoc()) {
+            $stream = $film->getStream($row['provider_name']);
+            $stream->setFilmId($filmId);
+            $stream->setStreamId($row['streamId']);
+            $stream->setUrl($row['url']);
         }
 
         return $film;

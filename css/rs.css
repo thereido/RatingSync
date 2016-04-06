@@ -64,3 +64,13 @@ detail {
     font-weight: bold;
     color: #10b33c;    
 }
+
+.film-filmlists {
+    float: left;
+    padding-right: 15px;
+}
+
+.streams {
+    float: right;
+    padding-right: 15px;
+}

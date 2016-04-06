@@ -17,3 +17,10 @@ INSERT INTO user_source (user_name, source_name, username, password) VALUES ('te
 INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'Hulu', 'testratingsync', 'password');
 
 INSERT INTO user_filmlist (user_name, listname) VALUES ('testratingsync', 'Watchlist');
+
+INSERT INTO provider (name) VALUES ('Netflix');
+INSERT INTO provider (name) VALUES ('Amazon');
+INSERT INTO provider (name) VALUES ('xfinity');
+INSERT INTO provider (name) VALUES ('Hulu');
+INSERT INTO provider (name) VALUES ('YouTube');
+INSERT INTO provider (name) VALUES ('HBO');

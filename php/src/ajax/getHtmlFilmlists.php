@@ -70,11 +70,11 @@ function getHtmlFilmlistsByFilm($film) {
     $listItemsHtml .= "        <li class='divider'></li>\n";
     $listItemsHtml .= "        <li><a href='/php/userlist.php?id=$filmId'>New list</a></li>\n";
 
-    $response .= "<div class='btn-group-vertical'>\n";
+    $response .= "<div class='btn-group-vertical film-filmlists'>\n";
     $response .= "    <button class='btn btn-sm btn-primary' onClick='toggleFilmlist(\"$defaultListHtmlSafe\", $filmId, \"filmlist-btn-default-$filmId\")' id='filmlist-btn-default-$filmId' data-listname='$defaultList' type='button'><span class='$defaultListClass' id='filmlist-checkmark-$filmId'></span> $defaultList</button>\n";
     $response .= "    <div class='btn-group'>\n";
     $response .= "      <button class='btn btn-sm btn-primary dropdown-toggle' id='filmlist-btn-others-$filmId' data-toggle='dropdown' type='button'>More lists <span class='caret'></span></button>\n";
-    $response .= "      <ul class='film-filmlists dropdown-menu' id='filmlists-$filmId' role='menu'  >\n";
+    $response .= "      <ul class='dropdown-menu' id='filmlists-$filmId' role='menu'  >\n";
     $response .=          $listItemsHtml;
     $response .= "      </ul>\n";
     $response .= "    </div>\n";

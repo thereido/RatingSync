@@ -158,14 +158,18 @@ class RatingSyncSite extends Site
      * The return includes base URL. Use the first source with a return.
      * Order: Netflix, Amazon, xfinity, Hulu
      */
-    public function getStreamingUrl($film, $onlyFree = true)
+    public function getStreamingUrl($filmId, $onlyFree = true)
     {
+        if (empty($filmId) || !is_int(intval($filmId))) {
+            throw new \InvalidArgumentException(__FUNCTION__." \$filmId must be an int (filmId=$filmId)");
+        }
+
         $url = null;
         $username = "empty_username";
 
         $site = new Netflix($username);
         try {
-            $url = $site->getStreamingUrl($film, $onlyFree);
+            $url = $site->getStreamingUrl($filmId, $onlyFree);
         } catch (\Exception $e) {
             $url = null;
         }
@@ -215,7 +219,7 @@ class RatingSyncSite extends Site
         $username = "empty_username";
 
         $site = new Netflix($username);
-        $urls[Constants::SOURCE_NETFLIX] = $site->getStreamingUrl($film, $onlyFree);
+        $urls[Constants::SOURCE_NETFLIX] = $site->getStreamingUrl($film->getId(), $onlyFree);
         /*RT*
         $site = new Amazon($username);
         $urls[Constants::SOURCE_AMAZON] = $site->getStreamingUrl($film, $onlyFree);
