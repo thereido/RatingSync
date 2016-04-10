@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "Site.php";
+require_once "SiteProvider.php";
 require_once "HttpNetflix.php";
 
 /**
@@ -13,7 +13,7 @@ require_once "HttpNetflix.php";
  * - Get details for each and rate it
  * - Export/Import ratings.
  */
-class Netflix extends Site
+class Netflix extends \RatingSync\SiteProvider
 {
     const NETFLIX_DATE_FORMAT = "n/j/y";
 
@@ -23,7 +23,6 @@ class Netflix extends Site
         $this->http = new HttpNetflix($username);
         $this->sourceName = Constants::SOURCE_NETFLIX;
         $this->dateFormat = self::NETFLIX_DATE_FORMAT;
-        $this->maxRatingScore = 5;
     }
     
     /**
@@ -37,37 +36,6 @@ class Netflix extends Site
     protected function getRatingPageUrl($args)
     {
         return '/MoviesYouveSeen';
-    }
-
-    /**
-     * Page number for the next page of ratings. False if not available.
-     *
-     * @param string $page Html of the current ratings page
-     *
-     * @return int|false
-     */
-    protected function getNextRatingPageNumber($page)
-    {
-        return false;
-    }
-
-    /**
-     * Create Film objects from the HTML of a ratings page.  Films get only
-       data available from ratings page. If the $details param is true, then
-       each film goes to another page for full detail. Using $details=true
-       can take a long time.
-     *
-     * @param string     $page         HTML from a page of ratings
-     * @param bool|false $details      Get all data for each film
-     * @param int|0      $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
-     *
-     * @return array Film class objects
-     */
-    protected function getFilmsFromRatingsPage($page, $details = false, $refreshCache = 0)
-    {
-        $films = array();
-
-        return $films;
     }
 
     /**
@@ -227,44 +195,6 @@ class Netflix extends Site
     }
 
     /**
-     * Regular expression to find your rating date in film detail HTML page
-     *
-     * @return string Regular expression to find your rating date in film detail HTML page
-     */
-    protected function getDetailPageRegexForRatingDate() {
-        return '';
-    }
-
-    /**
-     * Regular expression to find suggested score in film detail HTML page
-     *
-     * @param \RatingSync\Film $film Film data
-     *
-     * @return string Regular expression to find suggested score in film detail HTML page
-     */
-    protected function getDetailPageRegexForSuggestedScore($film) {
-        return '';
-    }
-
-    /**
-     * Regular expression to find critic score in film detail HTML page
-     *
-     * @return string Regular expression to find critic score in film detail HTML page
-     */
-    protected function getDetailPageRegexForCriticScore() {
-        return '';
-    }
-
-    /**
-     * Regular expression to find user score in film detail HTML page
-     *
-     * @return string Regular expression to find user score in film detail HTML page
-     */
-    protected function getDetailPageRegexForUserScore() {
-        return '';
-    }
-
-    /**
      * Search website for a unique film and set unique attr on
      * the param Film object.
      *
@@ -298,38 +228,8 @@ class Netflix extends Site
         return '/class="title-link"[^>]*data-title-id="([^"]*)"[^>]*>'.$escapedTitle.'<\/a><\/span> <span class="year"[^>]*><a[^>]*>'.$year.'</';
     }
 
-    /**
-     * Return getFilmDetailPageUrl($filmId) if it is available for streaming.
-     * The return includes base URL.
-     */
-    public function getStreamingUrl($filmId, $onlyFree = true)
+    protected function getDetailPageRegexForStreamingUrl()
     {
-        if (empty($filmId) || !is_int(intval($filmId))) {
-            throw new \InvalidArgumentException(__FUNCTION__." \$filmId must be an int (filmId=$filmId)");
-        }
-
-        $url = null;
-        
-        $film = Film::getFilmFromDb($filmId, new HttpRatingSync("empty_username"));
-        if (empty($film->getUniqueName($this->sourceName))) {
-            $searchTerms = array();
-            $searchTerms["title"] = $film->getTitle();
-            $searchTerms["year"] = $film->getYear();
-            $film = $this->getFilmBySearch($searchTerms);
-        }
-        $page = null;
-        try {
-            $page = $this->getFilmDetailPage($film, 60); // use cache within 60 minutes
-        } catch (\Exception $e) {
-            $url = null;
-        }
-        if (!empty($page)) {
-            $regex = '/href="([^"]+)">Netflix Page</';
-            if (0 != preg_match($regex, $page, $matches)) {
-                $url = $matches[1];
-            }
-        }
-
-        return $url;
+        return '/href="([^"]+)">Netflix Page</';
     }
 }

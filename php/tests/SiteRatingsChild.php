@@ -4,17 +4,21 @@
  */
 namespace RatingSync;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Site.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "SiteRatings.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Imdb.php";
-require_once "SiteTest.php";
+require_once "SiteRatingsTest.php";
 
-class SiteChild extends \RatingSync\Site {
+class SiteRatingsChild extends \RatingSync\SiteRatings {
     public function __construct($username)
     {
         parent::__construct($username);
         $this->http = new HttpImdb(TEST_SITE_USERNAME);
         $this->sourceName = Constants::SOURCE_IMDB;
         $this->dateFormat = Imdb::IMDB_DATE_FORMAT;
+        $this->maxCriticScore = 100;
+        if (!$this->validateAfterConstructor()) {
+            throw \Exception("Invalid SiteChild contructor");
+        }
     }
 
     function _getHttp() { return $this->http; }
@@ -29,8 +33,81 @@ class SiteChild extends \RatingSync\Site {
     function _parseDetailPageForImage($page, $film, $overwrite) { return $this->parseDetailPageForImage($page, $film, $overwrite); }
     function _parseDetailPageForContentType($page, $film, $overwrite) { return $this->parseDetailPageForContentType($page, $film, $overwrite); }
     function _parseDetailPageForUniqueName($page, $film, $overwrite) { return $this->parseDetailPageForUniqueName($page, $film, $overwrite); }
+    function _parseDetailPageForRating($page, $film, $overwrite) { return $this->parseDetailPageForRating($page, $film, $overwrite); }
     function _parseDetailPageForGenres($page, $film, $overwrite) { return $this->parseDetailPageForGenres($page, $film, $overwrite); }
     function _parseDetailPageForDirectors($page, $film, $overwrite) { return $this->parseDetailPageForDirectors($page, $film, $overwrite); }
+    function _getRatingPageUrl($args) { return $this->getRatingPageUrl($args); }
+
+    // Abstract Function based on \RatingSync\Imdb::getRatingPageUrl
+    protected function getRatingPageUrl($args) {
+        $pageIndex = $args['pageIndex'];
+        $startIndex = (($pageIndex - 1) * 100) + 1;
+        return '/user/'.urlencode($this->username).'/ratings?start='.$startIndex.'&view=detail&sort=title:asc';
+    }
+
+    // Abstract Function returns 2 films
+    protected function getFilmsFromRatingsPage($page, $details = false, $refreshCache = 0) {
+        $film = new Film($this->http);
+        $film2 = new Film($this->http);
+
+        $rating = new Rating($this->sourceName);
+        $rating->setYourScore(8);
+        $rating->setYourRatingDate(new \DateTime('2015-01-02'));
+        $film->setRating($rating, $this->sourceName);
+        $film->setTitle("Site Title1");
+        $film->setUniqueName("Site_UniqueName1", $this->sourceName);
+        $film->setImage("Site_Image1");
+        $film->setImage("Site_Image1", $this->sourceName);
+        $film->setContentType(\RatingSync\Film::CONTENT_FILM);
+
+        $rating2 = new Rating($this->sourceName);
+        $rating2->setYourScore(7);
+        $rating2->setYourRatingDate(new \DateTime('2015-01-03'));
+        $film2->setRating($rating2, $this->sourceName);
+        $film2->setTitle("Site Title2");
+        $film2->setUniqueName("Site_UniqueName2", $this->sourceName);
+        $film2->setImage("Site_Image2");
+        $film2->setImage("Site_Image2", $this->sourceName);
+        $film2->setContentType(\RatingSync\Film::CONTENT_FILM);
+
+        if ($details) {
+            $film->setYear(1900);
+            $film->addGenre("Site_Genre1.1");
+            $film->addGenre("Site_Genre1.2");
+            $film->addDirector("Site_Director1.1");
+            $film->addDirector("Site_Director1.2");
+            $rating->setSuggestedScore(2);
+            $film->setRating($rating, $this->sourceName);
+            $film->setCriticScore(3, $this->sourceName);
+            $film->setUserScore(4, $this->sourceName);
+            
+            $film2->setYear(1902);
+            $film2->addGenre("Site_Genre2.1");
+            $film2->addDirector("Site_Director2.1");
+            $rating2->setSuggestedScore(3);
+            $film2->setRating($rating2, $this->sourceName);
+            $film2->setCriticScore(4, $this->sourceName);
+            $film2->setUserScore(5, $this->sourceName);
+        }
+
+        $films = array($film, $film2);
+        return $films;
+    }
+
+    // Abstract Function based on \RatingSync\Imdb::getNextRatingPageNumber
+    protected function getNextRatingPageNumber($page) {
+        if (0 == preg_match('@Page (\d+) of (\d+)@', $page, $matches)) {
+            return false;
+        }
+        $currentPageNumber = $matches[1];
+        $totalPages = $matches[2];
+
+        if ($currentPageNumber == $totalPages) {
+            return false;
+        }
+
+        return $currentPageNumber + 1;
+    }
 
     // Abstract Function based on \RatingSync\Imdb::getFilmDetailPageUrl
     protected function getFilmDetailPageUrl($film) { return '/title/'.$film->getUniqueName($this->sourceName).'/'; }
@@ -49,6 +126,21 @@ class SiteChild extends \RatingSync\Site {
 
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForUniqueName
     protected function getDetailPageRegexForUniqueName() { return '/<meta property="og:url" content=".*\/(.+)\/"/'; }
+
+    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForYourScore
+    protected function getDetailPageRegexForYourScore($film) { return '/<span class="rating-rating rating-your"><span class="value">(\d\d?)<\/span>/'; }
+
+    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForRatingDate
+    protected function getDetailPageRegexForRatingDate() { return ''; }
+
+    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForSuggestedScore
+    protected function getDetailPageRegexForSuggestedScore($film) { return ''; }
+
+    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForCriticScore
+    protected function getDetailPageRegexForCriticScore() { return '/class="metacriticScore score_favorable titleReviewBarSubItem">\n<span>(\d\d?)<\/span>/'; }
+
+    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForUserScore
+    protected function getDetailPageRegexForUserScore() { return '/<span itemprop="ratingValue">(\d\.?\d?)<\/span>/'; }
 
     // Abstract Function based on \RatingSync\Imdb::parseDetailPageForGenres
     protected function parseDetailPageForGenres($page, $film, $overwrite)

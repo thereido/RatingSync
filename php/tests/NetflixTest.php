@@ -16,14 +16,11 @@ class NetflixExt extends \RatingSync\Netflix {
     function _getSourceName() { return $this->sourceName; }
     function _getUsername() { return $this->username; }
 
-    function _getRatingPageUrl($args) { return $this->getRatingPageUrl($args); }
-    function _getNextRatingPageNumber($page) { return $this->getNextRatingPageNumber($page); }
     function _parseDetailPageForTitle($page, $film, $overwrite) { return $this->parseDetailPageForTitle($page, $film, $overwrite); }
     function _parseDetailPageForFilmYear($page, $film, $overwrite) { return $this->parseDetailPageForFilmYear($page, $film, $overwrite); }
     function _parseDetailPageForImage($page, $film, $overwrite) { return $this->parseDetailPageForImage($page, $film, $overwrite); }
     function _parseDetailPageForContentType($page, $film, $overwrite) { return $this->parseDetailPageForContentType($page, $film, $overwrite); }
     function _parseDetailPageForUniqueName($page, $film, $overwrite) { return $this->parseDetailPageForUniqueName($page, $film, $overwrite); }
-    function _parseDetailPageForRating($page, $film, $overwrite) { return $this->parseDetailPageForRating($page, $film, $overwrite); }
     function _parseDetailPageForGenres($page, $film, $overwrite) { return $this->parseDetailPageForGenres($page, $film, $overwrite); }
     function _parseDetailPageForDirectors($page, $film, $overwrite) { return $this->parseDetailPageForDirectors($page, $film, $overwrite); }
 }
@@ -78,42 +75,6 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Netflix(TEST_NETFLIX_USERNAME);
-    }
-
-    /**
-     * @covers \RatingSync\Netflix::getRatings
-     * @depends testObjectCanBeConstructed
-     * @expectedException \RatingSync\HttpNotFoundException
-     */
-    public function testGetRatingsUsernameWithNoMatch()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $site = new Netflix("---Username--No--Match---");
-        $films = $site->getRatings();
-    }
-
-    /**
-     * @covers \RatingSync\Netflix::cacheRatingsPage
-     * @depends testObjectCanBeConstructed
-     */
-    public function testCacheRatingsPage()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
-
-        $page = "<html><body><h2>Rating page 2</h2></body></html>";
-        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_ratingspage.xml";
-        $fp = fopen($verifyFilename, "w");
-        fwrite($fp, $page);
-        fclose($fp);
-
-        $site->cacheRatingsPage($page, 2);
-        $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_NETFLIX_USERNAME . "_ratings_2.html";
-        $this->assertFileExists($testFilename, 'Cache file exists');
-        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
-        
-        unlink($verifyFilename);
-        unlink($testFilename);
     }
 
     /**
@@ -199,14 +160,14 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
 
         // Not available in the detail page
         $this->assertNull($film->getContentType(), 'Content Type');
-        $rating = $film->getRating($site->_getSourceName());
-        $this->assertNull($rating->getYourScore(), 'Your Score');
-        $this->assertNull($rating->getYourRatingDate(), 'Rating date');
-        $this->assertNull($rating->getSuggestedScore(), 'Suggested score');
-        $this->assertNull($film->getCriticScore($site->_getSourceName()), 'Critic score');
-        $this->assertNull($film->getUserScore($site->_getSourceName()), 'User score');
         $this->assertEquals(0, count($film->getDirectors()), 'Director(s)');
         $this->assertEquals(0, count($film->getGenres()), 'Genres');
+    }
+
+    public function testResetDb()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        DatabaseTest::resetDb();
     }
 
     /**

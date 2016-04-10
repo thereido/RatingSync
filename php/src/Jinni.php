@@ -8,7 +8,7 @@ require_once "Constants.php";
 require_once "Film.php";
 require_once "HttpJinni.php";
 require_once "Rating.php";
-require_once "Site.php";
+require_once "SiteRatings.php";
 
 /**
  * (OBSOLOTE WEBSITE)
@@ -18,7 +18,7 @@ require_once "Site.php";
  * - Get details for each and rate it
  * - Export/Import ratings.
  */
-class Jinni extends Site
+class Jinni extends \RatingSync\SiteRatings
 {
     const JINNI_DATE_FORMAT = "n/j/y";
 
@@ -332,13 +332,5 @@ class Jinni extends Site
     protected function getSearchUrl($args)
     {
         return '';   
-    }
-
-    /**
-     * Obsolete class
-     */
-    public function getStreamingUrl($film, $onlyFree = true)
-    {
-        return null;
     }
 }

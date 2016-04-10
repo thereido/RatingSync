@@ -2249,7 +2249,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
         $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
 
-        $site = new SiteChild($username_site);
+        $site = new RatingSyncSite($username_site);
         $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename, $username_rs);
     }
 

@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "Site.php";
+require_once "SiteRatings.php";
 require_once "HttpRatingSync.php";
 
 /**
@@ -13,7 +13,7 @@ require_once "HttpRatingSync.php";
  * - Get details for each and rate it
  * - Export/Import ratings.
  */
-class RatingSyncSite extends Site
+class RatingSyncSite extends \RatingSync\SiteRatings
 {
     const RATINGSYNC_DATE_FORMAT = "n/j/y";
 

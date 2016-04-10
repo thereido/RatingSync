@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "Site.php";
+require_once "SiteRatings.php";
 require_once "HttpImdb.php";
 
 /**
@@ -13,7 +13,7 @@ require_once "HttpImdb.php";
  * - Get details for each and rate it
  * - Export/Import ratings.
  */
-class Imdb extends Site
+class Imdb extends \RatingSync\SiteRatings
 {
     const IMDB_DATE_FORMAT = "n/j/y";
 
@@ -417,13 +417,5 @@ class Imdb extends Site
         $escapedTitle = preg_replace($pattern, '\\\\${1}', $title);
 
         return '/\"\/title\/([^\/.]*)\/\?ref_=fn_tt_tt_\d\d?\" >'.$escapedTitle.'<\/a>[^\).*]*\)? \('.$year.'\)/';
-    }
-
-    /**
-     * Return null
-     */
-    public function getStreamingUrl($film, $onlyFree = true)
-    {
-        return null;
     }
 }

@@ -7,7 +7,7 @@ namespace RatingSync;
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Rating.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Constants.php";
 
-require_once "SiteChild.php";
+require_once "SiteRatingsChild.php";
 require_once "ImdbTest.php";
 require_once "10DatabaseTest.php";
 
@@ -391,7 +391,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         DatabaseTest::resetDb();
         $username_site = TEST_IMDB_USERNAME;
         $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
-        $site = new SiteChild($username_site);
+        $site = new SiteRatingsChild($username_site);
         $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
         $films = $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename, $username_rs);
     }
