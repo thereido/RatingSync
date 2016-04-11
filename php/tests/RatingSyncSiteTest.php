@@ -275,7 +275,7 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
 
         // Setup
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, Constants::SOURCE_NETFLIX);
         $film->setTitle("testGetStreamUrl");
         $film->saveToDb();
@@ -296,7 +296,7 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
 
         // Setup
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setTitle("Experimenter");
         $film->setYear(2015);
         $film->saveToDb();
@@ -317,7 +317,7 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
 
         // Setup
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setTitle("Experimenter");
         $film->saveToDb();
 
@@ -337,7 +337,7 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
 
         // Setup
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("100000000", Constants::SOURCE_NETFLIX);
         $film->setTitle("testGetStreamUrlFilmNoLongerAvailable");
         $film->saveToDb();
@@ -358,7 +358,7 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
 
         // Setup
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, Constants::SOURCE_NETFLIX);
         $film->setTitle("testGetStreams");
         $film->saveToDb();

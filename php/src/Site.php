@@ -242,7 +242,7 @@ abstract class Site
         if ( empty($uniqueName) ) {
             throw new \InvalidArgumentException('Function getFilmByUniqueName must have uniqueName');
         }
-        $film = new Film($this->http);
+        $film = new Film();
         $film->setUniqueName($uniqueName, $this->sourceName);
         try {
             $this->getFilmDetailFromWebsite($film);
@@ -272,7 +272,7 @@ abstract class Site
             return $this->getFilmByUniqueName($uniqueName);
         }
 
-        $film = new Film($this->http);
+        $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType($contentType);

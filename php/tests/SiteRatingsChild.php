@@ -12,8 +12,8 @@ class SiteRatingsChild extends \RatingSync\SiteRatings {
     public function __construct($username)
     {
         parent::__construct($username);
-        $this->http = new HttpImdb(TEST_SITE_USERNAME);
         $this->sourceName = Constants::SOURCE_IMDB;
+        $this->http = new Http(Http::SITE_SOURCE, $this->sourceName, $username);
         $this->dateFormat = Imdb::IMDB_DATE_FORMAT;
         $this->maxCriticScore = 100;
         if (!$this->validateAfterConstructor()) {
@@ -47,8 +47,8 @@ class SiteRatingsChild extends \RatingSync\SiteRatings {
 
     // Abstract Function returns 2 films
     protected function getFilmsFromRatingsPage($page, $details = false, $refreshCache = 0) {
-        $film = new Film($this->http);
-        $film2 = new Film($this->http);
+        $film = new Film();
+        $film2 = new Film();
 
         $rating = new Rating($this->sourceName);
         $rating->setYourScore(8);

@@ -5,7 +5,6 @@
 namespace RatingSync;
 
 require_once "SiteRatings.php";
-require_once "HttpRatingSync.php";
 
 /**
  * Communicate to/from the RatingSync website/database
@@ -20,8 +19,8 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     public function __construct($username)
     {
         parent::__construct($username);
-        $this->http = new HttpRatingSync($username);
         $this->sourceName = Constants::SOURCE_RATINGSYNC;
+        $this->http = new Http(Http::SITE_SOURCE, $this->sourceName, $username);
         $this->dateFormat = self::RATINGSYNC_DATE_FORMAT;
         $this->maxCriticScore = 100;
     }
@@ -112,7 +111,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         // Iterate over films rated
         while ($row = $result->fetch_assoc()) {
             $filmId = intval($row["film_id"]);
-            $film = Film::getFilmFromDb($filmId, $this->http, $this->username);
+            $film = Film::getFilmFromDb($filmId, $this->username);
             $films[] = $film;
         }
         

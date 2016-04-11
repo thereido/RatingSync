@@ -124,7 +124,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("tt2294629", $site->_getSourceName());
         
         $page = "<html><body><h2>Film Detail</h2></body></html>";
@@ -350,7 +350,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $site->getFilmDetailFromWebsite($film);
     }
 
@@ -363,7 +363,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("NO_FILMID_MATCH", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
     }
@@ -377,7 +377,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
 
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
 
@@ -408,7 +408,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
 
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
 
@@ -434,7 +434,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $site = new Imdb(TEST_IMDB_USERNAME);
 
-        $film = new Film($site->http);
+        $film = new Film();
 
         // Setup original data
         $film->setTitle("Original_Title");
@@ -509,7 +509,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
 
         // Setup original data
         $film->setTitle("Original_Title");
@@ -583,7 +583,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
 
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, false);
 
@@ -610,7 +610,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $site = new Imdb(TEST_IMDB_USERNAME);
 
-        $film = new Film($site->http);
+        $film = new Film();
 
         // Setup original data
         $film->setTitle("Original_Title");
@@ -685,7 +685,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $site->getFilmDetailFromWebsite($film);
     }
 
@@ -698,7 +698,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
 
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film);
 
@@ -714,7 +714,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
 
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true, 60);
 
@@ -924,10 +924,10 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
-        $film = new Film($site->_getHttp());
+        $film = new Film();
 
         // Get HTML of the film's detail page
-        $findFilm = new Film($site->_getHttp());
+        $findFilm = new Film();
         $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);
@@ -984,10 +984,10 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
-        $film = new Film($site->_getHttp());
+        $film = new Film();
 
         // Get HTML of the film's detail page
-        $findFilm = new Film($site->_getHttp());
+        $findFilm = new Film();
         $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);
@@ -1044,7 +1044,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
-        $film = new Film($site->_getHttp());
+        $film = new Film();
 
         // Setup original data
         $film->setTitle("Original_Title");
@@ -1079,7 +1079,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
 
         // Get HTML of the film's detail page
-        $findFilm = new Film($site->_getHttp());
+        $findFilm = new Film();
         $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);
@@ -1136,7 +1136,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
-        $film = new Film($site->_getHttp());
+        $film = new Film();
 
         // Setup original data
         $film->setTitle("Original_Title");
@@ -1171,7 +1171,7 @@ class ImdbTest extends \PHPUnit_Framework_TestCase
         $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
 
         // Get HTML of the film's detail page
-        $findFilm = new Film($site->_getHttp());
+        $findFilm = new Film();
         $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);

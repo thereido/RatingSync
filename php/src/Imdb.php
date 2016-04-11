@@ -5,7 +5,6 @@
 namespace RatingSync;
 
 require_once "SiteRatings.php";
-require_once "HttpImdb.php";
 
 /**
  * Communicate to/from the IMDb website
@@ -20,8 +19,8 @@ class Imdb extends \RatingSync\SiteRatings
     public function __construct($username)
     {
         parent::__construct($username);
-        $this->http = new HttpImdb($username);
         $this->sourceName = Constants::SOURCE_IMDB;
+        $this->http = new Http(Http::SITE_SOURCE, $this->sourceName, $username);
         $this->dateFormat = self::IMDB_DATE_FORMAT;
         $this->maxCriticScore = 100;
     }
@@ -114,7 +113,7 @@ class Imdb extends \RatingSync\SiteRatings
                 $image = $matches[1];
             }
 
-            $films[] = $film = new Film($this->http);
+            $films[] = $film = new Film();
             $film->setTitle($title);
             $film->setYear($year);
             $film->setImage($image);

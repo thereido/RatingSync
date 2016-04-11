@@ -25,7 +25,7 @@ abstract class SiteProvider extends \RatingSync\Site
 
         $url = null;
         
-        $film = Film::getFilmFromDb($filmId, new HttpRatingSync("empty_username"));
+        $film = Film::getFilmFromDb($filmId);
         if (empty($film->getUniqueName($this->sourceName))) {
             $searchTerms = array();
             $searchTerms["title"] = $film->getTitle();

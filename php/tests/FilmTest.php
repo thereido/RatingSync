@@ -8,7 +8,6 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Rating.php";
 
 require_once "SiteTest.php";
-require_once "HttpChild.php";
 
 class FilmTest extends \PHPUnit_Framework_TestCase
 {
@@ -36,10 +35,10 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers \RatingSync\Film::__construct
      */
-    public function testObjectCanBeConstructedFromHttp()
+    public function testObjectCanBeConstructed()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
     }
 
     /**
@@ -55,12 +54,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::setUniqueName
      * @covers  \RatingSync\Film::getUniqueName
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetAndGetUniqueName()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         
         // Null
         $film->setUniqueName(null, Constants::SOURCE_IMDB);
@@ -89,24 +88,24 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::getUniqueName
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testUniqueNameCanBeRetrievedFromNewObject()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $this->assertNull($film->getUniqueName(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::setCriticScore
      * @covers  \RatingSync\Film::getCriticScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testCriticScoreCannotBeSetWithFloat()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setCriticScore(6.5, Constants::SOURCE_IMDB);
         $this->assertEquals(6.5, $film->getCriticScore(Constants::SOURCE_IMDB));
     }
@@ -114,61 +113,61 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::setCriticScore
      * @covers  \RatingSync\Film::getCriticScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testCriticScoreCannotBeSetWithFloatString()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setCriticScore("6.5", Constants::SOURCE_IMDB);
         $this->assertEquals(6.5, $film->getCriticScore(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::setCriticScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testCriticScoreCannotBeSetWithNonNumericalString()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setCriticScore("Not an int", Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setCriticScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testCriticScoreCannotBeSetWithNegative()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setCriticScore(-1, Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setCriticScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testCriticScoreCannotBeSetWithHigherThan10()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setCriticScore(11, Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setCriticScore
      * @covers  \RatingSync\Film::getCriticScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testCriticScoreCanBeSetWithInt()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setCriticScore(6, Constants::SOURCE_IMDB);
         $this->assertEquals(6, $film->getCriticScore(Constants::SOURCE_IMDB));
     }
@@ -176,12 +175,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::setCriticScore
      * @covers  \RatingSync\Film::getCriticScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testCriticScoreCanBeSetWithIntString()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setCriticScore("6", Constants::SOURCE_IMDB);
         $this->assertEquals(6, $film->getCriticScore(Constants::SOURCE_IMDB));
     }
@@ -189,36 +188,36 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::setCriticScore
      * @covers  \RatingSync\Film::getCriticScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testCriticScoreCanBeSetWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setCriticScore(null, Constants::SOURCE_IMDB);
         $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::getCriticScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testCriticScoreCanBeRetrievedFromNewObject()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::setUserScore
      * @covers  \RatingSync\Film::getUserScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testUserScoreCanBeSetWithFloat()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setUserScore(6.5, Constants::SOURCE_IMDB);
         $this->assertEquals(6.5, $film->getUserScore(Constants::SOURCE_IMDB));
     }
@@ -226,61 +225,61 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::setUserScore
      * @covers  \RatingSync\Film::getUserScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testUserScoreCanBeSetWithFloatString()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setUserScore("6.5", Constants::SOURCE_IMDB);
         $this->assertEquals(6.5, $film->getUserScore(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::setUserScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testUserScoreCannotBeSetWithNonNumericalString()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setUserScore("Not an int", Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setUserScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testUserScoreCannotBeSetWithNegative()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setUserScore(-1, Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setUserScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testUserScoreCannotBeSetWithHigherThan10()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setUserScore(11, Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setUserScore
      * @covers  \RatingSync\Film::getUserScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testUserScoreCanBeSetWithInt()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setUserScore(6, Constants::SOURCE_IMDB);
         $this->assertEquals(6, $film->getUserScore(Constants::SOURCE_IMDB));
     }
@@ -288,12 +287,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::setUserScore
      * @covers  \RatingSync\Film::getUserScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testUserScoreCanBeSetWithIntString()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setUserScore("6", Constants::SOURCE_IMDB);
         $this->assertEquals(6, $film->getUserScore(Constants::SOURCE_IMDB));
     }
@@ -301,130 +300,130 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::setUserScore
      * @covers  \RatingSync\Film::getUserScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testUserScoreCanBeSetWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setUserScore(null, Constants::SOURCE_IMDB);
         $this->assertNull($film->getUserScore(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::getUserScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testUserScoreCanBeRetrievedFromNewObject()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $this->assertNull($film->getUserScore(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::setRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setRating(null, "Bad_Source");
     }
 
     /**
      * @covers  \RatingSync\Film::setRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithNullRatingNullSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setRating(null, "Bad_Source");
     }
 
     /**
      * @covers  \RatingSync\Film::setRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithString()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setRating("Bad_Arg", Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithNumber()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setRating(7, Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetRatingWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setRating(null, Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetRatingWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setRating("", Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetRating()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating, Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetRatingWithNoSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating);
     }
 
     /**
      * @covers  \RatingSync\Film::setRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \Exception
      */
     public function testSetRatingWithIncompatibleSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating, Constants::SOURCE_JINNI);
     }
@@ -432,13 +431,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::setRating
      * @covers  \RatingSync\Film::getRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetRating
      */
     public function testGetRating()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $rating = new Rating(Constants::SOURCE_IMDB);
         $rating->setYourScore(6);
         $film->setRating($rating);
@@ -448,14 +447,14 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::setRating
      * @covers  \RatingSync\Film::getRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetRating
      * @depends testGetRating
      */
     public function testGetRatingWithMultipleRatings()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $ratingJinni = new Rating(Constants::SOURCE_JINNI);
         $ratingImdb = new Rating(Constants::SOURCE_IMDB);
         $ratingJinni->setYourScore(7);
@@ -467,25 +466,25 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::getRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testGetRatingNeverSet()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
     }
 
     /**
      * @covers  \RatingSync\Film::getRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetRatingWithNull
      */
     public function testGetRatingWasSetNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setRating(null, Constants::SOURCE_IMDB);
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
@@ -497,13 +496,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::getRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetRatingWithEmpty
      */
     public function testGetRatingWasSetEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setRating("", Constants::SOURCE_IMDB);
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(Constants::SOURCE_IMDB, $rating->getSource());
@@ -512,286 +511,286 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::getRating
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testGetRatingWithInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->getRating("Bad_Source");
     }
 
     /**
      * @covers  \RatingSync\Film::setYourScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testSetYourScoreWithInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYourScore("your_score", "Bad_Source");
     }
 
     /**
      * @covers  \RatingSync\Film::setYourScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testSetYourScoreWithBadArg()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYourScore("Bad_Score", Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setYourScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetYourScoreWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYourScore(null, Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setYourScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testSetYourScoreWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYourScore("", Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setYourScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetYourScore()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYourScore(7, Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setYourScore
      * @covers  \RatingSync\Film::getYourScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetYourScore
      */
     public function testGetYourScore()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYourScore(7, Constants::SOURCE_IMDB);
         $this->assertEquals(7, $film->getYourScore(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::getYourScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testGetYourScoreNeverSet()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $this->assertNull($film->getYourScore(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::getYourScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetYourScoreWithNull
      */
     public function testGetYourScoreWasSetNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYourScore(null, Constants::SOURCE_IMDB);
         $this->assertNull($film->getYourScore(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::getYourScore
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testGetYourScoreWithInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->getYourScore("Bad_Source");
     }
 
     /**
      * @covers  \RatingSync\Film::setTitle
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetTitleWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle(null);
     }
 
     /**
      * @covers  \RatingSync\Film::setTitle
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetTitleWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle("");
     }
 
     /**
      * @covers  \RatingSync\Film::setTitle
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetTitle()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle("New_Title");
     }
 
     /**
      * @covers  \RatingSync\Film::setTitle
      * @covers  \RatingSync\Film::getTitle
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetTitle
      */
     public function testGetTitle()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle("New_Title");
         $this->assertEquals("New_Title", $film->getTitle());
     }
 
     /**
      * @covers  \RatingSync\Film::getTitle
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testGetTitleNeverSet()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $this->assertNull($film->getTitle());
     }
 
     /**
      * @covers  \RatingSync\Film::getTitle
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetTitleWithNull
      */
     public function testGetTitleWasSetNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle(null);
         $this->assertNull($film->getTitle());
     }
 
     /**
      * @covers  \RatingSync\Film::getTitle
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetTitleWithEmpty
      */
     public function testGetTitleWasSetEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle("");
         $this->assertEquals("", $film->getTitle());
     }
 
     /**
      * @covers  \RatingSync\Film::setYear
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testSetYearWithBadArgFloat()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYear(1999.5);
     }
 
     /**
      * @covers  \RatingSync\Film::setYear
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testSetYearWithBadArgStringCastToInt()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYear("1999.5");
     }
 
     /**
      * @covers  \RatingSync\Film::setYear
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetYearWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYear(null);
     }
 
     /**
      * @covers  \RatingSync\Film::setYear
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetYearWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYear("");
     }
 
     /**
      * @covers  \RatingSync\Film::setYear
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetYearInt()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYear(1942);
     }
 
     /**
      * @covers  \RatingSync\Film::setYear
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetYearString()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYear("1942");
     }
 
     /**
      * @covers  \RatingSync\Film::setYear
      * @covers  \RatingSync\Film::getYear
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetYearInt
      */
     public function testGetYear()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYear(1942);
         $this->assertEquals(1942, $film->getYear());
     }
@@ -799,289 +798,289 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::setYear
      * @covers  \RatingSync\Film::getYear
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetYearString
      */
     public function testGetYearSetFromString()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYear("1942");
         $this->assertEquals(1942, $film->getYear());
     }
 
     /**
      * @covers  \RatingSync\Film::getYear
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testGetYearNeverSet()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $this->assertNull($film->getYear());
     }
 
     /**
      * @covers  \RatingSync\Film::getYear
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetYearWithNull
      */
     public function testGetYearAfterYearWasSetNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYear(null);
         $this->assertNull($film->getYear());
     }
 
     /**
      * @covers  \RatingSync\Film::getYear
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetYearWithEmpty
      */
     public function testGetYearWasSetEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYear("");
         $this->assertNull($film->getYear());
     }
 
     /**
      * @covers  \RatingSync\Film::setContentType
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testSetContentTypeWithBadArg()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setContentType("Bad_ContentType");
     }
 
     /**
      * @covers  \RatingSync\Film::setContentType
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetContentTypeWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setContentType(null);
     }
 
     /**
      * @covers  \RatingSync\Film::setContentType
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetContentTypeWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setContentType("");
     }
 
     /**
      * @covers  \RatingSync\Film::setContentType
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetContentType()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setContentType(Film::CONTENT_FILM);
     }
 
     /**
      * @covers  \RatingSync\Film::setContentType
      * @covers  \RatingSync\Film::getContentType
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetContentType
      */
     public function testGetContentType()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setContentType(Film::CONTENT_FILM);
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType());
     }
 
     /**
      * @covers  \RatingSync\Film::getContentType
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testGetContentTypeNeverSet()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $this->assertNull($film->getContentType());
     }
 
     /**
      * @covers  \RatingSync\Film::getContentType
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetContentTypeWithNull
      */
     public function testGetContentTypeWasSetNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setContentType(null);
         $this->assertNull($film->getContentType());
     }
 
     /**
      * @covers  \RatingSync\Film::getContentType
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetContentTypeWithEmpty
      */
     public function testGetContentTypeWasSetEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setContentType("");
         $this->assertNull($film->getContentType());
     }
 
     /**
      * @covers  \RatingSync\Film::setImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetImageWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage(null);
     }
 
     /**
      * @covers  \RatingSync\Film::setImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetImageWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage("");
     }
 
     /**
      * @covers  \RatingSync\Film::setImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetImage()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage("http://example.com/example.jpg");
     }
 
     /**
      * @covers  \RatingSync\Film::setImage
      * @covers  \RatingSync\Film::getImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetImage
      */
     public function testGetImage()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage("http://example.com/example.jpg");
         $this->assertEquals("http://example.com/example.jpg", $film->getImage());
     }
 
     /**
      * @covers  \RatingSync\Film::getImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testGetImageNeverSet()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $this->assertNull($film->getImage());
     }
 
     /**
      * @covers  \RatingSync\Film::getImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetImageWithNull
      */
     public function testGetImageWasSetNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage(null);
         $this->assertNull($film->getImage());
     }
 
     /**
      * @covers  \RatingSync\Film::getImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetImageWithEmpty
      */
     public function testGetImageWasSetEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage("");
         $this->assertEquals("", $film->getImage());
     }
 
     /**
      * @covers  \RatingSync\Film::setImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetImageWithNullAndSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage(null, Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetImageWithEmptyAndSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage("", Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testSetImageAndSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage("http://example.com/example.jpg", Constants::SOURCE_IMDB);
     }
 
     /**
      * @covers  \RatingSync\Film::setImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testSetImageAndInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage("http://example.com/example.jpg", "BAD SOURCE");
     }
 
     /**
      * @covers  \RatingSync\Film::setImage
      * @covers  \RatingSync\Film::getImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetImageAndSource
      */
     public function testGetImageAndSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage("http://example.com/example.jpg", Constants::SOURCE_IMDB);
         $this->assertEquals("http://example.com/example.jpg", $film->getImage(Constants::SOURCE_IMDB));
     }
@@ -1089,120 +1088,120 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::setImage
      * @covers  \RatingSync\Film::getImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testGetImageAndInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->getImage("BAD SOURCE");
     }
 
     /**
      * @covers  \RatingSync\Film::getImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testGetImageNeverSetAndSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $this->assertNull($film->getImage(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::getImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetImageWithNullAndSource
      */
     public function testGetImageWasSetNullAndSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage(null, Constants::SOURCE_IMDB);
         $this->assertNull($film->getImage(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::getImage
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testSetImageWithEmptyAndSource
      */
     public function testGetImageWasSetEmptyAndSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setImage("", Constants::SOURCE_IMDB);
         $this->assertEquals("", $film->getImage(Constants::SOURCE_IMDB));
     }
 
     /**
      * @covers  \RatingSync\Film::addGenre
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testAddGenreWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre(null);
     }
 
     /**
      * @covers  \RatingSync\Film::addGenre
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testAddGenreWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("");
     }
 
     /**
      * @covers  \RatingSync\Film::addGenre
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testAddGenre()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
     }
 
     /**
      * @covers  \RatingSync\Film::addGenre
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testAddGenreAddSecondGenre()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
     }
 
     /**
      * @covers  \RatingSync\Film::addGenre
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testAddGenreDuplicate()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Comedy");
     }
 
     /**
      * @covers  \RatingSync\Film::addGenre
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testAddGenreMultiWithDuplicate()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Comedy");
@@ -1211,13 +1210,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addGenre
      * @covers  \RatingSync\Film::getGenres
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddGenre
      */
     public function testGetGenres()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $this->assertEquals(array('Comedy'), $film->getGenres());
     }
@@ -1225,13 +1224,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addGenre
      * @covers  \RatingSync\Film::getGenres
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddGenreAddSecondGenre
      */
     public function testGetGenresTwoGenres()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $this->assertEquals(array('Comedy', 'Horror'), $film->getGenres());
@@ -1240,13 +1239,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addGenre
      * @covers  \RatingSync\Film::getGenres
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddGenreDuplicate
      */
     public function testGetGenresDuplicate()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Comedy");
         $this->assertEquals(array('Comedy'), $film->getGenres());
@@ -1255,13 +1254,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addGenre
      * @covers  \RatingSync\Film::getGenres
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddGenreMultiWithDuplicate
      */
     public function testGetGenresMultiWithDuplicate()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Comedy");
@@ -1271,13 +1270,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addGenre
      * @covers  \RatingSync\Film::getGenres
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddGenre
      */
     public function testGetGenresThreeGenres()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -1286,13 +1285,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::removeGenre
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testGetGenresThreeGenres
      */
     public function testRemoveGenre()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -1302,13 +1301,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::removeGenre
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testGetGenresThreeGenres
      */
     public function testRemoveGenreWithMissingGenre()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -1318,13 +1317,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::removeAllGenres
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testGetGenresThreeGenres
      */
     public function testRemoveAllGenres()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -1335,13 +1334,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addGenre
      * @covers  \RatingSync\Film::isGenre
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddGenre
      */
     public function testIsGenreTrue()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -1351,13 +1350,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addGenre
      * @covers  \RatingSync\Film::isGenre
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddGenre
      */
     public function testIsGenreFalse()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -1368,14 +1367,14 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @covers  \RatingSync\Film::addGenre
      * @covers  \RatingSync\Film::removeAllGenres
      * @covers  \RatingSync\Film::isGenre
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testRemoveAllGenres
      * @depends testIsGenreTrue
      */
     public function testRemoveAllGenresThenAddOne()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Drama");
@@ -1386,71 +1385,71 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::addDirector
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testAddDirectorWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector(null);
     }
 
     /**
      * @covers  \RatingSync\Film::addDirector
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testAddDirectorWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("");
     }
 
     /**
      * @covers  \RatingSync\Film::addDirector
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testAddDirector()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Georges Méliès");
     }
 
     /**
      * @covers  \RatingSync\Film::addDirector
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testAddDirectorAddSecondDirector()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Georges Méliès");
         $film->addDirector("Jennifer Lee");
     }
 
     /**
      * @covers  \RatingSync\Film::addDirector
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testAddDirectorDuplicate()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Jennifer Lee");
     }
 
     /**
      * @covers  \RatingSync\Film::addDirector
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testAddDirectorMultiWithDuplicate()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
@@ -1459,13 +1458,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addDirector
      * @covers  \RatingSync\Film::getDirectors
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddDirector
      */
     public function testGetDirectors()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $this->assertEquals(array('Christopher Nolan'), $film->getDirectors());
     }
@@ -1473,13 +1472,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addDirector
      * @covers  \RatingSync\Film::getDirectors
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddDirectorAddSecondDirector
      */
     public function testGetDirectorsTwoDirectors()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $this->assertEquals(array('Christopher Nolan', 'Jennifer Lee'), $film->getDirectors());
@@ -1488,13 +1487,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addDirector
      * @covers  \RatingSync\Film::getDirectors
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddDirectorDuplicate
      */
     public function testGetDirectorsDuplicate()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Christopher Nolan");
         $this->assertEquals(array('Christopher Nolan'), $film->getDirectors());
@@ -1503,13 +1502,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addDirector
      * @covers  \RatingSync\Film::getDirectors
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddDirectorMultiWithDuplicate
      */
     public function testGetDirectorsMultiWithDuplicate()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Christopher Nolan");
@@ -1519,13 +1518,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addDirector
      * @covers  \RatingSync\Film::getDirectors
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddDirector
      */
     public function testGetDirectorsThreeDirectors()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1534,13 +1533,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::removeDirector
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testGetDirectorsThreeDirectors
      */
     public function testRemoveDirector()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1550,13 +1549,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::removeDirector
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testGetDirectorsThreeDirectors
      */
     public function testRemoveDirectorWithMissingDirector()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1566,13 +1565,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::removeAllDirectors
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testGetDirectorsThreeDirectors
      */
     public function testRemoveAllDirectors()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1582,12 +1581,12 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::getDirectors
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testGetDirectorsNeverSet()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $this->assertCount(0, $film->getDirectors());
     }
 
@@ -1599,7 +1598,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetDirectorsWithNoDirectors()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $film->removeAllDirectors();
         $this->assertCount(0, $film->getDirectors());
@@ -1608,13 +1607,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addDirector
      * @covers  \RatingSync\Film::isDirector
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddDirector
      */
     public function testIsDirectorTrue()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1624,13 +1623,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers  \RatingSync\Film::addDirector
      * @covers  \RatingSync\Film::isDirector
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testAddDirector
      */
     public function testIsDirectorFalse()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1641,14 +1640,14 @@ class FilmTest extends \PHPUnit_Framework_TestCase
      * @covers  \RatingSync\Film::addDirector
      * @covers  \RatingSync\Film::removeAllDirectors
      * @covers  \RatingSync\Film::isDirector
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testRemoveAllDirectors
      * @depends testIsDirectorTrue
      */
     public function testRemoveAllDirectorsThenAddOne()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Georges Méliès");
@@ -1659,37 +1658,37 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::addXmlChild
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testAddXmlChildFromNullParam()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addXmlChild(null);
     }
 
     /**
      * @covers  \RatingSync\Film::addXmlChild
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testAddXmlChildFromString()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->addXmlChild("Bad_Arg_As_A_String");
     }
 
     /**
      * @covers  \RatingSync\Film::addXmlChild
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      */
     public function testAddXmlChild()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Basic test of this function
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle("Film_Title");
         $xml = new \SimpleXMLElement("<films/>");
         $film->addXmlChild($xml);
@@ -1706,7 +1705,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testAddXmlChildWithEmptyFilmObject()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $xml = new \SimpleXMLElement("<films/>");
         $film->addXmlChild($xml);
         $xmlStr = "<?xml version=\"1.0\"?>\n";
@@ -1723,7 +1722,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Film data
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle("Frozen");
         $film->setYear(2013);
         $film->setContentType("FeatureFilm");
@@ -1779,7 +1778,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Film data
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle("Frozen");
         $film->setYear(2013);
         $film->setContentType("FeatureFilm");
@@ -1856,7 +1855,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testAddXmlChildWithMultipleGenres()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle("Frozen");
         $film->addGenre("Family");
         $film->addGenre("Fantasy");
@@ -1884,7 +1883,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testAddXmlChildWithMultipleDirectors()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle("Frozen");
         $film->addDirector("Chris Buck");
         $film->addDirector("Jennifer Lee");
@@ -1922,17 +1921,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testCreateFromXmlArgsFilmSxeNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        Film::createFromXml(null, new HttpChild(TEST_SITE_USERNAME));
-    }
-
-    /**
-     * @covers  \RatingSync\Film::createFromXml
-     * @expectedException \InvalidArgumentException
-     */
-    public function testCreateFromXmlArgsHttpNull()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"), null);
+        Film::createFromXml(null);
     }
 
     /**
@@ -1942,17 +1931,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testCreateFromXmlArgsFilmSxeWrongType()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        Film::createFromXml("Bad_Type", new HttpChild(TEST_SITE_USERNAME));
-    }
-
-    /**
-     * @covers  \RatingSync\Film::createFromXml
-     * @expectedException \InvalidArgumentException
-     */
-    public function testCreateFromXmlArgsHttpWrongType()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"), "Bad_Type");
+        Film::createFromXml("Bad_Type");
     }
 
     /**
@@ -1962,7 +1941,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testCreateFromXmlArgsNoTitle()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        Film::createFromXml(new \SimpleXMLElement("<film><year>1900</year></film>"), new HttpChild(TEST_SITE_USERNAME));
+        Film::createFromXml(new \SimpleXMLElement("<film><year>1900</year></film>"));
     }
 
     /**
@@ -1971,7 +1950,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testCreateFromXmlArgsGood()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"), new HttpChild(TEST_SITE_USERNAME));
+        Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"));
     }
 
     /**
@@ -1986,7 +1965,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $xmlFilmArray = $xml->xpath('/films/film');
 
         // Title1
-        $film = Film::createFromXml($xmlFilmArray[1], new HttpChild(TEST_SITE_USERNAME));
+        $film = Film::createFromXml($xmlFilmArray[1]);
         $this->assertEquals("Title1", $film->getTitle(), "Title1 title");
         $this->assertEquals(2001, $film->getYear(), "Title1 year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Title1 ContentType");
@@ -2003,7 +1982,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $rating->getSuggestedScore(), "Title1 ".Constants::SOURCE_RATINGSYNC." suggested score");
 
         // Title2
-        $film = Film::createFromXml($xmlFilmArray[2], new HttpChild(TEST_SITE_USERNAME));
+        $film = Film::createFromXml($xmlFilmArray[2]);
         $this->assertEquals("Title2", $film->getTitle(), "Title2 title");
         $this->assertEquals(2002, $film->getYear(), "Title2 year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Title2 ContentType");
@@ -2020,7 +1999,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, $rating->getSuggestedScore(), "Title2 ".Constants::SOURCE_RATINGSYNC." suggested score");
 
         // Title3
-        $film = Film::createFromXml($xmlFilmArray[3], new HttpChild(TEST_SITE_USERNAME));
+        $film = Film::createFromXml($xmlFilmArray[3]);
         $this->assertEquals("Title3", $film->getTitle(), "Title3 title");
         $this->assertEmpty($film->getYear(), "Title3 year");
         $this->assertEmpty($film->getContentType(), "Title3 ContentType");
@@ -2037,7 +2016,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($rating->getSuggestedScore(), "Title3 ".Constants::SOURCE_RATINGSYNC." suggested score");
 
         // Title4
-        $film = Film::createFromXml($xmlFilmArray[4], new HttpChild(TEST_SITE_USERNAME));
+        $film = Film::createFromXml($xmlFilmArray[4]);
         $this->assertEquals("Title4", $film->getTitle(), "Title3 title");
         $this->assertEmpty($film->getYear(), "Title4 year");
         $this->assertEmpty($film->getContentType(), "Title4 ContentType");
@@ -2054,7 +2033,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($rating->getSuggestedScore(), "Title4 ".Constants::SOURCE_RATINGSYNC." suggested score");
 
         // Title5
-        $film = Film::createFromXml($xmlFilmArray[5], new HttpChild(TEST_SITE_USERNAME));
+        $film = Film::createFromXml($xmlFilmArray[5]);
         $this->assertEquals("Title5", $film->getTitle(), "Title5 title");
         $this->assertEmpty($film->getYear(), "Title5 year");
         $this->assertEmpty($film->getContentType(), "Title5 ContentType");
@@ -2071,7 +2050,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($rating->getSuggestedScore(), "Title5 ".Constants::SOURCE_RATINGSYNC." suggested score");
 
         // Title6
-        $film = Film::createFromXml($xmlFilmArray[6], new HttpChild(TEST_SITE_USERNAME));
+        $film = Film::createFromXml($xmlFilmArray[6]);
         $this->assertEquals("Title6", $film->getTitle(), "Title6 title");
         $this->assertEquals(2006, $film->getYear(), "Title6 year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Title6 ContentType");
@@ -2096,13 +2075,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(6, $rating->getSuggestedScore(), "Title6 ".Constants::SOURCE_IMDB." suggested score");
 
         // Title7
-        $film = Film::createFromXml($xmlFilmArray[7], new HttpChild(TEST_SITE_USERNAME));
+        $film = Film::createFromXml($xmlFilmArray[7]);
         $this->assertEquals("Wallace & Gromit: A Matter of Loaf and Déath", $film->getTitle(), "Title7 title");
         $this->assertEquals(array("Georges Méliès"), $film->getDirectors(), "Title7 directors");
         $this->assertEquals(array("Genre 1 & 1ès"), $film->getGenres(), "Title7 genres");
 
         // Frozen from All Sources
-        $film = Film::createFromXml($xmlFilmArray[9], new HttpChild(TEST_SITE_USERNAME));
+        $film = Film::createFromXml($xmlFilmArray[9]);
         $this->assertEquals("Frozen", $film->getTitle(), "Frozen title");
         $this->assertEquals(2013, $film->getYear(), "Frozen year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Frozen ContentType");
@@ -2156,7 +2135,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testStrangeCharactersInNames()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle("Les Misérables & Gromit's");
         $film->addGenre("Sci-Fi");
         $film->addDirector("Georges Méliès");
@@ -2183,7 +2162,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         // Verify reading from XML
         $xmlFilmArray = $xml->xpath('/films/film');
         $filmSxe = $xmlFilmArray[0];
-        $readFilm = Film::createFromXml($filmSxe, new HttpChild(TEST_SITE_USERNAME));
+        $readFilm = Film::createFromXml($filmSxe);
         $this->assertEquals("Les Misérables & Gromit's", $readFilm->getTitle(), "Title read from XML");
         $this->assertTrue($readFilm->isGenre("Sci-Fi"), "Genre read from XML");
         $this->assertTrue($readFilm->isDirector("Georges Méliès"), "Director read from XML");
@@ -2191,46 +2170,24 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::getFilmFromDb
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testGetFilmFromDbNullFilmId()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = Film::getFilmFromDb(null, new HttpChild(TEST_SITE_USERNAME));
+        $film = Film::getFilmFromDb(null);
     }
 
     /**
      * @covers  \RatingSync\Film::getFilmFromDb
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testGetFilmFromDbEmptyFilmId()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = Film::getFilmFromDb("", new HttpChild(TEST_SITE_USERNAME));
-    }
-
-    /**
-     * @covers  \RatingSync\Film::getFilmFromDb
-     * @depends testObjectCanBeConstructedFromHttp
-     * @expectedException \InvalidArgumentException
-     */
-    public function testGetFilmFromDbNullHttp()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $film = Film::getFilmFromDb(1, null);
-    }
-
-    /**
-     * @covers  \RatingSync\Film::getFilmFromDb
-     * @depends testObjectCanBeConstructedFromHttp
-     * @expectedException \InvalidArgumentException
-     */
-    public function testGetFilmFromDbNonObjectHttp()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        $film = Film::getFilmFromDb(1, "string");
+        $film = Film::getFilmFromDb("");
     }
 
     public function testResetDb()
@@ -2255,13 +2212,13 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers  \RatingSync\Film::getFilmFromDb
-     * @depends testObjectCanBeConstructedFromHttp
+     * @depends testObjectCanBeConstructed
      * @depends testResetDb
      */
     public function testGetFilmFromDbNoError()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = Film::getFilmFromDb(1, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+        $film = Film::getFilmFromDb(1, Constants::TEST_RATINGSYNC_USERNAME);
     }
 
     /**
@@ -2271,7 +2228,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetFilmFromDbBasicData()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = Film::getFilmFromDb(1, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+        $film = Film::getFilmFromDb(1, Constants::TEST_RATINGSYNC_USERNAME);
 
         $this->assertEquals("Frozen", $film->getTitle(), "Title");
         $this->assertEquals(2013, $film->getYear(), "Year");
@@ -2286,7 +2243,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetFilmFromDbSourceData()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = Film::getFilmFromDb(7, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+        $film = Film::getFilmFromDb(7, Constants::TEST_RATINGSYNC_USERNAME);
 
         $sourceName = Constants::SOURCE_IMDB;
         $source = $film->getSource($sourceName);
@@ -2317,7 +2274,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetFilmFromDbRatingData()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = Film::getFilmFromDb(7, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+        $film = Film::getFilmFromDb(7, Constants::TEST_RATINGSYNC_USERNAME);
 
         $sourceName = Constants::SOURCE_IMDB;
         $rating = $film->getRating($sourceName);
@@ -2345,7 +2302,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetFilmFromDbDirectors()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = Film::getFilmFromDb(1, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+        $film = Film::getFilmFromDb(1, Constants::TEST_RATINGSYNC_USERNAME);
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Frozen directors");
     }
 
@@ -2356,7 +2313,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     public function testGetFilmFromDbGenres()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = Film::getFilmFromDb(1, new HttpChild(Constants::TEST_RATINGSYNC_USERNAME), Constants::TEST_RATINGSYNC_USERNAME);
+        $film = Film::getFilmFromDb(1, Constants::TEST_RATINGSYNC_USERNAME);
         $this->assertEquals(array("Adventure", "Animation", "Comedy", "Family", "Fantasy", "Musical"), $film->getGenres(), "Frozen genres");
     }
     
@@ -2368,7 +2325,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Test
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setYear(2015);
         $film->saveToDb();
 
@@ -2389,7 +2346,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Test
-        $film = new Film(new HttpChild(TEST_SITE_USERNAME));
+        $film = new Film();
         $film->setTitle("Title no year");
         $film->saveToDb();
 
@@ -2424,7 +2381,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         // Set up
         $username_site = TEST_IMDB_USERNAME;
         $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
-        $film = new Film(new HttpChild($username_site));
+        $film = new Film();
         $film->setTitle("Original_Title");
         $film->setYear(2015);
         $film->setContentType(Film::CONTENT_SHORTFILM);
@@ -2450,7 +2407,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $result = $db->query($query);
         $this->assertEquals(1, $result->num_rows, "There should be one result");
         $filmId = $result->fetch_assoc()['id'];
-        $dbFilm = Film::getFilmFromDb($filmId, new HttpChild($username_rs), $username_rs);
+        $dbFilm = Film::getFilmFromDb($filmId, $username_rs);
         $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
         $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
         $this->assertEquals($film->getContentType(), $dbFilm->getContentType(), "ContentType");
@@ -2495,7 +2452,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         // Set up
         $username_site = TEST_IMDB_USERNAME;
         $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
-        $film = new Film(new HttpChild($username_site));
+        $film = new Film();
         $film->setTitle("Original_Title2");
         $film->setYear(2012);
         $film->setContentType(Film::CONTENT_SHORTFILM);
@@ -2528,7 +2485,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $result = $db->query($query);
         $this->assertEquals(1, $result->num_rows, "There should be one result");
         $filmId = $result->fetch_assoc()['id'];
-        $dbFilm = Film::getFilmFromDb($filmId, new HttpChild($username_rs), $username_rs);
+        $dbFilm = Film::getFilmFromDb($filmId, $username_rs);
         $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
         $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
         $this->assertEquals($film->getContentType(), $dbFilm->getContentType(), "ContentType");
@@ -2567,7 +2524,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $username_site = TEST_IMDB_USERNAME;
         $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
         $sourceRsName = Constants::SOURCE_RATINGSYNC;
-        $film = new Film(new HttpChild($username_site));
+        $film = new Film();
         $film->setTitle("Original_Title3");
         $film->setYear(2015);
         $film->setContentType(Film::CONTENT_SHORTFILM);
@@ -2584,7 +2541,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $result = $db->query($query);
         $this->assertEquals(1, $result->num_rows, "There should be one result");
         $filmId = $result->fetch_assoc()['id'];
-        $dbFilm = Film::getFilmFromDb($filmId, new HttpChild($username_rs), $username_rs);
+        $dbFilm = Film::getFilmFromDb($filmId, $username_rs);
         $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
         $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
         $this->assertEquals($film->getContentType(), $dbFilm->getContentType(), "ContentType");
@@ -2622,7 +2579,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $username_site = TEST_IMDB_USERNAME;
         $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
         // Existing Film
-        $existingFilm = new Film(new HttpChild($username_site));
+        $existingFilm = new Film();
         $existingFilm->setTitle("Original_Title4");
         $existingFilm->setYear(2014);
         $existingFilm->setContentType(Film::CONTENT_SHORTFILM);
@@ -2650,7 +2607,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         // Save existingFilm to it will exist in the db
         $existingFilm->saveToDb($username_rs);
         // New Film
-        $film = new Film(new HttpChild($username_site));
+        $film = new Film();
         $film->setTitle("New_Title4");
         $film->setYear(2009);
         $film->setContentType(Film::CONTENT_FILM);
@@ -2685,7 +2642,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $result = $db->query($query);
         $this->assertEquals(1, $result->num_rows, "There should be one result");
         $filmId = $result->fetch_assoc()['id'];
-        $dbFilm = Film::getFilmFromDb($filmId, new HttpChild($username_rs), $username_rs);
+        $dbFilm = Film::getFilmFromDb($filmId, $username_rs);
         $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
         $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
         $this->assertEquals($film->getContentType(), $dbFilm->getContentType(), "ContentType");
@@ -2722,7 +2679,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
 
         // Insert a new film and review with no image
         $username = Constants::TEST_RATINGSYNC_USERNAME;
-        $film = new Film(new HttpChild($username));
+        $film = new Film();
         $film->setTitle("Zombeavers");
         $film->setYear(2014);
         $film->setContentType(Film::CONTENT_FILM);
@@ -2743,8 +2700,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($db->query("UPDATE film_source SET image=NULL WHERE film_id=".$filmId), "Delete film_source image");
 
         // Get a Film object from the db
-        $http = new HttpImdb("empty_username");
-        $film = Film::getFilmFromDb($filmId, $http);
+        $film = Film::getFilmFromDb($filmId);
 
         // Test
         $image = $film->downloadImage();
@@ -2778,7 +2734,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
         $sourceName = Constants::SOURCE_IMDB;
         $sourceNameRs = Constants::SOURCE_RATINGSYNC;
-        $film = new Film(new HttpChild($username_rs));
+        $film = new Film();
         $film->setTitle("Original_Title5");
         $film->setYear(2015);
         $film->setUniqueName("tt0094819", $sourceName);
@@ -2792,7 +2748,7 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $result = $db->query($query);
         $this->assertEquals(1, $result->num_rows, "There should be one result");
         $filmId = $result->fetch_assoc()['id'];
-        $dbFilm = Film::getFilmFromDb($filmId, new HttpChild($username_rs), $username_rs);
+        $dbFilm = Film::getFilmFromDb($filmId, $username_rs);
         $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
         $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
         $this->assertEquals("/image/rs$filmId.jpg", $dbFilm->getImage(), "Film image");

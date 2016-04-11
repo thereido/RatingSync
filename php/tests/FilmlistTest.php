@@ -9,7 +9,6 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Film.php";
 
 require_once "10DatabaseTest.php";
-require_once "HttpChild.php";
 
 const TEST_LIST = Constants::LIST_DEFAULT;
 
@@ -419,23 +418,22 @@ class FilmlistTest extends \PHPUnit_Framework_TestCase
         
         DatabaseTest::resetDb();
         
-        $http = new HttpChild("empty_username");
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle("Filmlist Title 1");
         $film->setYear(2016);
         $film->saveToDb();
         
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle("Filmlist Title 2");
         $film->setYear(2016);
         $film->saveToDb();
         
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle("Filmlist Title 3");
         $film->setYear(2016);
         $film->saveToDb();
         
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle("Filmlist Title 4");
         $film->setYear(2016);
         $film->saveToDb();

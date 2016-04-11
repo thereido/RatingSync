@@ -13,11 +13,6 @@ class Film {
     const CONTENT_FILM      = 'FeatureFilm';
     const CONTENT_TV        = 'TvSeries';
     const CONTENT_SHORTFILM = 'ShortFilm';
-
-    /**
-     * @var http
-     */
-    protected $http;
     
     protected $id;
     protected $title;
@@ -30,13 +25,8 @@ class Film {
     protected $filmlists = array();
     protected $streams = array();
 
-    public function __construct(Http $http)
+    public function __construct()
     {
-        if (! ($http instanceof Http) ) {
-            throw new \InvalidArgumentException('Film contruct must have an Http object');
-        }
-
-        $this->http = $http;
     }
 
     public static function validContentType($contentType)
@@ -216,19 +206,18 @@ class Film {
      * New Film object with data from XML
      *
      * @param \SimpleXMLElement $filmSxe Film data
-     * @param \RatingSync\Http  $http    -
      *
      * @return a new Film
      */
-    public static function createFromXml($filmSxe, $http)
+    public static function createFromXml($filmSxe)
     {
-        if (! ($filmSxe instanceof \SimpleXMLElement && $http instanceof Http) ) {
-            throw new \InvalidArgumentException('Function createFromXml must be given a SimpleXMLElement and an Http');
+        if (! $filmSxe instanceof \SimpleXMLElement ) {
+            throw new \InvalidArgumentException('Function createFromXml must be given a SimpleXMLElement');
         } elseif (empty(Self::xmlStringByKey('title', $filmSxe))) {
             throw new \Exception('Function createFromXml: xml must have a title');
         }
 
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle(html_entity_decode(Self::xmlStringByKey('title', $filmSxe), ENT_QUOTES, "utf-8"));
         $film->setYear(Self::xmlStringByKey('year', $filmSxe));
         $film->setContentType(Self::xmlStringByKey('contentType', $filmSxe));
@@ -861,12 +850,10 @@ class Film {
         return $errorFree;
     }
 
-    public static function getFilmFromDb($filmId, $http, $username = null)
+    public static function getFilmFromDb($filmId, $username = null)
     {
         if (empty($filmId) || !is_int(intval($filmId))) {
             throw new \InvalidArgumentException("filmId arg must be an int (filmId=$filmId)");
-        } elseif (! ($http instanceof Http) ) {
-            throw new \InvalidArgumentException('Film contruct must have an Http object');
         }
         $filmId = intval($filmId);
         $db = getDatabase();
@@ -875,7 +862,7 @@ class Film {
         if ($result->num_rows != 1) {
             throw new \Exception('Film not found by Film ID: ' .$filmId);
         }
-        $film = new Film($http);
+        $film = new Film();
         $film->setId($filmId);
         
         $row = $result->fetch_assoc();
@@ -953,9 +940,9 @@ class Film {
         $query = "SELECT id FROM film";
         $result = $db->query($query);
 
-        $http = new HttpRatingSync("empty_username");
         while ($row = $result->fetch_assoc()) {
-            $film = self::getFilmFromDb($row['id'], $http);
+            $film = self::getFilmFromDb($row['id']);
+            $http = new Http(Http::SITE_SOURCE, Constants::SOURCE_RATINGSYNC);
             $isValid = $http->isPageValid($film->getImage());
             if (!$isValid) {
                 $film->setImage(null);
@@ -1005,7 +992,7 @@ class Film {
             $result = $db->query("SELECT film_id FROM film_source WHERE uniqueName='$uniqueName'");
             if ($result->num_rows == 1) {
                 $row = $result->fetch_assoc();
-                $film = self::getFilmFromDb($row['film_id'], new HttpRatingSync("empty_username"), $username);
+                $film = self::getFilmFromDb($row['film_id'], $username);
             }
         }
         
@@ -1021,7 +1008,7 @@ class Film {
                     $source->saveFilmSourceToDb($filmId);
                 }
 
-                $film = self::getFilmFromDb($filmId, new HttpRatingSync("empty_username"), $username);
+                $film = self::getFilmFromDb($filmId, $username);
             }
         }
 
@@ -1035,9 +1022,8 @@ class Film {
         }
         $films = array();
 
-        $http = new HttpRatingSync($username);
         foreach ($list->getItems() as $filmId) {
-            $film = self::getFilmFromDb($filmId, $http, $username);
+            $film = self::getFilmFromDb($filmId, $username);
             $films[] = $film;
         }
 

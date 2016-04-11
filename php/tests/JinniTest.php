@@ -98,7 +98,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
     public function testCacheFilmDetailPage()
     {
         $site = new JinniExt(TEST_JINNI_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("999999", $site->_getSourceName());
         
         $page = "<html><body><h2>Film Detail</h2></body></html>";

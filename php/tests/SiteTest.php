@@ -103,7 +103,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
         $site->_setSourceName(null);
-        $site->_setHttp(new HttpImdb(TEST_SITE_USERNAME));
+        $site->_setHttp(new Http(Http::SITE_SOURCE, Constants::SOURCE_IMDB, TEST_SITE_USERNAME));
         $this->assertFalse($site->_validateAfterConstructor());
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
@@ -128,7 +128,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     public function testCacheFilmDetailPage()
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("tt2294629", $site->_getSourceName());
         
         $page = "<html><body><h2>Film Detail</h2></body></html>";
@@ -156,7 +156,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
 
-        $film = new Film($site->_getHttp());
+        $film = new Film();
         $film->setUniqueName("tt2294629", Constants::SOURCE_IMDB);
         $site->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_NEVER);
         
@@ -180,7 +180,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
 
-        $film = new Film($site->_getHttp());
+        $film = new Film();
 
         // Setup original data
         $film->setTitle("Original_Title");
@@ -226,7 +226,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
 
-        $film = new Film($site->_getHttp());
+        $film = new Film();
         $film->setUniqueName("tt2294629", Constants::SOURCE_IMDB);
         $site->getFilmDetailFromWebsite($film, false);
 
@@ -251,7 +251,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
 
-        $film = new Film($site->_getHttp());
+        $film = new Film();
 
         // Setup original data
         $film->setTitle("Original_Title");
@@ -295,9 +295,9 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     public function testParseDetailPageEmptyFilmOverwriteTrue()
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
-        $film = new Film($site->_getHttp());
+        $film = new Film();
         // Get HTML of the film's detail page
-        $findFilm = new Film($site->_getHttp());
+        $findFilm = new Film();
         $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);
@@ -345,10 +345,10 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     public function testParseDetailPageEmptyFilmOverwriteFalse()
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
-        $film = new Film($site->_getHttp());
+        $film = new Film();
 
         // Get HTML of the film's detail page
-        $findFilm = new Film($site->_getHttp());
+        $findFilm = new Film();
         $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);
@@ -397,7 +397,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     public function testParseDetailPageFullFilmOverwriteTrue()
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
-        $film = new Film($site->_getHttp());
+        $film = new Film();
 
         // Setup original data
         $film->setTitle("Original_Title");
@@ -414,7 +414,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $film->addDirector("Original_Director2");
 
         // Get HTML of the film's detail page
-        $findFilm = new Film($site->_getHttp());
+        $findFilm = new Film();
         $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);
@@ -465,7 +465,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     public function testParseDetailPageFullFilmOverwriteFalse()
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
-        $film = new Film($site->_getHttp());
+        $film = new Film();
 
         // Setup original data
         $film->setTitle("Original_Title");
@@ -482,7 +482,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
         $film->setUniqueName("Original_UniqueName_Jinni", Constants::SOURCE_JINNI);
 
         // Get HTML of the film's detail page
-        $findFilm = new Film($site->_getHttp());
+        $findFilm = new Film();
         $findFilm->setUniqueName("tt2294629", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($findFilm, true, 60);
         $page = $site->getFilmDetailPageFromCache($findFilm, 60);

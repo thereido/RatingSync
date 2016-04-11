@@ -333,7 +333,7 @@ abstract class SiteRatings extends \RatingSync\Site
         $films = array();
         foreach ($xmlFilmArray as $filmSxe) {
             try {
-                $film = Film::createFromXml($filmSxe, $this->http);
+                $film = Film::createFromXml($filmSxe);
                 $films[] = $film;
             } catch (\Exception $e) {
                 // Ignore

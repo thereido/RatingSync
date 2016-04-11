@@ -431,8 +431,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         
         $title = "Title Rating::testSaveToDb";
         $year = 2016;
-        $http = new HttpImdb(TEST_IMDB_USERNAME);
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
@@ -443,8 +442,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         
         $title = "Title Rating::testSaveToDbEmptyData";
         $year = 2016;
-        $http = new HttpImdb(TEST_IMDB_USERNAME);
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
@@ -455,8 +453,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         
         $title = "Title Rating::testSaveToDbOutsideSite";
         $year = 2016;
-        $http = new HttpImdb(TEST_IMDB_USERNAME);
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
@@ -467,8 +464,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         
         $title = "Title Rating::testSaveToDbWithOtherUsernameAndOtherSource";
         $year = 2016;
-        $http = new HttpImdb(TEST_IMDB_USERNAME);
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
@@ -487,7 +483,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $db = getDatabase();
         $newUsername = "rs_user1";
         $this->assertTrue($db->query("REPLACE INTO user (username, password) VALUES ('$newUsername', 'password')"), "Insert user $newUsername");
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
@@ -506,8 +502,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         
         $title = "Title Rating::testSaveToDbRatingExists";
         $year = 2016;
-        $http = new HttpImdb(TEST_IMDB_USERNAME);
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
@@ -526,8 +521,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         
         $title = "Title Rating::testSaveToDbRatingExistsEmptyExistingDate";
         $year = 2016;
-        $http = new HttpImdb(TEST_IMDB_USERNAME);
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
@@ -1200,8 +1194,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $title = "Title testSaveToRsNewRsRatingFromAnotherSource";
         $year = 2016;
         $username = Constants::TEST_RATINGSYNC_USERNAME;
-        $http = new HttpImdb(TEST_IMDB_USERNAME);
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
@@ -1216,7 +1209,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $film->saveToDb($username);
 
         $title = "Title testSaveToRsNoRatingDateOriginal";
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
@@ -1229,7 +1222,7 @@ class RatingTest extends \PHPUnit_Framework_TestCase
         $film->saveToDb($username);
 
         $title = "Title testSaveToRsNoRatingDateBoth";
-        $film = new Film($http);
+        $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);

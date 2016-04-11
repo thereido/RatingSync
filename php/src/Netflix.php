@@ -5,7 +5,6 @@
 namespace RatingSync;
 
 require_once "SiteProvider.php";
-require_once "HttpNetflix.php";
 
 /**
  * Communicate to/from the Netflix website
@@ -20,8 +19,8 @@ class Netflix extends \RatingSync\SiteProvider
     public function __construct($username)
     {
         parent::__construct($username);
-        $this->http = new HttpNetflix($username);
-        $this->sourceName = Constants::SOURCE_NETFLIX;
+        $this->sourceName = Constants::PROVIDER_NETFLIX;
+        $this->http = new Http(Http::SITE_PROVIDER, $this->sourceName, $username);
         $this->dateFormat = self::NETFLIX_DATE_FORMAT;
     }
     

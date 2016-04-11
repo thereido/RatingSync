@@ -12,8 +12,8 @@ class SiteChild extends \RatingSync\Site {
     public function __construct($username)
     {
         parent::__construct($username);
-        $this->http = new HttpImdb(TEST_SITE_USERNAME);
         $this->sourceName = Constants::SOURCE_IMDB;
+        $this->http = new Http(Http::SITE_SOURCE, $this->sourceName, $username);
         $this->dateFormat = Imdb::IMDB_DATE_FORMAT;
     }
 

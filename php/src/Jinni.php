@@ -6,7 +6,6 @@ namespace RatingSync;
 
 require_once "Constants.php";
 require_once "Film.php";
-require_once "HttpJinni.php";
 require_once "Rating.php";
 require_once "SiteRatings.php";
 
@@ -25,8 +24,8 @@ class Jinni extends \RatingSync\SiteRatings
     public function __construct($username)
     {
         parent::__construct($username);
-        $this->http = new HttpJinni($username);
         $this->sourceName = Constants::SOURCE_JINNI;
+        $this->http = new Http(Http::SITE_SOURCE, $this->sourceName, $username);
         $this->dateFormat = self::JINNI_DATE_FORMAT;
 
         if (!$this->validateAfterConstructor()) {

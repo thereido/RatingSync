@@ -85,7 +85,7 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new NetflixExt(TEST_NETFLIX_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, $site->_getSourceName()); // Experimenter
         
         $page = "<html><body><h2>Film Detail</h2></body></html>";
@@ -136,7 +136,7 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new NetflixExt(TEST_NETFLIX_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("NO_FILMID_MATCH", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
     }
@@ -150,7 +150,7 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
 
         $site = new NetflixExt(TEST_NETFLIX_USERNAME);
 
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
 
@@ -179,7 +179,7 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
 
         // Setup
         $site = new NetflixExt(TEST_NETFLIX_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, $site->_getSourceName());
         $film->setTitle("empty_title");
         $film->saveToDb();
@@ -200,7 +200,7 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
 
         // Setup
         $site = new NetflixExt(TEST_NETFLIX_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setTitle("Experimenter");
         $film->setYear(2015);
         $film->saveToDb();
@@ -222,7 +222,7 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
 
         // Setup
         $site = new NetflixExt(TEST_NETFLIX_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setTitle("Experimenter");
         $film->saveToDb();
 
@@ -239,7 +239,7 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
 
         // Setup
         $site = new NetflixExt(TEST_NETFLIX_USERNAME);
-        $film = new Film($site->http);
+        $film = new Film();
         $film->setUniqueName("100000000", $site->_getSourceName());
         $film->setTitle("empty_title");
         $film->saveToDb();

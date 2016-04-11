@@ -7,13 +7,11 @@ require_once "exceptions/HttpUnauthorizedRedirectException.php";
 
 require_once "Constants.php";
 
-/**
- *
- * Functions a child must implement
- *   - getNextRatingPageNumber
- */
-abstract class Http
+class Http
 {
+    const SITE_SOURCE   = "Source";
+    const SITE_PROVIDER = "Provider";
+
     protected $username;
     protected $sessionId;
     protected $baseUrl = null;
@@ -26,25 +24,37 @@ abstract class Http
      *
      * @param string $username Account of the source website
      */
-    public function __construct($username)
+    public function __construct($siteType, $siteName, $username = null)
     {
-        if (! (is_string($username) && 0 < strlen($username)) ) {
-            throw new \InvalidArgumentException('$username must be non-empty');
-        }
         $this->username = $username;
-    }
 
-    /**
-     * Validate that the child constructor is initiated
-     *
-     * @return bool true for valid, false otherwise
-     */
-    protected function validateAfterConstructor()
-    {
-        if (empty($this->baseUrl) || empty($this->lightweightUrl)) {
-            return false;
+        if ($siteType == self::SITE_SOURCE) {
+
+            if ($siteName == Constants::SOURCE_RATINGSYNC) {
+                $this->baseUrl = Constants::RS_HOST;
+                $this->lightweightUrl = "/index.php";
+            } elseif ($siteName == Constants::SOURCE_IMDB) {
+                $this->baseUrl = "http://www.imdb.com";
+                $this->lightweightUrl = "/help/?general/&ref_=hlp_brws";
+            } elseif ($siteName == Constants::SOURCE_JINNI) {
+                $this->baseUrl = "http://www.jinni.com";
+                $this->lightweightUrl = "/about";
+            }
+            
+        } elseif ($siteType == self::SITE_PROVIDER) {
+
+            if ($siteName == Constants::PROVIDER_NETFLIX) {
+                $this->baseUrl = "http://instantwatcher.com";
+                $this->lightweightUrl = "/about";
+            }
+            
+        } else {
+            throw new \InvalidArgumentException("Http constructor \$siteType ($siteType) must be ".self::SITE_SOURCE." or ".self::SITE_PROVIDER);
         }
-        return true;
+
+        if (empty($this->baseUrl) || empty($this->lightweightUrl)) {
+            throw new \InvalidArgumentException("Http constructor of type $siteType with \$siteName ($siteName) invalid");
+        }
     }
 
     /**
