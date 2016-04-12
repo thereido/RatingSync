@@ -6,10 +6,11 @@ function getHtmlStreams($film) {
     $streams = $film->getStreams();
     while (list($sourceName, $streamUrl) = each($streams)) {
         if (!empty($streamUrl)) {
-            $link = "<a href='$streamUrl' target='_blank'>$sourceName</a>";
-            $streamsHtml .= "<div class='stream'>\n";
-            $streamsHtml .= "  <span>$link</span>\n";
-            $streamsHtml .= "</div>\n";
+            $streamsHtml .= "  <div class='stream'>\n";
+            $streamsHtml .= "    <a href='$streamUrl' target='_blank'>\n";
+            $streamsHtml .= "      <div class='stream-icon icon-$sourceName' title='Watch on $sourceName'></div></a>\n";
+            $streamsHtml .= "    </a>";
+            $streamsHtml .= "  </div>\n";
         }
     }
 

@@ -71,6 +71,22 @@ detail {
 }
 
 .streams {
-    float: right;
-    padding-right: 15px;
+    float: left;
 }
+
+.stream {
+    float: left;
+    padding-right: 10px;
+}
+
+.stream-icon {
+    background-image: url("Icons.png");
+    background-color: transparent;
+    border-radius: 4px;
+    height: 33px;
+    width: 35px;
+}
+
+.icon-Netflix { background-position: -580px -53px; }
+.icon-Amazon { background-position: -445px -10px; }
+.icon-xfinity { background-position: -490px -182px; }
