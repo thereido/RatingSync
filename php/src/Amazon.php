@@ -1,38 +1,25 @@
 <?php
 /**
- * Netflix class
+ * Amazon class
  */
 namespace RatingSync;
 
 require_once "SiteProvider.php";
 
 /**
- * Communicate to/from the Netflix website
+ * Communicate to/from the Amazon website
  * - Search for films and tv shows
  */
-class Netflix extends \RatingSync\SiteProvider
+class Amazon extends \RatingSync\SiteProvider
 {
-    const NETFLIX_DATE_FORMAT = "n/j/y";
-
+    const AMAZON_DATE_FORMAT = "n/j/y";
+    
     public function __construct($username)
     {
         parent::__construct($username);
-        $this->sourceName = Constants::SOURCE_NETFLIX;
+        $this->sourceName = Constants::SOURCE_AMAZON;
         $this->http = new Http($this->sourceName, $username);
-        $this->dateFormat = self::NETFLIX_DATE_FORMAT;
-    }
-    
-    /**
-     * Return the rating page's URL within a website. The URL does not
-     * include the base URL.  
-     *
-     * @param array $args See the child class version of args
-     *
-     * @return string URL of a rating page
-     */
-    protected function getRatingPageUrl($args)
-    {
-        return '/MoviesYouveSeen';
+        $this->dateFormat = self::AMAZON_DATE_FORMAT;
     }
 
     /**
@@ -136,12 +123,7 @@ class Netflix extends \RatingSync\SiteProvider
      * @return string Regular expression to find the film title in film detail HTML page
      */
     protected function getDetailPageRegexForTitle() {
-        $loggedIn = false;
-        if ($loggedIn) {
-            return '/<div class="title has-jawbone-nav-transition"[^>]*>([^<]+)/';
-        } else {
-            return '/class=\"title\"[^>]*>([^<]+)</';
-        }
+        return '/class=\"title\"[^>]*>([^<]+)</';
     }
 
     /**
@@ -150,7 +132,7 @@ class Netflix extends \RatingSync\SiteProvider
      * @return string Regular expression to find the film year in film detail HTML page
      */
     protected function getDetailPageRegexForYear() {
-        return '/class=\"title\"[^>]*>[^<]+<\/span> <p><span class="year"[^>]*><a[^>]+>([^<]+)</';
+        return '/<span class="year"[^>]*>([^<]+)</';
     }
 
     /**
@@ -177,18 +159,7 @@ class Netflix extends \RatingSync\SiteProvider
      * @return string Regular expression to find Film Id in film detail HTML page
      */
     protected function getDetailPageRegexForUniqueName() {
-        return '/\/title\/([^"]+)"/';
-    }
-
-    /**
-     * Regular expression to find your rating score in film detail HTML page
-     *
-     * @param \RatingSync\Film $film Film data
-     *
-     * @return string Regular expression to find your rating score in film detail HTML page
-     */
-    protected function getDetailPageRegexForYourScore($film) {
-        return '/<span data-rating="(\d)" class="star sb-placeholder/';
+        return '/data-amazon-title-id="([^"]*)"/';
     }
 
     /**
@@ -202,7 +173,7 @@ class Netflix extends \RatingSync\SiteProvider
     public function searchWebsiteForUniqueFilm($film)
     {
         if (!($film instanceof Film)) {
-            throw new \InvalidArgumentException('$film must be an array with key "pageIndex" and value an int');
+            throw new \InvalidArgumentException("\$film must be a \RatingSync\Film object");
         }
 
         $title = $film->getTitle();
@@ -222,11 +193,11 @@ class Netflix extends \RatingSync\SiteProvider
         $pattern = "|([$specialChars])|U";
         $escapedTitle = preg_replace($pattern, '\\\\${1}', $title);
 
-        return '/class="title-link"[^>]*data-title-id="([^"]*)"[^>]*>'.$escapedTitle.'<\/a><\/span> <span class="year"[^>]*><a[^>]*>'.$year.'</';
+        return '/data-title-id="([^"]*)"[^>]*>'.$escapedTitle.'<\/a><\/span> <span class="year"[^>]*>'.$year.'</';
     }
 
     protected function getDetailPageRegexForStreamingUrl()
     {
-        return '/href="([^"]+)">Netflix Page</';
+        return '/href="([^"]+)">Play</';
     }
 }

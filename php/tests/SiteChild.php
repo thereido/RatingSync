@@ -13,7 +13,7 @@ class SiteChild extends \RatingSync\Site {
     {
         parent::__construct($username);
         $this->sourceName = Constants::SOURCE_IMDB;
-        $this->http = new Http(Http::SITE_SOURCE, $this->sourceName, $username);
+        $this->http = new Http($this->sourceName, $username);
         $this->dateFormat = Imdb::IMDB_DATE_FORMAT;
     }
 
@@ -115,9 +115,6 @@ class SiteChild extends \RatingSync\Site {
 
     // Abstract Function based on \RatingSync\Imdb::getNextRatingPageNumber
     protected function getSearchUrl($args) { return "/find?ref_=nv_sr_fn&q='Frozen'&s=all'"; }
-    
-    // Abstract Function based on \RatingSync\Imdb::getStreamingUrl
-    public function getStreamingUrl($film, $onlyFree = true) { return null; }
 }
 
 ?>

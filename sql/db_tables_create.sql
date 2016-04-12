@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS film_source
         source_name VARCHAR(50) NOT NULL,
         image VARCHAR(150) NULL DEFAULT NULL,
         uniqueName VARCHAR(50) NULL DEFAULT NULL,
+        streamUrl VARCHAR(150) NULL DEFAULT NULL,
+        streamDate DATE DEFAULT 0,
         criticScore INT NULL DEFAULT NULL,
         userScore INT NULL DEFAULT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -188,31 +190,4 @@ CREATE TABLE IF NOT EXISTS user_filmlist
 
         FOREIGN KEY (user_name)
             REFERENCES user(username)
-    );
-  
-CREATE TABLE IF NOT EXISTS provider
-    (
-        name VARCHAR(50) NOT NULL,
-        ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        
-        PRIMARY KEY (name)
-    );
-  
-CREATE TABLE IF NOT EXISTS stream
-    (
-        film_id INT NOT NULL,
-        provider_name VARCHAR(50) NOT NULL,
-        streamId VARCHAR(50) NULL DEFAULT NULL,
-        url VARCHAR(150) NULL DEFAULT NULL,
-        refresh DATE DEFAULT 0,
-        ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        
-        PRIMARY KEY (film_id, provider_name),
-        KEY (film_id),
-        KEY (provider_name),
-        
-        FOREIGN KEY (film_id)
-            REFERENCES film(id),
-        FOREIGN KEY (provider_name)
-            REFERENCES provider(name)
     );

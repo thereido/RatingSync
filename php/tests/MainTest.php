@@ -56,7 +56,7 @@ class MainTest extends \PHPUnit_Framework_TestCase
         $filmId = $film->getId();
 
         // Verify database - film
-        $film = Film::GetFilmFromDb($filmId, new HttpRatingSync(getUsername()), getUsername());
+        $film = Film::GetFilmFromDb($filmId, getUsername());
         $this->assertEquals("Frozen", $film->getTitle(), "Title");
         $this->assertEquals(2013, $film->getYear(), "Year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
@@ -156,7 +156,7 @@ class MainTest extends \PHPUnit_Framework_TestCase
         // Verify database
 
         $film = null;
-        $film = Film::getFilmFromDb($filmId, new HttpRatingSync(getUsername()), getUsername());
+        $film = Film::getFilmFromDb($filmId, getUsername());
 
         // Verify the db film the same way as the object before
         $this->assertEquals("Buster", $film->getTitle(), "Title");

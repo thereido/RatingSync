@@ -267,7 +267,24 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \RatingSync\RatingSyncSite::getStreamingUrl
+     * @depends testSetupRatings
+     */
+    public function testSetupStreams()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $searchTerms = array();
+        $searchTerms["uniqueName"] = TEST_NETFLIX_UNIQUENAME;
+        $searchTerms["title"] = "Experimenter";
+        $searchTerms["year"] = 2015;
+        $searchTerms["sourceName"] = Constants::SOURCE_NETFLIX;
+        $film = \RatingSync\search($searchTerms);
+
+        $this->assertFalse(is_null($film));
+        $this->assertEquals("Experimenter", $film->getTitle());
+    }
+
+    /**
+     * @covers \RatingSync\RatingSyncSite::getStreamUrl
      * @depends testObjectCanBeConstructed
      */
     public function testGetStreamUrl()
@@ -275,61 +292,18 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
 
         // Setup
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
-        $film = new Film();
-        $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, Constants::SOURCE_NETFLIX);
-        $film->setTitle("testGetStreamUrl");
-        $film->saveToDb();
+        $searchTerms = array("uniqueName" => TEST_NETFLIX_UNIQUENAME);
+        $film = \RatingSync\search($searchTerms);
 
         // Test
-        $url = $site->getStreamingUrl($film->getId());
+        $url = $site->getStreamUrl($film->getId());
 
         // Verify
         $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $url, Constants::SOURCE_NETFLIX." streaming URL");
     }
 
     /**
-     * @covers \RatingSync\RatingSyncSite::getStreamingUrl
-     * @depends testObjectCanBeConstructed
-     */
-    public function testGetStreamUrlEmptyUniqueName()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        // Setup
-        $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
-        $film = new Film();
-        $film->setTitle("Experimenter");
-        $film->setYear(2015);
-        $film->saveToDb();
-
-        // Test
-        $url = $site->getStreamingUrl($film->getId());
-
-        // Verify
-        $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $url, "streaming URL");
-    }
-
-    /**
-     * @covers \RatingSync\Netflix::getStreamingUrl
-     * @depends testObjectCanBeConstructed
-     */
-    public function testGetStreamUrlEmptyUniqueNameEmptyYear()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        // Setup
-        $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
-        $film = new Film();
-        $film->setTitle("Experimenter");
-        $film->saveToDb();
-
-        // Test
-        $url = $site->getStreamingUrl($film->getId());
-
-        // Verify
-        $this->assertEmpty($url, "Should be empty ($url)");
-    }
-
-    /**
-     * @covers \RatingSync\RatingSyncSite::getStreamingUrl
+     * @covers \RatingSync\RatingSyncSite::getStreamUrl
      * @depends testObjectCanBeConstructed
      */
     public function testGetStreamUrlFilmNoLongerAvailable()
@@ -343,31 +317,10 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
         $film->saveToDb();
 
         // Test
-        $url = $site->getStreamingUrl($film->getId());
+        $url = $site->getStreamUrl($film->getId());
 
         // Verify
         $this->assertEmpty($url, "Should be empty ($url)");
-    }
-
-    /**
-     * @covers \RatingSync\RatingSyncSite::getStreams
-     * @depends testObjectCanBeConstructed
-     */
-    public function testGetStreams()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        // Setup
-        $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
-        $film = new Film();
-        $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, Constants::SOURCE_NETFLIX);
-        $film->setTitle("testGetStreams");
-        $film->saveToDb();
-
-        // Test
-        $urls = $site->getStreams($film);
-
-        // Verify
-        $this->assertEquals("http://www.netflix.com/title/80047396", $urls[Constants::SOURCE_NETFLIX], Constants::SOURCE_NETFLIX." streaming URL");
     }
 }
 

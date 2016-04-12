@@ -20,7 +20,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     {
         parent::__construct($username);
         $this->sourceName = Constants::SOURCE_RATINGSYNC;
-        $this->http = new Http(Http::SITE_SOURCE, $this->sourceName, $username);
+        $this->http = new Http($this->sourceName, $username);
         $this->dateFormat = self::RATINGSYNC_DATE_FORMAT;
         $this->maxCriticScore = 100;
     }
@@ -157,79 +157,26 @@ class RatingSyncSite extends \RatingSync\SiteRatings
      * The return includes base URL. Use the first source with a return.
      * Order: Netflix, Amazon, xfinity, Hulu
      */
-    public function getStreamingUrl($filmId, $onlyFree = true)
+    public function getStreamUrl($filmId, $onlyFree = true)
     {
         if (empty($filmId) || !is_int(intval($filmId))) {
             throw new \InvalidArgumentException(__FUNCTION__." \$filmId must be an int (filmId=$filmId)");
         }
 
         $url = null;
-        $username = "empty_username";
-
-        $site = new Netflix($username);
-        try {
-            $url = $site->getStreamingUrl($filmId, $onlyFree);
-        } catch (\Exception $e) {
-            $url = null;
-        }
-        /*RT*
+        $film = Film::getFilmFromDb($filmId);
+        $streams = $film->getStreams();
+        $url = array_value_by_key(Constants::SOURCE_NETFLIX, $streams);
         if (empty($url)) {
-            $site = new Amazon($username);
-            try {
-                $url = $site->getStreamingUrl($film, $onlyFree);
-            } catch (\Exception $e) {
-                $url = null;
-            }
-        } elseif (empty($url)) {
-            $site = new Amazon($username);
-            try {
-                $url = $site->getStreamingUrl($film, $onlyFree);
-            } catch (\Exception $e) {
-                $url = null;
-            }
-        } elseif (empty($url)) {
-            $site = new Xfinity($username);
-            try {
-                $url = $site->getStreamingUrl($film, $onlyFree);
-            } catch (\Exception $e) {
-                $url = null;
-            }
-        } elseif (empty($url)) {
-            $site = new Hulu($username);
-            try {
-                $url = $site->getStreamingUrl($film, $onlyFree);
-            } catch (\Exception $e) {
-                $url = null;
-            }
+            $url = array_value_by_key(Constants::SOURCE_AMAZON, $streams);
         }
-        *RT*/
+        if (empty($url)) {
+            $url = array_value_by_key(Constants::SOURCE_XFINITY, $streams);
+        }
+        if (empty($url)) {
+            $url = array_value_by_key(Constants::SOURCE_HULU, $streams);
+        }
 
         return $url;
-    }
-
-    /**
-     * Return available URLs for all sources
-     *
-     * @return array keys are sourceNames, values are full URLs
-     */
-    public function getStreams($film, $onlyFree = true)
-    {
-        $urls = array();
-        $username = "empty_username";
-
-        $site = new Netflix($username);
-        $urls[Constants::SOURCE_NETFLIX] = $site->getStreamingUrl($film->getId(), $onlyFree);
-        /*RT*
-        $site = new Amazon($username);
-        $urls[Constants::SOURCE_AMAZON] = $site->getStreamingUrl($film, $onlyFree);
-
-        $site = new Xfinity($username);
-        $urls[Constants::SOURCE_XFINITY] = $site->getStreamingUrl($film, $onlyFree);
-
-        $site = new Hulu($username);
-        $urls[Constants::SOURCE_HULU] = $site->getStreamingUrl($film, $onlyFree);
-        *RT*/
-
-        return $urls;
     }
 }

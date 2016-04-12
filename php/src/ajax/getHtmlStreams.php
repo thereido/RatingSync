@@ -4,10 +4,9 @@ namespace RatingSync;
 function getHtmlStreams($film) {
     $streamsHtml = "";
     $streams = $film->getStreams();
-    foreach ($streams as $stream) {
-        $url = $stream->getUrl();
-        if (!empty($url)) {
-            $link = "<a href='$url' target='_blank'>".$stream->getProviderName()."</a>";
+    while (list($sourceName, $streamUrl) = each($streams)) {
+        if (!empty($streamUrl)) {
+            $link = "<a href='$streamUrl' target='_blank'>$sourceName</a>";
             $streamsHtml .= "<div class='stream'>\n";
             $streamsHtml .= "  <span>$link</span>\n";
             $streamsHtml .= "</div>\n";

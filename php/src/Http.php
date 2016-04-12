@@ -9,9 +9,6 @@ require_once "Constants.php";
 
 class Http
 {
-    const SITE_SOURCE   = "Source";
-    const SITE_PROVIDER = "Provider";
-
     protected $username;
     protected $sessionId;
     protected $baseUrl = null;
@@ -24,36 +21,29 @@ class Http
      *
      * @param string $username Account of the source website
      */
-    public function __construct($siteType, $siteName, $username = null)
+    public function __construct($sourceName, $username = null)
     {
         $this->username = $username;
 
-        if ($siteType == self::SITE_SOURCE) {
-
-            if ($siteName == Constants::SOURCE_RATINGSYNC) {
-                $this->baseUrl = Constants::RS_HOST;
-                $this->lightweightUrl = "/index.php";
-            } elseif ($siteName == Constants::SOURCE_IMDB) {
-                $this->baseUrl = "http://www.imdb.com";
-                $this->lightweightUrl = "/help/?general/&ref_=hlp_brws";
-            } elseif ($siteName == Constants::SOURCE_JINNI) {
-                $this->baseUrl = "http://www.jinni.com";
-                $this->lightweightUrl = "/about";
-            }
-            
-        } elseif ($siteType == self::SITE_PROVIDER) {
-
-            if ($siteName == Constants::PROVIDER_NETFLIX) {
-                $this->baseUrl = "http://instantwatcher.com";
-                $this->lightweightUrl = "/about";
-            }
-            
-        } else {
-            throw new \InvalidArgumentException("Http constructor \$siteType ($siteType) must be ".self::SITE_SOURCE." or ".self::SITE_PROVIDER);
+        if ($sourceName == Constants::SOURCE_RATINGSYNC) {
+            $this->baseUrl = Constants::RS_HOST;
+            $this->lightweightUrl = "/index.php";
+        } elseif ($sourceName == Constants::SOURCE_IMDB) {
+            $this->baseUrl = "http://www.imdb.com";
+            $this->lightweightUrl = "/help/?general/&ref_=hlp_brws";
+        } elseif ($sourceName == Constants::SOURCE_JINNI) {
+            $this->baseUrl = "http://www.jinni.com";
+            $this->lightweightUrl = "/about";
+        } elseif ($sourceName == Constants::SOURCE_NETFLIX) {
+            $this->baseUrl = "http://instantwatcher.com";
+            $this->lightweightUrl = "/about";
+        } elseif ($sourceName == Constants::SOURCE_AMAZON) {
+            $this->baseUrl = "http://instantwatcher.com/a";
+            $this->lightweightUrl = "/random?content_type=1+2&prime=2";
         }
 
         if (empty($this->baseUrl) || empty($this->lightweightUrl)) {
-            throw new \InvalidArgumentException("Http constructor of type $siteType with \$siteName ($siteName) invalid");
+            throw new \InvalidArgumentException("Http constructor of \$sourceName ($sourceName) invalid");
         }
     }
 

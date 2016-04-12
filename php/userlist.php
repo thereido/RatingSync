@@ -20,8 +20,7 @@ $films = array();
 $offerToAddFilmThisList = false;
 if (empty($listname) && !empty($filmId)) {
     $offerToAddFilmThisList = true;
-    $http = new HttpRatingSync($username);
-    $film = Film::getFilmFromDb($filmId, $http, $username);
+    $film = Film::getFilmFromDb($filmId, $username);
     if (!empty($film)) {
         $films[] = $film;
     }

@@ -103,7 +103,7 @@ class SiteTest extends \PHPUnit_Framework_TestCase
     {
         $site = new SiteChild(TEST_SITE_USERNAME);
         $site->_setSourceName(null);
-        $site->_setHttp(new Http(Http::SITE_SOURCE, Constants::SOURCE_IMDB, TEST_SITE_USERNAME));
+        $site->_setHttp(new Http(Constants::SOURCE_IMDB, TEST_SITE_USERNAME));
         $this->assertFalse($site->_validateAfterConstructor());
 
         if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }

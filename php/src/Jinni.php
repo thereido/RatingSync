@@ -25,7 +25,7 @@ class Jinni extends \RatingSync\SiteRatings
     {
         parent::__construct($username);
         $this->sourceName = Constants::SOURCE_JINNI;
-        $this->http = new Http(Http::SITE_SOURCE, $this->sourceName, $username);
+        $this->http = new Http($this->sourceName, $username);
         $this->dateFormat = self::JINNI_DATE_FORMAT;
 
         if (!$this->validateAfterConstructor()) {

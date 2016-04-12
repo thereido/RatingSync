@@ -20,7 +20,7 @@ class Imdb extends \RatingSync\SiteRatings
     {
         parent::__construct($username);
         $this->sourceName = Constants::SOURCE_IMDB;
-        $this->http = new Http(Http::SITE_SOURCE, $this->sourceName, $username);
+        $this->http = new Http($this->sourceName, $username);
         $this->dateFormat = self::IMDB_DATE_FORMAT;
         $this->maxCriticScore = 100;
     }

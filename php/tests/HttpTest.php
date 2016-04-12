@@ -35,7 +35,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     public function testObjectCanBeConstructed()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $http = new Http(Http::SITE_SOURCE, Constants::SOURCE_RATINGSYNC);
+        $http = new Http(Constants::SOURCE_RATINGSYNC);
     }
 
     /**
@@ -44,17 +44,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     public function testCannotBeConstructedFromEmptyUsername()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        new Http(Http::SITE_SOURCE, Constants::SOURCE_RATINGSYNC, "");
-    }
-
-    /**
-     * @covers            \RatingSync\Http::__construct
-     * @expectedException \InvalidArgumentException
-     */
-    public function testCannotBeConstructedFromInvalidSiteType()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        new Http("invalid_site_type", Constants::SOURCE_RATINGSYNC);
+        new Http(Constants::SOURCE_RATINGSYNC, "");
     }
 
     /**
@@ -64,7 +54,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     public function testCannotBeConstructedFromInvalidSiteName()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        new Http(Http::SITE_SOURCE, "invalid_site_name");
+        new Http("invalid_site_name");
     }
 
     /**
@@ -75,7 +65,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     public function testCannotGetPageWithNullPage()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $http = new Http(Http::SITE_SOURCE, Constants::SOURCE_RATINGSYNC);
+        $http = new Http(Constants::SOURCE_RATINGSYNC);
         $http->getPage(null);
     }
 
@@ -87,7 +77,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     public function testCannotGetPageWithNotFound()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $http = new Http(Http::SITE_SOURCE, Constants::SOURCE_RATINGSYNC);
+        $http = new Http(Constants::SOURCE_RATINGSYNC);
         $http->getPage("/findthis");
     }
 
@@ -99,7 +89,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     public function testGetPageHttpError()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $http = new Http(Http::SITE_SOURCE, Constants::SOURCE_IMDB);
+        $http = new Http(Constants::SOURCE_IMDB);
         $http->getPage('Bad URL');
     }
 
@@ -110,7 +100,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     public function testGetLightweightPage()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $http = new Http(Http::SITE_SOURCE, Constants::SOURCE_RATINGSYNC);
+        $http = new Http(Constants::SOURCE_RATINGSYNC);
         $page = $http->getPage("/index.php");
         $this->assertGreaterThan(0, stripos($page, "<title>RatingSync</title>"), "Get a lightweight page");
     }
@@ -122,7 +112,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     public function testGetPageWithHeadersOnly()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $http = new Http(Http::SITE_SOURCE, Constants::SOURCE_RATINGSYNC);
+        $http = new Http(Constants::SOURCE_RATINGSYNC);
         $headers = $http->getPage("/index.php", null, true);
         $this->assertStringStartsWith("HTTP/1.1 200 OK", rtrim($headers), "getPage() with headersOnly=true should start with this");
     }
@@ -134,7 +124,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     public function testGetPageImdb()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $http = new Http(Http::SITE_SOURCE, Constants::SOURCE_IMDB);
+        $http = new Http(Constants::SOURCE_IMDB);
         $page = $http->getPage("/help/?general/&ref_=hlp_brws");
         $this->assertGreaterThan(0, stripos($page, "<title>Help : General Info</title>"), "Get IMDb 'About' page");
     }
@@ -146,7 +136,7 @@ class HttpTest extends \PHPUnit_Framework_TestCase
     public function testGetPageNetflix()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $http = new Http(Http::SITE_PROVIDER, Constants::PROVIDER_NETFLIX);
+        $http = new Http(Constants::SOURCE_NETFLIX);
         $page = $http->getPage("/about");
         $this->assertGreaterThan(0, stripos($page, "<title>About instantwatcher"), "Get Netflix (InstantWatcher) 'About' page");
     }

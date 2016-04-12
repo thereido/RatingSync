@@ -14,7 +14,6 @@ require_once "src/Jinni.php";
 require_once "src/Imdb.php";
 require_once "src/Netflix.php";
 require_once "src/RatingSyncSite.php";
-require_once "src/Stream.php";
 
 /**
  * Import ratings from a file to the database
@@ -163,7 +162,7 @@ function search($searchTerms, $username = null)
 
         if ($sourceName == Constants::SOURCE_NETFLIX && (empty($title) || empty($year))) {
             $netflix = new Netflix($username);
-            $film = new Film(new HttpNetflix($username));
+            $film = new Film();
             $film->setUniqueName($uniqueName, Constants::SOURCE_NETFLIX);
             $netflix->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_ALWAYS);
             $film->saveToDb($username);
@@ -190,11 +189,25 @@ function search($searchTerms, $username = null)
         }
     }
 
-    if (!empty($film) && $newFilm) {
-        Stream::refreshStreamsByFilm($film->getId());
+    if (!empty($film) && !empty($film->getId()) && $newFilm) {
+        Source::refreshStreamsByFilm($film->getId(), $username);
     }
     
     return $film;
+}
+
+function searchFilms($searchTerms, $username = null)
+{
+    if (empty($searchTerms) || !is_array($searchTerms)) {
+        return null;
+    }
+    if (empty($username)) {
+        $username = getUsername();
+    }
+
+    $films = array();
+
+    return $films;
 }
 
 function array_value_by_key($key, $a) {

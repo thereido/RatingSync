@@ -17,7 +17,7 @@ abstract class SiteProvider extends \RatingSync\Site
      * Return getFilmDetailPageUrl($filmId) if it is available for streaming.
      * The return includes base URL.
      */
-    public function getStreamingUrl($filmId, $onlyFree = true)
+    public function getStreamUrl($filmId, $onlyFree = true)
     {
         if (empty($filmId) || !is_int(intval($filmId))) {
             throw new \InvalidArgumentException(__FUNCTION__." \$filmId must be an int (filmId=$filmId)");
@@ -44,7 +44,7 @@ abstract class SiteProvider extends \RatingSync\Site
                 $url = $matches[1];
             }
         }
-
+        
         return $url;
     }
 }

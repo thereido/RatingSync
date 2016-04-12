@@ -171,7 +171,7 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \RatingSync\Netflix::getStreamingUrl
+     * @covers \RatingSync\Netflix::getStreamUrl
      * @depends testObjectCanBeConstructed
      */
     public function testGetStreamUrl()
@@ -185,14 +185,14 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
         $film->saveToDb();
 
         // Test
-        $url = $site->getStreamingUrl($film->getId());
+        $url = $site->getStreamUrl($film->getId());
 
         // Verify
         $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $url, $site->_getSourceName()." streaming URL");
     }
 
     /**
-     * @covers \RatingSync\Netflix::getStreamingUrl
+     * @covers \RatingSync\Netflix::getStreamUrl
      * @depends testObjectCanBeConstructed
      */
     public function testGetStreamUrlEmptyUniqueName()
@@ -206,14 +206,14 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
         $film->saveToDb();
 
         // Test
-        $url = $site->getStreamingUrl($film->getId());
+        $url = $site->getStreamUrl($film->getId());
 
         // Verify
         $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $url, $site->_getSourceName()." streaming URL");
     }
 
     /**
-     * @covers \RatingSync\Netflix::getStreamingUrl
+     * @covers \RatingSync\Netflix::getStreamUrl
      * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
@@ -227,11 +227,11 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
         $film->saveToDb();
 
         // Test
-        $url = $site->getStreamingUrl($film->getId());
+        $url = $site->getStreamUrl($film->getId());
     }
 
     /**
-     * @covers \RatingSync\Netflix::getStreamingUrl
+     * @covers \RatingSync\Netflix::getStreamUrl
      * @depends testObjectCanBeConstructed
      */
     public function testGetStreamUrlFilmNoLongerAvailable()
@@ -245,7 +245,7 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
         $film->saveToDb();
 
         // Test
-        $url = $site->getStreamingUrl($film->getId());
+        $url = $site->getStreamUrl($film->getId());
 
         // Verify
         $this->assertEmpty($url, "Should be empty ($url)");

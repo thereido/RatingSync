@@ -5,6 +5,7 @@
 namespace RatingSync;
 
 require_once "Constants.php";
+require_once "Amazon.php";
 
 /**
  * Store and retrieve film data for one piece of content (film, tv show...)
@@ -16,6 +17,8 @@ class Source
     protected $name;
     protected $image;
     protected $uniqueName;
+    protected $streamUrl;
+    protected $streamDate;  // Date as a string Y-m-d (1999-01-01)
     protected $rating;
     protected $criticScore;     // Average rating by critics through the source
     protected $userScore;       // Average rating by users through the source
@@ -47,7 +50,8 @@ class Source
                                 Constants::SOURCE_NETFLIX,
                                 Constants::SOURCE_RT,
                                 Constants::SOURCE_XFINITY,
-                                Constants::SOURCE_HULU);
+                                Constants::SOURCE_HULU,
+                                Constants::SOURCE_AMAZON);
 
         if (in_array($source, $validSources)) {
             return true;
@@ -94,6 +98,34 @@ class Source
     public function getUniqueName()
     {
         return $this->uniqueName;
+    }
+
+    public function setStreamUrl($streamUrl)
+    {
+        if (0 == strlen($streamUrl)) {
+            $streamUrl = null;
+        }
+        $this->streamUrl = $streamUrl;
+    }
+
+    public function getStreamUrl()
+    {
+        return $this->streamUrl;
+    }
+
+    public function setStreamDate($streamDate)
+    {
+        $this->streamDate = $streamDate;
+    }
+
+    public function getStreamDate()
+    {
+        return $this->streamDate;
+    }
+
+    public function refreshStreamDate()
+    {
+        $this->streamDate = date("Y-m-d");
     }
 
     public function setRating($yourRating)
@@ -207,6 +239,8 @@ class Source
         $sourceName = $this->getName();
         $sourceImage = $this->getImage();
         $sourceUniqueName = $this->getUniqueName();
+        $streamUrl = $this->getStreamUrl();
+        $streamDate = $this->getStreamDate();
         $criticScore = $this->getCriticScore();
         $userScore = $this->getUserScore();
             
@@ -225,6 +259,12 @@ class Source
             $columns .= ", uniqueName";
             $values .= ", '$sourceUniqueName'";
             $set .= "$setComma uniqueName='$sourceUniqueName'";
+            $setComma = ",";
+        }
+        if (!empty($streamDate)) {
+            $columns .= ", streamUrl, streamDate";
+            $values .= ", '$streamUrl', '$streamDate'";
+            $set .= "$setComma streamUrl='$streamUrl', streamDate='$streamDate'";
             $setComma = ",";
         }
         if (!empty($criticScore)) {
@@ -264,6 +304,71 @@ class Source
         }
 
         return true;
+    }
+
+    /**
+     * Refresh any streams for in the db for this is film if
+     * they are older than 1 day.
+     */
+    public static function refreshStreamsByFilm($filmId, $username = null)
+    {
+        if (empty($filmId) || !is_int(intval($filmId))) {
+            throw new \InvalidArgumentException("filmId arg must be an int (filmId=$filmId)");
+        }
+
+        $film = Film::getFilmFromDb($filmId);
+        foreach (self::validStreamProviders() as $sourceName) {
+            $source = $film->getSource($sourceName);
+            $now = new \DateTime();
+            $yesterday = $now->sub(new \DateInterval('P1D'));
+
+            if (empty($source->getStreamUrl()) || $source->getStreamDate() <= $yesterday) {
+                $provider = self::getStreamProvider($sourceName);
+                $url = $provider->getStreamUrl($filmId);
+                $source->setStreamUrl($url);
+                $source->refreshStreamDate();
+                $source->saveFilmSourceToDb($filmId);
+            }
+        }
+    }
+
+    public static function getStreamProvider($sourceName, $username = null)
+    {
+        if (empty($sourceName) || !self::validStreamProvider($sourceName) ) {
+            throw new \InvalidArgumentException("\$sourceName ($sourceName) invalid stream provider");
+        }
+
+        $provider = null;
+        if (empty($username)) {
+            $username = getUsername();
+        }
+
+        if ($sourceName == Constants::SOURCE_NETFLIX) {
+            $provider = new Netflix($username);
+        } elseif ($sourceName == Constants::SOURCE_AMAZON) {
+            $provider = new Amazon($username);
+        }
+
+        return $provider;
+    }
+
+    public static function validStreamProvider($providerName)
+    {
+        if (in_array($providerName, self::validStreamProviders()))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public static function validStreamProviders()
+    {
+        return array(Constants::SOURCE_NETFLIX,
+                            Constants::SOURCE_AMAZON/*RT*,
+                            Constants::SOURCE_XFINITY,
+                            Constants::SOURCE_HULU,
+                            Constants::SOURCE_YOUTUBE,
+                            Constants::SOURCE_HBO*RT*/);
     }
 }
 
