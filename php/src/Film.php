@@ -17,6 +17,9 @@ class Film {
     protected $title;
     protected $year;
     protected $contentType;
+    protected $season;
+    protected $episodeNumber;
+    protected $episodeTitle;
     protected $image;
     protected $sources = array();
     protected $genres = array();
@@ -40,6 +43,9 @@ class Film {
            <title/>
            <year/>
            <contentType/>
+           <season/>
+           <episodeNumber/>
+           <episodeTitle/>
            <image/>
            <directors>
                <director/>
@@ -50,6 +56,8 @@ class Film {
            <source name="">
                <image/>
                <uniqueName/>
+               <uniqueEpisode/>
+               <uniqueAlt/>
                <streamUrl/>
                <streamDate/>
                <criticScore/>
@@ -80,6 +88,15 @@ class Film {
         $filmXml->addChild('title', htmlspecialchars($this->getTitle()));
         $filmXml->addChild('year', $this->getYear());
         $filmXml->addChild('contentType', $this->getContentType());
+        if (!empty($this->getSeason())) {
+            $filmXml->addChild('season', htmlspecialchars($this->getSeason()));
+        }
+        if (!empty($this->getEpisodeNumber())) {
+            $filmXml->addChild('episodeNumber', $this->getEpisodeNumber());
+        }
+        if (!empty($this->getEpisodeTitle())) {
+            $filmXml->addChild('episodeTitle', htmlspecialchars($this->getEpisodeTitle()));
+        }
         $filmXml->addChild('image', $this->getImage());
 
         $directorsXml = $filmXml->addChild('directors');
@@ -98,6 +115,12 @@ class Film {
             $sourceXml->addAttribute('name', $source->getName());
             $sourceXml->addChild('image', $source->getImage());
             $sourceXml->addChild('uniqueName', $source->getUniqueName());
+            if (!empty($source->getUniqueEpisode())) {
+                $sourceXml->addChild('uniqueEpisode', $source->getUniqueEpisode());
+            }
+            if (!empty($source->getUniqueAlt())) {
+                $sourceXml->addChild('uniqueAlt', $source->getUniqueAlt());
+            }
             if (!empty($source->getStreamUrl())) {
                 $sourceXml->addChild('streamUrl', $source->getStreamUrl());
             }
@@ -133,6 +156,9 @@ class Film {
         $arr['title'] = $this->getTitle();
         $arr['year'] = $this->getYear();
         $arr['contentType'] = $this->getContentType();
+        $arr['season'] = $this->getSeason();
+        $arr['episodeNumber'] = $this->getEpisodeNumber();
+        $arr['episodeTitle'] = $this->getEpisodeTitle();
         $arr['image'] = $this->getImage();
 
         $arrDirectors = array();
@@ -154,6 +180,8 @@ class Film {
             $arrSource['name'] = $name;
             $arrSource['image'] = $source->getImage();
             $arrSource['uniqueName'] = $source->getUniqueName();
+            $arrSource['uniqueEpisode'] = $source->getUniqueEpisode();
+            $arrSource['uniqueAlt'] = $source->getUniqueAlt();
             $arrSource['streamUrl'] = $source->getStreamUrl();
             $arrSource['streamDate'] = $source->getStreamDate();
             $arrSource['criticScore'] = $source->getCriticScore();
@@ -204,6 +232,9 @@ class Film {
         $film->setTitle(html_entity_decode(Self::xmlStringByKey('title', $filmSxe), ENT_QUOTES, "utf-8"));
         $film->setYear(Self::xmlStringByKey('year', $filmSxe));
         $film->setContentType(Self::xmlStringByKey('contentType', $filmSxe));
+        $film->setSeason(html_entity_decode(Self::xmlStringByKey('season', $filmSxe), ENT_QUOTES, "utf-8"));
+        $film->setEpisodeNumber(Self::xmlStringByKey('episodeNumber', $filmSxe));
+        $film->setEpisodeTitle(html_entity_decode(Self::xmlStringByKey('episodeTitle', $filmSxe), ENT_QUOTES, "utf-8"));
         $film->setImage(Self::xmlStringByKey('image', $filmSxe));
 
         foreach ($filmSxe->xpath('directors') as $directorsSxe) {
@@ -231,6 +262,8 @@ class Film {
             $source = $film->getSource($sourceNameSxe[0]->__toString());
             $source->setImage(Self::xmlStringByKey('image', $sourceSxe));
             $source->setUniqueName(Self::xmlStringByKey('uniqueName', $sourceSxe));
+            $source->setUniqueEpisode(Self::xmlStringByKey('uniqueEpisode', $sourceSxe));
+            $source->setUniqueAlt(Self::xmlStringByKey('uniqueAlt', $sourceSxe));
             $source->setStreamUrl(Self::xmlStringByKey('streamUrl', $sourceSxe));
             $source->setStreamDate(Self::xmlStringByKey('streamDate', $sourceSxe));
             $criticScore = Self::xmlStringByKey('criticScore', $sourceSxe);
@@ -313,6 +346,42 @@ class Film {
         }
 
         return $this->getSource($source)->getUniqueName();
+    }
+
+    public function setUniqueEpisode($uniqueEpisode, $source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid setting Unique Episode');
+        }
+
+        $this->getSource($source)->setUniqueEpisode($uniqueEpisode);
+    }
+
+    public function getUniqueEpisode($source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid getting Unique Episode');
+        }
+
+        return $this->getSource($source)->getUniqueEpisode();
+    }
+
+    public function setUniqueAlt($uniqueAlt, $source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid setting Unique Alt');
+        }
+
+        $this->getSource($source)->setUniqueAlt($uniqueAlt);
+    }
+
+    public function getUniqueAlt($source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid getting Unique Alt');
+        }
+
+        return $this->getSource($source)->getUniqueAlt();
     }
 
     /**
@@ -477,6 +546,47 @@ class Film {
     public function getContentType()
     {
         return $this->contentType;
+    }
+
+    public function setSeason($season)
+    {
+        $this->season = $season;
+    }
+
+    public function getSeason()
+    {
+        return $this->season;
+    }
+
+    public function setEpisodeNumber($episodeNumber)
+    {
+        if ("" == $episodeNumber) {
+            $episodeNumber = null;
+        }
+        if (! ((is_numeric($episodeNumber) && ((float)$episodeNumber == (int)$episodeNumber)) || is_null($episodeNumber)) ) {
+            throw new \InvalidArgumentException('Episode number must be an integer');
+        }
+
+        if (!is_null($episodeNumber)) {
+            $episodeNumber = (int)$episodeNumber;
+        }
+
+        $this->episodeNumber = $episodeNumber;
+    }
+
+    public function getEpisodeNumber()
+    {
+        return $this->episodeNumber;
+    }
+
+    public function setEpisodeTitle($episodeTitle)
+    {
+        $this->episodeTitle = $episodeTitle;
+    }
+
+    public function getEpisodeTitle()
+    {
+        return $this->episodeTitle;
     }
 
     /**
@@ -655,14 +765,32 @@ class Film {
         $filmId = $this->id;
         $title = $db->real_escape_string($this->getTitle());
         $year = $this->getYear();
-        if (empty($year)) $year = "NULL";
         $contentType = $this->getContentType();
+        $season = $db->real_escape_string($this->getSeason());
+        $episodeNumber = $this->getEpisodeNumber();
+        $episodeTitle = $db->real_escape_string($this->getEpisodeTitle());
         $image = $this->getImage();
+        
+        $selectYear = "year=$year";
+        if (is_null($year)) {
+            $selectYear = "year IS NULL";
+            $year = "NULL";
+        }
+        $selectEpisodeNumber = "episodeNumber=$episodeNumber";
+        if (is_null($episodeNumber)) {
+            $selectEpisodeNumber = "episodeNumber IS NULL";
+            $episodeNumber = "NULL";
+        }
 
         // Look for an existing film row
         $newRow = false;
         if (empty($filmId)) {
-            $result = $db->query("SELECT id FROM film WHERE title='$title' AND (year=$year OR year IS NULL)");
+            $query  = "SELECT id FROM film";
+            $query .= " WHERE title='$title'";
+            $query .= "   AND $selectYear";
+            $query .= "   AND season='$season'";
+            $query .= "   AND $selectEpisodeNumber";
+            $result = $db->query($query);
             if ($result->num_rows == 1) {
                 $row = $result->fetch_assoc();
                 $filmId = $row["id"];
@@ -675,8 +803,8 @@ class Film {
         
         // Insert Film row
         if ($newRow) {
-            $columns = "title, year, contentType, image";
-            $values = "'$title', $year, '$contentType', '$image'";
+            $columns = "title, year, contentType, season, episodeNumber, episodeTitle, image";
+            $values = "'$title', $year, '$contentType', '$season', $episodeNumber, '$episodeTitle', '$image'";
             $query = "INSERT INTO film ($columns) VALUES ($values)";
             logDebug($query, __FUNCTION__." ".__LINE__);
             if ($db->query($query)) {
@@ -798,7 +926,7 @@ class Film {
         
         // Update Film row. If this is a new film then this update is
         // only for setting an image.
-        $values = "title='$title', year=$year, contentType='$contentType', image='$filmImage'";
+        $values = "title='$title', year=$year, contentType='$contentType', season='$season', episodeNumber=$episodeNumber, episodeTitle='$episodeTitle', image='$filmImage'";
         $where = "id=$filmId";
         $query = "UPDATE film SET $values WHERE $where";
         logDebug($query, __FUNCTION__." ".__LINE__);
@@ -830,6 +958,9 @@ class Film {
         $film->setTitle($row["title"]);
         $film->setYear($row["year"]);
         $film->setContentType($row["contentType"]);
+        $film->setSeason($row["season"]);
+        $film->setEpisodeNumber($row["episodeNumber"]);
+        $film->setEpisodeTitle($row["episodeTitle"]);
         $film->setImage($row["image"]);
 
         // Sources
@@ -838,6 +969,8 @@ class Film {
             $source = $film->getSource($row['source_name']);
             $source->setImage($row['image']);
             $source->setUniqueName($row['uniqueName']);
+            $source->setUniqueEpisode($row['uniqueEpisode']);
+            $source->setUniqueAlt($row['uniqueAlt']);
             $source->setStreamUrl($row['streamUrl']);
             $streamDate = $row['streamDate'];
             if (!empty($streamDate) && $streamDate != "0000-00-00") {
@@ -939,13 +1072,30 @@ class Film {
         
         $db = getDatabase();
         $uniqueName = array_value_by_key("uniqueName", $searchTerms);
+        $uniqueEpisode = array_value_by_key("uniqueEpisode", $searchTerms);
+        $uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
         $title = $db->real_escape_string(array_value_by_key("title", $searchTerms));
         $year = array_value_by_key("year", $searchTerms);
+        $season = $db->real_escape_string(array_value_by_key("season", $searchTerms));
+        $episodeNumber = array_value_by_key("episodeNumber", $searchTerms);
+        $episodeTitle = $db->real_escape_string(array_value_by_key("episodeTitle", $searchTerms));
         $sourceName = array_value_by_key("sourceName", $searchTerms);
+        
+        $selectYear = "year=$year";
+        if (is_null($year)) $selectYear = "year IS NULL";
+        $selectSeason = "season='$season'";
+        if (empty($season)) $selectSeason = "(season='' OR season IS NULL)";
+        $selectEpisodeNumber = "episodeNumber=$episodeNumber";
+        if (is_null($episodeNumber)) $selectEpisodeNumber = "episodeNumber IS NULL";
+        $selectUniqueEpisode = "uniqueEpisode='$uniqueEpisode'";
+        if (empty($uniqueEpisode)) $selectUniqueEpisode = "(uniqueEpisode='' OR uniqueEpisode IS NULL)";
 
         $film = null;
         if (!empty($uniqueName)) {
-            $result = $db->query("SELECT film_id FROM film_source WHERE uniqueName='$uniqueName'");
+            $query  = "SELECT film_id FROM film_source";
+            $query .= " WHERE uniqueName='$uniqueName'";
+            $query .= "   AND $selectUniqueEpisode";
+            $result = $db->query($query);
             if ($result->num_rows == 1) {
                 $row = $result->fetch_assoc();
                 $film = self::getFilmFromDb($row['film_id'], $username);
@@ -953,7 +1103,11 @@ class Film {
         }
         
         if (empty($film) && !empty($title) && !empty($year)) {
-            $result = $db->query("SELECT id FROM film WHERE title='$title' AND year='$year'");
+            $query  = "SELECT id FROM film";
+            $query .= " WHERE title='$title' AND $selectYear";
+            $query .= "   AND $selectSeason";
+            $query .= "   AND $selectEpisodeNumber";
+            $result = $db->query($query);
             if ($result->num_rows == 1) {
                 $row = $result->fetch_assoc();
                 $filmId = $row['id'];
@@ -961,6 +1115,8 @@ class Film {
                 if (!empty($filmId) && !empty($uniqueName) && !empty($sourceName)) {
                     $source = new Source($sourceName, $filmId);
                     $source->setUniqueName($uniqueName);
+                    $source->setUniqueEpisode($uniqueEpisode);
+                    $source->setUniqueAlt($uniqueAlt);
                     $source->saveFilmSourceToDb($filmId);
                 }
 

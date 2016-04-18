@@ -1,20 +1,20 @@
 <?php
 /**
- * Netflix PHPUnit
+ * Amazon PHPUnit
  */
 namespace RatingSync;
 
-require_once "../src/Netflix.php";
+require_once "../src/Amazon.php";
 require_once "10DatabaseTest.php";
 
-const TEST_NETFLIX_USERNAME = "testnetflixuser";
-const TEST_NETFLIX_UNIQUENAME = "80047396";
-const TEST_NETFLIX_UNIQUEALT = "";
-const TEST_NETFLIX_TITLE = "Experimenter";
-const TEST_NETFLIX_YEAR = 2015;
+const TEST_AMAZON_USERNAME = "testamazonuser";
+const TEST_AMAZON_UNIQUENAME = "3526";
+const TEST_AMAZON_UNIQUEALT = "";
+const TEST_AMAZON_TITLE = "Absentia";
+const TEST_AMAZON_YEAR = 2012;
 
 // Class to expose protected members and functions
-class NetflixExt extends \RatingSync\Netflix {
+class AmazonExt extends \RatingSync\Amazon {
     function _getHttp() { return $this->http; }
     function _getSourceName() { return $this->sourceName; }
     function _getUsername() { return $this->username; }
@@ -28,7 +28,7 @@ class NetflixExt extends \RatingSync\Netflix {
     function _parseDetailPageForDirectors($page, $film, $overwrite) { return $this->parseDetailPageForDirectors($page, $film, $overwrite); }
 }
 
-class NetflixTest extends \PHPUnit_Framework_TestCase
+class AmazonTest extends \PHPUnit_Framework_TestCase
 {
     public $debug;
     public $timer;
@@ -52,44 +52,44 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers            \RatingSync\Netflix::__construct
+     * @covers            \RatingSync\Amazon::__construct
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        new Netflix(null);
+        new Amazon(null);
     }
 
     /**
-     * @covers            \RatingSync\Netflix::__construct
+     * @covers            \RatingSync\Amazon::__construct
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromEmptyUsername()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        new Netflix("");
+        new Amazon("");
     }
 
     /**
-     * @covers \RatingSync\Netflix::__construct
+     * @covers \RatingSync\Amazon::__construct
      */
     public function testObjectCanBeConstructed()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $site = new Netflix(TEST_NETFLIX_USERNAME);
+        $site = new Amazon(TEST_AMAZON_USERNAME);
     }
 
     /**
-     * @covers \RatingSync\Netflix::cacheFilmDetailPage
+     * @covers \RatingSync\Amazon::cacheFilmDetailPage
      * @depends testObjectCanBeConstructed
      */
     public function testCacheFilmDetailPage()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $site = new AmazonExt(TEST_AMAZON_USERNAME);
         $film = new Film();
-        $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, $site->_getSourceName());
+        $film->setUniqueName(TEST_AMAZON_UNIQUENAME, $site->_getSourceName());
         
         $page = "<html><body><h2>Film Detail</h2></body></html>";
         $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_filmdetailpage.xml";
@@ -98,7 +98,7 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
         fclose($fp);
         
         $site->cacheFilmDetailPage($page, $film);
-        $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_NETFLIX_USERNAME . "_film_" . $film->getUniqueName($site->_getSourceName()) . ".html";
+        $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_AMAZON_USERNAME . "_film_" . $film->getUniqueName($site->_getSourceName()) . ".html";
         $this->assertFileExists($testFilename, 'Cache file exists');
         $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
         
@@ -107,59 +107,59 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \RatingSync\Netflix::getFilmDetailFromWebsite
+     * @covers \RatingSync\Amazon::getFilmDetailFromWebsite
      * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testGetFilmDetailFromWebsiteFromNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $site = new Netflix(TEST_NETFLIX_USERNAME);
+        $site = new Amazon(TEST_AMAZON_USERNAME);
         $site->getFilmDetailFromWebsite(null);
     }
 
     /**
-     * @covers \RatingSync\Netflix::getFilmDetailFromWebsite
+     * @covers \RatingSync\Amazon::getFilmDetailFromWebsite
      * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
     public function testGetFilmDetailFromWebsiteFromString()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $site = new Netflix(TEST_NETFLIX_USERNAME);
+        $site = new Amazon(TEST_AMAZON_USERNAME);
         $site->getFilmDetailFromWebsite("String_Not_Film_Object");
     }
 
     /**
-     * @covers \RatingSync\Netflix::getFilmDetailFromWebsite
+     * @covers \RatingSync\Amazon::getFilmDetailFromWebsite
      * @depends testObjectCanBeConstructed
      * @expectedException \Exception
      */
     public function testGetFilmDetailFromWebsiteNoMatch()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $site = new AmazonExt(TEST_AMAZON_USERNAME);
         $film = new Film();
         $film->setUniqueName("NO_FILMID_MATCH", $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
     }
 
     /**
-     * @covers \RatingSync\Netflix::getFilmDetailFromWebsite
+     * @covers \RatingSync\Amazon::getFilmDetailFromWebsite
      * @depends testObjectCanBeConstructed
      */
     public function testGetFilmDetailFromWebsite()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $site = new AmazonExt(TEST_AMAZON_USERNAME);
 
         $film = new Film();
-        $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, $site->_getSourceName());
+        $film->setUniqueName(TEST_AMAZON_UNIQUENAME, $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
 
-        $this->assertEquals(TEST_NETFLIX_TITLE, $film->getTitle(), 'Title');
-        $this->assertEquals(TEST_NETFLIX_YEAR, $film->getYear(), 'Year');
-        $this->assertEquals(TEST_NETFLIX_UNIQUENAME, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
+        $this->assertEquals(TEST_AMAZON_TITLE, $film->getTitle(), 'Title');
+        $this->assertEquals(TEST_AMAZON_YEAR, $film->getYear(), 'Year');
+        $this->assertEquals(TEST_AMAZON_UNIQUENAME, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
 
         // Not available in the detail page
         $this->assertNull($film->getContentType(), 'Content Type');
@@ -174,27 +174,27 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
-     * @covers \RatingSync\Netflix::getSearchUrl
+     * @covers \RatingSync\Amazon::getSearchUrl
      * @depends testObjectCanBeConstructed
      */
     public function testGetSearchUrl()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $site = new Netflix(TEST_NETFLIX_USERNAME);
+        $site = new Amazon(TEST_AMAZON_USERNAME);
 
-        $args = array("query" => TEST_NETFLIX_TITLE);
+        $args = array("query" => TEST_AMAZON_TITLE);
         $url = $site->getSearchUrl($args);
-        $this->assertEquals("/search?q=".TEST_NETFLIX_TITLE, $url);
+        $this->assertEquals("/search?q=".TEST_AMAZON_TITLE, $url);
     }
     
     /**
-     * @covers \RatingSync\Netflix::getSearchUrl
+     * @covers \RatingSync\Amazon::getSearchUrl
      * @depends testGetSearchUrl
      */
     public function testGetSearchUrlSpecialChars()
     {$this->start(__CLASS__, __FUNCTION__);
     
-        $site = new Netflix(TEST_NETFLIX_USERNAME);
+        $site = new Amazon(TEST_AMAZON_USERNAME);
 
         $args = array("query" => "Mr. Peabody & Sherman");
         $url = $site->getSearchUrl($args);
@@ -202,36 +202,36 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \RatingSync\Netflix::searchWebsiteForUniqueFilm
+     * @covers \RatingSync\Amazon::searchWebsiteForUniqueFilm
      * @depends testGetSearchUrl
      */
     public function testSearchWebsiteForUniqueFilm()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Setup
-        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $site = new AmazonExt(TEST_AMAZON_USERNAME);
         $film = new Film();
-        $film->setTitle(TEST_NETFLIX_TITLE);
-        $film->setYear(TEST_NETFLIX_YEAR);
+        $film->setTitle(TEST_AMAZON_TITLE);
+        $film->setYear(TEST_AMAZON_YEAR);
 
         // Test
         $site->searchWebsiteForUniqueFilm($film);
 
         // Verify
-        $this->assertEquals(TEST_NETFLIX_UNIQUENAME, $film->getUniqueName($site->_getSourceName()), "Unique name");
+        $this->assertEquals(TEST_AMAZON_UNIQUENAME, $film->getUniqueName($site->_getSourceName()), "Unique name");
     }
 
     /**
-     * @covers \RatingSync\Netflix::getStreamUrl
+     * @covers \RatingSync\Amazon::getStreamUrl
      * @depends testObjectCanBeConstructed
      */
     public function testGetStreamUrl()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Setup
-        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $site = new AmazonExt(TEST_AMAZON_USERNAME);
         $film = new Film();
-        $film->setUniqueName(TEST_NETFLIX_UNIQUENAME, $site->_getSourceName());
+        $film->setUniqueName(TEST_AMAZON_UNIQUENAME, $site->_getSourceName());
         $film->setTitle("empty_title");
         $film->saveToDb();
 
@@ -239,41 +239,41 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
         $url = $site->getStreamUrl($film->getId());
 
         // Verify
-        $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $url, $site->_getSourceName()." streaming URL");
+        $this->assertEquals("http://www.amazon.com/gp/video/primesignup?&t=0m0s&redirectToAsin=B00778C6V4&tag=iw_prime_movie-20&ref_=asc_homepage", $url, $site->_getSourceName()." streaming URL");
     }
 
     /**
-     * @covers \RatingSync\Netflix::getStreamUrl
+     * @covers \RatingSync\Amazon::getStreamUrl
      * @depends testSearchWebsiteForUniqueFilm
      */
     public function testGetStreamUrlEmptyUniqueName()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Setup
-        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $site = new AmazonExt(TEST_AMAZON_USERNAME);
         $film = new Film();
-        $film->setTitle(TEST_NETFLIX_TITLE);
-        $film->setYear(TEST_NETFLIX_YEAR);
+        $film->setTitle(TEST_AMAZON_TITLE);
+        $film->setYear(TEST_AMAZON_YEAR);
         $film->saveToDb();
 
         // Test
         $url = $site->getStreamUrl($film->getId());
 
         // Verify
-        $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $url, $site->_getSourceName()." streaming URL");
+        $this->assertEquals("http://www.amazon.com/gp/video/primesignup?&t=0m0s&redirectToAsin=B00778C6V4&tag=iw_prime_movie-20&ref_=asc_homepage", $url, $site->_getSourceName()." streaming URL");
     }
 
     /**
-     * @covers \RatingSync\Netflix::getStreamUrl
+     * @covers \RatingSync\Amazon::getStreamUrl
      * @depends testSearchWebsiteForUniqueFilm
      */
     public function testGetStreamUrlEmptyUniqueNameEmptyYear()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Setup
-        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $site = new AmazonExt(TEST_AMAZON_USERNAME);
         $film = new Film();
-        $film->setTitle(TEST_NETFLIX_TITLE);
+        $film->setTitle(TEST_AMAZON_TITLE);
         $film->saveToDb();
 
         // Test
@@ -284,14 +284,14 @@ class NetflixTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \RatingSync\Netflix::getStreamUrl
+     * @covers \RatingSync\Amazon::getStreamUrl
      * @depends testObjectCanBeConstructed
      */
     public function testGetStreamUrlFilmNoLongerAvailable()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Setup
-        $site = new NetflixExt(TEST_NETFLIX_USERNAME);
+        $site = new AmazonExt(TEST_AMAZON_USERNAME);
         $film = new Film();
         $film->setUniqueName("100000000", $site->_getSourceName());
         $film->setTitle("empty_title");

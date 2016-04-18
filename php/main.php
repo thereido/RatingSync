@@ -13,6 +13,7 @@ require_once "src/Constants.php";
 require_once "src/Jinni.php";
 require_once "src/Imdb.php";
 require_once "src/Netflix.php";
+require_once "src/Xfinity.php";
 require_once "src/RatingSyncSite.php";
 
 /**
@@ -142,6 +143,8 @@ function search($searchTerms, $username = null)
         $username = getUsername();
     }
     $uniqueName = array_value_by_key("uniqueName", $searchTerms);
+    $uniqueEpisode = array_value_by_key("uniqueEpisode", $searchTerms);
+    $uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
     $title = array_value_by_key("title", $searchTerms);
     $year = array_value_by_key("year", $searchTerms);
     $sourceName = array_value_by_key("sourceName", $searchTerms);
@@ -149,7 +152,7 @@ function search($searchTerms, $username = null)
     if (empty($uniqueName) && (empty($title) || empty($year))) {
         return null;
     }
-
+    
     $newFilm = false;
     $film = Film::searchDb($searchTerms, $username);
 
@@ -160,18 +163,31 @@ function search($searchTerms, $username = null)
             $sourceName = Constants::SOURCE_RATINGSYNC;
         }
 
-        if ($sourceName == Constants::SOURCE_NETFLIX && (empty($title) || empty($year))) {
-            $netflix = new Netflix($username);
-            $film = new Film();
-            $film->setUniqueName($uniqueName, Constants::SOURCE_NETFLIX);
-            $netflix->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_ALWAYS);
-            $film->saveToDb($username);
-            $searchTerms["title"] = $film->getTitle();
-            $searchTerms["year"] = $film->getYear();
+        if (empty($title) || empty($year)) {
+            $site = null;
+            if ($sourceName == Constants::SOURCE_NETFLIX) {
+                $site = new Netflix($username);
+            } elseif ($sourceName == Constants::SOURCE_XFINITY) {
+                $site = new Xfinity($username);
+            } elseif ($sourceName == Constants::SOURCE_AMAZON) {
+                $site = new Amazon($username);
+            }
+
+            if (!empty($site)) {
+                $film = new Film();
+                $film->setUniqueName($uniqueName, $sourceName);
+                $site->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_ALWAYS);
+                $film->saveToDb($username);
+                $searchTerms["title"] = $film->getTitle();
+                $searchTerms["year"] = $film->getYear();
+            }
         }
         
         if ($sourceName != Constants::SOURCE_RATINGSYNC && $sourceName != Constants::SOURCE_IMDB) {
+            // Before searching IMDb... remove terms specific to another source
             $searchTerms['uniqueName'] = null;
+            $searchTerms['uniqueEpisode'] = null;
+            $searchTerms['uniqueAlt'] = null;
         }
         
         $film = $imdb->getFilmBySearch($searchTerms);
@@ -180,17 +196,20 @@ function search($searchTerms, $username = null)
             $newFilm = true;
         }
     }
-    
-    if (!empty($film) && !empty($film->getId()) && !empty($uniqueName) && !empty($sourceName)) {
+
+    if (!empty($film) && !empty($film->getId()) && $newFilm) {
+        // New film - get data for all sources
+        Source::createAllSourcesToDb($film->getId());
+
+    } elseif (!empty($film) && !empty($film->getId()) && !empty($uniqueName) && !empty($sourceName)) {
+        // Existing film - save source data from the search by this source
         $source = $film->getSource($sourceName);
         if (empty($source->getUniqueName())) {
             $source->setUniqueName($uniqueName);
+            $source->setUniqueEpisode($uniqueEpisode);
+            $source->setUniqueAlt($uniqueAlt);
             $source->saveFilmSourceToDb($film->getId());
         }
-    }
-
-    if (!empty($film) && !empty($film->getId()) && $newFilm) {
-        Source::refreshStreamsByFilm($film->getId(), $username);
     }
     
     return $film;

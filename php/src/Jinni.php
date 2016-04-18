@@ -252,6 +252,33 @@ class Jinni extends \RatingSync\SiteRatings
     }
 
     /**
+     * Regular expression to find the film season in film detail HTML page
+     *
+     * @return string Regular expression to find the film season in film detail HTML page
+     */
+    protected function getDetailPageRegexForSeason() {
+        return '';
+    }
+
+    /**
+     * Regular expression to find the episode title in film detail HTML page
+     *
+     * @return string Regular expression to find the episode title in film detail HTML page
+     */
+    protected function getDetailPageRegexForEpisodeTitle() {
+        return '';
+    }
+
+    /**
+     * Regular expression to find the episode number in film detail HTML page
+     *
+     * @return string Regular expression to find the film season in film detail HTML page
+     */
+    protected function getDetailPageRegexForEpisodeNumber() {
+        return '';
+    }
+
+    /**
      * Regular expression to find Unique Name in film detail HTML page
      *
      * @param \RatingSync\Film $film Film data
@@ -260,6 +287,24 @@ class Jinni extends \RatingSync\SiteRatings
      */
     protected function getDetailPageRegexForUniqueName()
     {
+        return '';
+    }
+
+    /**
+     * Regular expression to find episode Id in film detail HTML page
+     *
+     * @return string Regular expression to find episode Id in film detail HTML page
+     */
+    protected function getDetailPageRegexForUniqueEpisode() {
+        return '';
+    }
+
+    /**
+     * Regular expression to find alternate Id in film detail HTML page
+     *
+     * @return string Regular expression to find alternate Id in film detail HTML page
+     */
+    protected function getDetailPageRegexForUniqueAlt() {
         return '';
     }
 

@@ -300,12 +300,57 @@ class Imdb extends \RatingSync\SiteRatings
     }
 
     /**
+     * Regular expression to find the film season in film detail HTML page
+     *
+     * @return string Regular expression to find the film season in film detail HTML page
+     */
+    protected function getDetailPageRegexForSeason() {
+        return '';
+    }
+
+    /**
+     * Regular expression to find the episode title in film detail HTML page
+     *
+     * @return string Regular expression to find the episode title in film detail HTML page
+     */
+    protected function getDetailPageRegexForEpisodeTitle() {
+        return '';
+    }
+
+    /**
+     * Regular expression to find the episode number in film detail HTML page
+     *
+     * @return string Regular expression to find the film season in film detail HTML page
+     */
+    protected function getDetailPageRegexForEpisodeNumber() {
+        return '';
+    }
+
+    /**
      * Regular expression to find Film Id in film detail HTML page
      *
      * @return string Regular expression to find Film Id in film detail HTML page
      */
     protected function getDetailPageRegexForUniqueName() {
         return '/<meta property="og:url" content=".*\/(.+)\/"/';
+    }
+
+    /**
+     * Regular expression to find episode Id in film detail HTML page
+     *
+     * @return string Regular expression to find episode Id in film detail HTML page
+     */
+    protected function getDetailPageRegexForUniqueEpisode() {
+        return '';
+    }
+
+    /**
+     * Regular expression to find alternate Id in film detail HTML page
+     *
+     * @return string Regular expression to find alternate Id in film detail HTML page
+     */
+    protected function getDetailPageRegexForUniqueAlt() {
+        return '';
     }
 
     /**
@@ -397,11 +442,14 @@ class Imdb extends \RatingSync\SiteRatings
         $args = array("query" => $title);
         $page = $this->http->getPage($this->getSearchUrl($args));
         $regex = $this->getSearchPageRegexForUniqueName($title, $film->getYear());
-        if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
+        if (!empty($regex) && 0 < preg_match($regex, $page, $matches)) {
+            $uniqueName = $matches[1];
+            $film->setUniqueName($uniqueName, $this->sourceName);
+        } else {
             return false;
         }
         
-        return $matches[1];
+        return true;
     }
 
     /**

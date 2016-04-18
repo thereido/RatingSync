@@ -12,6 +12,8 @@ $action = array_value_by_key("action", $_GET);
 logDebug("API action: $action", "api.php");
 if ($action == "getSearchFilm") {
     $response = api_getSearchFilm($username);
+} elseif ($action == "getSearchFilms") {
+    $response = api_getSearchFilms($username);
 } elseif ($action == "setRating") {
     $response = api_setRating($username);
 } elseif ($action == "setFilmlist") {
@@ -27,6 +29,8 @@ echo $response;
 function api_getSearchFilm($username)
 {
     $searchQuery = array_value_by_key("q", $_GET);
+    $searchUniqueEpisode = array_value_by_key("ue", $_GET);
+    $searchUniqueAlt = array_value_by_key("ua", $_GET);
     $searchTitle = array_value_by_key("t", $_GET);
     $searchYear = array_value_by_key("y", $_GET);
     $searchContentType = array_value_by_key("ct", $_GET);
@@ -51,8 +55,10 @@ function api_getSearchFilm($username)
         $sourceName = Constants::SOURCE_HULU;
     }
     
-    logDebug("Params q=$searchQuery, t=$searchTitle, y=$searchYear, ct=$searchContentType, json=$asJson, source=$searchSource", __FUNCTION__." ".__LINE__);
+    logDebug("Params q=$searchQuery, ue=$searchUniqueEpisode, ua=$searchUniqueAlt, t=$searchTitle, y=$searchYear, ct=$searchContentType, json=$asJson, source=$searchSource", __FUNCTION__." ".__LINE__);
     $searchTerms = array('uniqueName' => $searchQuery,
+                         'uniqueEpisode' => $searchUniqueEpisode,
+                         'uniqueAlt' => $searchUniqueAlt,
                          'sourceName' => $sourceName,
                          'title' => htmlspecialchars_decode($searchTitle),
                          'year' => $searchYear,
@@ -87,6 +93,16 @@ function api_getSearchFilm($username)
         }
     }
     
+    return $response;
+}
+
+function api_getSearchFilms($username)
+{
+    $response = "";
+    $films = array();
+    $searchQuery = array_value_by_key("q", $_GET);
+    logDebug("Params q=$searchQuery", __FUNCTION__." ".__LINE__);
+
     return $response;
 }
 

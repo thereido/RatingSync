@@ -40,6 +40,9 @@ class Http
         } elseif ($sourceName == Constants::SOURCE_AMAZON) {
             $this->baseUrl = "http://instantwatcher.com/a";
             $this->lightweightUrl = "/random?content_type=1+2&prime=2";
+        } elseif ($sourceName == Constants::SOURCE_XFINITY) {
+            $this->baseUrl = "http://xfinitytv.comcast.net";
+            $this->lightweightUrl = "/mytv/dvr?CMPID=xtvg_footer";
         }
 
         if (empty($this->baseUrl) || empty($this->lightweightUrl)) {

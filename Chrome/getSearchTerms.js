@@ -3,6 +3,8 @@ function getSearchTerms(document_root) {
 
     var searchTerms;
     var uniqueName;
+    var uniqueEpisode
+    var uniqueAlt;
     var source;
     var title;
     var year;
@@ -90,13 +92,22 @@ function getSearchTerms(document_root) {
         var indexEnd;
 		var index = url.indexOf("/watch/");
         if (-1 < index) {
-            index = index + 7;
-            indexBegin = url.indexOf("/", index) + 1;
+            indexBegin = index + 7;
             indexEnd = url.indexOf("/", indexBegin);
-        }
+            if (indexBegin != -1) {
+                uniqueAlt = url.substring(indexBegin, indexEnd);
 
-        if (indexBegin != -1) {
-		    uniqueName = url.substring(indexBegin, indexEnd);
+                indexBegin = url.indexOf("/", indexEnd) + 1;
+                indexEnd = url.indexOf("/", indexBegin);
+                if (indexBegin != -1) {
+                    uniqueName = url.substring(indexBegin, indexEnd);
+                }
+            }
+        }
+        index = url.indexOf("episode=");
+        if (-1 < index) {
+            indexBegin = index + 8;
+            uniqueEpisode = url.substring(indexBegin);
         }
 
         var html = document_root.getElementsByClassName("entity-info")[0].innerHTML;
@@ -138,7 +149,14 @@ function getSearchTerms(document_root) {
         }
 	}
     
-    var text = '{"uniqueName": "' + uniqueName + '", "source": "' + source + '", "title": "' + title +  '", "year": "' + year + '", "contentType": "' + contentType + '"}';
+    var text = '';
+    text = text + '{"uniqueName": "' + uniqueName + '", ';
+    text = text + '"uniqueEpisode": "' + uniqueEpisode + '", ';
+    text = text + '"uniqueAlt": "' + uniqueAlt + '", ';
+    text = text + '"source": "' + source + '", ';
+    text = text + '"title": "' + title + '", ';
+    text = text + '"year": "' + year + '", ';
+    text = text + '"contentType": "' + contentType + '"}';
     var json = JSON.parse(text);
     return json;
 }

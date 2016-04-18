@@ -77,7 +77,12 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     protected function getDetailPageRegexForYear() { }
     protected function getDetailPageRegexForImage() { }
     protected function getDetailPageRegexForContentType() { }
+    protected function getDetailPageRegexForSeason() { }
+    protected function getDetailPageRegexForEpisodeTitle() { }
+    protected function getDetailPageRegexForEpisodeNumber() { }
     protected function getDetailPageRegexForUniqueName() { }
+    protected function getDetailPageRegexForUniqueEpisode() { }
+    protected function getDetailPageRegexForUniqueAlt() { }
     protected function getDetailPageRegexForYourScore($film) { }
     protected function getDetailPageRegexForRatingDate() { }
     protected function getDetailPageRegexForSuggestedScore($film) { }

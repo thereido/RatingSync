@@ -154,12 +154,57 @@ class Amazon extends \RatingSync\SiteProvider
     }
 
     /**
+     * Regular expression to find the film season in film detail HTML page
+     *
+     * @return string Regular expression to find the film season in film detail HTML page
+     */
+    protected function getDetailPageRegexForSeason() {
+        return '';
+    }
+
+    /**
+     * Regular expression to find the episode title in film detail HTML page
+     *
+     * @return string Regular expression to find the episode title in film detail HTML page
+     */
+    protected function getDetailPageRegexForEpisodeTitle() {
+        return '';
+    }
+
+    /**
+     * Regular expression to find the episode number in film detail HTML page
+     *
+     * @return string Regular expression to find the film season in film detail HTML page
+     */
+    protected function getDetailPageRegexForEpisodeNumber() {
+        return '';
+    }
+
+    /**
      * Regular expression to find Film Id in film detail HTML page
      *
      * @return string Regular expression to find Film Id in film detail HTML page
      */
     protected function getDetailPageRegexForUniqueName() {
         return '/data-amazon-title-id="([^"]*)"/';
+    }
+
+    /**
+     * Regular expression to find episode Id in film detail HTML page
+     *
+     * @return string Regular expression to find episode Id in film detail HTML page
+     */
+    protected function getDetailPageRegexForUniqueEpisode() {
+        return '';
+    }
+
+    /**
+     * Regular expression to find alternate Id in film detail HTML page
+     *
+     * @return string Regular expression to find alternate Id in film detail HTML page
+     */
+    protected function getDetailPageRegexForUniqueAlt() {
+        return '';
     }
 
     /**
@@ -180,11 +225,14 @@ class Amazon extends \RatingSync\SiteProvider
         $args = array("query" => $title);
         $page = $this->http->getPage($this->getSearchUrl($args));
         $regex = $this->getSearchPageRegexForUniqueName($title, $film->getYear());
-        if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
+        if (!empty($regex) && 0 < preg_match($regex, $page, $matches)) {
+            $uniqueName = $matches[1];
+            $film->setUniqueName($uniqueName, $this->sourceName);
+        } else {
             return false;
         }
         
-        return $matches[1];
+        return true;
     }
 
     protected function getSearchPageRegexForUniqueName($title, $year)
@@ -192,8 +240,15 @@ class Amazon extends \RatingSync\SiteProvider
         $specialChars = "\/\^\.\[\]\|\(\)\?\*\+\{\}"; // need to do '\' too
         $pattern = "|([$specialChars])|U";
         $escapedTitle = preg_replace($pattern, '\\\\${1}', $title);
+        $nextYear = $year + 1;
 
-        return '/data-title-id="([^"]*)"[^>]*>'.$escapedTitle.'<\/a><\/span> <span class="year"[^>]*>'.$year.'</';
+        return '/data-title-id="([^"]*)"[^>]*>'.$escapedTitle.'<\/a><\/span>[\s]*<span class="year"[^>]*>('.$year."|".$nextYear.')</';
+    }
+
+    protected function streamAvailableFromDetailPage($page, $film, $onlyFree = true)
+    {
+        $regex = $this->getDetailPageRegexForStreamingUrl();
+        return (0 < preg_match($regex, $page, $matches));
     }
 
     protected function getDetailPageRegexForStreamingUrl()

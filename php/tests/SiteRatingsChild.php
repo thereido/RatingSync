@@ -124,8 +124,23 @@ class SiteRatingsChild extends \RatingSync\SiteRatings {
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForContentType
     protected function getDetailPageRegexForContentType() { return '/<div class="infobar">\s*([a-zA-Z \-\/]+)\s*&nbsp;<</'; }
 
+    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForSeason
+    protected function getDetailPageRegexForSeason() { return ''; }
+
+    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForEpisodeNumber
+    protected function getDetailPageRegexForEpisodeNumber() { return ''; }
+
+    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForEpisodeTitle
+    protected function getDetailPageRegexForEpisodeTitle() { return ''; }
+
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForUniqueName
     protected function getDetailPageRegexForUniqueName() { return '/<meta property="og:url" content=".*\/(.+)\/"/'; }
+
+    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForUniqueEpisode
+    protected function getDetailPageRegexForUniqueEpisode() { return ''; }
+
+    // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForUniqueAlt
+    protected function getDetailPageRegexForUniqueAlt() { return ''; }
 
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForYourScore
     protected function getDetailPageRegexForYourScore($film) { return '/<span class="rating-rating rating-your"><span class="value">(\d\d?)<\/span>/'; }

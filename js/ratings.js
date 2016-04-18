@@ -112,6 +112,24 @@ function searchFilm() {
     return false;
 }
 
+function searchFilms() {
+    if (document.getElementById("searchQuery").value == 0) {
+        document.getElementById("searchResult").innerHTML = "";
+    } else {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                document.getElementById("searchResult").innerHTML = xmlhttp.responseText;
+                addStarListeners(document.getElementById("searchResult"));
+            }
+        }
+        xmlhttp.open("GET", "/php/src/ajax/api.php?action=getSearchFilms&q=" + document.getElementById("searchQuery").value, true);
+        xmlhttp.send();
+    }
+
+    return false;
+}
+
 function createFilmlist() {
     var listname = document.getElementById("filmlist-listname").value;
     if (listname == 0) {

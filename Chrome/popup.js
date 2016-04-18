@@ -46,6 +46,8 @@ function searchFilm(searchTerms)
 
     var params = "&json=1";
     if (searchTerms.uniqueName != "undefined") { params = params + "&q=" + searchTerms.uniqueName; }
+    if (searchTerms.uniqueEpisode != "undefined") { params = params + "&ue=" + searchTerms.uniqueEpisode; }
+    if (searchTerms.uniqueAlt != "undefined") { params = params + "&ua=" + searchTerms.uniqueAlt; }
     if (searchTerms.source != "undefined") { params = params + "&source=" + searchTerms.source; }
     if (searchTerms.title != "undefined") { params = params + "&t=" + encodeURIComponent(searchTerms.title); }
     if (searchTerms.year != "undefined") { params = params + "&y=" + searchTerms.year; }

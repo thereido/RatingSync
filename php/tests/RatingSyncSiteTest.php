@@ -285,7 +285,7 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers \RatingSync\RatingSyncSite::getStreamUrl
-     * @depends testObjectCanBeConstructed
+     * @depends testSetupRatings
      */
     public function testGetStreamUrl()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -293,6 +293,7 @@ class RatingSyncSiteTest extends \PHPUnit_Framework_TestCase
         // Setup
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
         $searchTerms = array("uniqueName" => TEST_NETFLIX_UNIQUENAME);
+        $searchTerms["sourceName"] = Constants::SOURCE_NETFLIX;
         $film = \RatingSync\search($searchTerms);
 
         // Test

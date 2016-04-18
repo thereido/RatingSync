@@ -17,6 +17,8 @@ class Source
     protected $name;
     protected $image;
     protected $uniqueName;
+    protected $uniqueEpisode;
+    protected $uniqueAlt;
     protected $streamUrl;
     protected $streamDate;  // Date as a string Y-m-d (1999-01-01)
     protected $rating;
@@ -59,6 +61,14 @@ class Source
         return false;
     }
 
+    public static function supportedSourceWebsites()
+    {
+        return array(Constants::SOURCE_NETFLIX,
+                            Constants::SOURCE_IMDB,
+                            Constants::SOURCE_AMAZON,
+                            Constants::SOURCE_XFINITY);
+    }
+
     public function getName()
     {
         return $this->name;
@@ -98,6 +108,59 @@ class Source
     public function getUniqueName()
     {
         return $this->uniqueName;
+    }
+
+    /**
+     * Episode to find this film within the source
+     *
+     * @param string $uniqueEpisode ID to find this film or TV episode within the source
+     *
+     * @return none
+     */
+    public function setUniqueEpisode($uniqueEpisode)
+    {
+        if (0 == strlen($uniqueEpisode)) {
+            $uniqueEpisode = null;
+        }
+        $this->uniqueEpisode = $uniqueEpisode;
+    }
+
+    /**
+     * Return the episode... This only works if the id is already set. This function does not
+     * retrieve it from the local db from the source.
+     *
+     * @return string matches id in a /RatingSync/Film
+     */
+    public function getUniqueEpisode()
+    {
+        return $this->uniqueEpisode;
+    }
+
+    /**
+     * Alternate unique id to find this film within the source. Some
+     * sources use two unique attributes. Like a number and alpha string.
+     *
+     * @param string $uniqueAlt ID to find this film within the source
+     *
+     * @return none
+     */
+    public function setUniqueAlt($uniqueAlt)
+    {
+        if (0 == strlen($uniqueAlt)) {
+            $uniqueAlt = null;
+        }
+        $this->uniqueAlt = $uniqueAlt;
+    }
+
+    /**
+     * Return the alternate unique id... This only works if the id is already
+     * set. This function does not retrieve it from the local db from the source.
+     *
+     * @return string matches id in a /RatingSync/Film
+     */
+    public function getUniqueAlt()
+    {
+        return $this->uniqueAlt;
     }
 
     public function setStreamUrl($streamUrl)
@@ -239,6 +302,8 @@ class Source
         $sourceName = $this->getName();
         $sourceImage = $this->getImage();
         $sourceUniqueName = $this->getUniqueName();
+        $sourceUniqueEpisode = $this->getUniqueEpisode();
+        $sourceUniqueAlt = $this->getUniqueAlt();
         $streamUrl = $this->getStreamUrl();
         $streamDate = $this->getStreamDate();
         $criticScore = $this->getCriticScore();
@@ -259,6 +324,18 @@ class Source
             $columns .= ", uniqueName";
             $values .= ", '$sourceUniqueName'";
             $set .= "$setComma uniqueName='$sourceUniqueName'";
+            $setComma = ",";
+        }
+        if (!empty($sourceUniqueEpisode)) {
+            $columns .= ", uniqueEpisode";
+            $values .= ", '$sourceUniqueEpisode'";
+            $set .= "$setComma uniqueEpisode='$sourceUniqueEpisode'";
+            $setComma = ",";
+        }
+        if (!empty($sourceUniqueAlt)) {
+            $columns .= ", uniqueAlt";
+            $values .= ", '$sourceUniqueAlt'";
+            $set .= "$setComma uniqueAlt='$sourceUniqueAlt'";
             $setComma = ",";
         }
         if (!empty($streamDate)) {
@@ -307,6 +384,53 @@ class Source
     }
 
     /**
+     * Create film_source rows for all sources supported. Get the
+     * data from the source websites.
+     */
+    public static function createAllSourcesToDb($filmId, $username = null)
+    {
+        if (empty($filmId) || !is_int(intval($filmId))) {
+            throw new \InvalidArgumentException("filmId arg must be an int (filmId=$filmId)");
+        }
+
+        $film = Film::getFilmFromDb($filmId);
+        foreach (self::supportedSourceWebsites() as $sourceName) {
+            $source = $film->getSource($sourceName);
+            $needSourceData = empty($source->getUniqueName());
+            $needStream = self::validStreamProvider($sourceName);
+            $neededDataAvailable = false;
+            $saveChanges = false;
+
+            $site = null;
+            $page = null;
+            if ($needSourceData || $needStream) {
+                $site = self::getSite($sourceName);
+                $page = $site->getFilmDetailPage($film, 60, true);
+            }
+            if (!empty($site) && !empty($page)) {
+                $neededDataAvailable = true;
+            }
+
+            if ($needSourceData && $neededDataAvailable) {
+                $site->parseFilmSource($page, $film);
+                $source = $film->getSource($sourceName);
+                $saveChanges = true;
+            }
+
+            if ($needStream && $neededDataAvailable) {
+                $url = $site->getStreamUrlByPage($page, $film);
+                $source->setStreamUrl($url);
+                $source->refreshStreamDate();
+                $saveChanges = true;
+            }
+            
+            if ($saveChanges) {
+                $source->saveFilmSourceToDb($filmId);
+            }
+        }
+    }
+
+    /**
      * Refresh any streams for in the db for this is film if
      * they are older than 1 day.
      */
@@ -321,7 +445,7 @@ class Source
             $source = $film->getSource($sourceName);
             $now = new \DateTime();
             $yesterday = $now->sub(new \DateInterval('P1D'));
-
+            
             if (empty($source->getStreamUrl()) || $source->getStreamDate() <= $yesterday) {
                 $provider = self::getStreamProvider($sourceName);
                 $url = $provider->getStreamUrl($filmId);
@@ -342,13 +466,15 @@ class Source
         if (empty($username)) {
             $username = getUsername();
         }
-
+        
         if ($sourceName == Constants::SOURCE_NETFLIX) {
             $provider = new Netflix($username);
         } elseif ($sourceName == Constants::SOURCE_AMAZON) {
             $provider = new Amazon($username);
+        } elseif ($sourceName == Constants::SOURCE_XFINITY) {
+            $provider = new Xfinity($username);
         }
-
+        
         return $provider;
     }
 
@@ -364,11 +490,44 @@ class Source
     public static function validStreamProviders()
     {
         return array(Constants::SOURCE_NETFLIX,
-                            Constants::SOURCE_AMAZON/*RT*,
-                            Constants::SOURCE_XFINITY,
+                            Constants::SOURCE_AMAZON,
+                            Constants::SOURCE_XFINITY/*RT*,
                             Constants::SOURCE_HULU,
                             Constants::SOURCE_YOUTUBE,
                             Constants::SOURCE_HBO*RT*/);
+    }
+
+    public static function getSite($sourceName, $username = null)
+    {
+        if (empty($sourceName) || !self::supportedSite($sourceName) ) {
+            throw new \InvalidArgumentException("\$sourceName ($sourceName) website not supported by RatingSync yet");
+        }
+
+        $site = null;
+        if (empty($username)) {
+            $username = getUsername();
+        }
+        
+        if ($sourceName == Constants::SOURCE_NETFLIX) {
+            $site = new Netflix($username);
+        } elseif ($sourceName == Constants::SOURCE_IMDB) {
+            $site = new Imdb($username);
+        } elseif ($sourceName == Constants::SOURCE_AMAZON) {
+            $site = new Amazon($username);
+        } elseif ($sourceName == Constants::SOURCE_XFINITY) {
+            $site = new Xfinity($username);
+        }
+        
+        return $site;
+    }
+
+    public static function supportedSite($sourceName)
+    {
+        if (in_array($sourceName, self::supportedSourceWebsites()))
+        {
+            return true;
+        }
+        return false;
     }
 }
 

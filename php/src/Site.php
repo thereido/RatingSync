@@ -86,11 +86,46 @@ abstract class Site
     abstract protected function getDetailPageRegexForContentType();
 
     /**
+     * Regular expression to find the film or tv series season in film detail HTML page
+     *
+     * @return string Regular expression to find the filmor tv series season in film detail HTML page
+     */
+    abstract protected function getDetailPageRegexForSeason();
+
+    /**
+     * Regular expression to find the tv episode title in film detail HTML page
+     *
+     * @return string Regular expression to find the tv episode title in film detail HTML page
+     */
+    abstract protected function getDetailPageRegexForEpisodeTitle();
+
+    /**
+     * Regular expression to find the tv episode number in film detail HTML page
+     *
+     * @return string Regular expression to find the tv episode number in film detail HTML page
+     */
+    abstract protected function getDetailPageRegexForEpisodeNumber();
+
+    /**
      * Regular expression to find Film Id in film detail HTML page
      *
      * @return string Regular expression to find Film Id in film detail HTML page
      */
     abstract protected function getDetailPageRegexForUniqueName();
+
+    /**
+     * Regular expression to find uniqueEpisode in film detail HTML page
+     *
+     * @return string Regular expression to find uniqueEpisode in film detail HTML page
+     */
+    abstract protected function getDetailPageRegexForUniqueEpisode();
+
+    /**
+     * Regular expression to find uniqueAlt in film detail HTML page
+     *
+     * @return string Regular expression to find uniqueAlt in film detail HTML page
+     */
+    abstract protected function getDetailPageRegexForUniqueAlt();
     
     /**
      * Get the genres from html of the film's detail page. Set the value
@@ -141,7 +176,15 @@ abstract class Site
             return null;
         }
         
-        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_film_" . $film->getUniqueName($this->sourceName) . ".html";
+        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_film_";
+        $filename .= $film->getUniqueName($this->sourceName);
+        if (!empty($film->getSeason($this->sourceName))) {
+            $filename .= "_" . $film->getSeason($this->sourceName);
+        }
+        if (!empty($film->getEpisodeNumber($this->sourceName))) {
+            $filename .= "_" . $film->getEpisodeNumber($this->sourceName);
+        }
+        $filename .= ".html";
 
         if (!file_exists($filename) || (filesize($filename) == 0)) {
             return null;
@@ -173,7 +216,15 @@ abstract class Site
      */
     public function cacheFilmDetailPage($page, $film)
     {
-        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_film_" . $film->getUniqueName($this->sourceName) . ".html";
+        $filename = Constants::cacheFilePath() . $this->sourceName . "_" . $this->username . "_film_";
+        $filename .= $film->getUniqueName($this->sourceName);
+        if (!empty($film->getSeason($this->sourceName))) {
+            $filename .= "_" . $film->getSeason($this->sourceName);
+        }
+        if (!empty($film->getEpisodeNumber($this->sourceName))) {
+            $filename .= "_" . $film->getEpisodeNumber($this->sourceName);
+        }
+        $filename .= ".html";
         $fp = fopen($filename, "w");
         fwrite($fp, $page);
         fclose($fp);
@@ -187,7 +238,7 @@ abstract class Site
         if (is_null($film) || !($film instanceof Film) ) {
             throw new \InvalidArgumentException('arg1 must be a Film object');
         }
-
+        
         $page = $this->getFilmDetailPage($film, $refreshCache, true);
 
         if (empty($page)) {
@@ -197,11 +248,28 @@ abstract class Site
         $this->parseDetailPageForFilmYear($page, $film, $overwrite);
         $this->parseDetailPageForImage($page, $film, $overwrite);
         $this->parseDetailPageForContentType($page, $film, $overwrite);
-        $this->parseDetailPageForUniqueName($page, $film, $overwrite);
+        $this->parseDetailPageForSeason($page, $film, $overwrite);
+        $this->parseDetailPageForEpisodeNumber($page, $film, $overwrite);
+        $this->parseDetailPageForEpisodeTitle($page, $film, $overwrite);
         $this->parseDetailPageForGenres($page, $film, $overwrite);
         $this->parseDetailPageForDirectors($page, $film, $overwrite);
+        $this->parseFilmSource($page, $film, $overwrite);
 
         $this->parseDetailPageFurther($page, $film, $overwrite);
+    }
+
+    public function parseFilmSource($page, $film, $overwrite = true)
+    {
+        if (is_null($film) || !($film instanceof Film) ) {
+            throw new \InvalidArgumentException('arg1 must be a Film object');
+        }
+        if (empty($page)) {
+            return;
+        }
+
+        $this->parseDetailPageForUniqueName($page, $film, $overwrite);
+        $this->parseDetailPageForUniqueEpisode($page, $film, $overwrite);
+        $this->parseDetailPageForUniqueAlt($page, $film, $overwrite);
     }
     
     /**
@@ -220,8 +288,9 @@ abstract class Site
         if (empty($page)) {
             $uniqueName = $film->getUniqueName($this->sourceName);
             if (empty($uniqueName) && $search) {
-                $uniqueName = $this->searchWebsiteForUniqueFilm($film);
-                $film->setUniqueName($uniqueName, $this->sourceName);
+                if ($this->searchWebsiteForUniqueFilm($film)) {
+                    $uniqueName = $film->getUniqueName($this->sourceName);
+                }
             }
             if (!empty($uniqueName)) {
                 try {
@@ -237,20 +306,38 @@ abstract class Site
         return $page;
     }
 
-    public function getFilmByUniqueName($uniqueName)
+    public function getFilmByUniqueName($uniqueName, $uniqueEpisode = null, $uniqueAlt = null)
     {
         if ( empty($uniqueName) ) {
             throw new \InvalidArgumentException('Function getFilmByUniqueName must have uniqueName');
         }
         $film = new Film();
         $film->setUniqueName($uniqueName, $this->sourceName);
+        $film->setUniqueEpisode($uniqueEpisode, $this->sourceName);
+        $film->setUniqueAlt($uniqueAlt, $this->sourceName);
         try {
             $this->getFilmDetailFromWebsite($film);
         } catch (\Exception $e) {
             $film = null;
         }
-
+        
         return $film;
+    }
+
+    public function getFilmBySearchByFilm($film)
+    {
+        $searchTerms = array();
+        $searchTerms["uniqueName"] = $film->getUniqueName($this->sourceName);
+        $searchTerms["uniqueEpisode"] = $film->getUniqueEpisode($this->sourceName);
+        $searchTerms["uniqueAlt"] = $film->getUniqueAlt($this->sourceName);
+        $searchTerms["title"] = $film->getTitle();
+        $searchTerms["year"] = $film->getYear();
+        $searchTerms["contentType"] = $film->getContentType();
+        $searchTerms["season"] = $film->getSeason();
+        $searchTerms["episodeNumber"] = $film->getEpisodeNumber();
+        $searchTerms["episodeTitle"] = $film->getEpisodeTitle();
+
+        return $this->getFilmBySearch($searchTerms);
     }
 
     public function getFilmBySearch($searchTerms)
@@ -260,28 +347,36 @@ abstract class Site
         }
         
         $uniqueName = array_value_by_key("uniqueName", $searchTerms);
+        $uniqueEpisode = array_value_by_key("uniqueEpisode", $searchTerms);
+        $uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
         $title = array_value_by_key("title", $searchTerms);
         $year = array_value_by_key("year", $searchTerms);
         $contentType = array_value_by_key("contentType", $searchTerms);
+        $season = array_value_by_key("season", $searchTerms);
+        $episodeNumber = array_value_by_key("episodeNumber", $searchTerms);
+        $episodeTitle = array_value_by_key("episodeTitle", $searchTerms);
         
         if (empty($uniqueName) && (empty($title) || empty($year))) {
             throw new \InvalidArgumentException('Function '.__FUNCTION__.' searchTerms must have uniqueName or (title and year)');
         }
 
         if (!empty($uniqueName)) {
-            return $this->getFilmByUniqueName($uniqueName);
+            return $this->getFilmByUniqueName($uniqueName, $uniqueEpisode, $uniqueAlt);
         }
 
         $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType($contentType);
+        $film->setSeason($season);
+        $film->setEpisodeNumber($episodeNumber);
+        $film->setEpisodeTitle($episodeTitle);
         try {
             $this->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_ALWAYS);
         } catch (\Exception $e) {
             $film = null;
         }
-
+        
         return $film;
     }
 
@@ -387,6 +482,79 @@ abstract class Site
     }
 
     /**
+     * Get the season from html of the film's detail page. Set the value
+     * in the Film param.
+     *
+     * @param string $page      HTML of the film detail page
+     * @param Film   $film      Set the season in this Film object
+     * @param bool   $overwrite Only overwrite data if 1) $overwrite=true OR/AND 2) data is null
+     *
+     * @return bool true is value is written to the Film object
+     */
+    protected function parseDetailPageForSeason($page, $film, $overwrite)
+    {
+        if (!$overwrite && !is_null($film->getSeason())) {
+            return false;
+        }
+        
+        $regex = $this->getDetailPageRegexForSeason();
+        if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
+            return false;
+        }
+        $film->setSeason(html_entity_decode($matches[1], ENT_QUOTES, "utf-8"));
+        return true;
+    }
+
+    /**
+     * Get the episode number from html of the film's detail page. Set the value
+     * in the Film param.
+     *
+     * @param string $page      HTML of the film detail page
+     * @param Film   $film      Set the episode number in this Film object
+     * @param bool   $overwrite Only overwrite data if 1) $overwrite=true OR/AND 2) data is null
+     *
+     * @return bool true is value is written to the Film object
+     */
+    protected function parseDetailPageForEpisodeNumber($page, $film, $overwrite)
+    {
+        if (!$overwrite && !is_null($film->getEpisodeNumber())) {
+            return false;
+        }
+        
+        $regex = $this->getDetailPageRegexForEpisodeNumber();
+        if (!empty($regex) && 0 < preg_match($regex, $page, $matches)) {
+            $film->setEpisodeNumber($matches[1]);
+            return true;
+        } else {
+            return false;
+        }        
+    }
+
+    /**
+     * Get the episode title from html of the film's detail page. Set the value
+     * in the Film param.
+     *
+     * @param string $page      HTML of the film detail page
+     * @param Film   $film      Set the episode title in this Film object
+     * @param bool   $overwrite Only overwrite data if 1) $overwrite=true OR/AND 2) data is null
+     *
+     * @return bool true is value is written to the Film object
+     */
+    protected function parseDetailPageForEpisodeTitle($page, $film, $overwrite)
+    {
+        if (!$overwrite && !is_null($film->getEpisodeTitle())) {
+            return false;
+        }
+        
+        $regex = $this->getDetailPageRegexForEpisodeTitle();
+        if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
+            return false;
+        }
+        $film->setEpisodeTitle(html_entity_decode($matches[1], ENT_QUOTES, "utf-8"));
+        return true;
+    }
+
+    /**
      * Get the Unique Name from html of the film's detail page. Set the value
      * in the Film param.
      *
@@ -411,19 +579,66 @@ abstract class Site
     }
 
     /**
-     * Search website for a unique film and set unique attr on
-     * the param Film object. Class returns null unless a child
-     * implents it.
+     * Get the Unique Episode from html of the film's detail page. Set the value
+     * in the Film param.
+     *
+     * @param string $page      HTML of the film detail page
+     * @param Film   $film      Set the unique episode link in this Film object
+     * @param bool   $overwrite Only overwrite data if 1) $overwrite=true OR/AND 2) data is null
+     *
+     * @return bool true is value is written to the Film object
+     */
+    protected function parseDetailPageForUniqueEpisode($page, $film, $overwrite)
+    {
+        if (!$overwrite && !is_null($film->getUniqueEpisode($this->sourceName))) {
+            return false;
+        }
+
+        $regex = $this->getDetailPageRegexForUniqueEpisode();
+        if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
+            return false;
+        }
+        $film->setUniqueEpisode($matches[1], $this->sourceName);
+        return true;
+    }
+
+    /**
+     * Get the Unique Alt(ernate) from html of the film's detail page. Set the value
+     * in the Film param.
+     *
+     * @param string $page      HTML of the film detail page
+     * @param Film   $film      Set the unique alt link in this Film object
+     * @param bool   $overwrite Only overwrite data if 1) $overwrite=true OR/AND 2) data is null
+     *
+     * @return bool true is value is written to the Film object
+     */
+    protected function parseDetailPageForUniqueAlt($page, $film, $overwrite)
+    {
+        if (!$overwrite && !is_null($film->getUniqueAlt($this->sourceName))) {
+            return false;
+        }
+
+        $regex = $this->getDetailPageRegexForUniqueAlt();
+        if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
+            return false;
+        }
+        $film->setUniqueAlt($matches[1], $this->sourceName);
+        return true;
+    }
+
+    /**
+     * Search website for a unique film. Set attrs in the $film param.
+     * Class returns false unless a child implements it. Class will definitely
+     * set uniqueName, but might set other attrs as well. Examples
+     * like uniqueAlt and uniqueEpisode.
      *
      * @param \RatingSync\Film $film
      *
-     * @return string Film::uniqueName
+     * @return boolean success/failure
      */
     public function searchWebsiteForUniqueFilm($film)
     {
-        $uniqueName = null;
-
-        return $uniqueName;
+        return false;
     }
 
     public function getFilmUrl($film)
