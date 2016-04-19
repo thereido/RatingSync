@@ -746,8 +746,10 @@ class Film {
         foreach ($this->sources as $source) {
             $sourceName = $source->getName();
             $streamUrl = $source->getStreamUrl();
+            $streamDate = $source->getStreamDate();
+            $stream = array("url" => $streamUrl, "date" => $streamDate);
             if (!empty($streamUrl)) {
-                $streams[$sourceName] = $streamUrl;
+                $streams[$sourceName] = $stream;
             }
         }
 
@@ -1140,5 +1142,19 @@ class Film {
         }
 
         return $films;
+    }
+
+    /**
+     * Update streams for all films for all providers
+     */
+    public static function refreshAllStreamsForAllFilms()
+    {
+        $db = getDatabase();
+        $query = "SELECT id FROM film";
+        $result = $db->query($query);
+
+        while ($row = $result->fetch_assoc()) {
+            Source::createAllSourcesToDb($row['id']);
+        }
     }
 }

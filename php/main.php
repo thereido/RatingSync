@@ -230,7 +230,7 @@ function searchFilms($searchTerms, $username = null)
 }
 
 function array_value_by_key($key, $a) {
-    if (array_key_exists($key, $a)) {
+    if (!empty($a) && array_key_exists($key, $a)) {
         return $a[$key];
     } else {
         return null;

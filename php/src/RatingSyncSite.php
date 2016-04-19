@@ -171,15 +171,20 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $url = null;
         $film = Film::getFilmFromDb($filmId);
         $streams = $film->getStreams();
-        $url = array_value_by_key(Constants::SOURCE_NETFLIX, $streams);
+        $streamNetflix = array_value_by_key(Constants::SOURCE_NETFLIX, $streams);
+        $streamAmazon = array_value_by_key(Constants::SOURCE_AMAZON, $streams);
+        $streamXfinity = array_value_by_key(Constants::SOURCE_XFINITY, $streams);
+        $streamHulu = array_value_by_key(Constants::SOURCE_HULU, $streams);
+
+        $url = array_value_by_key("url", $streamNetflix);
         if (empty($url)) {
-            $url = array_value_by_key(Constants::SOURCE_AMAZON, $streams);
+            $url = array_value_by_key("url", $streamAmazon);
         }
         if (empty($url)) {
-            $url = array_value_by_key(Constants::SOURCE_XFINITY, $streams);
+            $url = array_value_by_key("url", $streamXfinity);
         }
         if (empty($url)) {
-            $url = array_value_by_key(Constants::SOURCE_HULU, $streams);
+            $url = array_value_by_key("url", $streamHulu);
         }
 
         return $url;
