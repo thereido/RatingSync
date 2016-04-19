@@ -8,6 +8,9 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Rating.php";
 
 require_once "SiteTest.php";
+require_once "AmazonTest.php";
+require_once "NetflixTest.php";
+require_once "XfinityTest.php";
 
 class FilmTest extends \PHPUnit_Framework_TestCase
 {
@@ -2798,6 +2801,90 @@ class FilmTest extends \PHPUnit_Framework_TestCase
         $id = $row['id'];
         $image = $row['image'];
         $this->assertEquals("/image/rs$id.jpg", $image, 'Image link');
+    }
+    
+    /**
+     * @covers \RatingSync\Film::refreshAllStreamsForAllFilms
+     * @depends testSetAndGetUniqueName
+     * @depends testSetTitle
+     * @depends testGetYear
+     * @depends testSaveToDb
+     * @depends testGetFilmFromDbSourceData
+     */
+    public function testRefreshAllStreamsForAllFilms()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $db = getDatabase();
+        DatabaseTest::resetDb();
+
+        // Setup
+        $today = date_create()->format('Y-m-d');
+
+        $filmAZ = new Film();
+        $filmAZ->setUniqueName("tt0076759", Constants::SOURCE_IMDB);
+        $filmAZ->setTitle("Star Wars: Episode IV - A New Hope");
+        $filmAZ->setYear(1977);
+        $filmAZ->saveToDb();
+
+        $filmAZ = new Film();
+        $filmAZ->setTitle(TEST_AMAZON_TITLE);
+        $filmAZ->setYear(TEST_AMAZON_YEAR - 1);
+        $filmAZ->saveToDb();
+
+        $filmNF = new Film();
+        $filmNF->setTitle(TEST_NETFLIX_TITLE);
+        $filmNF->setYear(TEST_NETFLIX_YEAR);
+        $filmNF->saveToDb();
+
+        $filmXF = new Film();
+        $filmXF->setUniqueAlt(TEST_XFINITY_UNIQUEALT, Constants::SOURCE_XFINITY);
+        $filmXF->setTitle(TEST_XFINITY_TITLE);
+        $filmXF->setYear(TEST_XFINITY_YEAR);
+        $filmXF->saveToDb();
+
+        // Test
+        Film::refreshAllStreamsForAllFilms();
+
+        // Verify
+        $title = "Star Wars: Episode IV - A New Hope"; $count = 0; $providers = "";
+        $query = "SELECT id FROM film WHERE title='$title'";
+        $id = $db->query($query)->fetch_assoc()['id'];
+        $film = Film::getFilmFromDb($id);
+        $streams = $film->getStreams();
+        $this->assertEquals($count, count($streams), "Should be $count streams for $title $providers");
+        
+        $title = TEST_AMAZON_TITLE; $count = 1; $providers = "(Amazon)";
+        $query = "SELECT id FROM film WHERE title='$title'";
+        $id = $db->query($query)->fetch_assoc()['id'];
+        $film = Film::getFilmFromDb($id);
+        $streams = $film->getStreams();
+        $this->assertEquals($count, count($streams), "Should be $count streams for $title $providers");
+        foreach ($streams as $stream) {
+            $this->assertStringStartsWith("http", $stream["url"], "Stream URL (".$stream["url"].") should begin with 'http'");
+            $this->assertEquals($today, $stream["date"], "Stream date (".$stream["date"].") should be today");
+        }
+        
+        $title = TEST_NETFLIX_TITLE; $count = 1; $providers = "(Netflix)";
+        $query = "SELECT id FROM film WHERE title='$title'";
+        $id = $db->query($query)->fetch_assoc()['id'];
+        $film = Film::getFilmFromDb($id);
+        $streams = $film->getStreams();
+        $this->assertEquals($count, count($streams), "Should be $count streams for $title $providers");
+        foreach ($streams as $stream) {
+            $this->assertStringStartsWith("http", $stream["url"], "Stream URL (".$stream["url"].") should begin with 'http'");
+            $this->assertEquals($today, $stream["date"], "Stream date (".$stream["date"].") should be today");
+        }
+        
+        $title = TEST_XFINITY_TITLE; $count = 1; $providers = "(xfinity)";
+        $query = "SELECT id FROM film WHERE title='$title'";
+        $id = $db->query($query)->fetch_assoc()['id'];
+        $film = Film::getFilmFromDb($id);
+        $streams = $film->getStreams();
+        $this->assertEquals($count, count($streams), "Should be $count streams for $title $providers");
+        foreach ($streams as $stream) {
+            $this->assertStringStartsWith("http", $stream["url"], "Stream URL (".$stream["url"].") should begin with 'http'");
+            $this->assertEquals($today, $stream["date"], "Stream date (".$stream["date"].") should be today");
+        }
     }
 }
 
