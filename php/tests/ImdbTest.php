@@ -261,7 +261,7 @@ class ImdbTest extends RatingSyncTestCase
         $this->assertEquals("Almost Famous", $film->getTitle(), 'Title');
         $this->assertEquals(2000, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTI0MDc0MzIyM15BMl5BanBnXkFtZTYwMzc4NzA)@', $film->getImage(), $matches), 'Image link');
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BZDExYTY1OGYtNDFmOC00NTZiLWExODktODRhZjBlNDFkZjkyXkEyXkFqcGdeQXVyMTQxNzMzNDI)@', $film->getImage(), $matches), 'Image link');
         $this->assertEquals(array("Cameron Crowe"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Comedy", "Drama"), $film->getGenres(), 'Genres');
         $this->assertEquals("tt0181875", $film->getUniqueName($site->_getSourceName()), 'Unique Name');
@@ -288,7 +288,7 @@ class ImdbTest extends RatingSyncTestCase
         $this->assertEquals("Almost Famous", $film->getTitle(), 'Title');
         $this->assertEquals(2000, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTI0MDc0MzIyM15BMl5BanBnXkFtZTYwMzc4NzA)@', $film->getImage(), $matches), 'Image link');
+        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BZDExYTY1OGYtNDFmOC00NTZiLWExODktODRhZjBlNDFkZjkyXkEyXkFqcGdeQXVyMTQxNzMzNDI)@', $film->getImage(), $matches), 'Image link');
         $this->assertEquals(array("Cameron Crowe"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Comedy", "Drama"), $film->getGenres(), 'Genres');
         $this->assertEquals("tt0181875", $film->getUniqueName($site->_getSourceName()), 'Unique Name');
