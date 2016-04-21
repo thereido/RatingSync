@@ -1,12 +1,14 @@
 <?php
 /**
- * Temp PHPUnit
+ * DatabaseTest PHPUnit
  */
 namespace RatingSync;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 
-class DatabaseTest extends \PHPUnit_Framework_TestCase
+require_once "RatingSyncTestCase.php";
+
+class DatabaseTest extends RatingSyncTestCase
 {
     public static function resetDb()
     {

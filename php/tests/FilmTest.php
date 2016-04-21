@@ -7,32 +7,18 @@ namespace RatingSync;
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Film.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Rating.php";
 
+require_once "RatingSyncTestCase.php";
 require_once "SiteTest.php";
 require_once "AmazonTest.php";
 require_once "NetflixTest.php";
 require_once "XfinityTest.php";
 
-class FilmTest extends \PHPUnit_Framework_TestCase
+class FilmTest extends RatingSyncTestCase
 {
-    public $debug;
-    public $timer;
-
     public function setUp()
     {
-        $this->debug = false;
-    }
-
-    public function start($className, $functionName)
-    {
-        if ($this->debug) {
-            echo " $className::$functionName ";
-            $this->timer = new \DateTime();
-        }
-    }
-
-    public function tearDown()
-    {
-        if ($this->debug) { echo $this->timer->diff(date_create())->format('%s secs') . "\n"; }
+        parent::setup();
+        //$this->verbose = true;
     }
 
     /**

@@ -6,6 +6,7 @@ namespace RatingSync;
 
 require_once "../src/Xfinity.php";
 require_once "10DatabaseTest.php";
+require_once "RatingSyncTestCase.php";
 
 const TEST_XFINITY_USERNAME = "testratingsync";
 
@@ -37,27 +38,12 @@ class XfinityExt extends \RatingSync\Xfinity {
     function _streamAvailableFromDetailPage($page, $film, $onlyFree = true) { return $this->streamAvailableFromDetailPage($page, $film, $onlyFree); }
 }
 
-class XfinityTest extends \PHPUnit_Framework_TestCase
+class XfinityTest extends RatingSyncTestCase
 {
-    public $debug;
-    public $timer;
-
     public function setUp()
     {
-        $this->debug = false;
-    }
-
-    public function start($className, $functionName)
-    {
-        if ($this->debug) {
-            echo " $className::$functionName ";
-            $this->timer = new \DateTime();
-        }
-    }
-
-    public function tearDown()
-    {
-        if ($this->debug) { echo $this->timer->diff(date_create())->format('%s secs') . "\n"; }
+        parent::setup();
+        //$this->verbose = true;
     }
 
     /**

@@ -6,6 +6,7 @@ namespace RatingSync;
 
 require_once "../src/Imdb.php";
 require_once "10DatabaseTest.php";
+require_once "RatingSyncTestCase.php";
 
 const TEST_IMDB_USERNAME = "ur60460017";
 const FROZEN_USER_SCORE = 7.6;
@@ -28,27 +29,12 @@ class ImdbExt extends \RatingSync\Imdb {
     function _parseDetailPageForDirectors($page, $film, $overwrite) { return $this->parseDetailPageForDirectors($page, $film, $overwrite); }
 }
 
-class ImdbTest extends \PHPUnit_Framework_TestCase
+class ImdbTest extends RatingSyncTestCase
 {
-    public $debug;
-    public $timer;
-
     public function setUp()
     {
-        $this->debug = false;
-    }
-
-    public function start($className, $functionName)
-    {
-        if ($this->debug) {
-            echo " $className::$functionName ";
-            $this->timer = new \DateTime();
-        }
-    }
-
-    public function tearDown()
-    {
-        if ($this->debug) { echo $this->timer->diff(date_create())->format('%s secs') . "\n"; }
+        parent::setup();
+        //$this->verbose = true;
     }
 
     /**

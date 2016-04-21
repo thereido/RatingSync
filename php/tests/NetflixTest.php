@@ -6,6 +6,7 @@ namespace RatingSync;
 
 require_once "../src/Netflix.php";
 require_once "10DatabaseTest.php";
+require_once "RatingSyncTestCase.php";
 
 const TEST_NETFLIX_USERNAME = "testnetflixuser";
 const TEST_NETFLIX_UNIQUENAME = "80047396";
@@ -28,27 +29,12 @@ class NetflixExt extends \RatingSync\Netflix {
     function _parseDetailPageForDirectors($page, $film, $overwrite) { return $this->parseDetailPageForDirectors($page, $film, $overwrite); }
 }
 
-class NetflixTest extends \PHPUnit_Framework_TestCase
+class NetflixTest extends RatingSyncTestCase
 {
-    public $debug;
-    public $timer;
-
     public function setUp()
     {
-        $this->debug = false;
-    }
-
-    public function start($className, $functionName)
-    {
-        if ($this->debug) {
-            echo " $className::$functionName ";
-            $this->timer = new \DateTime();
-        }
-    }
-
-    public function tearDown()
-    {
-        if ($this->debug) { echo $this->timer->diff(date_create())->format('%s secs') . "\n"; }
+        parent::setup();
+        //$this->verbose = true;
     }
 
     /**

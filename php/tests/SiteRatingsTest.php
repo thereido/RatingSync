@@ -9,6 +9,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 require_once "SiteRatingsChild.php";
 require_once "SiteTest.php";
 require_once "10DatabaseTest.php";
+require_once "RatingSyncTestCase.php";
 
 /**
  Suggested tests for a child class
@@ -40,15 +41,12 @@ require_once "10DatabaseTest.php";
    - testFromExportFileToFilmObjectAndBackToXml
  */
 
-class SiteRatingsTest extends \PHPUnit_Framework_TestCase
+class SiteRatingsTest extends RatingSyncTestCase
 {
-    public $debug;
-    public $lastTestTime;
-
     public function setUp()
     {
-        $this->debug = false;
-        $this->lastTestTime = new \DateTime();
+        parent::setup();
+        //$this->verbose = true;
     }
 
     /**
@@ -56,8 +54,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromNull()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         new SiteRatingsChild(null);
     }
 
@@ -66,8 +64,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromEmptyUsername()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
+
         new SiteRatingsChild("");
     }
 
@@ -75,10 +73,9 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\SiteRatings::__construct
      */
     public function testObjectCanBeConstructed()
-    {
-        $site = new SiteRatingsChild(TEST_SITE_USERNAME);
+    {$this->start(__CLASS__, __FUNCTION__);
 
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+        $site = new SiteRatingsChild(TEST_SITE_USERNAME);
     }
 
     /**
@@ -86,13 +83,12 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructed
      */
     public function testValidateAfterConstructorNoHttp()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         $site->_setSourceName(Constants::SOURCE_IMDB);
         $site->_setHttp(null);
         $this->assertFalse($site->_validateAfterConstructor());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -100,13 +96,12 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructed
      */
     public function testValidateAfterConstructorNoSourceName()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         $site->_setSourceName(null);
         $site->_setHttp(new Http(Constants::SOURCE_IMDB, TEST_SITE_USERNAME));
         $this->assertFalse($site->_validateAfterConstructor());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -114,11 +109,10 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructed
      */
     public function testValidateAfterConstructorGood()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         $this->assertTrue($site->_validateAfterConstructor());
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -126,7 +120,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructed
      */
     public function testCacheRatingsPage()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
 
         $page = "<html><body><h2>Rating page 2</h2></body></html>";
@@ -142,8 +137,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         
         unlink($verifyFilename);
         unlink($testFilename);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -151,7 +144,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructed
      */
     public function testCacheFilmDetailPage()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         $film = new Film();
         $film->setUniqueName("tt2294629", $site->_getSourceName());
@@ -169,8 +163,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         
         unlink($verifyFilename);
         unlink($testFilename);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -178,12 +170,11 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testValidateAfterConstructorGood
      */
     public function testGetRatingsWithoutExceptions()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
 
         $films = $site->getRatings();
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -193,7 +184,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testGetRatingsWithoutExceptions
      */
     public function testCacheAllRatingsPagesWithRecentFiles()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
 
         $pageNums = array('1', '2');
@@ -216,8 +208,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
             $this->assertGreaterThan($originalCacheTime, filemtime($testFilename), 'Modified time');
             unlink($testFilename);
         }
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -227,7 +217,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testCacheRatingsPage
      */
     public function testCacheAllRatingsPagesWithNoFiles()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         
         $pageNums = array('1', '2');
@@ -245,8 +236,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
             $testFilename = Constants::cacheFilePath() . $site->_getSourceName() . "_" . TEST_SITE_USERNAME . "_ratings_" . $pageNum . ".html";
             $this->assertFileExists($testFilename, 'Cache file ' . $pageNum . ' exists');
         }
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -255,15 +244,14 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testCacheAllRatingsPagesWithNoFiles
      */
     public function testGetRatingsCount()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
 
         // Each page of ratings from SiteChild returns 2 films.  SiteChild get two
         // pages because of the cached pages made by testCacheAllRatingsPagesWithNoFiles
         $films = $site->getRatings();
         $this->assertCount(4, $films);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -271,13 +259,11 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testValidateAfterConstructorGood
      */
     public function testGetRatingsDetailsWithoutExceptions()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
 
         $films = $site->getRatings(null, 1, true);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
-        
     }
     
     /**
@@ -285,13 +271,11 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testValidateAfterConstructorGood
      */
     public function testGetRatingsLimitPagesBeginPageWithoutExceptions()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
 
         $films = $site->getRatings(1, 2, false);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
-        
     }
     
     /**
@@ -299,7 +283,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testValidateAfterConstructorGood
      */
     public function testExportRatingsXmlNoDetail()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         
         $testFilename = "ratings_test.xml";
@@ -325,8 +310,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($test, $verify, 'Match exported file vs verify file');
         fclose($fp_test);
         fclose($fp_verify);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -334,7 +317,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testValidateAfterConstructorGood
      */
     public function testExportRatingsXmlDetail()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         
         $testFilename = "ratings_test.xml";
@@ -360,8 +344,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($test, $verify, 'Match exported file vs verify file');
         fclose($fp_test);
         fclose($fp_verify);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -369,7 +351,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testValidateAfterConstructorGood
      */
     public function testGetFilmDetailFromWebsiteEmptyFilmOverwriteTrue()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
 
         $film = new Film();
@@ -390,8 +373,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -399,7 +380,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testGetFilmDetailFromWebsiteEmptyFilmOverwriteTrue
      */
     public function testGetFilmDetailFromWebsiteFullFilmOverwriteTrue()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
 
         $film = new Film();
@@ -462,8 +444,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $rating->getYourScore(), 'Your Score Jinni unchanged');
         $this->assertEquals("1/1/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date Jinni unchanged');
         $this->assertEquals(2, $rating->getSuggestedScore(), 'Suggested score Jinni unchanged');
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -471,7 +451,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testGetFilmDetailFromWebsiteEmptyFilmOverwriteTrue
      */
     public function testGetFilmDetailFromWebsiteEmptyFilmOverwriteFalse()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
 
         $film = new Film();
@@ -493,8 +474,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -502,7 +481,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testGetFilmDetailFromWebsiteEmptyFilmOverwriteTrue
      */
     public function testGetFilmDetailFromWebsiteFullFilmOverwriteFalse()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
 
         $film = new Film();
@@ -559,8 +539,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Your Rating Date');
         $this->assertEquals(3, $rating->getSuggestedScore(), 'Suggested score');
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -574,7 +552,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\SiteRatings::parseDetailPageForDirectors
      */
     public function testParseDetailPageEmptyFilmOverwriteTrue()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         $film = new Film();
         // Get HTML of the film's detail page
@@ -618,8 +597,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (empty film overwrite=true)');
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -633,7 +610,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\SiteRatings::parseDetailPageForDirectors
      */
     public function testParseDetailPageEmptyFilmOverwriteFalse()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         $film = new Film();
 
@@ -679,8 +657,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (empty film overwrite=false)');
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -694,7 +670,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\SiteRatings::parseDetailPageForDirectors
      */
     public function testParseDetailPageFullFilmOverwriteTrue()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         $film = new Film();
 
@@ -776,8 +753,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Check matching Directors (full film overwrite=true)');
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -791,7 +766,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\SiteRatings::parseDetailPageForDirectors
      */
     public function testParseDetailPageFullFilmOverwriteFalse()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         $film = new Film();
 
@@ -873,8 +849,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $success = $site->_parseDetailPageForDirectors($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Directors');
         $this->assertEquals(array("Original_Director1", "Original_Director2"), $film->getDirectors(), 'Check matching Directors (full film overwrite=false)');
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -882,7 +856,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testValidateAfterConstructorGood
      */
     public function testParseFilmsFromFile()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
         $films = $site->parseFilmsFromFile(Constants::EXPORT_FORMAT_XML, $filename);
@@ -1072,8 +1047,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_IMDB." your score");
         $this->assertNull($rating->getYourRatingDate(), "Frozen ".Constants::SOURCE_IMDB." rating date");
         $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_IMDB." suggested score");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -1081,7 +1054,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testParseFilmsFromFile
      */
     public function testFromExportFileToFilmObjectAndBackToXml()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new SiteRatingsChild(TEST_SITE_USERNAME);
         
         // Get Film objects from a XML file (original_xml)
@@ -1114,15 +1088,12 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($verify, $test, 'Match test file (written) vs verify file (original)');
         fclose($fp_test);
         fclose($fp_verify);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     public function testResetDb()
-    {
-        DatabaseTest::resetDb();
+    {$this->start(__CLASS__, __FUNCTION__);
 
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
+        DatabaseTest::resetDb();
     }
 
     /**
@@ -1131,7 +1102,8 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
      * @depends testResetDb
      */
     public function testImport()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $username_site = TEST_IMDB_USERNAME;
         $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
         $site = new SiteRatingsChild($username_site);
@@ -1191,8 +1163,6 @@ class SiteRatingsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $result->num_rows, "Should 1 Film/Source for RatingSync source");
         $row = $result->fetch_assoc();
         $this->assertEquals("rs8", $row["uniqueName"], "Film/Source for filmId 8");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 }
 

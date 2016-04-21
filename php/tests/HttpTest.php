@@ -6,27 +6,14 @@ namespace RatingSync;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Http.php";
 
-class HttpTest extends \PHPUnit_Framework_TestCase
-{
-    public $debug;
-    public $timer;
+require_once "RatingSyncTestCase.php";
 
+class HttpTest extends RatingSyncTestCase
+{
     public function setUp()
     {
-        $this->debug = false;
-    }
-
-    public function start($className, $functionName)
-    {
-        if ($this->debug) {
-            echo " $className::$functionName ";
-            $this->timer = new \DateTime();
-        }
-    }
-
-    public function tearDown()
-    {
-        if ($this->debug) { echo $this->timer->diff(date_create())->format('%s secs') . "\n"; }
+        parent::setup();
+        //$this->verbose = true;
     }
 
     /**

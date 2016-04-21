@@ -6,6 +6,7 @@ namespace RatingSync;
 
 require_once "../src/Amazon.php";
 require_once "10DatabaseTest.php";
+require_once "RatingSyncTestCase.php";
 
 const TEST_AMAZON_USERNAME = "testamazonuser";
 const TEST_AMAZON_UNIQUENAME = "3526";
@@ -28,27 +29,12 @@ class AmazonExt extends \RatingSync\Amazon {
     function _parseDetailPageForDirectors($page, $film, $overwrite) { return $this->parseDetailPageForDirectors($page, $film, $overwrite); }
 }
 
-class AmazonTest extends \PHPUnit_Framework_TestCase
+class AmazonTest extends RatingSyncTestCase
 {
-    public $debug;
-    public $timer;
-
     public function setUp()
     {
-        $this->debug = false;
-    }
-
-    public function start($className, $functionName)
-    {
-        if ($this->debug) {
-            echo " $className::$functionName ";
-            $this->timer = new \DateTime();
-        }
-    }
-
-    public function tearDown()
-    {
-        if ($this->debug) { echo $this->timer->diff(date_create())->format('%s secs') . "\n"; }
+        parent::setup();
+        //$this->verbose = true;
     }
 
     /**

@@ -5,6 +5,7 @@
 namespace RatingSync;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Jinni.php";
+require_once "RatingSyncTestCase.php";
 
 const TEST_JINNI_USERNAME = "testratingsync";
 
@@ -25,15 +26,12 @@ class JinniExt extends \RatingSync\Jinni {
     function _parseDetailPageForDirectors($page, $film, $overwrite) { return $this->parseDetailPageForDirectors($page, $film, $overwrite); }
 }
 
-class JinniTest extends \PHPUnit_Framework_TestCase
+class JinniTest extends RatingSyncTestCase
 {
-    public $debug;
-    public $lastTestTime;
-
     public function setUp()
     {
-        $this->debug = false;
-        $this->lastTestTime = new \DateTime();
+        parent::setup();
+        //$this->verbose = true;
     }
 
     /**
@@ -41,8 +39,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromNull()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
         new Jinni(null);
     }
 
@@ -51,8 +48,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromEmptyUsername()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
         new Jinni("");
     }
 
@@ -60,10 +56,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @covers \RatingSync\Jinni::__construct
      */
     public function testObjectCanBeConstructed()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
         $site = new Jinni(TEST_JINNI_USERNAME);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -71,7 +65,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructed
      */
     public function testCacheRatingsPage()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
         $site = new JinniExt(TEST_JINNI_USERNAME);
 
         $page = "<html><body><h2>Rating page 2</h2></body></html>";
@@ -87,8 +81,6 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         
         unlink($verifyFilename);
         unlink($testFilename);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 
     /**
@@ -96,7 +88,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructed
      */
     public function testCacheFilmDetailPage()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $film = new Film();
         $film->setUniqueName("999999", $site->_getSourceName());
@@ -114,8 +106,6 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         
         unlink($verifyFilename);
         unlink($testFilename);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -124,8 +114,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testGetRatingPageUrlWithArgsNull()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $site->_getRatingPageUrl(null);
     }
@@ -136,8 +125,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testGetRatingPageUrlWithArgsEmpty()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $site->_getRatingPageUrl(array());
     }
@@ -148,8 +136,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testGetRatingPageUrlWithPageIndexNull()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $site->_getRatingPageUrl(array('pageIndex' => null));
     }
@@ -160,8 +147,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testGetRatingPageUrlWithPageIndexEmpty()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $site->_getRatingPageUrl(array('pageIndex' => ""));
     }
@@ -172,8 +158,7 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @expectedException \InvalidArgumentException
      */
     public function testGetRatingPageUrlWithPageIndexNotInt()
-    {
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " "; }
+    {$this->start(__CLASS__, __FUNCTION__);
         $site = new JinniExt(TEST_JINNI_USERNAME);
         $site->_getRatingPageUrl(array('pageIndex' => "Not_An_Int"));
     }
@@ -183,26 +168,22 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructed
      */
     public function testGetRatingPageUrl()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
         $site = new JinniExt(TEST_JINNI_USERNAME);
         
         $url = $site->_getRatingPageUrl(array('pageIndex' => 3));
         $this->assertEquals('/user/'.TEST_JINNI_USERNAME.'/ratings?pagingSlider_index=3', $url);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
-    }
+   }
     
     /**
      * @covers \RatingSync\Jinni::getNextRatingPageNumber
      * @depends testObjectCanBeConstructed
      */
     public function testGetNextRatingPageNumberWithNull()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
         $site = new JinniExt(TEST_JINNI_USERNAME);
         
         $this->assertFalse($site->_getNextRatingPageNumber(null));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -210,12 +191,10 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructed
      */
     public function testGetNextRatingPageNumberWithEmpty()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
         $site = new JinniExt(TEST_JINNI_USERNAME);
         
         $this->assertFalse($site->_getNextRatingPageNumber(""));
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -223,7 +202,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @depends testObjectCanBeConstructed
      */
     public function testParseFilmsFromFile()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new Jinni(TEST_JINNI_USERNAME);
         $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
         $films = $site->parseFilmsFromFile(Constants::EXPORT_FORMAT_XML, $filename);
@@ -413,8 +393,6 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_IMDB." your score");
         $this->assertNull($rating->getYourRatingDate(), "Frozen ".Constants::SOURCE_IMDB." rating date");
         $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_IMDB." suggested score");
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
     
     /**
@@ -422,7 +400,8 @@ class JinniTest extends \PHPUnit_Framework_TestCase
      * @depends testParseFilmsFromFile
      */
     public function testFromExportFileToFilmObjectAndBackToXml()
-    {
+    {$this->start(__CLASS__, __FUNCTION__);
+
         $site = new Jinni(TEST_JINNI_USERNAME);
         
         // Get Film objects from a XML file (original_xml)
@@ -455,8 +434,6 @@ class JinniTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($test, $verify, 'Match test file (written) vs verify file (original)');
         fclose($fp_test);
         fclose($fp_verify);
-
-        if ($this->debug) { echo "\n" . __CLASS__ . "::" . __FUNCTION__ . " " . $this->lastTestTime->diff(date_create())->format('%s secs') . " "; }
     }
 }
 

@@ -12,28 +12,14 @@ require_once "SiteChild.php";
 require_once "ImdbTest.php";
 require_once "RatingSyncSiteTest.php";
 require_once "10DatabaseTest.php";
+require_once "RatingSyncTestCase.php";
 
-class MainTest extends \PHPUnit_Framework_TestCase
+class MainTest extends RatingSyncTestCase
 {
-    public $debug;
-    public $timer;
-
     public function setUp()
     {
-        $this->debug = false;
-    }
-
-    public function start($className, $functionName)
-    {
-        if ($this->debug) {
-            echo " $className::$functionName ";
-            $this->timer = new \DateTime();
-        }
-    }
-
-    public function tearDown()
-    {
-        if ($this->debug) { echo $this->timer->diff(date_create())->format('%s secs') . "\n"; }
+        parent::setup();
+        //$this->verbose = true;
     }
     
     public function testSetup()
