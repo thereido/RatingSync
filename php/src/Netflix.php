@@ -72,7 +72,7 @@ class Netflix extends \RatingSync\SiteProvider
 
         $query = urlencode($args['query']);
 
-        return "/search?q=$query";
+        return "/search/$query";
     }
 
     /**
@@ -138,7 +138,7 @@ class Netflix extends \RatingSync\SiteProvider
     protected function getDetailPageRegexForTitle() {
         $loggedIn = false;
         if ($loggedIn) {
-            return '/<div class="title has-jawbone-nav-transition"[^>]*>([^<]+)/';
+            return '/<div class="title has-jawbone-nav-transition[^>]*>([^<]+)/';
         } else {
             return '/class=\"title\"[^>]*>([^<]+)</';
         }
@@ -150,7 +150,8 @@ class Netflix extends \RatingSync\SiteProvider
      * @return string Regular expression to find the film year in film detail HTML page
      */
     protected function getDetailPageRegexForYear() {
-        return '/class=\"title\"[^>]*>[^<]+<\/span> <p><span class="year"[^>]*><a[^>]+>([^<]+)</';
+        /*RT*///return '/class=\"title\"[^>]*>[^<]+<\/span> <p><span class="year"[^>]*><a[^>]+>([^<]+)</';
+        return '/<span class="year[^>]+>(\d{4})/';
     }
 
     /**
@@ -270,7 +271,7 @@ class Netflix extends \RatingSync\SiteProvider
         $pattern = "|([$specialChars])|U";
         $escapedTitle = preg_replace($pattern, '\\\\${1}', $title);
 
-        return '/class="title-link"[^>]*data-title-id="([^"]*)"[^>]*>'.$escapedTitle.'<\/a><\/span> <span class="year"[^>]*><a[^>]*>'.$year.'</';
+        return '/"releaseYear":{"value":'.$year.'[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*}[^}]*},"title":{"value":"'.$escapedTitle.'"[^}]*}[^}]*}[^}]*"id":([\d]+)/';
     }
 
     protected function getDetailPageRegexForStreamingUrl()

@@ -10,7 +10,7 @@ require_once "SiteProvider.php";
  * Communicate to/from the Netflix website
  * - Search for films and tv shows
  */
-class Netflix extends \RatingSync\SiteProvider
+class InstantWatcher extends \RatingSync\SiteProvider
 {
     const NETFLIX_DATE_FORMAT = "n/j/y";
 
