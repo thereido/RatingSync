@@ -35,10 +35,10 @@ class Http
             $this->baseUrl = "http://www.jinni.com";
             $this->lightweightUrl = "/about";
         } elseif ($sourceName == Constants::SOURCE_NETFLIX) {
-            $this->baseUrl = "http://instantwatcher.com";
-            $this->lightweightUrl = "/about";
+            $this->baseUrl = "";
+            $this->lightweightUrl = "/Login?locale=en-US";
         } elseif ($sourceName == Constants::SOURCE_AMAZON) {
-            $this->baseUrl = "http://instantwatcher.com/a";
+            $this->baseUrl = "";
             $this->lightweightUrl = "/random?content_type=1+2&prime=2";
         } elseif ($sourceName == Constants::SOURCE_XFINITY) {
             $this->baseUrl = "http://xfinitytv.comcast.net";

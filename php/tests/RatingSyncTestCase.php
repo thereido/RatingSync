@@ -31,6 +31,10 @@ class RatingSyncTestCase extends \PHPUnit_Framework_TestCase
         if ($interval->h > 0) $format = " %h hours" . $format;
         if ($this->verbose) echo $this->timer->diff(date_create())->format($format) . "\n";
     }
+
+    public function testBaseClass()
+    {$this->start(__CLASS__, __FUNCTION__);
+    }
 }
 
 ?>

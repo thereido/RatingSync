@@ -12,7 +12,6 @@ namespace RatingSync;
 require_once "src/Constants.php";
 require_once "src/Jinni.php";
 require_once "src/Imdb.php";
-require_once "src/Netflix.php";
 require_once "src/Xfinity.php";
 require_once "src/RatingSyncSite.php";
 
@@ -165,13 +164,16 @@ function search($searchTerms, $username = null)
 
         if (empty($title) || empty($year)) {
             $site = null;
-            if ($sourceName == Constants::SOURCE_NETFLIX) {
-                $site = new Netflix($username);
-            } elseif ($sourceName == Constants::SOURCE_XFINITY) {
+            if ($sourceName == Constants::SOURCE_XFINITY) {
                 $site = new Xfinity($username);
+            }
+            /*
+              elseif ($sourceName == Constants::SOURCE_NETFLIX) {
+                $site = new Netflix($username);
             } elseif ($sourceName == Constants::SOURCE_AMAZON) {
                 $site = new Amazon($username);
             }
+            */
 
             if (!empty($site)) {
                 $film = new Film();

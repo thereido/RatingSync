@@ -2812,6 +2812,7 @@ class FilmTest extends RatingSyncTestCase
         $filmAZ->setYear(1977);
         $filmAZ->saveToDb();
 
+        /*
         $filmAZ = new Film();
         $filmAZ->setTitle(TEST_AMAZON_TITLE);
         $filmAZ->setYear(TEST_AMAZON_YEAR - 1);
@@ -2821,6 +2822,7 @@ class FilmTest extends RatingSyncTestCase
         $filmNF->setTitle(TEST_NETFLIX_TITLE);
         $filmNF->setYear(TEST_NETFLIX_YEAR);
         $filmNF->saveToDb();
+        */
 
         $filmXF = new Film();
         $filmXF->setUniqueAlt(TEST_XFINITY_UNIQUEALT, Constants::SOURCE_XFINITY);
@@ -2839,6 +2841,7 @@ class FilmTest extends RatingSyncTestCase
         $streams = $film->getStreams();
         $this->assertEquals($count, count($streams), "Should be $count streams for $title $providers");
         
+        /*
         $title = TEST_AMAZON_TITLE; $count = 1; $providers = "(Amazon)";
         $query = "SELECT id FROM film WHERE title='$title'";
         $id = $db->query($query)->fetch_assoc()['id'];
@@ -2860,6 +2863,7 @@ class FilmTest extends RatingSyncTestCase
             $this->assertStringStartsWith("http", $stream["url"], "Stream URL (".$stream["url"].") should begin with 'http'");
             $this->assertEquals($today, $stream["date"], "Stream date (".$stream["date"].") should be today");
         }
+        */
         
         $title = TEST_XFINITY_TITLE; $count = 1; $providers = "(xfinity)";
         $query = "SELECT id FROM film WHERE title='$title'";

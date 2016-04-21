@@ -5,7 +5,6 @@
 namespace RatingSync;
 
 require_once "Constants.php";
-require_once "Amazon.php";
 
 /**
  * Store and retrieve film data for one piece of content (film, tv show...)
@@ -63,10 +62,7 @@ class Source
 
     public static function supportedSourceWebsites()
     {
-        return array(Constants::SOURCE_NETFLIX,
-                            Constants::SOURCE_IMDB,
-                            Constants::SOURCE_AMAZON,
-                            Constants::SOURCE_XFINITY);
+        return array(Constants::SOURCE_IMDB, Constants::SOURCE_XFINITY);
     }
 
     public function getName()
@@ -467,13 +463,16 @@ class Source
             $username = getUsername();
         }
         
-        if ($sourceName == Constants::SOURCE_NETFLIX) {
+        if ($sourceName == Constants::SOURCE_XFINITY) {
+            $provider = new Xfinity($username);
+        }
+        /*
+          elseif ($sourceName == Constants::SOURCE_NETFLIX) {
             $provider = new Netflix($username);
         } elseif ($sourceName == Constants::SOURCE_AMAZON) {
             $provider = new Amazon($username);
-        } elseif ($sourceName == Constants::SOURCE_XFINITY) {
-            $provider = new Xfinity($username);
         }
+        */
         
         return $provider;
     }
@@ -489,12 +488,7 @@ class Source
 
     public static function validStreamProviders()
     {
-        return array(Constants::SOURCE_NETFLIX,
-                            Constants::SOURCE_AMAZON,
-                            Constants::SOURCE_XFINITY/*RT*,
-                            Constants::SOURCE_HULU,
-                            Constants::SOURCE_YOUTUBE,
-                            Constants::SOURCE_HBO*RT*/);
+        return array(Constants::SOURCE_XFINITY);
     }
 
     public static function getSite($sourceName, $username = null)
@@ -508,15 +502,18 @@ class Source
             $username = getUsername();
         }
         
-        if ($sourceName == Constants::SOURCE_NETFLIX) {
-            $site = new Netflix($username);
-        } elseif ($sourceName == Constants::SOURCE_IMDB) {
+        if ($sourceName == Constants::SOURCE_IMDB) {
             $site = new Imdb($username);
-        } elseif ($sourceName == Constants::SOURCE_AMAZON) {
-            $site = new Amazon($username);
         } elseif ($sourceName == Constants::SOURCE_XFINITY) {
             $site = new Xfinity($username);
         }
+        /*
+          elseif ($sourceName == Constants::SOURCE_NETFLIX) {
+            $site = new Netflix($username);
+        } elseif ($sourceName == Constants::SOURCE_AMAZON) {
+            $site = new Amazon($username);
+        }
+        */
         
         return $site;
     }

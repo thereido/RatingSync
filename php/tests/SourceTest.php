@@ -817,6 +817,7 @@ class SourceTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
         
         // Setup
+        /*
         $filmForNetflix = new Film();
         $filmForNetflix->setUniqueName(TEST_NETFLIX_UNIQUENAME, Constants::SOURCE_NETFLIX);
         $filmForNetflix->setTitle(TEST_NETFLIX_TITLE);
@@ -830,6 +831,7 @@ class SourceTest extends RatingSyncTestCase
         $filmForAmazon->setYear(TEST_AMAZON_YEAR);
         $filmForAmazon->saveToDb();
         $filmForAmazonId = $filmForAmazon->getId();
+        */
         
         $filmForXfinity = new Film();
         $filmForXfinity->setUniqueName(TEST_XFINITY_UNIQUENAME, Constants::SOURCE_XFINITY);
@@ -840,16 +842,20 @@ class SourceTest extends RatingSyncTestCase
         $filmForXfinityId = $filmForXfinity->getId();
 
         // Test
+        /*
         Source::refreshStreamsByFilm($filmForNetflixId);
         $filmForNetflix = Film::getFilmFromDb($filmForNetflixId);
         Source::refreshStreamsByFilm($filmForAmazonId);
         $filmForAmazon = Film::getFilmFromDb($filmForAmazonId);
+        */
         Source::refreshStreamsByFilm($filmForXfinityId);
         $filmForXfinity = Film::getFilmFromDb($filmForXfinityId);
 
         // Verify
+        /*
         $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $filmForNetflix->getSource(Constants::SOURCE_NETFLIX)->getStreamUrl(), "Netflix stream");
         $this->assertEquals("http://www.amazon.com/gp/video/primesignup?&t=0m0s&redirectToAsin=B00778C6V4&tag=iw_prime_movie-20&ref_=asc_homepage", $filmForAmazon->getSource(Constants::SOURCE_AMAZON)->getStreamUrl(), "Amazon stream");
+        */
         $this->assertEquals("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT."/".TEST_XFINITY_UNIQUENAME."/movies#filter=online&episode=".TEST_XFINITY_UNIQUENAME, $filmForXfinity->getSource(Constants::SOURCE_XFINITY)->getStreamUrl(), "filmForXfinity stream");
     }
 }

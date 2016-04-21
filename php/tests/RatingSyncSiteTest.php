@@ -9,7 +9,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 
 require_once "SiteRatingsChild.php";
 require_once "ImdbTest.php";
-require_once "NetflixTest.php";
+require_once "XfinityTest.php";
 require_once "10DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
@@ -259,14 +259,15 @@ class RatingSyncSiteTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $searchTerms = array();
-        $searchTerms["uniqueName"] = TEST_NETFLIX_UNIQUENAME;
-        $searchTerms["title"] = "Experimenter";
-        $searchTerms["year"] = 2015;
-        $searchTerms["sourceName"] = Constants::SOURCE_NETFLIX;
+        $searchTerms["uniqueName"] = TEST_XFINITY_UNIQUENAME;
+        $searchTerms["uniqueAlt"] = TEST_XFINITY_UNIQUEALT;
+        $searchTerms["title"] = TEST_XFINITY_TITLE;
+        $searchTerms["year"] = TEST_XFINITY_YEAR;
+        $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
         $film = \RatingSync\search($searchTerms);
 
         $this->assertFalse(is_null($film));
-        $this->assertEquals("Experimenter", $film->getTitle());
+        $this->assertEquals(TEST_XFINITY_TITLE, $film->getTitle());
     }
 
     /**
@@ -278,15 +279,16 @@ class RatingSyncSiteTest extends RatingSyncTestCase
 
         // Setup
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
-        $searchTerms = array("uniqueName" => TEST_NETFLIX_UNIQUENAME);
-        $searchTerms["sourceName"] = Constants::SOURCE_NETFLIX;
+        $searchTerms["uniqueName"] = TEST_XFINITY_UNIQUENAME;
+        $searchTerms["uniqueAlt"] = TEST_XFINITY_UNIQUEALT;
+        $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
         $film = \RatingSync\search($searchTerms);
 
         // Test
         $url = $site->getStreamUrl($film->getId());
 
         // Verify
-        $this->assertEquals("http://www.netflix.com/title/".TEST_NETFLIX_UNIQUENAME, $url, Constants::SOURCE_NETFLIX." streaming URL");
+        $this->assertEquals("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT."/".TEST_XFINITY_UNIQUENAME."/movies#filter=online&episode=".TEST_XFINITY_UNIQUENAME, $url, Constants::SOURCE_NETFLIX." streaming URL");
     }
 
     /**
@@ -299,7 +301,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         // Setup
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
         $film = new Film();
-        $film->setUniqueName("100000000", Constants::SOURCE_NETFLIX);
+        $film->setUniqueName("100000000", Constants::SOURCE_XFINITY);
         $film->setTitle("testGetStreamUrlFilmNoLongerAvailable");
         $film->saveToDb();
 

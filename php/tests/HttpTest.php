@@ -120,13 +120,29 @@ class HttpTest extends RatingSyncTestCase
      * @covers \RatingSync\Http::getPage
      * @depends testObjectCanBeConstructed
      */
+    /*
     public function testGetPageNetflix()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $http = new Http(Constants::SOURCE_NETFLIX);
         $page = $http->getPage("/about");
-        $this->assertGreaterThan(0, stripos($page, "<title>About instantwatcher"), "Get Netflix (InstantWatcher) 'About' page");
+        $this->assertGreaterThan(0, stripos($page, "<title>About instantwatcher"), "Get Netflix  'About' page");
     }
+    */
+
+    /**
+     * @covers \RatingSync\Http::getPage
+     * @depends testObjectCanBeConstructed
+     */
+    /*
+    public function testGetPageAmazon()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $http = new Http(Constants::SOURCE_AMAZON);
+        $page = $http->getPage("/about");
+        $this->assertGreaterThan(0, stripos($page, "<title>About instantwatcher"), "Get Amazon 'About' page");
+    }
+    */
 }
 
 ?>
