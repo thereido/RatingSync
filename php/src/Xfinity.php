@@ -260,6 +260,12 @@ class Xfinity extends \RatingSync\SiteProvider
 
     protected function getSearchPageRegexForUniqueName($title, $year)
     {
+        $startWithThe = stripos($title, "the ");
+        if ($startWithThe === 0) {
+            // Title starts with "The ". Xfinity search uses ", The" at the end
+            $title = substr($title, 4) . ", " . substr($title, 0, 3);
+        }
+
         $specialChars = "\/\^\.\[\]\|\(\)\?\*\+\{\}"; // need to do '\' too
         $pattern = "|([$specialChars])|U";
         $escapedTitle = preg_replace($pattern, '\\\\${1}', $title);
@@ -269,6 +275,12 @@ class Xfinity extends \RatingSync\SiteProvider
 
     protected function getSearchPageRegexForUniqueAlt($title, $year)
     {
+        $startWithThe = stripos($title, "the ");
+        if ($startWithThe === 0) {
+            // Title starts with "The ". Xfinity search uses ", The" at the end
+            $title = substr($title, 4) . ", " . substr($title, 0, 3);
+        }
+
         $specialChars = "\/\^\.\[\]\|\(\)\?\*\+\{\}"; // need to do '\' too
         $pattern = "|([$specialChars])|U";
         $escapedTitle = preg_replace($pattern, '\\\\${1}', $title);
@@ -280,11 +292,6 @@ class Xfinity extends \RatingSync\SiteProvider
     {
         $regex = '/<tr id="' . $film->getSource($this->sourceName)->getUniqueName() . '" class="online active">/';
         return (0 < preg_match($regex, $page, $matches));
-    }
-
-    protected function getDetailPageRegexForStreamingUrl()
-    {
-        return '';
     }
 
     public function getStreamUrlByPage($page, $film, $onlyFree = true)

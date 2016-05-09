@@ -392,37 +392,45 @@ class Source
         $film = Film::getFilmFromDb($filmId);
         foreach (self::supportedSourceWebsites() as $sourceName) {
             $source = $film->getSource($sourceName);
-            $needSourceData = empty($source->getUniqueName());
-            $needStream = self::validStreamProvider($sourceName);
-            $neededDataAvailable = false;
-            $saveChanges = false;
+            $source->createSourceToDb($film);
+        }
+    }
 
-            $site = null;
-            $page = null;
-            if ($needSourceData || $needStream) {
-                $site = self::getSite($sourceName);
-                $page = $site->getFilmDetailPage($film, 60, true);
-            }
-            if (!empty($site) && !empty($page)) {
-                $neededDataAvailable = true;
-            }
+    public function createSourceToDb($film)
+    {
+        if (empty($film) || !($film instanceof Film)) {
+            throw new \InvalidArgumentException("film arg must be a /RatingSync/Film");
+        }
 
-            if ($needSourceData && $neededDataAvailable) {
-                $site->parseFilmSource($page, $film);
-                $source = $film->getSource($sourceName);
-                $saveChanges = true;
-            }
+        $needSourceData = empty($this->getUniqueName());
+        $needStream = self::validStreamProvider($this->getName());
+        $neededDataAvailable = false;
+        $saveChanges = false;
 
-            if ($needStream && $neededDataAvailable) {
-                $url = $site->getStreamUrlByPage($page, $film);
-                $source->setStreamUrl($url);
-                $source->refreshStreamDate();
-                $saveChanges = true;
-            }
+        $site = null;
+        $page = null;
+        if ($needSourceData || $needStream) {
+            $site = self::getSite($this->getName());
+            $page = $site->getFilmDetailPage($film, 60, true);
+        }
+        if (!empty($site) && !empty($page)) {
+            $neededDataAvailable = true;
+        }
+
+        if ($needSourceData && $neededDataAvailable) {
+            $site->parseFilmSource($page, $film);
+            $saveChanges = true;
+        }
+
+        if ($needStream && $neededDataAvailable) {
+            $url = $site->getStreamUrlByPage($page, $film);
+            $this->setStreamUrl($url);
+            $this->refreshStreamDate();
+            $saveChanges = true;
+        }
             
-            if ($saveChanges) {
-                $source->saveFilmSourceToDb($filmId);
-            }
+        if ($saveChanges) {
+            $this->saveFilmSourceToDb($film->getId());
         }
     }
 
@@ -489,6 +497,11 @@ class Source
     public static function validStreamProviders()
     {
         return array(Constants::SOURCE_XFINITY);
+    }
+
+    public static function validStreamProvidersBackground()
+    {
+        return array(Constants::SOURCE_NETFLIX, Constants::SOURCE_XFINITY);
     }
 
     public static function getSite($sourceName, $username = null)

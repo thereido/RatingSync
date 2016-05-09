@@ -5,13 +5,7 @@ require_once "Site.php";
 
 abstract class SiteProvider extends \RatingSync\Site
 {
-
-    /**
-     * Regular expression to find Streaming URL in film detail HTML page
-     *
-     * @return string Regular expression to find Streaming URL in film detail HTML page
-     */
-    abstract protected function getDetailPageRegexForStreamingUrl();
+    protected $streamUrlIsDetailPage = true;
 
     /**
      * Return getFilmDetailPageUrl($filmId) if it is available for streaming.
@@ -67,9 +61,13 @@ abstract class SiteProvider extends \RatingSync\Site
     {
         $url = null;
         if ($this->streamAvailableFromDetailPage($page, $film, $onlyFree)) {
-            $regex = $this->getDetailPageRegexForStreamingUrl();
-            if (0 != preg_match($regex, $page, $matches)) {
-                $url = htmlspecialchars_decode($matches[1]);
+            if ($this->streamUrlIsDetailPage) {
+                $url = $this->getFilmUrl($film);
+            } else {
+                $regex = $this->getDetailPageRegexForStreamingUrl();
+                if (!empty($regex) && 0 != preg_match($regex, $page, $matches)) {
+                    $url = htmlspecialchars_decode($matches[1]);
+                }
             }
         }
 
@@ -89,6 +87,18 @@ abstract class SiteProvider extends \RatingSync\Site
     protected function streamAvailableFromDetailPage($page, $film, $onlyFree = true)
     {
         return (!empty($page));
+    }
+
+    /**
+     * Regular expression to find Streaming URL in film detail HTML page. Not
+     * all sites use a regex to find the steam URL. Many use the detail page
+     * itself as the stream URL. Return is null else a child class changes it.
+     *
+     * @return string Regular expression to find Streaming URL in film detail HTML page
+     */
+    protected function getDetailPageRegexForStreamingUrl()
+    {
+        return null;
     }
 }
 

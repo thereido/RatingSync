@@ -1,18 +1,51 @@
 
-function getSearchTerms(document_root) {
+var url = window.location.href;
+var sourceName = getSourceName(url);
+
+if (!sourceName) {
+    // Do nothing
+}
+else if (sourceName == "RS") {
+    // Do nothing
+}
+else {
+    var searchTerms = getSearchTerms(sourceName, document);
+    chrome.runtime.sendMessage({
+        action: "setSearchTerms",
+        search: searchTerms
+    });
+}
+
+function getSourceName(url) {
+    if (!url) {
+        return;
+    } else if (-1 < url.indexOf("192.168")) {
+        return "RS";
+    } else if (-1 < url.indexOf("imdb")) {
+        return "IM";
+    } else if (-1 < url.indexOf("netflix")) {
+        return "NF";
+    } else if (-1 < url.indexOf("rottentomatoes")) {
+        return "RT";
+    } else if (-1 < url.indexOf("xfinitytv")) {
+        return "XF";
+    } else if (-1 < url.indexOf("hulu")) {
+        return "H";
+    }
+}
+
+function getSearchTerms(source, document_root) {
 
     var searchTerms;
     var uniqueName;
-    var uniqueEpisode
+    var uniqueEpisode;
     var uniqueAlt;
-    var source;
     var title;
     var year;
     var contentType;
 
     var url = window.location.href;
-	if (url && -1 < url.indexOf("imdb")) {
-        var source = "IM";
+	if (source == "IM") {
 		var index = url.indexOf("/tt");
         if (-1 < index) {
             var indexBegin = index + 1;
@@ -20,9 +53,7 @@ function getSearchTerms(document_root) {
             uniqueName = url.substring(indexBegin, indexEnd);
         }
 	}
-    else if (url && -1 < url.indexOf("netflix")) {
-        var source = "NF";
-        
+    else if (source == "NF") {        
         var regex = new RegExp("jbv=([0-9]+)");
         if (regex.test(url)) {
             uniqueName = regex.exec(url)[1];
@@ -47,8 +78,7 @@ function getSearchTerms(document_root) {
             }
         }
 	}
-    else if (url && -1 < url.indexOf("rottentomatoes")) {
-        var source = "RT";
+    else if (source == "RT") {
         var titleElement;
         var titleRegex;
         var yearRegex;
@@ -86,8 +116,7 @@ function getSearchTerms(document_root) {
             year = yearRegex.exec(html)[1];
         }
 	}
-    else if (url && -1 < url.indexOf("xfinitytv")) {
-        var source = "XF";
+    else if (source == "XF") {
         var indexBegin = -1;
         var indexEnd;
 		var index = url.indexOf("/watch/");
@@ -120,8 +149,7 @@ function getSearchTerms(document_root) {
             year = reYear.exec(html)[1];
         }
 	}
-    else if (url && -1 < url.indexOf("hulu")) {
-        var source = "H";
+    else if (source == "H") {
         var indexBegin = -1;
         var indexEnd;
 		var index = url.indexOf("/watch/");
@@ -160,8 +188,3 @@ function getSearchTerms(document_root) {
     var json = JSON.parse(text);
     return json;
 }
-
-chrome.runtime.sendMessage({
-    action: "setSearchTerms",
-    search: getSearchTerms(document)
-});

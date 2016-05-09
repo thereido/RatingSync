@@ -283,7 +283,7 @@ abstract class Site
         if (is_null($film) || !($film instanceof Film) ) {
             throw new \InvalidArgumentException('arg1 must be a Film object');
         }
-
+        
         $page = $this->getFilmDetailPageFromCache($film, $refreshCache);
         if (empty($page)) {
             $uniqueName = $film->getUniqueName($this->sourceName);

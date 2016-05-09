@@ -747,8 +747,8 @@ class Film {
             $sourceName = $source->getName();
             $streamUrl = $source->getStreamUrl();
             $streamDate = $source->getStreamDate();
-            $stream = array("url" => $streamUrl, "date" => $streamDate);
-            if (!empty($streamUrl)) {
+            if (! (empty($streamUrl) && empty($streamDate)) ) {
+                $stream = array("url" => $streamUrl, "date" => $streamDate);
                 $streams[$sourceName] = $stream;
             }
         }
