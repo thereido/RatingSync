@@ -10,12 +10,18 @@ function onMessage(request, sender) {
 
 function getStream(streamInfo) {
     var streamUrl;
+    var unReachable = "false";
 
     var url = window.location.href;
     if (-1 < url.indexOf("netflix")) {
-        if (-1 < url.indexOf("/title/" + streamInfo.uniqueName)) {
+        unReachable = "true";
+        if (-1 < url.indexOf("/Login?")) {
+            unReachable = "true";
+        } else if (-1 < url.indexOf("/title/" + streamInfo.uniqueName)) {
+            unReachable = "false";
             streamUrl = url;
         } else if (-1 < url.indexOf("/search/")) {
+            unReachable = "false";
             // A dvdStreamingTitle element means the title is not available
             if (document.getElementsByClassName("dvdStreamingTitle").length == 0) {
                 // Match title (but not year)
@@ -27,23 +33,9 @@ function getStream(streamInfo) {
                 }
             }
         }
-    } else if (-1 < url.indexOf("xfinitytv")) {
-        if (-1 < url.indexOf("/watch/" + streamInfo.uniqueAlt)) {
-/*
-"id" : "7182391626371629112",
-"avenues" : {"In Theaters": "", "On TV": "", "On Demand": "false"},
-"isOnline" : false,
-*/
-            // Instead of getting tab for xfinity... go to an api call to RatingSync server.
-            // It can get the stream. Netflix was only because curl can't do it.
-            var re = new RegExp('<tr id="' + streamInfo.uniqueName + '" class="online active">');
-            if (available) {
-                streamUrl = url;
-            }
-        }
     }
-
-    var text = '{"streamInfo": ' + JSON.stringify(streamInfo) + ',"streamUrl": "' + streamUrl + '"}';
+    
+    var text = '{"streamInfo": ' + JSON.stringify(streamInfo) + ',"streamUrl": "' + streamUrl + '","unReachable": "' + unReachable + '"}';
     var json = JSON.parse(text);
     return json;
 }

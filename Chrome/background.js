@@ -92,7 +92,9 @@ function onStreamInfoReady(streamResponse) {
     if (streamInfo.uniqueEpisode) { params = params + "&ue=" + streamInfo.uniqueEpisode; }
     if (streamInfo.uniqueAlt) { params = params + "&ua=" + streamInfo.uniqueAlt; }
     
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.open("GET", RS_URL_API + "?action=updateFilmSource" + params, true);
-	xmlhttp.send();
+    if (streamResponse.unReachable == "false") {
+	    var xmlhttp = new XMLHttpRequest();
+	    xmlhttp.open("GET", RS_URL_API + "?action=updateFilmSource" + params, true);
+	    xmlhttp.send();
+    }
 }
