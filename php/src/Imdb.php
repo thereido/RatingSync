@@ -463,6 +463,9 @@ class Imdb extends \RatingSync\SiteRatings
         $pattern = "|([$specialChars])|U";
         $escapedTitle = preg_replace($pattern, '\\\\${1}', $title);
 
-        return '/\"\/title\/([^\/.]*)\/\?ref_=fn_tt_tt_\d\d?\" >'.$escapedTitle.'<\/a>[^\).*]*\)? \('.$year.'\)/';
+        $lastYear = $year - 1;
+        $regexYear = "($year|$lastYear)";
+
+        return '/\"\/title\/([^\/.]*)\/\?ref_=fn_tt_tt_\d\d?\" >'.$escapedTitle.'<\/a>[^\).*]*\)? \('.$regexYear.'\)/';
     }
 }
