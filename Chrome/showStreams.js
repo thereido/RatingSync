@@ -41,7 +41,7 @@ function showStreamsForOneFilm(streamsEl)
             infoText = infoText + '"elementId": "' + el.getAttribute("id") + '"';
             infoText = infoText + ',"filmId": "' + el.getAttribute("data-film-id") + '"';
             infoText = infoText + ', "sourceName": "' + sourceName + '"';
-            infoText = infoText + ', "title": "' + title + '"';
+            infoText = infoText + ', "title": "' + encodeURI(title) + '"';
             infoText = infoText + ', "year": "' + year + '"';
             infoText = infoText + ', "contentType": "' + contentType + '"';
             infoText = infoText + ', "uniqueName": "' + uniqueName + '"';
