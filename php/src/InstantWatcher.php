@@ -270,7 +270,7 @@ class InstantWatcher extends \RatingSync\SiteProvider
         $pattern = "|([$specialChars])|U";
         $escapedTitle = preg_replace($pattern, '\\\\${1}', $title);
 
-        return '/class="title-link"[^>]*data-title-id="([^"]*)"[^>]*>'.$escapedTitle.'<\/a><\/span> <span class="year"[^>]*><a[^>]*>'.$year.'</';
+        return '/class="title-link"[^>]*data-title-id="([^"]*)"[^>]*>'.$escapedTitle.'<\/a><\/span> <span class="year"[^>]*><a[^>]*>'.$year.'</i';
     }
 
     protected function getDetailPageRegexForStreamingUrl()

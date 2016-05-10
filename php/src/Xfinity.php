@@ -136,7 +136,7 @@ class Xfinity extends \RatingSync\SiteProvider
      * @return string Regular expression to find the film title in film detail HTML page
      */
     protected function getDetailPageRegexForTitle() {
-        return '/<h1 itemprop="name">([^<]+)</';
+        return '/<meta property="og:title" content="(.+)"\/>/';
     }
 
     /**
@@ -235,12 +235,16 @@ class Xfinity extends \RatingSync\SiteProvider
         }
 
         $title = $film->getTitle();
+/*RT*/logDebug("        title=$title", __FUNCTION__." ".__LINE__);
         $args = array("query" => $title);
+/*RT*/logDebug("        searchUrl=".$this->getSearchUrl($args), __FUNCTION__." ".__LINE__);
         $page = $this->http->getPage($this->getSearchUrl($args));
         $uniqueName = null;
         $uniqueAlt = null;
-
+        
+/*RT*/logDebug("        AA", __FUNCTION__." ".__LINE__);
         $regex = $this->getSearchPageRegexForUniqueName($title, $film->getYear());
+/*RT*/logDebug("        AB regex=$regex", __FUNCTION__." ".__LINE__);
         if (!empty($regex) && 0 < preg_match($regex, $page, $matches)) {
             $uniqueName = $matches[1];
             $film->setUniqueName($uniqueName, $this->sourceName);
@@ -251,6 +255,7 @@ class Xfinity extends \RatingSync\SiteProvider
             $film->setUniqueAlt($uniqueAlt, $this->sourceName);
         }
         
+/*RT*/logDebug("        uniqueName=$uniqueName, uniqueAlt=$uniqueAlt", __FUNCTION__." ".__LINE__);
         if (empty($uniqueName) || empty($uniqueAlt)) {
             return false;
         }
@@ -273,7 +278,7 @@ class Xfinity extends \RatingSync\SiteProvider
         $nextYear = $year + 1;
         $regexYear = "($year|$nextYear)";
 
-        return '/<h3><a href="\/watch\/[^\/]+\/([^\/]+)[^>]*>'.$escapedTitle.'[\s]*<span class="airDates">\('.$regexYear.'/';
+        return '/<h3><a href="\/watch\/[^\/]+\/([^\/]+)[^>]*>'.$escapedTitle.'[\s]*<span class="airDates">\('.$regexYear.'/i';
     }
 
     protected function getSearchPageRegexForUniqueAlt($title, $year)
@@ -291,7 +296,7 @@ class Xfinity extends \RatingSync\SiteProvider
         $nextYear = $year + 1;
         $regexYear = "($year|$nextYear)";
 
-        return '/<h3><a href="\/watch\/([^\/]+)\/[^\/]+[^>]*>'.$escapedTitle.'[\s]*<span class="airDates">\('.$regexYear.'/';
+        return '/<h3><a href="\/watch\/([^\/]+)\/[^\/]+[^>]*>'.$escapedTitle.'[\s]*<span class="airDates">\('.$regexYear.'/i';
     }
 
     protected function streamAvailableFromDetailPage($page, $film, $onlyFree = true)

@@ -140,7 +140,7 @@ function getSearchTerms(source, document_root) {
         }
 
         var html = document_root.getElementsByClassName("entity-info")[0].innerHTML;
-        var reTitle = new RegExp("<h1 itemprop=\"name\">([^<]+)<");
+        var reTitle = new RegExp("<meta property=\"og:title\" content=\"(.+)\"\/>");
         if (reTitle.test(html)) {
             title = reTitle.exec(html)[1];
         }
