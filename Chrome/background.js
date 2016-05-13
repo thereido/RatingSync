@@ -36,7 +36,7 @@ function onUpdated(tabId, changeInfo, tab) {
             source = "XF";
         } else if (-1 < url.indexOf("hulu") && -1 < url.indexOf("/watch/")) {
             source = "H";
-        } else if (-1 < tab.url.indexOf("192.168") && -1 < tab.url.indexOf("userlist")) {
+        } else if (-1 < tab.url.indexOf("//localhost") && -1 < tab.url.indexOf("userlist")) {
             chrome.tabs.executeScript(tab.id, {file: "showStreams.js"});
         }
 

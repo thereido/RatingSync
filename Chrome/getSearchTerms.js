@@ -19,7 +19,7 @@ else {
 function getSourceName(url) {
     if (!url) {
         return;
-    } else if (-1 < url.indexOf("192.168")) {
+    } else if (-1 < url.indexOf("//localhost")) {
         return "RS";
     } else if (-1 < url.indexOf("imdb")) {
         return "IM";
@@ -139,11 +139,12 @@ function getSearchTerms(source, document_root) {
             uniqueEpisode = url.substring(indexBegin);
         }
 
-        var html = document_root.getElementsByClassName("entity-info")[0].innerHTML;
-        var reTitle = new RegExp("<meta property=\"og:title\" content=\"(.+)\"\/>");
-        if (reTitle.test(html)) {
-            title = reTitle.exec(html)[1];
+        var head = document_root.getElementsByTagName("head")[0].innerHTML;
+        var reTitle = new RegExp("<meta property=\"og:title\" content=\"(.+)\">");
+        if (reTitle.test(head)) {
+            title = reTitle.exec(head)[1];
         }
+        var html = document_root.getElementsByClassName("entity-info")[0].innerHTML;
         var reYear = new RegExp("<span itemprop=\"startDate\"[^>]*>([^<]*)<");
         if (reYear.test(html)) {
             year = reYear.exec(html)[1];
