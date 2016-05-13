@@ -69,6 +69,7 @@ class Http
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_ENCODING, "");
+        //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         if (is_array($postData)) {
             curl_setopt($ch, CURLOPT_POST, true);
@@ -100,7 +101,7 @@ class Http
         } else {
             $page = substr($result, $info['header_size']);
         }
-
+        
         return $page;
     }
 
