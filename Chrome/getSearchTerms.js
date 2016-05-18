@@ -3,10 +3,10 @@ var url = window.location.href;
 var sourceName = getSourceName(url);
 
 if (!sourceName) {
-    // Do nothing
+    chrome.runtime.sendMessage( {action: "unsupportedUrl", url: url} );
 }
 else if (sourceName == "RS") {
-    // Do nothing
+    chrome.runtime.sendMessage( {action: "unsupportedUrl", url: url} );
 }
 else {
     var searchTerms = getSearchTerms(sourceName, document);
@@ -32,6 +32,8 @@ function getSourceName(url) {
     } else if (-1 < url.indexOf("hulu")) {
         return "H";
     }
+
+    return;
 }
 
 function getSearchTerms(source, document_root) {
@@ -108,11 +110,11 @@ function getSearchTerms(source, document_root) {
         if (titleElement) {
             html = titleElement.innerHTML;
         }
-        if (titleRegex || titleRegex.test(html)) {
+        if (titleRegex && titleRegex.test(html)) {
             title = titleRegex.exec(html)[1];
         }
         yearRegex = new RegExp(">..([0-9][0-9][0-9][0-9])");
-        if (yearRegex || yearRegex.test(html)) {
+        if (yearRegex && yearRegex.test(html)) {
             year = yearRegex.exec(html)[1];
         }
 	}
@@ -139,15 +141,21 @@ function getSearchTerms(source, document_root) {
             uniqueEpisode = url.substring(indexBegin);
         }
 
-        var head = document_root.getElementsByTagName("head")[0].innerHTML;
-        var reTitle = new RegExp("<meta property=\"og:title\" content=\"(.+)\">");
-        if (reTitle.test(head)) {
-            title = reTitle.exec(head)[1];
+        var headEl = document_root.getElementsByTagName("head")[0];
+        if (headEl) {
+            var head = headEl.innerHTML;
+            var reTitle = new RegExp("<meta property=\"og:title\" content=\"(.+)\">");
+            if (reTitle.test(head)) {
+                title = reTitle.exec(head)[1];
+            }
         }
-        var html = document_root.getElementsByClassName("entity-info")[0].innerHTML;
-        var reYear = new RegExp("<span itemprop=\"startDate\"[^>]*>([^<]*)<");
-        if (reYear.test(html)) {
-            year = reYear.exec(html)[1];
+        var infoEl = document_root.getElementsByClassName("entity-info")[0];
+        if (infoEl) {
+            var html = infoEl.innerHTML;
+            var reYear = new RegExp("<span itemprop=\"startDate\"[^>]*>([^<]*)<");
+            if (reYear.test(html)) {
+                year = reYear.exec(html)[1];
+            }
         }
 	}
     else if (source == "H") {
@@ -167,14 +175,17 @@ function getSearchTerms(source, document_root) {
             }
         }
 
-        var html = document_root.getElementsByClassName("episode-title")[0].innerHTML;
-        var reTitle = new RegExp("(.*) .[0-9]{4}.");
-        if (reTitle.test(html)) {
-            title = reTitle.exec(html)[1];
-        }
-        var reYear = new RegExp("([0-9]{4}).$");
-        if (reYear.test(html)) {
-            year = reYear.exec(html)[1];
+        var titleEl = document_root.getElementsByClassName("episode-title")[0];
+        if (titleEl) {
+            var html = titleEl.innerHTML;
+            var reTitle = new RegExp("(.*) .[0-9]{4}.");
+            if (reTitle.test(html)) {
+                title = reTitle.exec(html)[1];
+            }
+            var reYear = new RegExp("([0-9]{4}).$");
+            if (reYear.test(html)) {
+                year = reYear.exec(html)[1];
+            }
         }
 	}
     

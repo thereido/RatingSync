@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
 chrome.runtime.onMessage.addListener(function (request, sender) {
     if (request.action == "setSearchTerms") {
         searchFilm(request.search);
+    } else if (request.action == "unsupportedUrl") {
+        notSupported(null);
     }
 });
 
@@ -19,27 +21,41 @@ function renderStatus(statusText) {
 
 function notFound(source)
 {
-    var msg = "<div>Unable to find title on this " + source + " page</div>";
+    var msg = "<div align='center'>Unable to figure out which title you want to search</div>";
     document.getElementById("searchResult").innerHTML = msg;
 }
 
 function notSupported(source)
 {
-    var msg = "<div>Here are the sites currently supported<ul><li>IMDb</li><li>Rotten Tomatoes</li><li>Netflix</li></ul></div>";
+    var msg = "<div>Here are the sites currently supported<ul><li>IMDb</li><li>Netflix</li><li>xfinity</li><li>Rotten Tomatoes</li></ul></div>";
     document.getElementById("searchResult").innerHTML = msg;
 }
 
 function searchFilm(searchTerms)
 {
+    if (searchTerms.uniqueName == "undefined" && (searchTerms.title == "undefined" || !searchTerms.year == "undefined")) {
+        notFound(searchTerms.source);
+        return;
+    }
+
     renderStatus('Searching...');
+    var msg = "<div align='center'>";
+    if (searchTerms.title != "undefined") {
+        msg = msg + searchTerms.title + " (" + searchTerms.year + ")";
+    } else {
+        msg = msg + "IMDb id: " + searchTerms.uniqueName;
+    }
+    var msg = msg + "</div>";
+    var searchResultElement = document.getElementById("searchResult");
+    searchResultElement.innerHTML = msg;
+
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = function () {
 	    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            var searchResultElement = document.getElementById("searchResult");
-            searchResultElement.innerHTML = renderFilm(xmlhttp.responseText);
-            addStarListeners(searchResultElement);
-            renderStatus('');
-            showStreams();
+	        searchResultElement.innerHTML = renderFilm(xmlhttp.responseText);
+	        addStarListeners(searchResultElement);
+	        renderStatus('');
+	        showStreams();
 	    } else if (xmlhttp.readyState == 4) {
 	        renderStatus('Not found');
 	    }
