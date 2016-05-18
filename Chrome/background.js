@@ -8,7 +8,9 @@ chrome.tabs.onUpdated.addListener(onUpdated);
 
 function onMessage(request, sender) {
     if (request.action == "forwardToParent") {
-        chrome.tabs.sendMessage(request.parentTabId, request);
+        if (request.parentTabId != "") {
+            chrome.tabs.sendMessage(request.parentTabId, request);
+        }
         if (request.subject == "streamInfoReady") {
             onStreamInfoReady(request.streamResponse);
         }
@@ -17,7 +19,11 @@ function onMessage(request, sender) {
         requestAddFilm(request.search);
     }
     else if (request.action == "createProviderTab") {
-        var onCreateProviderHandler = function (tab) { onCreateProvider(tab, request.streamInfo, sender.tab.id); };
+        senderTabId = "";
+        if (sender.tab) {
+            senderTabId = sender.tab.id;
+        }
+        var onCreateProviderHandler = function (tab) { onCreateProvider(tab, request.streamInfo, senderTabId); };
         chrome.tabs.create({url: request.url, active: false}, onCreateProviderHandler);
     }
 }
@@ -37,7 +43,7 @@ function onUpdated(tabId, changeInfo, tab) {
         } else if (-1 < url.indexOf("hulu") && -1 < url.indexOf("/watch/")) {
             source = "H";
         } else if (-1 < tab.url.indexOf("//localhost") && -1 < tab.url.indexOf("userlist")) {
-            chrome.tabs.executeScript(tab.id, {file: "showStreams.js"});
+            chrome.tabs.executeScript(tab.id, {file: "showStreams.js"}, function () { chrome.tabs.sendMessage(tab.id, { action: "showStreams" }); } );
         }
 
         if (0 < source.length) {

@@ -4,10 +4,10 @@ var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
 
 chrome.runtime.onMessage.addListener(onMessage);
 
-showStreams();
-
 function onMessage(request, sender) {
-    if (request.action == "forwardToParent" && request.subject == "streamInfoReady") {
+    if (request.action == "showStreams") {
+        showStreams();
+    } else if (request.action == "forwardToParent" && request.subject == "streamInfoReady") {
         showOneStream(request.streamResponse);
     }
 }
@@ -28,7 +28,7 @@ function showStreamsForOneFilm(streamsEl)
         var el = streamElements[j];
         var streamDateStr = el.getAttribute("data-stream-date");
         var lastWeek = new Date(Date.now() - (1000*60*60*24*7));
-        if (!streamDateStr || streamDateStr == "" || new Date(streamDateStr) < lastWeek) {
+        if (!streamDateStr || streamDateStr == "" || streamDateStr == "null" || new Date(streamDateStr) < lastWeek) {
             var sourceName = el.getAttribute("data-source-name");
             var title = el.getAttribute("data-title");
             var year = el.getAttribute("data-year");

@@ -25,7 +25,7 @@ function getStream(streamInfo) {
             // A dvdStreamingTitle element means the title is not available
             if (document.getElementsByClassName("dvdStreamingTitle").length == 0) {
                 // Match title (but not year)
-                var reUniqueNameByTitle = new RegExp('"title":{"value":"' + streamInfo.title + '".*?"id":([0-9]+)');
+                var reUniqueNameByTitle = new RegExp('"title":{"value":"' + decodeURI(streamInfo.title) + '".*?"id":([0-9]+)', "i");
                 var html = document.getElementsByTagName("body")[0].innerHTML;
                 if (reUniqueNameByTitle.test(html)) {
                     streamInfo.uniqueName = reUniqueNameByTitle.exec(html)[1];

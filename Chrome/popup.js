@@ -36,11 +36,12 @@ function searchFilm(searchTerms)
 	xmlhttp.onreadystatechange = function () {
 	    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             var searchResultElement = document.getElementById("searchResult");
-	        searchResultElement.innerHTML = renderFilm(xmlhttp.responseText);
+            searchResultElement.innerHTML = renderFilm(xmlhttp.responseText);
             addStarListeners(searchResultElement);
-    		renderStatus('');
+            renderStatus('');
+            showStreams();
 	    } else if (xmlhttp.readyState == 4) {
-	        renderStatus('Not found ' + searchTerm + ' at ' + source);
+	        renderStatus('Not found');
 	    }
 	}
 
@@ -64,6 +65,7 @@ function rateFilm(uniqueName, score, titleNum) {
 	        searchResultElement.innerHTML = renderFilm(xmlhttp.responseText);
             addStarListeners(searchResultElement);
     		renderStatus('Rating Saved');
+            showStreams();
         }
     }
     xmlhttp.open("GET", RS_URL_API + "?action=setRating&json=1&un=" + uniqueName + "&s=" + score, true);
@@ -90,8 +92,8 @@ function renderFilm(json) {
     var title = film.title;
     var year = film.year;
     var image = RS_URL_BASE + film.image;
-
-    var rs = film.sources.RatingSync;
+    
+    var rs = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
     var uniqueName = rs.uniqueName;
     var yourScore = rs.rating.yourScore;
     var showYourScore = yourScore;
@@ -101,27 +103,30 @@ function renderFilm(json) {
         showYourScore = "-";
     }
 
-    var imdb = film.sources.IMDb;
+    var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
     var imdbFilmUrl = IMDB_FILM_BASEURL + imdb.uniqueName;
     var imdbLabel = "IMDb";
     var imdbScore = imdb.userScore;
 
     var starsHtml = renderStars(rs);
-    r = r + "<div id='" + uniqueName + "' align='center'>";
-    r = r + "  <div class='film-line'><span class='film-title'>" + title + "</span> (" + year + ")</div>";
-    r = r + "  <div class='rating-stars'>";
-    r = r + "    <score>";
-    r = r + "      <of-possible>01/</of-possible><your-score id='your-score-" + uniqueName + "'>" + showYourScore + "</your-score>";
-    r = r + "    </score>";
-    r = r + "    " + starsHtml;
-    r = r + "    <div id='original-score-" + uniqueName + "' data-score='" + showYourScore + "' hidden ></div>";
-    r = r + "  </div>";
-    r = r + "  <poster><img src='" + image + "' width='150px'/></poster>";
-    r = r + "  <detail>";
-    r = r + "    <div><a href='" + imdbFilmUrl + "' target='_blank'>" + imdbLabel + ":</a> " + imdbScore + "</div>";
-    r = r + "    <div id='filmlist-container' align='left'></div>";
-    r = r + "  </detail>";
-    r = r + "</div>";
+    r = r + "<div id='" + uniqueName + "' align='center'>\n";
+    r = r + "  <div class='film-line'><span class='film-title'>" + title + "</span> (" + year + ")</div>\n";
+    r = r + "  <div class='rating-stars'>\n";
+    r = r + "    <score>\n";
+    r = r + "      <of-possible>01/</of-possible><your-score id='your-score-" + uniqueName + "'>" + showYourScore + "</your-score>\n";
+    r = r + "    </score>\n";
+    r = r + "    " + starsHtml + "\n";
+    r = r + "    <div id='original-score-" + uniqueName + "' data-score='" + showYourScore + "' hidden ></div>\n";
+    r = r + "  </div>\n";
+    r = r + "  <poster><img src='" + image + "' width='150px'/></poster>\n";
+    r = r + "  <detail>\n";
+    r = r + "    <div align='left'><a href='" + imdbFilmUrl + "' target='_blank'>" + imdbLabel + ":</a> " + imdbScore + "</div>\n";
+    r = r + "    <div id='streams' class='streams'>\n";
+    r = r + "      " + renderStreams(film) + "\n";
+    r = r + "    </div>\n";
+    r = r + "    <div id='filmlist-container' align='left'></div>\n";
+    r = r + "  </detail>\n";
+    r = r + "</div>\n";
 
     getFilmlists(film.filmlists, filmId);
 
@@ -215,6 +220,42 @@ function renderFilmlists(userlistsJson, includedListnames, filmId) {
     var container = document.getElementById("filmlist-container");
     container.innerHTML = html;
     addFilmlistListeners(container, filmId);
+}
+
+function renderStreams(film) {
+    var filmId = film.filmId;
+    var title = film.title;
+    var year = film.year;
+    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+    var rsUniqueName = rsSource.uniqueName;
+
+    var streamsHtml = "";
+    var providers = validStreamProviders();
+    for (var providerIndex = 0; providerIndex < providers.length; providerIndex++) {
+        var sourceName = providers[providerIndex];
+
+        var uniqueName = "";
+        var uniqueEpisode = "";
+        var uniqueAlt = "";
+        var streamDate = "";
+        var source = film.sources.find( function (findSource) { return findSource.name == sourceName; } );
+        if (source) {
+            uniqueName = source.uniqueName;
+            uniqueEpisode = source.uniqueEpisode;
+            uniqueAlt = source.uniqueAlt;
+            streamDate = source.streamDate;
+        }
+
+        streamsHtml = streamsHtml + "  <div class='stream' id='" + sourceName + "-" + rsUniqueName + "' data-film-id='" + filmId + "' data-source-name='" + sourceName + "' data-title='" + title + "' data-year='" + year + "' data-uniquename='" + uniqueName + "' data-unique-episode='" + uniqueEpisode + "' data-unique-alt='" + uniqueAlt + "' data-stream-date='" + streamDate + "'>\n";
+        if (source && source.streamUrl && source.streamUrl != "undefined") {
+            streamsHtml = streamsHtml + "    <a href='" + source.streamUrl + "' target='_blank'>\n";
+            streamsHtml = streamsHtml + "      <div class='stream-icon icon-" + sourceName + "' title='Watch on " + sourceName + "'></div>\n";
+            streamsHtml = streamsHtml + "    </a>\n";
+        }
+        streamsHtml = streamsHtml + "  </div>\n";
+    }
+
+    return streamsHtml;
 }
 
 function toggleFilmlist(listname, filmId, activeBtnId) {
@@ -315,4 +356,8 @@ function addFilmlistListener(elementId) {
         var clickHandler = function () { toggleFilmlist(listname, filmId, elementId); };
         button.addEventListener("click", clickHandler);
 	}
+}
+
+function validStreamProviders() {
+    return ["Netflix", "xfinity"];
 }

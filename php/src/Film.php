@@ -198,7 +198,7 @@ class Film {
             $arrRating['suggestedScore'] = $rating->getSuggestedScore();
 
             $arrSource['rating'] = $arrRating;
-            $arrSources[$name] = $arrSource;
+            $arrSources[] = $arrSource;
         }
         $arr['sources'] = $arrSources;
         
