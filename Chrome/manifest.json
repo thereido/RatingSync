@@ -7,7 +7,7 @@
 
   "name": "RatingSync",
   "description": "This extension shows a Google Image search result for the current page",
-  "version": "1.0.15",
+  "version": "1.0.16",
 
   "browser_action": {
     "default_icon": "iconBeta.png",
