@@ -51,14 +51,15 @@ function searchFilm(searchTerms)
 
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = function () {
-	    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-	        searchResultElement.innerHTML = renderFilm(xmlhttp.responseText);
-	        addStarListeners(searchResultElement);
-	        renderStatus('');
-	        showStreams();
-	    } else if (xmlhttp.readyState == 4) {
-	        renderStatus('Not found');
-	    }
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            var film = JSON.parse(xmlhttp.responseText);
+            renderFilm(film, searchResultElement);
+            addStarListeners(searchResultElement);
+            renderStatus('');
+            showStreams();
+        } else if (xmlhttp.readyState == 4) {
+            renderStatus('Not found');
+        }
 	}
 
     var params = "&json=1";
@@ -77,11 +78,10 @@ function rateFilm(uniqueName, score, titleNum) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            var searchResultElement = document.getElementById("searchResult");
-	        searchResultElement.innerHTML = renderFilm(xmlhttp.responseText);
-            addStarListeners(searchResultElement);
-    		renderStatus('Rating Saved');
-            showStreams();
+            var film = JSON.parse(xmlhttp.responseText);
+            renderStars(film);
+            addStarListeners(document.getElementById("searchResult"));
+            renderStatus('Rating Saved');
         }
     }
     xmlhttp.open("GET", RS_URL_API + "?action=setRating&json=1&un=" + uniqueName + "&s=" + score, true);
@@ -101,39 +101,24 @@ function renderYourScore(uniqueName, hoverScore, mousemove) {
     document.getElementById("your-score-" + uniqueName).innerHTML = score;
 }
 
-function renderFilm(json) {
-    var r = "";
-    var film = JSON.parse(json);
+function renderFilm(film, element) {
     var filmId = film.filmId;
     var title = film.title;
     var year = film.year;
     var image = RS_URL_BASE + film.image;
     
-    var rs = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
-    var uniqueName = rs.uniqueName;
-    var yourScore = rs.rating.yourScore;
-    var showYourScore = yourScore;
-    if (showYourScore == "10") {
-        showYourScore = "01";
-    } else if (showYourScore == null || showYourScore == "") {
-        showYourScore = "-";
-    }
+    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+    var uniqueName = rsSource.uniqueName;
 
     var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
     var imdbFilmUrl = IMDB_FILM_BASEURL + imdb.uniqueName;
     var imdbLabel = "IMDb";
     var imdbScore = imdb.userScore;
-
-    var starsHtml = renderStars(rs);
+    
+    var r = "";
     r = r + "<div id='" + uniqueName + "' align='center'>\n";
     r = r + "  <div class='film-line'><span class='film-title'>" + title + "</span> (" + year + ")</div>\n";
-    r = r + "  <div class='rating-stars'>\n";
-    r = r + "    <score>\n";
-    r = r + "      <of-possible>01/</of-possible><your-score id='your-score-" + uniqueName + "'>" + showYourScore + "</your-score>\n";
-    r = r + "    </score>\n";
-    r = r + "    " + starsHtml + "\n";
-    r = r + "    <div id='original-score-" + uniqueName + "' data-score='" + showYourScore + "' hidden ></div>\n";
-    r = r + "  </div>\n";
+    r = r + "  <div class='rating-stars'></div>\n";
     r = r + "  <poster><img src='" + image + "' width='150px'/></poster>\n";
     r = r + "  <detail>\n";
     r = r + "    <div align='left'><a href='" + imdbFilmUrl + "' target='_blank'>" + imdbLabel + ":</a> " + imdbScore + "</div>\n";
@@ -144,19 +129,31 @@ function renderFilm(json) {
     r = r + "  </detail>\n";
     r = r + "</div>\n";
 
+    element.innerHTML = r;
+    renderStars(film);
+    renderStreams(film);
     getFilmlists(film.filmlists, filmId);
 
     return r;
 }
 
-function renderStars(rs) {
-    var uniqueName = rs.uniqueName;
-    var yourScore = rs.rating.yourScore;
+function renderStars(film) {
+    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+    var uniqueName = rsSource.uniqueName;
+    var yourScore = rsSource.rating.yourScore;
+    
+    // The score is shown backwards
+    var showYourScore = yourScore;
+    if (showYourScore == "10") {
+        showYourScore = "01";
+    } else if (showYourScore == null || showYourScore == "") {
+        showYourScore = "-";
+    }
+    
+    var starsHtml = "";
     var fullStars = yourScore;
     var emptyStars = 10 - yourScore;
     var starScore = 10;
-    
-    var starsHtml = "";
     while (emptyStars > 0) {
         starsHtml = starsHtml + "<span class='rating-star' id='rate-" + uniqueName + "-" + starScore + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'>☆</span>";
         emptyStars = emptyStars - 1;
@@ -168,7 +165,15 @@ function renderStars(rs) {
         starScore = starScore - 1;
     }
 
-    return starsHtml;
+    html = "";
+    html = html + "    <score>\n";
+    html = html + "      <of-possible>01/</of-possible><your-score id='your-score-" + uniqueName + "'>" + showYourScore + "</your-score>\n";
+    html = html + "    </score>\n";
+    html = html + "    " + starsHtml + "\n";
+    html = html + "    <div id='original-score-" + uniqueName + "' data-score='" + showYourScore + "' hidden ></div>\n";
+    
+    var ratingStarsEl = document.getElementsByClassName("rating-stars")[0];
+    ratingStarsEl.innerHTML = html;
 }
 
 function getFilmlists(listnames, filmId) {
