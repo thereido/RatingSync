@@ -24,21 +24,21 @@ function getHtmlRatingStars($film, $titleNum = null) {
     }
 
     while ($emptyStars > 0) {
-        $starsHtml .= "<span class='rating-star' id='rate-$uniqueName-$starScore' data-uniquename='$uniqueName' data-score='$starScore' $titleNum>☆</span>";
+        $starsHtml .= "      <span class='rating-star' id='rate-$uniqueName-$starScore' data-uniquename='$uniqueName' data-score='$starScore' $titleNum>☆</span>\n";
         $emptyStars = $emptyStars - 1;
         $starScore = $starScore - 1;
     }
     while ($fullStars > 0) {
-        $starsHtml .= "<span class='rating-star' id='rate-$uniqueName-$starScore' data-uniquename='$uniqueName' data-score='$starScore' $titleNum>★</span>";
+        $starsHtml .= "      <span class='rating-star' id='rate-$uniqueName-$starScore' data-uniquename='$uniqueName' data-score='$starScore' $titleNum>★</span>\n";
         $fullStars = $fullStars - 1;
         $starScore = $starScore - 1;
     }
 
-    $response  = "<div class='rating-stars'>\n";
-    $response .= "  <score><of-possible>01/</of-possible><your-score id='your-score-$uniqueName'>$showYourScore</your-score></score>\n";
-    $response .= "  $starsHtml\n";
-    $response .= "  <div id='original-score-$uniqueName' data-score='$showYourScore' hidden />\n";
-    $response .= "</div>\n";
+    $response  = "    <div class='rating-stars' id='rating-stars-$uniqueName'>\n";
+    $response .= "      <score><of-possible>01/</of-possible><your-score id='your-score-$uniqueName'>$showYourScore</your-score></score>\n";
+    $response .=        $starsHtml;
+    $response .= "      <div id='original-score-$uniqueName' data-score='$showYourScore' hidden></div>\n";
+    $response .= "    </div>\n";
 
     return $response;
 }

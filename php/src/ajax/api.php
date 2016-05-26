@@ -12,8 +12,6 @@ $action = array_value_by_key("action", $_GET);
 logDebug("API action: $action", "api.php");
 if ($action == "getSearchFilm") {
     $response = api_getSearchFilm($username);
-} elseif ($action == "getSearchFilms") {
-    $response = api_getSearchFilms($username);
 } elseif ($action == "setRating") {
     $response = api_setRating($username);
 } elseif ($action == "setFilmlist") {
@@ -28,6 +26,8 @@ if ($action == "getSearchFilm") {
     $response = api_updateFilmSource($username);
 } elseif ($action == "getStream") {
     $response = api_getStream($username);
+} elseif ($action == "getFilm") {
+    $response = api_getFilm($username);
 }
 
 echo $response;
@@ -73,16 +73,6 @@ function api_getSearchFilm($username)
         }
     }
     
-    return $response;
-}
-
-function api_getSearchFilms($username)
-{
-    $response = "";
-    $films = array();
-    $searchQuery = array_value_by_key("q", $_GET);
-    logDebug("Params q=$searchQuery", __FUNCTION__." ".__LINE__);
-
     return $response;
 }
 
@@ -132,6 +122,11 @@ function api_setFilmlist($username)
     $filmlist = Filmlist::getListFromDb($username, $listname);
     $filmlist->setFilmlist($filmId, $remove);
     $filmlist->saveToDb();
+
+    $film = Film::getFilmFromDb($filmId, $username);
+    $response = $film->json_encode();
+
+    return $response;
 }
 
 /**
@@ -249,6 +244,17 @@ function api_getStream($username)
     if (!empty($streamUrl)) {
         $response = $streamUrl;
     }
+
+    return $response;
+}
+
+function api_getFilm($username)
+{
+    $filmId = array_value_by_key("id", $_GET);
+    logDebug("Params id=$filmId", __FUNCTION__." ".__LINE__);
+
+    $film = Film::getFilmFromDb($filmId, $username);
+    $response = $film->json_encode();
 
     return $response;
 }

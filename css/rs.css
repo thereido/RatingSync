@@ -47,6 +47,7 @@
 poster {
     float: left;
     padding: 5px;
+    border-radius: 3px;
 }
 
 detail {
@@ -96,3 +97,37 @@ detail {
 .icon-Hulu { background-position: -445px -96px; }
 .icon-YouTube { background-position: -625px -10px; }
 .icon-HBO { background-position: -625px -96px; }
+
+.rating-detail {
+    position: fixed;
+    margin-right:auto;
+    margin-left:auto;
+    border-radius: 5px;
+    top: 30%;
+    width: 90%;
+    left: 5%;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 10px 10px 5px grey;
+}
+
+@media (min-width:768px) {
+    .rating-detail {
+        width: 70%;
+        left: 15%;
+    }
+}
+
+@media (min-width:992px) {
+    .rating-detail {
+        width: 60%;
+        left: 20%;
+    }
+}
+
+@media (min-width:1200px) {
+    .rating-detail {
+        width: 46%;
+        left: 27%;
+    }
+}

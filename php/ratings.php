@@ -42,7 +42,7 @@ if (empty($listname)) {
     <script src="../js/ratings.js"></script>
 </head>
 
-<body>
+<body onclick="hideFilmDetail()">
 <?php
 
 function test_input($data)
@@ -79,43 +79,49 @@ function test_input($data)
     <div><?php echo getHtmlFilmlistsHeader("Your Ratings"); ?></div>
   </div>
 
-  <div>
-    <form onsubmit="return searchFilm()">
-        <div class="row">
-        <div class="col-lg-6">
-        <div class="input-group">
-            <span class="input-group-btn">
-                <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
-            </span>
-            <input type="text" class="form-control" placeholder="tt0000001">
-        </div>
-        </div>
-        </div>
-    </form>
-    <p><span id="debug"></span></p>
-    <span id="searchResult"></span>
-  </div>
-    
-  <table class="table table-striped">
-    <tbody>
-      <?php
-      $count = 0;
-      foreach($films as $film) {
-          $count = $count + 1;
-          $uniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
-          echo "<tr>\n";
-          echo "  <td>\n";
-          echo "    <span id='$uniqueName'>\n";
-          echo getHtmlFilm($film, $count, true, $listname);
-          echo "    </span>\n";
-          echo "  </td>\n";
-          echo "</tr>\n";
-      }
-      ?>
-    </tbody>
-  </table>
+  <div id='rating-detail' class='rating-detail' onMouseEnter="hideable = false;" onMouseLeave="hideable = true;"></div>
+
+<?php
+    $filmsJson = "{\"films\":[";
+    $delimeter = "";
+    $count = 0;
+    $row = 0;
+    $totalFilms = count($films);
+    foreach($films as $film) {
+        $beginRow = "";
+        if ($count % 4 == 0) {
+            $beginRow = "<div class='row'>\n";
+        }
+        $endRow = "";
+        if ($count % 4 == 3 || $count == $totalFilms-1) {
+            $endRow = "</div>\n";
+        }
+
+        $filmId = $film->getId();
+        $image = Constants::RS_HOST . $film->getImage(Constants::SOURCE_RATINGSYNC);
+        $showFilmDetailJS = "showFilmDetail($filmId)";
+        $count = $count + 1;
+        $uniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
+        $onClick = "onClick='$showFilmDetailJS'";
+        $onMouseEnter = "onMouseEnter='detailTimer = setTimeout(function () { $showFilmDetailJS; }, 500)'";
+        $onMouseLeave = "onMouseLeave='clearTimeout(detailTimer)'";
+        echo "  $beginRow";
+        echo "    <div class='col-sm-3' id='$uniqueName'>\n";
+        echo "      <poster id='poster-$uniqueName' data-filmId='$filmId'>\n";
+        echo "        <img src='$image' width='150px' $onClick $onMouseEnter $onMouseLeave />\n";
+        echo "      </poster>\n";
+        echo "    </div>\n";
+        echo "  $endRow";
+
+        $filmsJson .= $delimeter . $film->json_encode(true);
+        $delimeter = ",";
+    }
+    $filmsJson .= "]}";
+?>
 
 </div>
+
+<script>var contextData = JSON.parse('<?php echo $filmsJson; ?>');</script>
           
 </body>
 </html>

@@ -35,7 +35,7 @@ function getHtmlFilm($film, $titleNum = null, $listname = null) {
     $response = "";
     
     $response .= "<poster><img src='$image' width='150px'/></poster>\n";
-    $response .= "<detail>";
+    $response .= "<detail>\n";
     $response .= "  <div class='film-line'>$titleNumStr<span class='film-title'>$title</span> ($year)</div>\n";
     $response .= "  <div align='left'>\n";
     $response .=      getHtmlRatingStars($film, $titleNum);
@@ -44,7 +44,7 @@ function getHtmlFilm($film, $titleNum = null, $listname = null) {
     $response .= "  <div><a href='$imdbFilmUrl' target='_blank'>$imdbLabel:</a> $imdbScore</div>\n";
     $response .=    getHtmlFilmlistsByFilm($film, $listname);
     $response .=    getHtmlStreams($film);
-    $response .= "</detail>";
+    $response .= "</detail>\n";
     
     return $response;
 }

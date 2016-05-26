@@ -103,6 +103,8 @@ if (empty($listname) && !empty($filmId)) {
   <table class="table table-striped">
     <tbody>
       <?php
+      $filmsJson = "{\"films\":[";
+      $delimeter = "";
       $count = 0;
       foreach($films as $film) {
           $count = $count + 1;
@@ -114,12 +116,18 @@ if (empty($listname) && !empty($filmId)) {
           echo "    </span>\n";
           echo "  </td>\n";
           echo "</tr>\n";
+
+          $filmsJson .= $delimeter . $film->json_encode(true);
+          $delimeter = ",";
       }
+      $filmsJson .= "]}";
       ?>
     </tbody>
   </table>
 
 </div>
+
+<script>var contextData = JSON.parse('<?php echo $filmsJson; ?>');</script>
           
 </body>
 </html>

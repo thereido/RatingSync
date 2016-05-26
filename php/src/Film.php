@@ -149,11 +149,15 @@ class Film {
         }
     }
 
-    public function json_encode()
+    public function json_encode($encodeTitles = false)
     {
         $arr = array();
         $arr['filmId'] = $this->getId();
-        $arr['title'] = $this->getTitle();
+        $title = $this->getTitle();
+        if ($encodeTitles) {
+            $title = htmlentities($title, ENT_QUOTES);
+        }
+        $arr['title'] = $title;
         $arr['year'] = $this->getYear();
         $arr['contentType'] = $this->getContentType();
         $arr['season'] = $this->getSeason();
