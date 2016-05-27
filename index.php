@@ -20,6 +20,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>RatingSync</title>
     <link href="css/bootstrap_rs.min.css" rel="stylesheet">
+    <link href="css/rs.css" rel="stylesheet">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="js/bootstrap_rs.min.js"></script>
 </head>
 

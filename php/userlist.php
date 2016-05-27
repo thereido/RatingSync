@@ -43,7 +43,10 @@ if (empty($listname) && !empty($filmId)) {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="../js/bootstrap_rs.min.js"></script>
+    <script src="../Chrome/constants.js"></script>
+    <script src="../Chrome/rsCommon.js"></script>
     <script src="../js/ratings.js"></script>
+    <script src="../js/userlist.js"></script>
 </head>
 
 <body>
@@ -111,7 +114,7 @@ if (empty($listname) && !empty($filmId)) {
           $uniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
           echo "<tr>\n";
           echo "  <td>\n";
-          echo "    <span id='$uniqueName'>\n";
+          echo "    <span id='$uniqueName' data-titleNum='$count'>\n";
           echo getHtmlFilm($film, $count, true, $listname);
           echo "    </span>\n";
           echo "  </td>\n";

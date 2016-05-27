@@ -1,8 +1,4 @@
 
-var RS_URL_BASE = "http://localhost:55887";
-var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
-var IMDB_FILM_BASEURL = "http://www.imdb.com/title/";
-
 document.addEventListener('DOMContentLoaded', function () {
     chrome.tabs.executeScript(null, {file: "getSearchTerms.js"}, function() { });
 });
@@ -14,10 +10,6 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
         notSupported(null);
     }
 });
-
-function renderStatus(statusText) {
-  document.getElementById('status').textContent = statusText;
-}
 
 function notFound(source)
 {
@@ -53,8 +45,8 @@ function searchFilm(searchTerms)
 	xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             var film = JSON.parse(xmlhttp.responseText);
+            contextData = JSON.parse('{"films":[' + xmlhttp.responseText + ']}');
             renderFilm(film, searchResultElement);
-            addStarListeners(searchResultElement);
             renderStatus('');
             showStreams();
         } else if (xmlhttp.readyState == 4) {
@@ -74,37 +66,7 @@ function searchFilm(searchTerms)
 	xmlhttp.send();
 }
 
-function rateFilm(uniqueName, score, titleNum) {
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            var film = JSON.parse(xmlhttp.responseText);
-            renderStars(film);
-            addStarListeners(document.getElementById("searchResult"));
-            renderStatus('Rating Saved');
-        }
-    }
-    xmlhttp.open("GET", RS_URL_API + "?action=setRating&json=1&un=" + uniqueName + "&s=" + score, true);
-    xmlhttp.send();
-    renderStatus('Saving...');
-}
-
-function renderYourScore(uniqueName, hoverScore, mousemove) {
-    var score = hoverScore;
-    if (mousemove == "original") {
-        score = document.getElementById("original-score-" + uniqueName).getAttribute("data-score");
-    }
-
-    if (score == "10") {
-        score = "01";
-    }
-    document.getElementById("your-score-" + uniqueName).innerHTML = score;
-}
-
 function renderFilm(film, element) {
-    var filmId = film.filmId;
-    var title = film.title;
-    var year = film.year;
     var image = RS_URL_BASE + film.image;
     
     var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
@@ -117,14 +79,12 @@ function renderFilm(film, element) {
     
     var r = "";
     r = r + "<div id='" + uniqueName + "' align='center'>\n";
-    r = r + "  <div class='film-line'><span class='film-title'>" + title + "</span> (" + year + ")</div>\n";
-    r = r + "  <div class='rating-stars'></div>\n";
+    r = r + "  <div class='film-line'><span class='film-title'>" + film.title + "</span> (" + film.year + ")</div>\n";
+    r = r + "  <div class='rating-stars' id='rating-stars-"+uniqueName+"'></div>\n";
     r = r + "  <poster><img src='" + image + "' width='150px'/></poster>\n";
     r = r + "  <detail>\n";
     r = r + "    <div align='left'><a href='" + imdbFilmUrl + "' target='_blank'>" + imdbLabel + ":</a> " + imdbScore + "</div>\n";
-    r = r + "    <div id='streams' class='streams'>\n";
-    r = r + "      " + renderStreams(film) + "\n";
-    r = r + "    </div>\n";
+    r = r + "    <div id='streams-"+film.filmId+"' class='streams'></div>\n";
     r = r + "    <div id='filmlist-container' align='left'></div>\n";
     r = r + "  </detail>\n";
     r = r + "</div>\n";
@@ -132,68 +92,22 @@ function renderFilm(film, element) {
     element.innerHTML = r;
     renderStars(film);
     renderStreams(film);
-    getFilmlists(film.filmlists, filmId);
+    renderFilmlists(film.filmlists, film.filmId);
 
     return r;
 }
 
-function renderStars(film) {
-    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
-    var uniqueName = rsSource.uniqueName;
-    var yourScore = rsSource.rating.yourScore;
-    
-    // The score is shown backwards
-    var showYourScore = yourScore;
-    if (showYourScore == "10") {
-        showYourScore = "01";
-    } else if (showYourScore == null || showYourScore == "") {
-        showYourScore = "-";
-    }
-    
-    var starsHtml = "";
-    var fullStars = yourScore;
-    var emptyStars = 10 - yourScore;
-    var starScore = 10;
-    while (emptyStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star' id='rate-" + uniqueName + "-" + starScore + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'>☆</span>";
-        emptyStars = emptyStars - 1;
-        starScore = starScore - 1;
-    }
-    while (fullStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star' id='rate-" + uniqueName + "-" + starScore + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'>★</span>";
-        fullStars = fullStars - 1;
-        starScore = starScore - 1;
-    }
-
-    html = "";
-    html = html + "    <score>\n";
-    html = html + "      <of-possible>01/</of-possible><your-score id='your-score-" + uniqueName + "'>" + showYourScore + "</your-score>\n";
-    html = html + "    </score>\n";
-    html = html + "    " + starsHtml + "\n";
-    html = html + "    <div id='original-score-" + uniqueName + "' data-score='" + showYourScore + "' hidden ></div>\n";
-    
-    var ratingStarsEl = document.getElementsByClassName("rating-stars")[0];
-    ratingStarsEl.innerHTML = html;
-}
-
-function getFilmlists(listnames, filmId) {
-    // Get all of the user's filmlists
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            var userlists = xmlhttp.responseText;
-            renderFilmlists(userlists, listnames, filmId);
-        }
-    }
-    xmlhttp.open("GET", RS_URL_API + "?action=getUserLists", true);
-    xmlhttp.send();
-}
-
 // userlist (JSON) - all of the user's filmlists
 // listnames - lists this film belongs in
-function renderFilmlists(userlistsJson, includedListnames, filmId) {
+function renderFilmlists(includedListnames, filmId) {
+    if (!userlistsJson) {
+        renderFilmlistsHandler = function () { renderFilmlists(includedListnames, filmId); };
+        getFilmlists(renderFilmlistsHandler);
+        return;
+    }
+    
     var defaultList = "Watchlist";
-    var defaultListClass = "checkmark-off";
+    var defaultListClass = "glyphicon glyphicon-check checkmark-off";
     var userlists = JSON.parse(userlistsJson);
     if (includedListnames === undefined) {
         includedListnames = [];
@@ -206,12 +120,12 @@ function renderFilmlists(userlistsJson, includedListnames, filmId) {
         var currentUserlist = userlists[x].listname;
         if (currentUserlist == defaultList) {
             if (-1 != includedListnames.indexOf(currentUserlist)) {
-                defaultListClass = "checkmark-on";
+                defaultListClass = "glyphicon glyphicon-check checkmark-on";
             }
         } else {
-            var checkmarkClass = "checkmark-off";
+            var checkmarkClass = "glyphicon glyphicon-check checkmark-off";
             if (-1 != includedListnames.indexOf(currentUserlist)) {
-                checkmarkClass = "checkmark-on";
+                checkmarkClass = "glyphicon glyphicon-check checkmark-on";
             }
             
             listItemsHtml = listItemsHtml + "  <li class='btn-filmlist' id='filmlist-btn-"+currentUserlist+"-"+filmId+"' data-listname='"+currentUserlist+"' data-filmId='"+filmId+"'>";
@@ -241,144 +155,4 @@ function renderFilmlists(userlistsJson, includedListnames, filmId) {
     var container = document.getElementById("filmlist-container");
     container.innerHTML = html;
     addFilmlistListeners(container, filmId);
-}
-
-function renderStreams(film) {
-    var filmId = film.filmId;
-    var title = film.title;
-    var year = film.year;
-    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
-    var rsUniqueName = rsSource.uniqueName;
-
-    var streamsHtml = "";
-    var providers = validStreamProviders();
-    for (var providerIndex = 0; providerIndex < providers.length; providerIndex++) {
-        var sourceName = providers[providerIndex];
-
-        var uniqueName = "";
-        var uniqueEpisode = "";
-        var uniqueAlt = "";
-        var streamDate = "";
-        var source = film.sources.find( function (findSource) { return findSource.name == sourceName; } );
-        if (source) {
-            uniqueName = source.uniqueName;
-            uniqueEpisode = source.uniqueEpisode;
-            uniqueAlt = source.uniqueAlt;
-            streamDate = source.streamDate;
-        }
-
-        streamsHtml = streamsHtml + "  <div class='stream' id='" + sourceName + "-" + rsUniqueName + "' data-film-id='" + filmId + "' data-source-name='" + sourceName + "' data-title='" + title + "' data-year='" + year + "' data-uniquename='" + uniqueName + "' data-unique-episode='" + uniqueEpisode + "' data-unique-alt='" + uniqueAlt + "' data-stream-date='" + streamDate + "'>\n";
-        if (source && source.streamUrl && source.streamUrl != "undefined") {
-            streamsHtml = streamsHtml + "    <a href='" + source.streamUrl + "' target='_blank'>\n";
-            streamsHtml = streamsHtml + "      <div class='stream-icon icon-" + sourceName + "' title='Watch on " + sourceName + "'></div>\n";
-            streamsHtml = streamsHtml + "    </a>\n";
-        }
-        streamsHtml = streamsHtml + "  </div>\n";
-    }
-
-    return streamsHtml;
-}
-
-function toggleFilmlist(listname, filmId, activeBtnId) {
-    var defaultBtn = document.getElementById("filmlist-btn-default-" + filmId);
-    var otherListsBtn = document.getElementById("filmlist-btn-others-" + filmId);
-    var otherListsElement = document.getElementById("filmlists-" + filmId);
-    defaultBtn.disabled = true;
-    otherListsBtn.disabled = true;
-    otherListsElement.disabled = true;
-    
-    var activeBtn = document.getElementById(activeBtnId);
-    var checkmark = activeBtn.getElementsByTagName("span")[0];
-    var filmIsInTheList = false;
-    var addToList = 1; //yes
-    if (checkmark.className == "checkmark-on") {
-        filmIsInTheList = true;
-        var addToList = 0; //no (remove)
-    }
-
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            filmIsInTheList = !filmIsInTheList;
-            if (filmIsInTheList) {
-                checkmark.className = "checkmark-on";
-            } else {
-                checkmark.className = "checkmark-off";
-            }
-
-            defaultBtn.disabled = false;
-            otherListsBtn.disabled = false;
-            otherListsElement.disabled = false;
-            otherListsElement.hidden = true;
-        }
-    }
-    xmlhttp.open("GET", RS_URL_API + "?action=setFilmlist&l=" + listname + "&id=" + filmId + "&c=" + addToList, true);
-    xmlhttp.send();
-}
-
-function toggleHideFilmlists(elementId) {
-	var el = document.getElementById(elementId);
-    el.hidden = !el.hidden;
-}
-
-function addStarListeners(el) {
-    var stars = el.getElementsByClassName("rating-star");
-    for (i = 0; i < stars.length; i++) {
-        addStarListener(stars[i].getAttribute("id"));
-    }
-}
-
-function addStarListener(elementId) {    
-	var star = document.getElementById(elementId);
-	if (star != null) {
-		var uniqueName = star.getAttribute('data-uniquename');
-		var score = star.getAttribute('data-score');
-		var titleNum = star.getAttribute('data-title-num');
-
-		var mouseoverHandler = function () { renderYourScore(uniqueName, score, 'new'); };
-		var mouseoutHandler = function () { renderYourScore(uniqueName, score, 'original'); };
-		var clickHandler = function () { rateFilm(uniqueName, score, titleNum); };
-
-        star.addEventListener("mouseover", mouseoverHandler);
-        star.addEventListener("mouseout", mouseoutHandler);
-        star.addEventListener("click", clickHandler);
-	}
-}
-
-function addFilmlistListeners(el, filmId) {
-    // Default list button
-	var defaultListBtn = document.getElementById("filmlist-btn-default-"+filmId);
-	if (defaultListBtn != null) {
-	    var listname = defaultListBtn.getAttribute('data-listname');
-        var clickDefaultListHandler = function () { toggleFilmlist(listname, filmId, defaultListBtn.getAttribute("id")); };
-        defaultListBtn.addEventListener("click", clickDefaultListHandler);
-	}
-
-    // "Others" button
-	var otherListsBtn = document.getElementById("filmlist-btn-others-"+filmId);
-	if (otherListsBtn != null) {
-        var clickOtherListsHandler = function () { toggleHideFilmlists('filmlists-'+filmId); };
-        otherListsBtn.addEventListener("click", clickOtherListsHandler);
-	}
-
-    // Other lists buttons
-    var buttons = el.getElementsByClassName("btn-filmlist");
-    for (i = 0; i < buttons.length; i++) {
-        addFilmlistListener(buttons[i].getAttribute("id"));
-    }
-}
-
-function addFilmlistListener(elementId) {
-	var button = document.getElementById(elementId);
-	if (button != null) {
-		var listname = button.getAttribute('data-listname');
-		var filmId = button.getAttribute('data-filmId');
-
-        var clickHandler = function () { toggleFilmlist(listname, filmId, elementId); };
-        button.addEventListener("click", clickHandler);
-	}
-}
-
-function validStreamProviders() {
-    return ["Netflix", "xfinity"];
 }

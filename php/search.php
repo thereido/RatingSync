@@ -35,6 +35,8 @@ if (!empty($filmId)) {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="../js/bootstrap_rs.min.js"></script>
+    <script src="../Chrome/constants.js"></script>
+    <script src="../Chrome/rsCommon.js"></script>
     <script src="../js/ratings.js"></script>
 </head>
 
