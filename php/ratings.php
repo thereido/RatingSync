@@ -100,6 +100,8 @@ function test_input($data)
         }
 
         $filmId = $film->getId();
+        $title = $film->getTitle();
+        $titleNoQuotes = htmlentities($title, ENT_QUOTES);
         $image = Constants::RS_HOST . $film->getImage(Constants::SOURCE_RATINGSYNC);
         $showFilmDetailJS = "showFilmDetail($filmId)";
         $count = $count + 1;
@@ -110,7 +112,7 @@ function test_input($data)
         echo "  $beginRow";
         echo "    <div class='col-sm-3' id='$uniqueName'>\n";
         echo "      <poster id='poster-$uniqueName' data-filmId='$filmId'>\n";
-        echo "        <img src='$image' width='150px' $onClick $onMouseEnter $onMouseLeave />\n";
+        echo "        <img src='$image' width='150px' alt='$titleNoQuotes' $onClick $onMouseEnter $onMouseLeave />\n";
         echo "      </poster>\n";
         echo "    </div>\n";
         echo "  $endRow";
