@@ -162,12 +162,12 @@ class Film {
         $arr['contentType'] = $this->getContentType();
         $arr['season'] = $this->getSeason();
         $arr['episodeNumber'] = $this->getEpisodeNumber();
-        $arr['episodeTitle'] = $this->getEpisodeTitle();
+        $arr['episodeTitle'] = htmlentities($this->getEpisodeTitle());
         $arr['image'] = $this->getImage();
 
         $arrDirectors = array();
         foreach ($this->getDirectors() as $director) {
-            $arrDirectors[] = htmlspecialchars($director);
+            $arrDirectors[] = htmlentities($director, ENT_QUOTES);
         }
         $arr['directors'] = $arrDirectors;
         
