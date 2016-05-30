@@ -50,6 +50,11 @@ poster {
     border-radius: 3px;
 }
 
+poster > img {
+    width: 150px;
+    height: 221px;
+}
+
 detail {
     float: left;
     vertical-align: middle;

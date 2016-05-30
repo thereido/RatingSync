@@ -91,11 +91,11 @@ function test_input($data)
     $totalFilms = count($films);
     foreach($films as $film) {
         $beginRow = "";
-        if ($count % 4 == 0) {
+        if ($count % 12 == 0) {
             $beginRow = "<div class='row'>\n";
         }
         $endRow = "";
-        if ($count % 4 == 3 || $count == $totalFilms-1) {
+        if ($count % 12 == 11 || $count == $totalFilms-1) {
             $endRow = "</div>\n";
         }
 
@@ -110,9 +110,9 @@ function test_input($data)
         $onMouseEnter = "onMouseEnter='detailTimer = setTimeout(function () { $showFilmDetailJS; }, 500)'";
         $onMouseLeave = "onMouseLeave='clearTimeout(detailTimer)'";
         echo "  $beginRow";
-        echo "    <div class='col-sm-3' id='$uniqueName'>\n";
+        echo "    <div class='col-xs-6 col-sm-4 col-md-3 col-lg-2' id='$uniqueName'>\n";
         echo "      <poster id='poster-$uniqueName' data-filmId='$filmId'>\n";
-        echo "        <img src='$image' width='150px' alt='$titleNoQuotes' $onClick $onMouseEnter $onMouseLeave />\n";
+        echo "        <img src='$image' alt='$titleNoQuotes' $onClick $onMouseEnter $onMouseLeave />\n";
         echo "      </poster>\n";
         echo "    </div>\n";
         echo "  $endRow";
