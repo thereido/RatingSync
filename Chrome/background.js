@@ -14,7 +14,7 @@ function onMessage(request, sender) {
         }
     }
     else if (request.action == "setSearchTerms") {
-        requestAddFilm(request.search);
+        //requestAddFilm(request.search);
     }
     else if (request.action == "createProviderTab") {
         senderTabId = "";
