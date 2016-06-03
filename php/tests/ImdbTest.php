@@ -1544,6 +1544,43 @@ class ImdbTest extends RatingSyncTestCase
         $this->assertEquals("/find?ref_=nv_sr_fn&q=Wallace+%26+Gromit%3A+The+Curse+of+the+Were-Rabbit&s=tt", $url);
     }
 
+    /**
+     * @covers \RatingSync\Imdb::getDetailPageRegexForContentType
+     * @depends testGetFilmDetailFromWebsite
+     */
+    public function testGetDetailPageRegexForContentType()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $site = new ImdbExt(TEST_IMDB_USERNAME);
+
+        // Setup & Test
+            // Frozen (2013)
+        $movie = new Film();
+        $movie->setUniqueName("tt2294629", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($movie, true);
+
+            // Penny Dreadful (TV Series)
+        $tvSeries = new Film();
+        $tvSeries->setUniqueName("tt2628232", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($tvSeries, true);
+
+            // Penny Dreadful Season 1 Episode 5 - Closer Than Sisters
+        $tvEpisode = new Film();
+        $tvEpisode->setUniqueName("tt2991752", $site->_getSourceName()); 
+        $site->getFilmDetailFromWebsite($tvEpisode, true);
+
+            // Inside the Box (2013)
+        $short = new Film();
+        $short->setUniqueName("tt2752996", $site->_getSourceName());
+        $site->getFilmDetailFromWebsite($short, true);
+
+        // Verify
+        $this->assertEquals("FeatureFilm", $movie->getContentType(), 'Feature Film');
+        $this->assertEquals("TvSeries", $tvSeries->getContentType(), 'TV Series');
+        $this->assertEquals("TvSeries", $tvEpisode->getContentType(), 'TV Episode');
+        //$this->assertEquals("ShortFilm", $short->getContentType(), 'Short Film');
+    }
+
     /*RT* searchWebsiteForUniqueFilm *RT*/
 }
 

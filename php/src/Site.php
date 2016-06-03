@@ -477,7 +477,7 @@ abstract class Site
         if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
             return false;
         }
-        $film->setContentType($matches[1]);
+        $film->setContentType($this->convertContentType($matches[1]));
         return true;
     }
 
@@ -650,5 +650,10 @@ abstract class Site
         }
 
         return $url;
+    }
+
+    public function convertContentType($contentType)
+    { 
+        return $contentType;
     }
 }

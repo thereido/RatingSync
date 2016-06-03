@@ -283,12 +283,76 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $searchTerms["uniqueAlt"] = TEST_XFINITY_UNIQUEALT;
         $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
         $film = \RatingSync\search($searchTerms);
+        $filmId = $film->getId();
+        $xfinity = new Xfinity(TEST_XFINITY_USERNAME);
+        $url = $xfinity->getStreamUrl($film->getId());
+        $source = $film->getSource(Constants::SOURCE_XFINITY);
+        $source->setStreamUrl($url);
+        $source->refreshStreamDate();
+        $source->saveFilmSourceToDb($filmId);
 
         // Test
-        $url = $site->getStreamUrl($film->getId());
+        $url = $site->getStreamUrl($filmId);
 
         // Verify
-        $this->assertEquals("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT."/".TEST_XFINITY_UNIQUENAME."/movies#filter=online&episode=".TEST_XFINITY_UNIQUENAME, $url, Constants::SOURCE_NETFLIX." streaming URL");
+        $this->assertEquals("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT."/".TEST_XFINITY_UNIQUENAME."/movies#filter=online", $url, Constants::SOURCE_XFINITY." streaming URL");
+    }
+
+    /**
+     * @covers \RatingSync\RatingSyncSite::getStreamUrl
+     * @depends testSetupRatings
+     */
+    public function testGetStreamUrlTvSeries()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
+        $searchTerms["uniqueName"] = TEST_XFINITY_UNIQUENAME_TV;
+        $searchTerms["uniqueAlt"] = TEST_XFINITY_UNIQUEALT_TV;
+        $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
+        $film = \RatingSync\search($searchTerms);
+        $filmId = $film->getId();
+        $xfinity = new Xfinity(TEST_XFINITY_USERNAME);
+        $url = $xfinity->getStreamUrl($film->getId());
+        $source = $film->getSource(Constants::SOURCE_XFINITY);
+        $source->setStreamUrl($url);
+        $source->refreshStreamDate();
+        $source->saveFilmSourceToDb($filmId);
+
+        // Test
+        $url = $site->getStreamUrl($filmId);
+
+        // Verify
+        $this->assertStringStartsWith("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT_TV."/".TEST_XFINITY_UNIQUENAME_TV."/full-episodes#filter=online", $url, Constants::SOURCE_XFINITY." streaming URL");
+    }
+
+    /**
+     * @covers \RatingSync\RatingSyncSite::getStreamUrl
+     * @depends testSetupRatings
+     */
+    public function testGetStreamUrlTvEpisode()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
+        $searchTerms["uniqueName"] = TEST_XFINITY_UNIQUENAME_TV;
+        $searchTerms["uniqueAlt"] = TEST_XFINITY_UNIQUEALT_TV;
+        $searchTerms["uniqueEpisode"] = TEST_XFINITY_UNIQUEEPISODE_TV;
+        $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
+        $film = \RatingSync\search($searchTerms);
+        $filmId = $film->getId();
+        $xfinity = new Xfinity(TEST_XFINITY_USERNAME);
+        $url = $xfinity->getStreamUrl($film->getId());
+        $source = $film->getSource(Constants::SOURCE_XFINITY);
+        $source->setStreamUrl($url);
+        $source->refreshStreamDate();
+        $source->saveFilmSourceToDb($filmId);
+
+        // Test
+        $url = $site->getStreamUrl($filmId);
+
+        // Verify
+        $this->assertEquals("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT_TV."/".TEST_XFINITY_UNIQUENAME_TV."/full-episodes#filter=online&episode=".TEST_XFINITY_UNIQUEEPISODE_TV, $url, Constants::SOURCE_XFINITY." streaming URL");
     }
 
     /**

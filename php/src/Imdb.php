@@ -296,7 +296,7 @@ class Imdb extends \RatingSync\SiteRatings
      * @return string Regular expression to find Content Type in film detail HTML page
      */
     protected function getDetailPageRegexForContentType() {
-        return '/<div class="infobar">\s*([a-zA-Z \-\/]+)\s*&nbsp;<</';
+        return '/<meta property=\'og:title\' content=".* \(([^\d]+) \d/';
     }
 
     /**
@@ -439,9 +439,14 @@ class Imdb extends \RatingSync\SiteRatings
         }
 
         $title = $film->getTitle();
-        $args = array("query" => $title);
+        $episodeTitle = $film->getEpisodeTitle();
+        $query = $title;
+        if (!empty($episodeTitle)) {
+            $query .= " $episodeTitle";
+        }
+        $args = array("query" => $query);
         $page = $this->http->getPage($this->getSearchUrl($args));
-        $regex = $this->getSearchPageRegexForUniqueName($title, $film->getYear());
+        $regex = $this->getSearchPageRegexForUniqueName($title, $film->getYear(), $episodeTitle);
         if (!empty($regex) && 0 < preg_match($regex, $page, $matches)) {
             $uniqueName = $matches[1];
             $film->setUniqueName($uniqueName, $this->sourceName);
@@ -457,15 +462,38 @@ class Imdb extends \RatingSync\SiteRatings
      *
      * @return string Regular expression to find the image in film detail HTML page
      */
-    protected function getSearchPageRegexForUniqueName($title, $year)
+    protected function getSearchPageRegexForUniqueName($title, $year, $episodeTitle)
     {
         $specialChars = "\/\^\.\[\]\|\(\)\?\*\+\{\}"; // need to do '\' too
         $pattern = "|([$specialChars])|U";
         $escapedTitle = preg_replace($pattern, '\\\\${1}', $title);
+        $escapedEpisodeTitle = preg_replace($pattern, '\\\\${1}', $episodeTitle);
 
         $lastYear = $year - 1;
         $regexYear = "($year|$lastYear)";
 
-        return '/\"\/title\/([^\/.]*)\/\?ref_=fn_tt_tt_\d\d?\" >'.$escapedTitle.'<\/a>[^\).*]*\)? \('.$regexYear.'\)/i';
+        $regexUniqueName = "";
+        if (empty($episodeTitle)) {
+            // Movie or Series
+            $regexUniqueName = '/\"\/title\/([^\/.]*)\/\?ref_=fn_[a-z]{2}_[a-z]{2}_\d\d?\" >'.$escapedTitle.'<\/a>[^\).*]*\)? \('.$regexYear.'\)/i';
+        } else {
+            // TV Episode
+            $regexUniqueName = '/\"\/title\/([^\/.]*)\/\?ref_=fn_[a-z]{2}_[a-z]{2}_\d\d?\" >'.$escapedEpisodeTitle.'<\/a>[^"]*[^>]*>'.$escapedTitle.'<\/a> \('.$regexYear.'\)/i';
+        }
+
+        return $regexUniqueName;
+    }
+
+    public function convertContentType($contentType)
+    {
+        if (empty($contentType) || $contentType == "TV Movie") {
+            $contentType = Film::CONTENT_FILM;
+        } elseif ($contentType == "TV Series" || $contentType == "TV Episode") {
+            $contentType = Film::CONTENT_TV;
+        } else {
+            $contentType = Film::CONTENT_FILM;
+        }
+
+        return $contentType;
     }
 }

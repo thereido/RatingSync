@@ -146,6 +146,8 @@ function search($searchTerms, $username = null)
     $uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
     $title = array_value_by_key("title", $searchTerms);
     $year = array_value_by_key("year", $searchTerms);
+    $episodeTitle = array_value_by_key("episodeTitle", $searchTerms);
+    $contentType = array_value_by_key("contentType", $searchTerms);
     $sourceName = array_value_by_key("sourceName", $searchTerms);
     // Need uniqueName or both title and year
     if (empty($uniqueName) && (empty($title) || empty($year))) {
@@ -178,6 +180,7 @@ function search($searchTerms, $username = null)
             if (!empty($site)) {
                 $film = new Film();
                 $film->setUniqueName($uniqueName, $sourceName);
+                $film->setUniqueEpisode($uniqueEpisode, $sourceName);
                 $site->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_ALWAYS);
                 $film->saveToDb($username);
                 $searchTerms["title"] = $film->getTitle();
@@ -199,11 +202,7 @@ function search($searchTerms, $username = null)
         }
     }
 
-    if (!empty($film) && !empty($film->getId()) && $newFilm) {
-        // New film - get data for all sources
-        Source::createAllSourcesToDb($film->getId());
-
-    } elseif (!empty($film) && !empty($film->getId()) && !empty($uniqueName) && !empty($sourceName)) {
+    if (!empty($film) && !empty($film->getId()) && !empty($uniqueName) && !empty($sourceName)) {
         // Existing film - save source data from the search by this source
         $source = $film->getSource($sourceName);
         if (empty($source->getUniqueName())) {

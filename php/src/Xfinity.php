@@ -44,7 +44,7 @@ class Xfinity extends \RatingSync\SiteProvider
 
         $episodeParam = "&episode=$uniqueEpisode";
         if (empty($uniqueEpisode)) {
-            $episodeParam = "&episode=$uniqueName";
+            $episodeParam = "";
         }
 
         $contentParam = "movies";
@@ -235,16 +235,12 @@ class Xfinity extends \RatingSync\SiteProvider
         }
 
         $title = $film->getTitle();
-/*RT*/logDebug("        title=$title", __FUNCTION__." ".__LINE__);
         $args = array("query" => $title);
-/*RT*/logDebug("        searchUrl=".$this->getSearchUrl($args), __FUNCTION__." ".__LINE__);
         $page = $this->http->getPage($this->getSearchUrl($args));
         $uniqueName = null;
         $uniqueAlt = null;
         
-/*RT*/logDebug("        AA", __FUNCTION__." ".__LINE__);
         $regex = $this->getSearchPageRegexForUniqueName($title, $film->getYear());
-/*RT*/logDebug("        AB regex=$regex", __FUNCTION__." ".__LINE__);
         if (!empty($regex) && 0 < preg_match($regex, $page, $matches)) {
             $uniqueName = $matches[1];
             $film->setUniqueName($uniqueName, $this->sourceName);
@@ -255,7 +251,6 @@ class Xfinity extends \RatingSync\SiteProvider
             $film->setUniqueAlt($uniqueAlt, $this->sourceName);
         }
         
-/*RT*/logDebug("        uniqueName=$uniqueName, uniqueAlt=$uniqueAlt", __FUNCTION__." ".__LINE__);
         if (empty($uniqueName) || empty($uniqueAlt)) {
             return false;
         }
@@ -301,7 +296,11 @@ class Xfinity extends \RatingSync\SiteProvider
 
     protected function streamAvailableFromDetailPage($page, $film, $onlyFree = true)
     {
-        $regex = '/<tr id="' . $film->getSource($this->sourceName)->getUniqueName() . '" class="online active">/';
+        $source = $film->getSource($this->sourceName);
+        $regex = '/<tr id="' . $film->getSource($this->sourceName)->getUniqueName() . '" class="[^"]*online[^"]*active[^"]*">/';
+        if ($film->getContentType() == Film::CONTENT_TV) {
+            $regex = '/class="[^"]*active[^"]*".*[\s]*.*data-cim-video-url="\/watch\/'.$source->getUniqueAlt().'\/'.$source->getUniqueName().'\/[0-9]{4,}/';
+        }
         return (0 < preg_match($regex, $page, $matches));
     }
 
@@ -315,35 +314,16 @@ class Xfinity extends \RatingSync\SiteProvider
         return $url;
     }
 
-    /**
-     * Get the content type from html of the film's detail page. Set the value
-     * in the Film param.
-     *
-     * @param string $page      HTML of the film detail page
-     * @param Film   $film      Set the image link in this Film object
-     * @param bool   $overwrite Only overwrite data if 1) $overwrite=true OR/AND 2) data is null
-     *
-     * @return bool true is value is written to the Film object
-     */
-    protected function parseDetailPageForContentType($page, $film, $overwrite)
+    public function convertContentType($contentType)
     {
-        if (!$overwrite && !is_null($film->getContentType())) {
-            return false;
-        }
-
-        $regex = $this->getDetailPageRegexForContentType();
-        if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
-            return false;
-        }
-        $contentTypeHtml = $matches[1];
-        if ($contentTypeHtml == "Full Movie") {
-            $film->setContentType(Film::CONTENT_FILM);
-        } elseif ($contentTypeHtml == "Full Movie") {
-            $film->setContentType(Film::CONTENT_TV);
+        if (empty($contentType) || $contentType == "full_movie") {
+            $contentType = Film::CONTENT_FILM;
+        } elseif (substr($contentType, 0, 6) == "Season") {
+            $contentType = Film::CONTENT_TV;
         } else {
-            return false;
+            $contentType = Film::CONTENT_FILM;
         }
 
-        return true;
+        return $contentType;
     }
 }

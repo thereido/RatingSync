@@ -1095,6 +1095,8 @@ class Film {
         if (is_null($episodeNumber)) $selectEpisodeNumber = "episodeNumber IS NULL";
         $selectUniqueEpisode = "uniqueEpisode='$uniqueEpisode'";
         if (empty($uniqueEpisode)) $selectUniqueEpisode = "(uniqueEpisode='' OR uniqueEpisode IS NULL)";
+        $selectEpisodeTitle = "episodeTitle='$episodeTitle'";
+        if (is_null($episodeTitle)) $selectEpisodeTitle = "episodeTitle IS NULL";
 
         $film = null;
         if (!empty($uniqueName)) {
@@ -1111,8 +1113,7 @@ class Film {
         if (empty($film) && !empty($title) && !empty($year)) {
             $query  = "SELECT id FROM film";
             $query .= " WHERE title='$title' AND $selectYear";
-            $query .= "   AND $selectSeason";
-            $query .= "   AND $selectEpisodeNumber";
+            $query .= "   AND (($selectSeason AND $selectEpisodeNumber) OR $selectEpisodeTitle)";
             $result = $db->query($query);
             if ($result->num_rows == 1) {
                 $row = $result->fetch_assoc();

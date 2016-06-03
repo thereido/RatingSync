@@ -178,6 +178,7 @@ function getApiSearchTerms()
     $searchUniqueAlt = array_value_by_key("ua", $_GET);
     $searchTitle = array_value_by_key("t", $_GET);
     $searchYear = array_value_by_key("y", $_GET);
+    $searchEpisodeTitle = array_value_by_key("et", $_GET);
     $searchContentType = array_value_by_key("ct", $_GET);
 
     $sourceName = Constants::SOURCE_RATINGSYNC;
@@ -194,13 +195,14 @@ function getApiSearchTerms()
         $sourceName = Constants::SOURCE_HULU;
     }
     
-    logDebug("Params q=$searchQuery, ue=$searchUniqueEpisode, ua=$searchUniqueAlt, t=$searchTitle, y=$searchYear, ct=$searchContentType, source=$searchSource", __FUNCTION__." ".__LINE__);
+    logDebug("Params q=$searchQuery, ue=$searchUniqueEpisode, ua=$searchUniqueAlt, t=$searchTitle, y=$searchYear, et=$searchEpisodeTitle, ct=$searchContentType, source=$searchSource", __FUNCTION__." ".__LINE__);
     $searchTerms = array('uniqueName' => $searchQuery,
                          'uniqueEpisode' => $searchUniqueEpisode,
                          'uniqueAlt' => $searchUniqueAlt,
                          'sourceName' => $sourceName,
                          'title' => htmlspecialchars_decode($searchTitle),
                          'year' => $searchYear,
+                         'episodeTitle' => htmlspecialchars_decode($searchEpisodeTitle),
                          'contentType' => $searchContentType);
 
     return $searchTerms;

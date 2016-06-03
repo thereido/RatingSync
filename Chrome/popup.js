@@ -61,6 +61,7 @@ function searchFilm(searchTerms)
     if (searchTerms.source != "undefined") { params = params + "&source=" + searchTerms.source; }
     if (searchTerms.title != "undefined") { params = params + "&t=" + encodeURIComponent(searchTerms.title); }
     if (searchTerms.year != "undefined") { params = params + "&y=" + searchTerms.year; }
+    if (searchTerms.episodeTitle != "undefined") { params = params + "&et=" + searchTerms.episodeTitle; }
     if (searchTerms.contentType != "undefined") { params = params + "&ct=" + searchTerms.contentType; }
 	xmlhttp.open("GET", RS_URL_API + "?action=getSearchFilm" + params, true);
 	xmlhttp.send();
@@ -73,9 +74,14 @@ function renderFilm(film, element) {
     var uniqueName = rsSource.uniqueName;
 
     var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
-    var imdbFilmUrl = IMDB_FILM_BASEURL + imdb.uniqueName;
-    var imdbLabel = "IMDb";
-    var imdbScore = imdb.userScore;
+    var imdbLink = "";
+    if (imdb && imdb.uniqueName) {
+        var imdbLabel = "IMDb";
+        var imdbFilmUrl = IMDB_FILM_BASEURL + imdb.uniqueName;
+        var imdbScore = imdb.userScore;
+        imdbLink = "<a href='" + imdbFilmUrl + "' target='_blank'>" + imdbLabel + ":</a> " + imdbScore;
+    }
+
     
     var r = "";
     r = r + "<div id='" + uniqueName + "' align='center'>\n";
@@ -83,7 +89,7 @@ function renderFilm(film, element) {
     r = r + "  <div class='rating-stars' id='rating-stars-"+uniqueName+"'></div>\n";
     r = r + "  <poster><img src='" + image + "' width='150px'/></poster>\n";
     r = r + "  <detail>\n";
-    r = r + "    <div align='left'><a href='" + imdbFilmUrl + "' target='_blank'>" + imdbLabel + ":</a> " + imdbScore + "</div>\n";
+    r = r + "    <div align='left'>" + imdbLink + "</div>\n";
     r = r + "    <div id='streams-"+film.filmId+"' class='streams'></div>\n";
     r = r + "    <div id='filmlist-container' align='left'></div>\n";
     r = r + "  </detail>\n";

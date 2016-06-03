@@ -44,6 +44,7 @@ function getSearchTerms(source, document_root) {
     var uniqueAlt;
     var title;
     var year;
+    var episodeTitle;
     var contentType;
 
     var url = window.location.href;
@@ -65,6 +66,7 @@ function getSearchTerms(source, document_root) {
                 uniqueName = regex.exec(url)[1];
                 titleEl = document_root.getElementsByClassName("title has-jawbone-nav-transition")[0];
                 yearEl = document_root.getElementsByClassName("year")[0];
+                durationEl = document_root.getElementsByClassName("duration")[0];
                 if (titleEl) {
                     titleHtml = titleEl.innerHTML;
                     regex = new RegExp("<img alt=\"([^\"]+)");
@@ -76,6 +78,12 @@ function getSearchTerms(source, document_root) {
                 }
                 if (yearEl) {
                     year = yearEl.innerHTML;
+                }
+                if (durationEl) {
+                    regex = new RegExp("[0-9]+ (Season)[s]?<");
+                    if (regex.test(durationEl.innerHTML)) {
+                        contentType = "TvSeries";
+                    }
                 }
             }
         }
@@ -157,6 +165,23 @@ function getSearchTerms(source, document_root) {
                 year = reYear.exec(html)[1];
             }
         }
+        var coreEl = document_root.getElementById("core");
+        if (coreEl) {
+            var coreHtml = coreEl.innerHTML;
+            var reContentType = new RegExp('<section[^<]*http:\/\/schema\.org\/([^"]*)');
+            if (reContentType.test(coreHtml)) {
+                contentType = reContentType.exec(coreHtml)[1];
+                if (contentType == "TVSeries") {
+                    contentType = "TvSeries";
+                    var episodeEl = document_root.getElementById(uniqueEpisode);
+                    if (episodeEl) {
+                        episodeTitle = episodeEl.getElementsByClassName("title")[0].innerHTML;
+                    }
+                } else {
+                    contentType = "FeatureFilm";
+                }
+            }
+        }
 	}
     else if (source == "H") {
         var indexBegin = -1;
@@ -196,6 +221,7 @@ function getSearchTerms(source, document_root) {
     text = text + '"source": "' + source + '", ';
     text = text + '"title": "' + title + '", ';
     text = text + '"year": "' + year + '", ';
+    text = text + '"episodeTitle": "' + episodeTitle + '", ';
     text = text + '"contentType": "' + contentType + '"}';
     var json = JSON.parse(text);
     return json;
