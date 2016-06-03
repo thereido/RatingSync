@@ -170,25 +170,6 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
     xmlhttp.send();
 }
 
-/*RT*
-function getFilmlists(listnames, filmId) {
-    // Get all of the user's filmlists
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            userlistsJson = xmlhttp.responseText;
-            if (userlistsJson) {
-                console.log("Got userlistsJson");
-                renderFilmlists(listnames, filmId);
-            }
-        }
-    }
-    xmlhttp.open("GET", RS_URL_API + "?action=getUserLists", true);
-    console.log("send API");
-    xmlhttp.send();
-}
-*RT*/
-
 function getFilmlists(callback) {
     if (userlistsJson) {
         callback();
