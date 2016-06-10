@@ -40,8 +40,14 @@ function onUpdated(tabId, changeInfo, tab) {
             source = "XF";
         } else if (-1 < url.indexOf("hulu") && -1 < url.indexOf("/watch/")) {
             source = "H";
-        } else if (-1 < tab.url.indexOf("//localhost") && -1 < tab.url.indexOf("userlist")) {
-            chrome.tabs.executeScript(tab.id, {file: "showStreams.js"}, function () { chrome.tabs.sendMessage(tab.id, { action: "showStreams" }); } );
+        } else if (-1 < tab.url.indexOf("//localhost") && (-1 < tab.url.indexOf("userlist") || -1 < tab.url.indexOf("ratings")) ) {
+            // Inject constants.js. When that is done the callback injects showStreams.js.
+            // When showStreams.js is injected send a message to tab (the userlist or ratings page).
+            chrome.tabs.executeScript(tab.id, {file: "constants.js"}, function () {
+                    chrome.tabs.executeScript(tab.id, {file: "showStreams.js"}, function () {
+                            chrome.tabs.sendMessage(tab.id, { action: "showStreams" });
+                        } );
+                } );
         }
 
         if (0 < source.length) {
@@ -96,9 +102,7 @@ function onStreamInfoReady(streamResponse) {
     if (streamInfo.uniqueEpisode) { params = params + "&ue=" + streamInfo.uniqueEpisode; }
     if (streamInfo.uniqueAlt) { params = params + "&ua=" + streamInfo.uniqueAlt; }
     
-    if (streamResponse.unReachable == "false") {
-	    var xmlhttp = new XMLHttpRequest();
-	    xmlhttp.open("GET", RS_URL_API + "?action=updateFilmSource" + params, true);
-	    xmlhttp.send();
-    }
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.open("GET", RS_URL_API + "?action=updateFilmSource" + params, true);
+	xmlhttp.send();
 }

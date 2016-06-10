@@ -405,7 +405,6 @@ class Source
         $needSourceData = empty($this->getUniqueName());
         $needStream = self::validStreamProvider($this->getName());
         $neededDataAvailable = false;
-        $saveChanges = false;
 
         $site = null;
         $page = null;
@@ -419,19 +418,18 @@ class Source
 
         if ($needSourceData && $neededDataAvailable) {
             $site->parseFilmSource($page, $film);
-            $saveChanges = true;
         }
 
         if ($needStream && $neededDataAvailable) {
             $url = $site->getStreamUrlByPage($page, $film);
             $this->setStreamUrl($url);
             $this->refreshStreamDate();
-            $saveChanges = true;
+        }
+        elseif ($site) {
+            $this->refreshStreamDate();
         }
             
-        if ($saveChanges) {
-            $this->saveFilmSourceToDb($film->getId());
-        }
+        $this->saveFilmSourceToDb($film->getId());
     }
 
     /**

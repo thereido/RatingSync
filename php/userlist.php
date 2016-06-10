@@ -102,31 +102,52 @@ if (empty($listname) && !empty($filmId)) {
     <p><span id="debug"></span></p>
     <span id="filmlist-create-result"></span>
   </div>
-    
-  <table class="table table-striped">
-    <tbody>
-      <?php
-      $filmsJson = "{\"films\":[";
-      $delimeter = "";
-      $count = 0;
-      foreach($films as $film) {
-          $count = $count + 1;
-          $uniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
-          echo "<tr>\n";
-          echo "  <td>\n";
-          echo "    <span id='$uniqueName' data-titleNum='$count'>\n";
-          echo getHtmlFilm($film, $count, true, $listname);
-          echo "    </span>\n";
-          echo "  </td>\n";
-          echo "</tr>\n";
 
-          $filmsJson .= $delimeter . $film->json_encode(true);
-          $delimeter = ",";
-      }
-      $filmsJson .= "]}";
-      ?>
-    </tbody>
-  </table>
+<?php
+    $filmsJson = "{\"films\":[";
+    $delimeter = "";
+    $count = 0;
+    $row = 0;
+    $totalFilms = count($films);
+    foreach($films as $film) {
+        $count = $count + 1;
+        $column = $count % 12;
+        if ($column == 0) {
+            $column = 12;
+        }
+
+        $beginRow = "";
+        $endRow = "";
+        if ($column == 1) {
+            $beginRow = "<div class='row'>\n";
+        } elseif ($column == 12) {
+            $endRow = "</div>\n";
+        }
+
+        $filmId = $film->getId();
+        $title = $film->getTitle();
+        $titleNoQuotes = htmlentities($title, ENT_QUOTES);
+        $image = Constants::RS_HOST . $film->getImage(Constants::SOURCE_RATINGSYNC);
+        $uniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
+        $onMouseEnter = "onMouseEnter='detailTimer = setTimeout(function () { showFilmDropdownForUserlist($filmId); }, 500)'";
+        $onMouseLeave = "onMouseLeave='hideFilmDropdownForUserlist($filmId, detailTimer)'";
+        echo "  $beginRow";
+        echo "    <div class='col-xs-6 col-sm-4 col-md-3 col-lg-2' id='$uniqueName'>\n";
+        echo "      <div class='userlist-film' $onMouseEnter $onMouseLeave>\n";
+        echo "        <poster id='poster-$uniqueName' data-filmId='$filmId'>\n";
+        echo "          <img src='$image' alt='$titleNoQuotes' />\n";
+        echo "          <div id='film-dropdown-$filmId' class='film-dropdown-content film-dropdown-col-$column'></div>\n";
+        echo "        </poster>\n";
+        echo "        <div class='below-poster' id='poster-extension-$filmId' data-filmId='$filmId'></div>\n";
+        echo "      </div>\n";
+        echo "    </div>\n";
+        echo "  $endRow";
+
+        $filmsJson .= $delimeter . $film->json_encode(true);
+        $delimeter = ",";
+    }
+    $filmsJson .= "]}";
+?>
 
 </div>
 
