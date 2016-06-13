@@ -743,6 +743,11 @@ class Film {
         return in_array($listname, $this->filmlists);
     }
 
+    /**
+     * Return only streams with a URL
+     *
+     * @return array Indexes are "url" and "date"
+     */
     public function getStreams()
     {
         $streams = array();
@@ -751,7 +756,7 @@ class Film {
             $sourceName = $source->getName();
             $streamUrl = $source->getStreamUrl();
             $streamDate = $source->getStreamDate();
-            if (! (empty($streamUrl) && empty($streamDate)) ) {
+            if (! empty($streamUrl) ) {
                 $stream = array("url" => $streamUrl, "date" => $streamDate);
                 $streams[$sourceName] = $stream;
             }
