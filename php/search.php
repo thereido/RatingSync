@@ -6,7 +6,7 @@ require_once "src/SessionUtility.php";
 require_once "src/Film.php";
 require_once "src/Filmlist.php";
 
-require_once "src/ajax/getHtmlFilm.php";
+require_once "src/ajax/getHtmlFilmlists.php";
 
 $username = getUsername();
 $query = array_value_by_key("q", $_GET);
@@ -86,20 +86,6 @@ if (!empty($filmId)) {
     
   <table class="table table-striped">
     <tbody>
-      <?php
-      $count = 0;
-      foreach($films as $film) {
-          $count = $count + 1;
-          $uniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
-          echo "<tr>\n";
-          echo "  <td>\n";
-          echo "    <span id='$uniqueName'>\n";
-          echo getHtmlFilm($film, $count, true, $listname);
-          echo "    </span>\n";
-          echo "  </td>\n";
-          echo "</tr>\n";
-      }
-      ?>
     </tbody>
   </table>
 

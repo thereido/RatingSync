@@ -2,7 +2,6 @@
 namespace RatingSync;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
-require_once "getHtmlFilm.php";
 require_once "getHtmlFilmlists.php";
 
 $username = getUsername();
@@ -35,13 +34,6 @@ echo $response;
 function api_getSearchFilm($username)
 {
     $searchTerms = getApiSearchTerms();
-    $asJson = array_value_by_key("json", $_GET);
-    if ($asJson == 1) {
-        $asJson = true;
-    } else {
-        $asJson = false;
-    }
-    logDebug("extra Params json=$asJson", __FUNCTION__." ".__LINE__);
 
     $searchFilm = null;
     try {
@@ -54,23 +46,9 @@ function api_getSearchFilm($username)
         logDebug($errorMsg, __FUNCTION__." ".__LINE__);
     }
 
-    $response = "<p>No result</p>";
-    if ($asJson) {
-        $response = "";
-    }
+    $response = "";
     if (!empty($searchFilm)) {
-        if ($asJson) {
-            $response = $searchFilm->json_encode();
-        } else {
-            $uniqueName = $searchFilm->getUniqueName(Constants::SOURCE_RATINGSYNC);
-            $filmHtml = getHtmlFilm($searchFilm);
-
-            $response   = "<table align='center'><tr><td>\n";
-            $response  .= "  <span id='$uniqueName'>";
-            $response  .=      $filmHtml;
-            $response  .= "  <span>";
-            $response  .= "</td></tr></table>\n";
-        }
+        $response = $searchFilm->json_encode();
     }
     
     return $response;
@@ -82,29 +60,14 @@ function api_setRating($username)
     $titleNum = array_value_by_key("tn", $_GET);
     $uniqueName = array_value_by_key("un", $_GET);
     $score = array_value_by_key("s", $_GET);
-    $asJson = false;
-    if (array_value_by_key("json", $_GET) == 1) {
-        $asJson = true;
-    }
-    logDebug("Params un=$uniqueName, s=$score, tn=$titleNum, json=$asJson", __FUNCTION__." ".__LINE__);
+    logDebug("Params un=$uniqueName, s=$score, tn=$titleNum", __FUNCTION__." ".__LINE__);
 
     if (!empty($uniqueName) && !empty($score)) {
         logDebug("uniqueName: $uniqueName, score: $score", __FUNCTION__." ".__LINE__);
         $film = setRating($uniqueName, $score);
     }
 
-    if ($asJson) {
-        $response = $film->json_encode();
-    } else {
-        if (is_null($titleNum)) {
-            $titleNum = "";
-        }
-
-        $response = "";
-        if (!empty($film)) {
-            $response  .= getHtmlFilm($film, $titleNum);
-        }
-    }
+    $response = $film->json_encode();
 
     return $response;
 }

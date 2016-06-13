@@ -6,8 +6,7 @@ require_once "src/SessionUtility.php";
 require_once "src/Film.php";
 require_once "src/Filmlist.php";
 
-require_once "src/ajax/getHtmlRating.php";
-require_once "src/ajax/getHtmlFilm.php";
+require_once "src/ajax/getHtmlFilmlists.php";
 
 $username = getUsername();
 
