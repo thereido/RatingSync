@@ -264,7 +264,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $searchTerms["title"] = TEST_XFINITY_TITLE;
         $searchTerms["year"] = TEST_XFINITY_YEAR;
         $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
-        $film = \RatingSync\search($searchTerms);
+        $film = \RatingSync\search($searchTerms)['match'];
 
         $this->assertFalse(is_null($film));
         $this->assertEquals(TEST_XFINITY_TITLE, $film->getTitle());
@@ -282,7 +282,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $searchTerms["uniqueName"] = TEST_XFINITY_UNIQUENAME;
         $searchTerms["uniqueAlt"] = TEST_XFINITY_UNIQUEALT;
         $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
-        $film = \RatingSync\search($searchTerms);
+        $film = \RatingSync\search($searchTerms)['match'];
         $filmId = $film->getId();
         $xfinity = new Xfinity(TEST_XFINITY_USERNAME);
         $url = $xfinity->getStreamUrl($film->getId());
@@ -310,7 +310,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $searchTerms["uniqueName"] = TEST_XFINITY_UNIQUENAME_TV;
         $searchTerms["uniqueAlt"] = TEST_XFINITY_UNIQUEALT_TV;
         $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
-        $film = \RatingSync\search($searchTerms);
+        $film = \RatingSync\search($searchTerms)['match'];
         $filmId = $film->getId();
         $xfinity = new Xfinity(TEST_XFINITY_USERNAME);
         $url = $xfinity->getStreamUrl($film->getId());
@@ -339,7 +339,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $searchTerms["uniqueAlt"] = TEST_XFINITY_UNIQUEALT_TV;
         $searchTerms["uniqueEpisode"] = TEST_XFINITY_UNIQUEEPISODE_TV;
         $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
-        $film = \RatingSync\search($searchTerms);
+        $film = \RatingSync\search($searchTerms)['match'];
         $filmId = $film->getId();
         $xfinity = new Xfinity(TEST_XFINITY_USERNAME);
         $url = $xfinity->getStreamUrl($film->getId());

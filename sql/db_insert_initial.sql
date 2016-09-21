@@ -1,4 +1,4 @@
-INSERT INTO user (username, password) VALUES ('testratingsync', 'password');
+INSERT INTO user (username, password) VALUES ('testratingsync', '&j$31HIg^DXNlgo2');
 
 INSERT INTO source (name) VALUES ('RatingSync');
 INSERT INTO source (name) VALUES ('Jinni');

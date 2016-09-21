@@ -401,7 +401,7 @@ class Source
         if (empty($film) || !($film instanceof Film)) {
             throw new \InvalidArgumentException("film arg must be a /RatingSync/Film");
         }
-
+        
         $needSourceData = empty($this->getUniqueName());
         $needStream = self::validStreamProvider($this->getName());
         $neededDataAvailable = false;

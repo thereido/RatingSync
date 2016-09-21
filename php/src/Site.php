@@ -62,7 +62,7 @@ abstract class Site
      *
      * @return string Regular expression to find the film title in film detail HTML page
      */
-    abstract protected function getDetailPageRegexForTitle();
+    abstract protected function getDetailPageRegexForTitle($contentType = Film::CONTENT_FILM);
 
     /**
      * Regular expression to find the film year in film detail HTML page
@@ -239,15 +239,19 @@ abstract class Site
             throw new \InvalidArgumentException('arg1 must be a Film object');
         }
         
+/*RT*/echo "\n".__CLASS__."::".__FUNCTION__." a";
         $page = $this->getFilmDetailPage($film, $refreshCache, true);
+/*RT*/echo "\n".__CLASS__."::".__FUNCTION__." b page length: " . strlen($page);
 
         if (empty($page)) {
             return;
         }
+        $this->parseDetailPageForContentType($page, $film, $overwrite);
+/*RT*/echo "\n".__CLASS__."::".__FUNCTION__." c";
         $this->parseDetailPageForTitle($page, $film, $overwrite);
+/*RT*/echo "\n".__CLASS__."::".__FUNCTION__." Title: " . $film->getTitle();
         $this->parseDetailPageForFilmYear($page, $film, $overwrite);
         $this->parseDetailPageForImage($page, $film, $overwrite);
-        $this->parseDetailPageForContentType($page, $film, $overwrite);
         $this->parseDetailPageForSeason($page, $film, $overwrite);
         $this->parseDetailPageForEpisodeNumber($page, $film, $overwrite);
         $this->parseDetailPageForEpisodeTitle($page, $film, $overwrite);
@@ -316,6 +320,7 @@ abstract class Site
         $film->setUniqueEpisode($uniqueEpisode, $this->sourceName);
         $film->setUniqueAlt($uniqueAlt, $this->sourceName);
         try {
+/*RT*/echo "\n".__CLASS__."::".__FUNCTION__." Goto getFilmDetailFromWebsite()";
             $this->getFilmDetailFromWebsite($film);
         } catch (\Exception $e) {
             $film = null;
@@ -361,6 +366,7 @@ abstract class Site
         }
 
         if (!empty($uniqueName)) {
+/*RT*/echo "\n".__CLASS__."::".__FUNCTION__." return getFilmByUniqueName()";
             return $this->getFilmByUniqueName($uniqueName, $uniqueEpisode, $uniqueAlt);
         }
 
@@ -396,10 +402,14 @@ abstract class Site
             return false;
         }
         
-        $regex = $this->getDetailPageRegexForTitle();
+/*RT*/echo "\n".__CLASS__."::".__FUNCTION__." a";
+        $regex = $this->getDetailPageRegexForTitle($film->getContentType());
+/*RT*/echo "\n".__CLASS__."::".__FUNCTION__." regex=$regex";
         if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
+/*RT*/echo "\n".__CLASS__."::".__FUNCTION__." b";
             return false;
         }
+/*RT*/echo "\n".__CLASS__."::".__FUNCTION__." c match=" . $matches[1];
         $film->setTitle(html_entity_decode($matches[1], ENT_QUOTES, "utf-8"));
         return true;
     }
@@ -542,7 +552,7 @@ abstract class Site
      */
     protected function parseDetailPageForEpisodeTitle($page, $film, $overwrite)
     {
-        if (!$overwrite && !is_null($film->getEpisodeTitle())) {
+        if ( (!$overwrite && !is_null($film->getEpisodeTitle())) || $film->getContentType() != Film::CONTENT_TV ) {
             return false;
         }
         

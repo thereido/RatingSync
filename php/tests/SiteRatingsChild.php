@@ -113,7 +113,7 @@ class SiteRatingsChild extends \RatingSync\SiteRatings {
     protected function getFilmDetailPageUrl($film) { return '/title/'.$film->getUniqueName($this->sourceName).'/'; }
 
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForTitle
-    protected function getDetailPageRegexForTitle() { return '/<title>(.*) \(.*\d\d\d\d[^\)]*\) - IMDb<\/title>/'; }
+    protected function getDetailPageRegexForTitle($contentType = Film::CONTENT_FILM) { return '/<title>(.*) \(.*\d\d\d\d[^\)]*\) - IMDb<\/title>/'; }
 
     // Abstract Function based on \RatingSync\Imdb::getDetailPageRegexForYear
     protected function getDetailPageRegexForYear() { return '/<title>.* \([^\d]*(\d\d\d\d)[^\)]*\) - IMDb<\/title>/'; }

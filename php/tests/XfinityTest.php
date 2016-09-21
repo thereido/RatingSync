@@ -260,7 +260,7 @@ class XfinityTest extends RatingSyncTestCase
         $searchTerms["title"] = $title;
         $searchTerms["year"] = $year;
         $searchTerms["sourceName"] = $site->_getSourceName();
-        $film = \RatingSync\search($searchTerms, TEST_XFINITY_USERNAME);
+        $film = \RatingSync\search($searchTerms, TEST_XFINITY_USERNAME)['match'];
         $page = $site->getFilmDetailPage($film, Constants::USE_CACHE_ALWAYS, true);
 
         // Test
@@ -284,7 +284,7 @@ class XfinityTest extends RatingSyncTestCase
         $searchTerms = array();
         $searchTerms["title"] = $title;
         $searchTerms["year"] = $year;
-        $film = \RatingSync\search($searchTerms, TEST_XFINITY_USERNAME);
+        $film = \RatingSync\search($searchTerms, TEST_XFINITY_USERNAME)['match'];
         $page = $site->getFilmDetailPage($film, Constants::USE_CACHE_ALWAYS, true);
 
         // Test

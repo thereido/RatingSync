@@ -38,7 +38,8 @@ class MainTest extends RatingSyncTestCase
 
         // Test
         $searchTerms = array("uniqueName" => "tt2294629");
-        $film = search($searchTerms); // Frozen (2013)
+        $resultFilms = search($searchTerms); // Frozen (2013)
+        $film = $resultFilms['match'];
         $filmId = $film->getId();
 
         // Verify database - film
@@ -82,7 +83,7 @@ class MainTest extends RatingSyncTestCase
     public function testSearchEmptyArgs()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = search(null, null);
+        $film = search(null, null)['match'];
         $this->assertEmpty($film, "Empty args should return nothing");
     }
     
@@ -98,7 +99,7 @@ class MainTest extends RatingSyncTestCase
     public function testSearchEmptyQuery()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = search("", getUsername());
+        $film = search("", getUsername())['match'];
         $this->assertEmpty($film, "Empty query should return nothing");
     }
     
@@ -120,7 +121,7 @@ class MainTest extends RatingSyncTestCase
 
         // Test
         $searchTerms = array("uniqueName" => "tt0094819");
-        $film = search($searchTerms); // Buster (1988)
+        $film = search($searchTerms)['match']; // Buster (1988)
         $filmId = $film->getId();
 
         // Verify film object
@@ -187,7 +188,7 @@ class MainTest extends RatingSyncTestCase
 
         // Test
         $searchTerms = array("uniqueName" => "rs1");
-        $film = search($searchTerms); // Buster (1988)
+        $film = search($searchTerms)['match']; // Buster (1988)
 
         // Verify
         $this->assertEquals("Buster", $film->getTitle(), "Title");
@@ -214,7 +215,7 @@ class MainTest extends RatingSyncTestCase
 
         // Test
         $searchTerms = array("uniqueName" => "rs1");
-        $film = search($searchTerms, getUsername());
+        $film = search($searchTerms, getUsername())['match'];
 
         // Verify
         $this->assertEquals("Buster", $film->getTitle(), "Title");
@@ -231,12 +232,12 @@ class MainTest extends RatingSyncTestCase
         // Set up
         $username = getUsername();
         $searchTerms = array("uniqueName" => "rs1");
-        $setupFilm = search($searchTerms, $username); // Buster (1988)
+        $setupFilm = search($searchTerms, $username)['match']; // Buster (1988)
         $setupFilm->setYourScore(5, Constants::SOURCE_RATINGSYNC);
         $setupFilm->saveToDb($username);
 
         // Test
-        $film = search($searchTerms, $username);
+        $film = search($searchTerms, $username)['match'];
 
         // Verify
         $this->assertEquals("Buster", $film->getTitle(), "Title");
@@ -259,7 +260,7 @@ class MainTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
     
         $searchTerms = array("uniqueName" => "garbage_query");
-        $film = search($searchTerms);
+        $film = search($searchTerms)['match'];
         $this->assertEmpty($film, "Film from uniqueName=garbage_query should be empty");
     }
 }

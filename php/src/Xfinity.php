@@ -51,7 +51,7 @@ class Xfinity extends \RatingSync\SiteProvider
         if ($film->getContentType() == FILM::CONTENT_TV) {
             $contentParam = "full-episodes";
         }
-
+        
         return "/watch/$uniqueAlt/$uniqueName/$contentParam#filter=online$episodeParam";
     }
 
@@ -135,7 +135,7 @@ class Xfinity extends \RatingSync\SiteProvider
      *
      * @return string Regular expression to find the film title in film detail HTML page
      */
-    protected function getDetailPageRegexForTitle() {
+    protected function getDetailPageRegexForTitle($contentType = Film::CONTENT_FILM) {
         return '/<meta property="og:title" content="(.+)"\/>/';
     }
 
@@ -233,7 +233,7 @@ class Xfinity extends \RatingSync\SiteProvider
         if (!($film instanceof Film)) {
             throw new \InvalidArgumentException("\$film must be a \RatingSync\Film object");
         }
-
+        
         $title = $film->getTitle();
         $args = array("query" => $title);
         $page = $this->http->getPage($this->getSearchUrl($args));
@@ -299,7 +299,7 @@ class Xfinity extends \RatingSync\SiteProvider
         $source = $film->getSource($this->sourceName);
         $regex = '/<tr id="' . $film->getSource($this->sourceName)->getUniqueName() . '" class="[^"]*online[^"]*active[^"]*">/';
         if ($film->getContentType() == Film::CONTENT_TV) {
-            $regex = '/class="[^"]*active[^"]*".*[\s]*.*data-cim-video-url="\/watch\/'.$source->getUniqueAlt().'\/'.$source->getUniqueName().'\/[0-9]{4,}/';
+            $regex = '/class="[^"]*active[^"]*".*[\s]*.*data-cim-video-url="\/watch\/'.$source->getUniqueAlt().'\/'.$source->getUniqueName().'\/([0-9]{4,})/';
         }
         return (0 < preg_match($regex, $page, $matches));
     }

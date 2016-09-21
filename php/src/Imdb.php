@@ -268,8 +268,12 @@ class Imdb extends \RatingSync\SiteRatings
      *
      * @return string Regular expression to find the film title in film detail HTML page
      */
-    protected function getDetailPageRegexForTitle() {
-        return '/<title>(.*) \(.*\d\d\d\d[^\)]*\) - IMDb<\/title>/';
+    protected function getDetailPageRegexForTitle($contentType = Film::CONTENT_FILM) {
+        $regex = '/<title>(.*) \(.*\d\d\d\d[^\)]*\) - IMDb<\/title>/';
+        if ($contentType == Film::CONTENT_TV) {
+            $regex = "/<meta property='og:title' content=\"&quot;(.*?)&quot;/";
+        }
+        return $regex;
     }
 
     /**
@@ -305,7 +309,7 @@ class Imdb extends \RatingSync\SiteRatings
      * @return string Regular expression to find the film season in film detail HTML page
      */
     protected function getDetailPageRegexForSeason() {
-        return '';
+        return '/<div class="bp_heading">Season ([\d]+)/';
     }
 
     /**
@@ -314,7 +318,7 @@ class Imdb extends \RatingSync\SiteRatings
      * @return string Regular expression to find the episode title in film detail HTML page
      */
     protected function getDetailPageRegexForEpisodeTitle() {
-        return '';
+        return '/<div class="title_wrapper">[\s]+<h1[^>]*>(.+)\&nbsp\;/';
     }
 
     /**
@@ -323,7 +327,7 @@ class Imdb extends \RatingSync\SiteRatings
      * @return string Regular expression to find the film season in film detail HTML page
      */
     protected function getDetailPageRegexForEpisodeNumber() {
-        return '';
+        return '/<div class="bp_heading">Season .*Episode ([\d]+)<\/div>/';
     }
 
     /**

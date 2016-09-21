@@ -215,7 +215,7 @@ class Jinni extends \RatingSync\SiteRatings
      *
      * @return string Regular expression to find the film title in film detail HTML page
      */
-    protected function getDetailPageRegexForTitle()
+    protected function getDetailPageRegexForTitle($contentType = Film::CONTENT_FILM)
     {
         return '@<h1 class=\"title1\">(.*), \d\d\d\d[^<]*<\/h1>@';
     }

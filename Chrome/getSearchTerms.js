@@ -44,6 +44,8 @@ function getSearchTerms(source, document_root) {
     var uniqueAlt;
     var title;
     var year;
+    var season;
+    var episodeNumber;
     var episodeTitle;
     var contentType;
 
@@ -176,6 +178,23 @@ function getSearchTerms(source, document_root) {
                     var episodeEl = document_root.getElementById(uniqueEpisode);
                     if (episodeEl) {
                         episodeTitle = episodeEl.getElementsByClassName("title")[0].innerHTML;
+
+                        var seasonStr = episodeEl.getAttribute("data-cim-entity-season-number");
+                        var reSeason = new RegExp('S([0-9]+)');
+                        if (reSeason.test(seasonStr)) {
+                            season = reSeason.exec(seasonStr)[1];
+                        }
+                        var reEpisodeNumber = new RegExp('Ep([0-9]+)');
+                        if (reEpisodeNumber.test(seasonStr)) {
+                            episodeNumber = reEpisodeNumber.exec(seasonStr)[1];
+                        }
+
+                        /*
+                        var episodeNumberEl = episodeEl.getElementsByClassName("ep_number")[0];
+                        if (episodeNumberEl) {
+                            episodeNumber = episodeNumberEl.getAttribute("content");
+                        }
+                        */
                     }
                 } else {
                     contentType = "FeatureFilm";
@@ -221,6 +240,8 @@ function getSearchTerms(source, document_root) {
     text = text + '"source": "' + source + '", ';
     text = text + '"title": "' + title + '", ';
     text = text + '"year": "' + year + '", ';
+    text = text + '"season": "' + season + '", ';
+    text = text + '"episodeNumber": "' + episodeNumber + '", ';
     text = text + '"episodeTitle": "' + episodeTitle + '", ';
     text = text + '"contentType": "' + contentType + '"}';
     var json = JSON.parse(text);
