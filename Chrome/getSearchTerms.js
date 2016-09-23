@@ -60,31 +60,26 @@ function getSearchTerms(source, document_root) {
         var regex = new RegExp("jbv=([0-9]+)");
         if (regex.test(url)) {
             uniqueName = regex.exec(url)[1];
-        } else {
-            regex = new RegExp("/title/([0-9]+)");
-            if (regex.test(url)) {
-                uniqueName = regex.exec(url)[1];
-                titleEl = document_root.getElementsByClassName("title has-jawbone-nav-transition")[0];
-                yearEl = document_root.getElementsByClassName("year")[0];
-                durationEl = document_root.getElementsByClassName("duration")[0];
-                if (titleEl) {
-                    titleHtml = titleEl.innerHTML;
-                    regex = new RegExp("<img alt=\"([^\"]+)");
-                    if (regex.test(titleHtml)) {
-                        title = regex.exec(titleHtml)[1];
-                    } else {
-                        title = titleHtml;
-                    }
-                }
-                if (yearEl) {
-                    year = yearEl.innerHTML;
-                }
-                if (durationEl) {
-                    regex = new RegExp("[0-9]+ (Season)[s]?<");
-                    if (regex.test(durationEl.innerHTML)) {
-                        contentType = "TvSeries";
-                    }
-                }
+        }
+        titleEl = document_root.getElementsByClassName("title has-jawbone-nav-transition")[0];
+        yearEl = document_root.getElementsByClassName("year")[0];
+        durationEl = document_root.getElementsByClassName("duration")[0];
+        if (titleEl) {
+            titleHtml = titleEl.innerHTML;
+            regex = new RegExp("<img alt=\"([^\"]+)");
+            if (regex.test(titleHtml)) {
+                title = regex.exec(titleHtml)[1];
+            } else {
+                title = titleHtml;
+            }
+        }
+        if (yearEl) {
+            year = yearEl.innerHTML;
+        }
+        if (durationEl) {
+            regex = new RegExp("[0-9]+ (Season)[s]?<");
+            if (regex.test(durationEl.innerHTML)) {
+                contentType = "TvSeries";
             }
         }
 	}
