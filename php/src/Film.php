@@ -1067,7 +1067,11 @@ class Film {
         if (!empty($image)) {
             $uniqueName = $this->getUniqueName(Constants::SOURCE_RATINGSYNC);
             $filename = "$uniqueName.jpg";
-            file_put_contents(Constants::imagePath() . $filename, file_get_contents($image));
+            try {
+                file_put_contents(Constants::imagePath() . $filename, file_get_contents($image));
+            } catch (\Exception $e) {
+                logDebug("Exception downloading an image for $filename.\n" . $e, __FUNCTION__." ".__LINE__);
+            }
             
             $this->setImage(Constants::RS_IMAGE_URL_PATH . $filename);
         }
