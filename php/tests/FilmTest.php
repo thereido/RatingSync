@@ -2093,7 +2093,7 @@ class FilmTest extends RatingSyncTestCase
         $this->assertEquals(8, $rating->getYourScore(), "Frozen ".Constants::SOURCE_JINNI." your score");
         $this->assertEquals("5/4/15", $rating->getYourRatingDate()->format('n/j/y'), "Frozen ".Constants::SOURCE_JINNI." rating date");
         $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_JINNI." suggested score");
-        $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
+        $this->assertEquals("https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_UX182_CR0,0,182,268_AL_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Unique Name");
         $this->assertEquals(7.4, $film->getCriticScore(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." critic score");
         $this->assertEquals(7.7, $film->getUserScore(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." user score");
@@ -2824,11 +2824,13 @@ class FilmTest extends RatingSyncTestCase
         $filmNF->saveToDb();
         */
 
+        /*
         $filmXF = new Film();
         $filmXF->setUniqueAlt(TEST_XFINITY_UNIQUEALT, Constants::SOURCE_XFINITY);
         $filmXF->setTitle(TEST_XFINITY_TITLE);
         $filmXF->setYear(TEST_XFINITY_YEAR);
         $filmXF->saveToDb();
+        */
 
         // Test
         Film::refreshAllStreamsForAllFilms();
@@ -2865,6 +2867,7 @@ class FilmTest extends RatingSyncTestCase
         }
         */
         
+        /*
         $title = TEST_XFINITY_TITLE; $count = 1; $providers = "(xfinity)";
         $query = "SELECT id FROM film WHERE title='$title'";
         $id = $db->query($query)->fetch_assoc()['id'];
@@ -2875,6 +2878,7 @@ class FilmTest extends RatingSyncTestCase
             $this->assertStringStartsWith("http", $stream["url"], "Stream URL (".$stream["url"].") should begin with 'http'");
             $this->assertEquals($today, $stream["date"], "Stream date (".$stream["date"].") should be today");
         }
+        */
     }
 }
 

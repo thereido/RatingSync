@@ -33,20 +33,11 @@ echo $response;
 
 function api_getSearchFilm($username, $get)
 {
-echo "\nBegin api_getSearchFilm()";
     $searchTerms = getApiSearchTerms($get);
-/*RT*/echo "\nA";
 
     $searchFilm = null;
-/*RT*/echo "\nB";
     try {
-/*RT*/echo "\nC";
-/*RT*/echo "\nsearchTerms: "; var_dump($searchTerms); echo "\n";
         $resultFilms = search($searchTerms, $username);
-/*RT*/echo "\nD";
-/*RT*/
-echo "\ndump resultFilms\n";
-var_dump($resultFilms);
         $matchFilm = array_value_by_key('match', $resultFilms);
         $parentFilm = array_value_by_key('parent', $resultFilms);
     } catch (\Exception $e) {
@@ -75,13 +66,14 @@ function api_setRating($username)
 {
     $film = null;
     $titleNum = array_value_by_key("tn", $_GET);
+    $filmId = array_value_by_key("fid", $_GET);
     $uniqueName = array_value_by_key("un", $_GET);
     $score = array_value_by_key("s", $_GET);
-    logDebug("Params un=$uniqueName, s=$score, tn=$titleNum", __FUNCTION__." ".__LINE__);
+    logDebug("Params fid=$filmId, un=$uniqueName, s=$score, tn=$titleNum", __FUNCTION__." ".__LINE__);
 
     if (!empty($uniqueName) && !empty($score)) {
-        logDebug("uniqueName: $uniqueName, score: $score", __FUNCTION__." ".__LINE__);
-        $film = setRating($uniqueName, $score);
+        logDebug("filmId: $filmId, uniqueName: $uniqueName, score: $score", __FUNCTION__." ".__LINE__);
+        $film = setRating($filmId, $score);
     }
 
     $response = $film->json_encode();
@@ -158,6 +150,7 @@ function getApiSearchTerms($get)
     $searchUniqueAlt = array_value_by_key("ua", $get);
     $searchTitle = array_value_by_key("t", $get);
     $searchYear = array_value_by_key("y", $get);
+    $searchParentYear = array_value_by_key("py", $get);
     $searchSeason = array_value_by_key("s", $get);
     $searchEpisodeNumber = array_value_by_key("en", $get);
     $searchEpisodeTitle = array_value_by_key("et", $get);
@@ -177,13 +170,14 @@ function getApiSearchTerms($get)
         $sourceName = Constants::SOURCE_HULU;
     }
     
-    logDebug("Params q=$searchQuery, ue=$searchUniqueEpisode, ua=$searchUniqueAlt, t=$searchTitle, y=$searchYear, s=$searchSeason, en=$searchEpisodeNumber, et=$searchEpisodeTitle, ct=$searchContentType, source=$searchSource", __FUNCTION__." ".__LINE__);
+    logDebug("Params q=$searchQuery, ue=$searchUniqueEpisode, ua=$searchUniqueAlt, t=$searchTitle, y=$searchYear, py=$searchParentYear, s=$searchSeason, en=$searchEpisodeNumber, et=$searchEpisodeTitle, ct=$searchContentType, source=$searchSource", __FUNCTION__." ".__LINE__);
     $searchTerms = array('uniqueName' => $searchQuery,
                          'uniqueEpisode' => $searchUniqueEpisode,
                          'uniqueAlt' => $searchUniqueAlt,
                          'sourceName' => $sourceName,
                          'title' => htmlspecialchars_decode($searchTitle),
                          'year' => $searchYear,
+                         'parentYear' => $searchParentYear,
                          'season' => $searchSeason,
                          'episodeNumber' => $searchEpisodeNumber,
                          'episodeTitle' => htmlspecialchars_decode($searchEpisodeTitle),

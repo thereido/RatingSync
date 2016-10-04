@@ -359,7 +359,7 @@ class Source
         if ($result->num_rows == 0) {
             $newRow = true;
         }
-
+        
         if ($newRow) {
             $query = "INSERT INTO film_source ($columns) VALUES ($values)";
             logDebug($query, __FUNCTION__." ".__LINE__);
@@ -494,12 +494,12 @@ class Source
 
     public static function validStreamProviders()
     {
-        return array(Constants::SOURCE_XFINITY);
+        return array();
     }
 
     public static function validStreamProvidersBackground()
     {
-        return array(Constants::SOURCE_NETFLIX, Constants::SOURCE_XFINITY);
+        return array(Constants::SOURCE_NETFLIX);
     }
 
     public static function getSite($sourceName, $username = null)

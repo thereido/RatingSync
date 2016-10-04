@@ -41,7 +41,7 @@ class Http
             $this->baseUrl = "";
             $this->lightweightUrl = "/random?content_type=1+2&prime=2";
         } elseif ($sourceName == Constants::SOURCE_XFINITY) {
-            $this->baseUrl = "http://xfinitytv.comcast.net";
+            $this->baseUrl = "https://tv.xfinity.com";
             $this->lightweightUrl = "/mytv/dvr?CMPID=xtvg_footer";
         }
 

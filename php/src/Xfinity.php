@@ -10,7 +10,7 @@ require_once "SiteProvider.php";
  * Communicate to/from the Xfinity website
  * - Search for films and tv shows
  */
-class Xfinity extends \RatingSync\SiteProvider
+class Xfinity extends \RatingSync\Site
 {
     const XFINITY_DATE_FORMAT = "n/j/y";
     
@@ -48,11 +48,12 @@ class Xfinity extends \RatingSync\SiteProvider
         }
 
         $contentParam = "movies";
-        if ($film->getContentType() == FILM::CONTENT_TV) {
+        $contentType = $film->getContentType();
+        if ($contentType == FILM::CONTENT_TV_SERIES || $contentType == FILM::CONTENT_TV_SEASON || $contentType == FILM::CONTENT_TV_EPISODE) {
             $contentParam = "full-episodes";
         }
-        
-        return "/watch/$uniqueAlt/$uniqueName/$contentParam#filter=online$episodeParam";
+
+        return "/entity/$uniqueName";
     }
 
     /**
@@ -72,7 +73,7 @@ class Xfinity extends \RatingSync\SiteProvider
 
         $query = urlencode($args['query']);
 
-        return "/search?query=$query&limit=15&or=true&resources=odol";
+        return "/search?q=$query";
     }
 
     /**
@@ -234,6 +235,8 @@ class Xfinity extends \RatingSync\SiteProvider
             throw new \InvalidArgumentException("\$film must be a \RatingSync\Film object");
         }
         
+        return false;
+        /*
         $title = $film->getTitle();
         $args = array("query" => $title);
         $page = $this->http->getPage($this->getSearchUrl($args));
@@ -256,6 +259,7 @@ class Xfinity extends \RatingSync\SiteProvider
         }
         
         return true;
+        */
     }
 
     protected function getSearchPageRegexForUniqueName($title, $year)
@@ -293,12 +297,14 @@ class Xfinity extends \RatingSync\SiteProvider
 
         return '/<h3><a href="\/watch\/([^\/]+)\/[^\/]+[^>]*>'.$escapedTitle.'[\s]*<span class="airDates">\('.$regexYear.'/i';
     }
-
+    
+    /* Xfinity unavailable for streams
     protected function streamAvailableFromDetailPage($page, $film, $onlyFree = true)
     {
         $source = $film->getSource($this->sourceName);
         $regex = '/<tr id="' . $film->getSource($this->sourceName)->getUniqueName() . '" class="[^"]*online[^"]*active[^"]*">/';
-        if ($film->getContentType() == Film::CONTENT_TV) {
+        $contentType = $film->getContentType();
+        if ($contentType == FILM::CONTENT_TV_SERIES || $contentType == FILM::CONTENT_TV_SEASON || $contentType == FILM::CONTENT_TV_EPISODE) {
             $regex = '/class="[^"]*active[^"]*".*[\s]*.*data-cim-video-url="\/watch\/'.$source->getUniqueAlt().'\/'.$source->getUniqueName().'\/([0-9]{4,})/';
         }
         return (0 < preg_match($regex, $page, $matches));
@@ -313,13 +319,14 @@ class Xfinity extends \RatingSync\SiteProvider
 
         return $url;
     }
+    */
 
     public function convertContentType($contentType)
     {
         if (empty($contentType) || $contentType == "full_movie") {
             $contentType = Film::CONTENT_FILM;
         } elseif (substr($contentType, 0, 6) == "Season") {
-            $contentType = Film::CONTENT_TV;
+            $contentType = Film::CONTENT_TV_EPISODE;
         } else {
             $contentType = Film::CONTENT_FILM;
         }

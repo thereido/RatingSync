@@ -146,6 +146,7 @@ function search($searchTerms, $username = null)
     $uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
     $title = array_value_by_key("title", $searchTerms);
     $year = array_value_by_key("year", $searchTerms);
+    $parentYear = array_value_by_key("parentYear", $searchTerms);
     $season = array_value_by_key("season", $searchTerms);
     $episodeNumber = array_value_by_key("episodeNumber", $searchTerms);
     $episodeTitle = array_value_by_key("episodeTitle", $searchTerms);
@@ -199,11 +200,8 @@ function search($searchTerms, $username = null)
             $searchTerms['uniqueAlt'] = null;
         }
         
-/*RT*/echo "\nGoto Imdb::getFilmBySearch()";
         $film = $imdb->getFilmBySearch($searchTerms);
         if (!empty($film)) {
-/*RT*/echo "\nGoto Film::saveToDb()";
-/*RT*/echo "\nFilm Title is " . $film->getTitle();
             $film->saveToDb($username);
             $newFilm = true;
         }
@@ -248,15 +246,14 @@ function array_value_by_key($key, $a) {
     }
 }
 
-function setRating($uniqueName, $score)
+function setRating($filmId, $score)
 {
-    if (empty($uniqueName)) {
+    if (empty($filmId)) {
         return null;
     }
 
     $username = getUsername();
-    $searchDbResult = Film::searchDb(array("uniqueName" => $uniqueName), $username);
-    $film = $searchDbResult['match'];
+    $film = Film::getFilmFromDb($filmId, $username);
     if (!empty($film)) {
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $rating->setYourScore($score);

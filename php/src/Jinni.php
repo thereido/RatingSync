@@ -108,7 +108,7 @@ class Jinni extends \RatingSync\SiteRatings
         case Film::CONTENT_FILM:
             $type = 'movies';
             break;
-        case Film::CONTENT_TV:
+        case Film::CONTENT_TV_SERIES:
             $type = 'tv';
             break;
         case Film::CONTENT_SHORTFILM:

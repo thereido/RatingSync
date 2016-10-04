@@ -274,6 +274,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
      * @covers \RatingSync\RatingSyncSite::getStreamUrl
      * @depends testSetupRatings
      */
+    /* Xfinity unavailable for streams
     public function testGetStreamUrl()
     {$this->start(__CLASS__, __FUNCTION__);
 
@@ -297,11 +298,13 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         // Verify
         $this->assertEquals("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT."/".TEST_XFINITY_UNIQUENAME."/movies#filter=online", $url, Constants::SOURCE_XFINITY." streaming URL");
     }
+    */
 
     /**
      * @covers \RatingSync\RatingSyncSite::getStreamUrl
      * @depends testSetupRatings
      */
+    /* Xfinity unavailable for streams
     public function testGetStreamUrlTvSeries()
     {$this->start(__CLASS__, __FUNCTION__);
 
@@ -325,11 +328,13 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         // Verify
         $this->assertStringStartsWith("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT_TV."/".TEST_XFINITY_UNIQUENAME_TV."/full-episodes#filter=online", $url, Constants::SOURCE_XFINITY." streaming URL");
     }
+    */
 
     /**
      * @covers \RatingSync\RatingSyncSite::getStreamUrl
      * @depends testSetupRatings
      */
+    /* Xfinity unavailable for streams
     public function testGetStreamUrlTvEpisode()
     {$this->start(__CLASS__, __FUNCTION__);
 
@@ -354,11 +359,13 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         // Verify
         $this->assertEquals("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT_TV."/".TEST_XFINITY_UNIQUENAME_TV."/full-episodes#filter=online&episode=".TEST_XFINITY_UNIQUEEPISODE_TV, $url, Constants::SOURCE_XFINITY." streaming URL");
     }
+    */
 
     /**
      * @covers \RatingSync\RatingSyncSite::getStreamUrl
      * @depends testObjectCanBeConstructed
      */
+    /* Xfinity unavailable for streams
     public function testGetStreamUrlFilmNoLongerAvailable()
     {$this->start(__CLASS__, __FUNCTION__);
 
@@ -375,6 +382,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         // Verify
         $this->assertEmpty($url, "Should be empty ($url)");
     }
+    */
 }
 
 ?>

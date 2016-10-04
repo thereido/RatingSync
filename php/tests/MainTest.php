@@ -38,8 +38,7 @@ class MainTest extends RatingSyncTestCase
 
         // Test
         $searchTerms = array("uniqueName" => "tt2294629");
-        $resultFilms = search($searchTerms); // Frozen (2013)
-        $film = $resultFilms['match'];
+        $film = search($searchTerms)['match']; // Frozen (2013)
         $filmId = $film->getId();
 
         // Verify database - film
@@ -53,7 +52,7 @@ class MainTest extends RatingSyncTestCase
 
         // Verify database - IMDb
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
         $this->assertEquals(7, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
         $this->assertEquals(8, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
@@ -129,7 +128,7 @@ class MainTest extends RatingSyncTestCase
         $this->assertEquals(1988, $film->getYear(), "Year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
         $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTY1ODA3NjU0NV5BMl5BanBnXkFtZTcwMDU1NTQyMQ)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTY1ODA3NjU0NV5BMl5BanBnXkFtZTcwMDU1NTQyMQ)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
         $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
         $this->assertEquals(5.8, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
         $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');
@@ -150,7 +149,7 @@ class MainTest extends RatingSyncTestCase
         $this->assertEquals(1988, $film->getYear(), "Year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
         $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTY1ODA3NjU0NV5BMl5BanBnXkFtZTcwMDU1NTQyMQ)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTY1ODA3NjU0NV5BMl5BanBnXkFtZTcwMDU1NTQyMQ)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
         $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
         $this->assertEquals(6, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
         $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');

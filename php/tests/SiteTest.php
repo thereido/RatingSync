@@ -158,7 +158,7 @@ class SiteTest extends RatingSyncTestCase
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertNull($film->getContentType(), 'Content Type');
         $this->assertNull($film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), 'Film ID');
@@ -178,7 +178,7 @@ class SiteTest extends RatingSyncTestCase
         // Setup original data
         $film->setTitle("Original_Title");
         $film->setYear(1900);
-        $film->setContentType(Film::CONTENT_TV);
+        $film->setContentType(Film::CONTENT_TV_SERIES);
         $film->setImage("Original_Image");
         $film->setImage("Original_JinniImage", Constants::SOURCE_JINNI);
         $film->setImage("Original_IMDbImage", Constants::SOURCE_IMDB);
@@ -196,8 +196,8 @@ class SiteTest extends RatingSyncTestCase
         // Test the new data
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');
         $this->assertEquals(2013, $film->getYear(), 'Year');
-        $this->assertEquals(Film::CONTENT_TV, $film->getContentType(), 'Content Type');  // SiteChild doesn't get it
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link');
+        $this->assertEquals(Film::CONTENT_TV_SERIES, $film->getContentType(), 'Content Type');  // SiteChild doesn't get it
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link');
         $this->assertEquals("tt2294629", $film->getUniqueName($site->_getSourceName()), 'Unique Name');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
@@ -227,7 +227,7 @@ class SiteTest extends RatingSyncTestCase
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertNull($film->getContentType(), 'Content Type'); // IMDb gets it, but SiteChild doesn't
         $this->assertNull($film->getImage(), 'Film image');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), 'Genres');
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
@@ -303,7 +303,7 @@ class SiteTest extends RatingSyncTestCase
         $success = $site->_parseDetailPageForImage($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Image');
         $this->assertNull($film->getImage(), 'Film image should be null (empty film overwrite=true)');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching Image (empty film overwrite=true)');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching Image (empty film overwrite=true)');
         
         $success = $site->_parseDetailPageForContentType($page, $film, true);
         $this->assertFalse($success, 'Parsing film object for Content Type');  // IMDb gets it, but SiteChild does not
@@ -353,7 +353,7 @@ class SiteTest extends RatingSyncTestCase
         $success = $site->_parseDetailPageForImage($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Image');
         $this->assertNull($film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Image link (source)');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Image link (source)');
         
         $success = $site->_parseDetailPageForContentType($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Content Type'); // ContentType not available in the detail page
@@ -390,7 +390,7 @@ class SiteTest extends RatingSyncTestCase
         // Setup original data
         $film->setTitle("Original_Title");
         $film->setYear(1900);
-        $film->setContentType(Film::CONTENT_TV);
+        $film->setContentType(Film::CONTENT_TV_SERIES);
         $film->setImage("Original_Image");
         $film->setImage("Original_IMDbImage", $site->_getSourceName());
         $film->setImage("Original_JinniImage", Constants::SOURCE_JINNI);
@@ -417,13 +417,13 @@ class SiteTest extends RatingSyncTestCase
 
         $success = $site->_parseDetailPageForContentType($page, $film, true);
         $this->assertFalse($success, 'Parsing film object for Content Type');
-        $this->assertEquals(Film::CONTENT_TV, $film->getContentType(), 'Check matching Content Type (full film overwrite=true)');
+        $this->assertEquals(Film::CONTENT_TV_SERIES, $film->getContentType(), 'Check matching Content Type (full film overwrite=true)');
 
         $success = $site->_parseDetailPageForImage($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Image');
         $this->assertEquals("Original_Image", $film->getImage(), 'Check matching Image (full film overwrite=true)');
         $this->assertEquals("Original_JinniImage", $film->getImage(Constants::SOURCE_JINNI), 'Check matching Image (full film overwrite=true)');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching Image (full film overwrite=true)');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching Image (full film overwrite=true)');
         
         $success = $site->_parseDetailPageForUniqueName($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Film Id');
@@ -457,7 +457,7 @@ class SiteTest extends RatingSyncTestCase
         // Setup original data
         $film->setTitle("Original_Title");
         $film->setYear(1900);
-        $film->setContentType(Film::CONTENT_TV);
+        $film->setContentType(Film::CONTENT_TV_SERIES);
         $film->addGenre("Original_Genre1");
         $film->addGenre("Original_Genre2");
         $film->addDirector("Original_Director1");
@@ -484,7 +484,7 @@ class SiteTest extends RatingSyncTestCase
 
         $success = $site->_parseDetailPageForContentType($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Content Type');
-        $this->assertEquals(Film::CONTENT_TV, $film->getContentType(), 'Check matching Content Type (full film overwrite=false)');
+        $this->assertEquals(Film::CONTENT_TV_SERIES, $film->getContentType(), 'Check matching Content Type (full film overwrite=false)');
 
         $success = $site->_parseDetailPageForImage($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Image');

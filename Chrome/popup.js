@@ -43,16 +43,12 @@ function searchFilm(searchTerms)
 
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = function () {
-/*RT*/renderStatus('State change');
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-/*RT*/renderStatus('Status 200');
+            renderStatus('');
             var resultFilms = JSON.parse(xmlhttp.responseText);
-/*RT*/renderStatus('JSON parsed');
             var film = resultFilms.match;
-/*RT*/renderStatus('film match');
             contextData = JSON.parse('{"films":[' + xmlhttp.responseText + ']}');
             renderFilm(film, searchResultElement);
-            renderStatus('');
             showStreams();
         } else if (xmlhttp.readyState == 4) {
             renderStatus('Not found');
@@ -66,6 +62,7 @@ function searchFilm(searchTerms)
     if (searchTerms.source != "undefined") { params = params + "&source=" + searchTerms.source; }
     if (searchTerms.title != "undefined") { params = params + "&t=" + encodeURIComponent(searchTerms.title); }
     if (searchTerms.year != "undefined") { params = params + "&y=" + searchTerms.year; }
+    if (searchTerms.parentYear != "undefined") { params = params + "&py=" + searchTerms.parentYear; }
     if (searchTerms.season != "undefined") { params = params + "&s=" + searchTerms.season; }
     if (searchTerms.episodeNumber != "undefined") { params = params + "&en=" + searchTerms.episodeNumber; }
     if (searchTerms.episodeTitle != "undefined") { params = params + "&et=" + searchTerms.episodeTitle; }

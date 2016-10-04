@@ -47,13 +47,13 @@ class ApiTest extends RatingSyncTestCase
 
         // Test
         $responseJson = api_getSearchFilm(Constants::TEST_RATINGSYNC_USERNAME, $searchTerms);
-/*RT*/
+/*RT
 echo "\ndump response\n";
 var_dump($responseJson);
 echo "\nprint response\n";
 print $responseJson;
 echo "\necho response\n$responseJson\n";
-/*RT*/
+*RT*/
 
         // Verify
         $this->assertFalse(empty($responseJson));
