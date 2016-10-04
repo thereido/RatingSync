@@ -86,10 +86,20 @@ function renderFilm(film, element) {
         imdbLink = "<a href='" + imdbFilmUrl + "' target='_blank'>" + imdbLabel + ":</a> " + imdbScore;
     }
 
+    var season = "";
+    if (film.season) {
+        season = "Season " + film.season;
+    }
+    var episodeNumber = "";
+    if (film.episodeNumber) {
+        episodeNumber = " - Episode " + film.episodeNumber;
+    }
     
     var r = "";
     r = r + "<div id='" + uniqueName + "' align='center'>\n";
     r = r + "  <div class='film-line'><span class='film-title'>" + film.title + "</span> (" + film.year + ")</div>\n";
+    r = r + "  <div class='tv-episode-title'>" + film.episodeTitle + "</div>\n";
+    r = r + "  <div><span class='tv-season'>" + season + "</span><span class='tv-episodenum'>" + episodeNumber + "</span></div>\n";
     r = r + "  <div class='rating-stars' id='rating-stars-"+uniqueName+"'></div>\n";
     r = r + "  <poster><img src='" + image + "' width='150px'/></poster>\n";
     r = r + "  <detail>\n";
