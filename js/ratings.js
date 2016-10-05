@@ -64,10 +64,21 @@ function renderFilmDetail(film, filmEl) {
         titleNumStr = titleNum + ". ";
     }
 
+    var season = "";
+    if (film.season) {
+        season = "Season " + film.season;
+    }
+    var episodeNumber = "";
+    if (film.episodeNumber) {
+        episodeNumber = " - Episode " + film.episodeNumber;
+    }
+
     var html = '';
     html = html + '<poster><img src="'+image+'" width="150px"/></poster>\n';
     html = html + '<detail>\n';
     html = html + '  <div class="film-line">'+titleNumStr+'<span class="film-title">'+film.title+'</span> ('+film.year+')</div>\n';
+    html = html + "  <div class='tv-episode-title'>" + film.episodeTitle + "</div>\n";
+    html = html + "  <div><span class='tv-season'>" + season + "</span><span class='tv-episodenum'>" + episodeNumber + "</span></div>\n";
     html = html + '  <div align="left">\n';
     html = html + '    <div class="rating-stars" id="rating-stars-'+rsSource.uniqueName+'"></div>\n';
     html = html + '  </div>\n';
