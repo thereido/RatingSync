@@ -537,6 +537,15 @@ class Source
         }
         return false;
     }
+
+    public static function doesSourceReuseUniqueNames($sourceName, $contentType) {
+        if (empty($sourceName) || $sourceName == Constants::SOURCE_XFINITY) {
+            if (empty($contentType) || in_array($contentType, array(Film::CONTENT_TV_SERIES, Film::CONTENT_TV_SEASON, Film::CONTENT_TV_EPISODE))) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 ?>

@@ -37,7 +37,7 @@ class MainTest extends RatingSyncTestCase
         $db = getDatabase();
 
         // Test
-        $searchTerms = array("uniqueName" => "tt2294629");
+        $searchTerms = array("uniqueName" => "tt2294629", "sourceName" => Constants::SOURCE_IMDB);
         $film = search($searchTerms)['match']; // Frozen (2013)
         $filmId = $film->getId();
 
@@ -119,7 +119,7 @@ class MainTest extends RatingSyncTestCase
         DatabaseTest::resetDb();
 
         // Test
-        $searchTerms = array("uniqueName" => "tt0094819");
+        $searchTerms = array("uniqueName" => "tt0094819", "sourceName" => Constants::SOURCE_IMDB);
         $film = search($searchTerms)['match']; // Buster (1988)
         $filmId = $film->getId();
 
@@ -186,10 +186,11 @@ class MainTest extends RatingSyncTestCase
         // Use the film in db from testSearch
 
         // Test
-        $searchTerms = array("uniqueName" => "rs1");
+        $searchTerms = array("uniqueName" => "rs1", "sourceName" => Constants::SOURCE_RATINGSYNC);
         $film = search($searchTerms)['match']; // Buster (1988)
 
         // Verify
+        $this->assertFalse(empty($film), "Film search result should not be empty");
         $this->assertEquals("Buster", $film->getTitle(), "Title");
     }
     

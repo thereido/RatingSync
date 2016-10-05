@@ -152,7 +152,8 @@ function search($searchTerms, $username = null)
     $episodeTitle = array_value_by_key("episodeTitle", $searchTerms);
     $contentType = array_value_by_key("contentType", $searchTerms);
     $sourceName = array_value_by_key("sourceName", $searchTerms);
-    // Need uniqueName or both title and year
+
+    // Check searchTerms
     if (empty($uniqueName) && (empty($title) || empty($year))) {
         return null;
     }
