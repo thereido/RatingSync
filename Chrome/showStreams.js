@@ -61,25 +61,6 @@ function showStreamsForOneFilm(streamsEl)
 
                 chrome.runtime.sendMessage({action: "createProviderTab", url: providerUrl, streamInfo: streamInfo, isSearch: isSearch});
             }
-            else if (sourceName == "xfinity") {
-                var xmlhttp = new XMLHttpRequest();
-                xmlhttp.onreadystatechange = function () {
-                    if (xmlhttp.readyState == 4) {
-                        var streamUrl = xmlhttp.responseText;
-                        var streamResponseText = '{';
-                        streamResponseText = streamResponseText + '"streamInfo": ' + JSON.stringify(streamInfo);
-                        streamResponseText = streamResponseText + ',"streamUrl": "' + streamUrl + '"';
-                        streamResponseText = streamResponseText + '}';
-                        var streamResponse = JSON.parse(streamResponseText);
-                        showOneStream(streamResponse);
-                    }
-                }
-                var params = "&source=" + streamInfo.sourceName;
-                params = params + "&id=" + streamInfo.filmId;
-                params = params + "&refresh=true";
-                xmlhttp.open("GET", RS_URL_API + "?action=getStream" + params, true);
-                xmlhttp.send();
-            }
         }
     }
 }

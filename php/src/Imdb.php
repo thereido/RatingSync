@@ -91,7 +91,20 @@ class Imdb extends \RatingSync\SiteRatings
             // Year, Content Type
             preg_match('@<span class=\"year_type\">\((\d\d\d\d) ?([^)]*)\)@', $filmSection, $matches);
             $year = $matches[1];
-            $contentType = $matches[2];
+            $contentTypeText = $matches[2];
+
+            // Content Type detail
+            $contentType = Film::CONTENT_FILM;
+            if (empty($contentTypeText) || $contentTypeText == 'Documentary') {
+                $contentType = Film::CONTENT_FILM;
+            } elseif ($contentTypeText == 'Short Film') {
+                $contentType = Film::CONTENT_SHORTFILM;
+            } elseif ($contentTypeText == 'TV Series') {
+                $contentType = Film::CONTENT_TV_SERIES;
+                if (1 === preg_match('@<div class=\"(episode)\">@', $filmSection, $matches)) {
+                    $contentType = Film::CONTENT_TV_EPISODE;
+                }
+            }
 
             // Unique Name
             preg_match('@\"(tt[\d]+)\"@', $filmSection, $matches);
@@ -109,7 +122,7 @@ class Imdb extends \RatingSync\SiteRatings
 
             // Image
             $image = null;
-            if (0 < preg_match('@<img [^>]*src="(http://.*imdb\.com/images/[A-Z]/[^\"]*)"@', $filmSection, $matches)) {
+            if (0 < preg_match('@<img [^>]*src="(https://.*images-amazon\.com/images/[A-Z]/[^\"]*)"@', $filmSection, $matches)) {
                 $image = $matches[1];
             }
 
@@ -117,13 +130,7 @@ class Imdb extends \RatingSync\SiteRatings
             $film->setTitle($title);
             $film->setYear($year);
             $film->setImage($image);
-            if ($contentType == 'TV Series') {
-                $film->setContentType(Film::CONTENT_TV);
-            } elseif ($contentType == 'Short Film') {
-                $film->setContentType(Film::CONTENT_SHORTFILM);
-            } elseif (empty($contentType) || $contentType == 'Documentary') {
-                $film->setContentType(Film::CONTENT_FILM);
-            }
+            $film->setContentType($contentType);
 
             $film->setUniqueName($uniqueName, $this->sourceName);
             $film->setImage($image, $this->sourceName);
@@ -268,8 +275,14 @@ class Imdb extends \RatingSync\SiteRatings
      *
      * @return string Regular expression to find the film title in film detail HTML page
      */
-    protected function getDetailPageRegexForTitle() {
-        return '/<title>(.*) \(.*\d\d\d\d[^\)]*\) - IMDb<\/title>/';
+    protected function getDetailPageRegexForTitle($contentType = Film::CONTENT_FILM) {
+        $regex = '/<title>(.*) \(.*\d\d\d\d[^\)]*\) - IMDb<\/title>/';
+        if ($contentType == Film::CONTENT_TV_SERIES) {
+            $regex = "/<meta property='og:title' content=\"(.*?) \(TV Series/";
+        } elseif ($contentType == Film::CONTENT_TV_EPISODE) {
+            $regex = "/<meta property='og:title' content=\"&quot;(.*?)&quot; .*? \(TV Episode/";
+        }
+        return $regex;
     }
 
     /**
@@ -305,7 +318,7 @@ class Imdb extends \RatingSync\SiteRatings
      * @return string Regular expression to find the film season in film detail HTML page
      */
     protected function getDetailPageRegexForSeason() {
-        return '';
+        return '/<div class="bp_heading">Season ([\d]+)/';
     }
 
     /**
@@ -314,7 +327,7 @@ class Imdb extends \RatingSync\SiteRatings
      * @return string Regular expression to find the episode title in film detail HTML page
      */
     protected function getDetailPageRegexForEpisodeTitle() {
-        return '';
+        return '/<div class="title_wrapper">[\s]+<h1[^>]*>(.+)\&nbsp\;/';
     }
 
     /**
@@ -323,7 +336,7 @@ class Imdb extends \RatingSync\SiteRatings
      * @return string Regular expression to find the film season in film detail HTML page
      */
     protected function getDetailPageRegexForEpisodeNumber() {
-        return '';
+        return '/<div class="bp_heading">Season .*Episode ([\d]+)<\/div>/';
     }
 
     /**
@@ -488,8 +501,10 @@ class Imdb extends \RatingSync\SiteRatings
     {
         if (empty($contentType) || $contentType == "TV Movie") {
             $contentType = Film::CONTENT_FILM;
-        } elseif ($contentType == "TV Series" || $contentType == "TV Episode") {
-            $contentType = Film::CONTENT_TV;
+        } elseif ($contentType == "TV Series") {
+            $contentType = Film::CONTENT_TV_SERIES;
+        } elseif ($contentType == "TV Episode") {
+            $contentType = Film::CONTENT_TV_EPISODE;
         } else {
             $contentType = Film::CONTENT_FILM;
         }

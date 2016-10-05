@@ -10,7 +10,7 @@ $response = "";
 $action = array_value_by_key("action", $_GET);
 logDebug("API action: $action", "api.php");
 if ($action == "getSearchFilm") {
-    $response = api_getSearchFilm($username);
+    $response = api_getSearchFilm($username, $_GET);
 } elseif ($action == "setRating") {
     $response = api_setRating($username);
 } elseif ($action == "setFilmlist") {
@@ -20,7 +20,7 @@ if ($action == "getSearchFilm") {
 } elseif ($action == "createFilmlist") {
     $response = api_createFilmlist($username);
 } elseif ($action == "addFilmBySearch") {
-    $response = api_addFilmBySearch($username);
+    $response = api_addFilmBySearch($username, $_GET);
 } elseif ($action == "updateFilmSource") {
     $response = api_updateFilmSource($username);
 } elseif ($action == "getStream") {
@@ -31,13 +31,15 @@ if ($action == "getSearchFilm") {
 
 echo $response;
 
-function api_getSearchFilm($username)
+function api_getSearchFilm($username, $get)
 {
-    $searchTerms = getApiSearchTerms();
+    $searchTerms = getApiSearchTerms($get);
 
     $searchFilm = null;
     try {
-        $searchFilm = search($searchTerms, $username);
+        $resultFilms = search($searchTerms, $username);
+        $matchFilm = array_value_by_key('match', $resultFilms);
+        $parentFilm = array_value_by_key('parent', $resultFilms);
     } catch (\Exception $e) {
         $errorMsg = "Error \RatingSync\search()" . 
                     "\nsearchTerms keys: " . implode(",", array_keys($searchTerms)) .
@@ -45,26 +47,33 @@ function api_getSearchFilm($username)
                     "\nException " . $e->getCode() . " " . $e->getMessage();
         logDebug($errorMsg, __FUNCTION__." ".__LINE__);
     }
-
-    $response = "";
-    if (!empty($searchFilm)) {
-        $response = $searchFilm->json_encode();
-    }
     
-    return $response;
+    $responseArr = array();
+    $matchAsArray = "";
+    $parentAsArray = "";
+    if (!empty($matchFilm)) {
+        $responseArr['match'] = $matchFilm->asArray();
+    }
+    if (!empty($parentFilm)) {
+        $responseArr['parent'] = $parentFilm->asArray();
+    }
+    $responseJson = json_encode($responseArr);
+    
+    return $responseJson;
 }
 
 function api_setRating($username)
 {
     $film = null;
     $titleNum = array_value_by_key("tn", $_GET);
+    $filmId = array_value_by_key("fid", $_GET);
     $uniqueName = array_value_by_key("un", $_GET);
     $score = array_value_by_key("s", $_GET);
-    logDebug("Params un=$uniqueName, s=$score, tn=$titleNum", __FUNCTION__." ".__LINE__);
+    logDebug("Params fid=$filmId, un=$uniqueName, s=$score, tn=$titleNum", __FUNCTION__." ".__LINE__);
 
     if (!empty($uniqueName) && !empty($score)) {
-        logDebug("uniqueName: $uniqueName, score: $score", __FUNCTION__." ".__LINE__);
-        $film = setRating($uniqueName, $score);
+        logDebug("filmId: $filmId, uniqueName: $uniqueName, score: $score", __FUNCTION__." ".__LINE__);
+        $film = setRating($filmId, $score);
     }
 
     $response = $film->json_encode();
@@ -118,13 +127,13 @@ function api_createFilmlist($username)
     $filmlist->saveToDb();
 }
 
-function api_addFilmBySearch($username)
+function api_addFilmBySearch($username, $get)
 {
-    $searchTerms = getApiSearchTerms();
+    $searchTerms = getApiSearchTerms($get);
 
     $searchFilm = null;
     try {
-        $searchFilm = search($searchTerms, $username);
+        $resultFilms = search($searchTerms, $username);
     } catch (\Exception $e) {
         $errorMsg = "Error \RatingSync\search()" . 
                     "\nsearchTerms keys: " . implode(",", array_keys($searchTerms)) .
@@ -134,18 +143,21 @@ function api_addFilmBySearch($username)
     }
 }
 
-function getApiSearchTerms()
+function getApiSearchTerms($get)
 {
-    $searchQuery = array_value_by_key("q", $_GET);
-    $searchUniqueEpisode = array_value_by_key("ue", $_GET);
-    $searchUniqueAlt = array_value_by_key("ua", $_GET);
-    $searchTitle = array_value_by_key("t", $_GET);
-    $searchYear = array_value_by_key("y", $_GET);
-    $searchEpisodeTitle = array_value_by_key("et", $_GET);
-    $searchContentType = array_value_by_key("ct", $_GET);
+    $searchQuery = array_value_by_key("q", $get);
+    $searchUniqueEpisode = array_value_by_key("ue", $get);
+    $searchUniqueAlt = array_value_by_key("ua", $get);
+    $searchTitle = array_value_by_key("t", $get);
+    $searchYear = array_value_by_key("y", $get);
+    $searchParentYear = array_value_by_key("py", $get);
+    $searchSeason = array_value_by_key("s", $get);
+    $searchEpisodeNumber = array_value_by_key("en", $get);
+    $searchEpisodeTitle = array_value_by_key("et", $get);
+    $searchContentType = array_value_by_key("ct", $get);
 
     $sourceName = Constants::SOURCE_RATINGSYNC;
-    $searchSource = array_value_by_key("source", $_GET);
+    $searchSource = array_value_by_key("source", $get);
     if ($searchSource == "IM") {
         $sourceName = Constants::SOURCE_IMDB;
     } else if ($searchSource == "NF") {
@@ -158,13 +170,16 @@ function getApiSearchTerms()
         $sourceName = Constants::SOURCE_HULU;
     }
     
-    logDebug("Params q=$searchQuery, ue=$searchUniqueEpisode, ua=$searchUniqueAlt, t=$searchTitle, y=$searchYear, et=$searchEpisodeTitle, ct=$searchContentType, source=$searchSource", __FUNCTION__." ".__LINE__);
+    logDebug("Params q=$searchQuery, ue=$searchUniqueEpisode, ua=$searchUniqueAlt, t=$searchTitle, y=$searchYear, py=$searchParentYear, s=$searchSeason, en=$searchEpisodeNumber, et=$searchEpisodeTitle, ct=$searchContentType, source=$searchSource", __FUNCTION__." ".__LINE__);
     $searchTerms = array('uniqueName' => $searchQuery,
                          'uniqueEpisode' => $searchUniqueEpisode,
                          'uniqueAlt' => $searchUniqueAlt,
                          'sourceName' => $sourceName,
                          'title' => htmlspecialchars_decode($searchTitle),
                          'year' => $searchYear,
+                         'parentYear' => $searchParentYear,
+                         'season' => $searchSeason,
+                         'episodeNumber' => $searchEpisodeNumber,
                          'episodeTitle' => htmlspecialchars_decode($searchEpisodeTitle),
                          'contentType' => $searchContentType);
 

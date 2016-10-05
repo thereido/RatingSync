@@ -62,7 +62,7 @@ abstract class Site
      *
      * @return string Regular expression to find the film title in film detail HTML page
      */
-    abstract protected function getDetailPageRegexForTitle();
+    abstract protected function getDetailPageRegexForTitle($contentType = Film::CONTENT_FILM);
 
     /**
      * Regular expression to find the film year in film detail HTML page
@@ -244,10 +244,10 @@ abstract class Site
         if (empty($page)) {
             return;
         }
+        $this->parseDetailPageForContentType($page, $film, $overwrite);
         $this->parseDetailPageForTitle($page, $film, $overwrite);
         $this->parseDetailPageForFilmYear($page, $film, $overwrite);
         $this->parseDetailPageForImage($page, $film, $overwrite);
-        $this->parseDetailPageForContentType($page, $film, $overwrite);
         $this->parseDetailPageForSeason($page, $film, $overwrite);
         $this->parseDetailPageForEpisodeNumber($page, $film, $overwrite);
         $this->parseDetailPageForEpisodeTitle($page, $film, $overwrite);
@@ -396,7 +396,7 @@ abstract class Site
             return false;
         }
         
-        $regex = $this->getDetailPageRegexForTitle();
+        $regex = $this->getDetailPageRegexForTitle($film->getContentType());
         if (empty($regex) || 0 === preg_match($regex, $page, $matches)) {
             return false;
         }
@@ -542,7 +542,7 @@ abstract class Site
      */
     protected function parseDetailPageForEpisodeTitle($page, $film, $overwrite)
     {
-        if (!$overwrite && !is_null($film->getEpisodeTitle())) {
+        if ( (!$overwrite && !is_null($film->getEpisodeTitle())) || $film->getContentType() != Film::CONTENT_TV_EPISODE ) {
             return false;
         }
         

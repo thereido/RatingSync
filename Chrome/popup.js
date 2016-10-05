@@ -44,10 +44,11 @@ function searchFilm(searchTerms)
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            var film = JSON.parse(xmlhttp.responseText);
+            renderStatus('');
+            var resultFilms = JSON.parse(xmlhttp.responseText);
+            var film = resultFilms.match;
             contextData = JSON.parse('{"films":[' + xmlhttp.responseText + ']}');
             renderFilm(film, searchResultElement);
-            renderStatus('');
             showStreams();
         } else if (xmlhttp.readyState == 4) {
             renderStatus('Not found');
@@ -61,6 +62,9 @@ function searchFilm(searchTerms)
     if (searchTerms.source != "undefined") { params = params + "&source=" + searchTerms.source; }
     if (searchTerms.title != "undefined") { params = params + "&t=" + encodeURIComponent(searchTerms.title); }
     if (searchTerms.year != "undefined") { params = params + "&y=" + searchTerms.year; }
+    if (searchTerms.parentYear != "undefined") { params = params + "&py=" + searchTerms.parentYear; }
+    if (searchTerms.season != "undefined") { params = params + "&s=" + searchTerms.season; }
+    if (searchTerms.episodeNumber != "undefined") { params = params + "&en=" + searchTerms.episodeNumber; }
     if (searchTerms.episodeTitle != "undefined") { params = params + "&et=" + searchTerms.episodeTitle; }
     if (searchTerms.contentType != "undefined") { params = params + "&ct=" + searchTerms.contentType; }
 	xmlhttp.open("GET", RS_URL_API + "?action=getSearchFilm" + params, true);
@@ -82,10 +86,20 @@ function renderFilm(film, element) {
         imdbLink = "<a href='" + imdbFilmUrl + "' target='_blank'>" + imdbLabel + ":</a> " + imdbScore;
     }
 
+    var season = "";
+    if (film.season) {
+        season = "Season " + film.season;
+    }
+    var episodeNumber = "";
+    if (film.episodeNumber) {
+        episodeNumber = " - Episode " + film.episodeNumber;
+    }
     
     var r = "";
     r = r + "<div id='" + uniqueName + "' align='center'>\n";
     r = r + "  <div class='film-line'><span class='film-title'>" + film.title + "</span> (" + film.year + ")</div>\n";
+    r = r + "  <div class='tv-episode-title'>" + film.episodeTitle + "</div>\n";
+    r = r + "  <div><span class='tv-season'>" + season + "</span><span class='tv-episodenum'>" + episodeNumber + "</span></div>\n";
     r = r + "  <div class='rating-stars' id='rating-stars-"+uniqueName+"'></div>\n";
     r = r + "  <poster><img src='" + image + "' width='150px'/></poster>\n";
     r = r + "  <detail>\n";

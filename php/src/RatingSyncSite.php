@@ -73,7 +73,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     protected function getFilmDetailPageUrl($film) { }
     protected function parseDetailPageForGenres($page, $film, $overwrite) { }
     protected function parseDetailPageForDirectors($page, $film, $overwrite) { }
-    protected function getDetailPageRegexForTitle() { }
+    protected function getDetailPageRegexForTitle($contentType = Film::CONTENT_FILM) { }
     protected function getDetailPageRegexForYear() { }
     protected function getDetailPageRegexForImage() { }
     protected function getDetailPageRegexForContentType() { }

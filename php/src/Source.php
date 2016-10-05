@@ -359,7 +359,7 @@ class Source
         if ($result->num_rows == 0) {
             $newRow = true;
         }
-
+        
         if ($newRow) {
             $query = "INSERT INTO film_source ($columns) VALUES ($values)";
             logDebug($query, __FUNCTION__." ".__LINE__);
@@ -401,7 +401,7 @@ class Source
         if (empty($film) || !($film instanceof Film)) {
             throw new \InvalidArgumentException("film arg must be a /RatingSync/Film");
         }
-
+        
         $needSourceData = empty($this->getUniqueName());
         $needStream = self::validStreamProvider($this->getName());
         $neededDataAvailable = false;
@@ -494,12 +494,12 @@ class Source
 
     public static function validStreamProviders()
     {
-        return array(Constants::SOURCE_XFINITY);
+        return array();
     }
 
     public static function validStreamProvidersBackground()
     {
-        return array(Constants::SOURCE_NETFLIX, Constants::SOURCE_XFINITY);
+        return array(Constants::SOURCE_NETFLIX);
     }
 
     public static function getSite($sourceName, $username = null)
@@ -534,6 +534,15 @@ class Source
         if (in_array($sourceName, self::supportedSourceWebsites()))
         {
             return true;
+        }
+        return false;
+    }
+
+    public static function doesSourceReuseUniqueNames($sourceName, $contentType) {
+        if (empty($sourceName) || $sourceName == Constants::SOURCE_XFINITY) {
+            if (empty($contentType) || in_array($contentType, array(Film::CONTENT_TV_SERIES, Film::CONTENT_TV_SEASON, Film::CONTENT_TV_EPISODE))) {
+                return true;
+            }
         }
         return false;
     }

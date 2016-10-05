@@ -15,7 +15,7 @@ function renderStatus(statusText) {
     }
 }
 
-function rateFilm(uniqueName, score, titleNum) {
+function rateFilm(filmId, uniqueName, score, titleNum) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -27,6 +27,7 @@ function rateFilm(uniqueName, score, titleNum) {
     }
     var params = "";
     params = params + "&json=1";
+    params = params + "&fid=" + filmId;
     params = params + "&un=" + uniqueName;
     params = params + "&s=" + score;
     if (titleNum && titleNum != "undefined") {
@@ -72,7 +73,7 @@ function renderStars(film) {
     var emptyStars = 10 - yourScore;
     var starScore = 10;
     while (emptyStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star' id='rate-" + uniqueName + "-" + starScore + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'>☆</span>";
+        starsHtml = starsHtml + "<span class='rating-star' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'>☆</span>";
         emptyStars = emptyStars - 1;
         starScore = starScore - 1;
     }
@@ -247,13 +248,14 @@ function addStarListeners(el) {
 function addStarListener(elementId) {    
 	var star = document.getElementById(elementId);
 	if (star != null) {
+		var filmId = star.getAttribute('data-film-id');
 		var uniqueName = star.getAttribute('data-uniquename');
 		var score = star.getAttribute('data-score');
 		var titleNum = star.getAttribute('data-title-num');
 
 		var mouseoverHandler = function () { renderYourScore(uniqueName, score, 'new'); };
 		var mouseoutHandler = function () { renderYourScore(uniqueName, score, 'original'); };
-		var clickHandler = function () { rateFilm(uniqueName, score, titleNum); };
+		var clickHandler = function () { rateFilm(filmId, uniqueName, score, titleNum); };
 
         star.addEventListener("mouseover", mouseoverHandler);
         star.addEventListener("mouseout", mouseoutHandler);

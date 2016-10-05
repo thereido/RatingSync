@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS film
         season VARCHAR(75) NULL DEFAULT NULL,
         episodeNumber INT NULL DEFAULT NULL,
         episodeTitle VARCHAR(75) NULL DEFAULT NULL,
-        image VARCHAR(150) NULL DEFAULT NULL,
+        image VARCHAR(200) NULL DEFAULT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
         UNIQUE KEY idx_title_year (title, year, season, episodeTitle)
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS film_source
     (
         film_id INT NOT NULL,
         source_name VARCHAR(50) NOT NULL,
-        image VARCHAR(150) NULL DEFAULT NULL,
+        image VARCHAR(200) NULL DEFAULT NULL,
         uniqueName VARCHAR(100) NULL DEFAULT NULL,
         uniqueEpisode VARCHAR(100) NULL DEFAULT NULL,
         uniqueAlt VARCHAR(100) NULL DEFAULT NULL,

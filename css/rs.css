@@ -44,6 +44,14 @@
     font-weight: bold;
 }
 
+.tv-episode-title {
+    font-size: 110%;
+    font-weight: bold;
+}
+.tv-season, 
+.tv-episodenum {
+}
+
 poster {
     float: left;
     padding: 5px;

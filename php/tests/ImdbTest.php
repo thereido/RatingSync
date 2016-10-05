@@ -261,7 +261,7 @@ class ImdbTest extends RatingSyncTestCase
         $this->assertEquals("Almost Famous", $film->getTitle(), 'Title');
         $this->assertEquals(2000, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BZDExYTY1OGYtNDFmOC00NTZiLWExODktODRhZjBlNDFkZjkyXkEyXkFqcGdeQXVyMTQxNzMzNDI)@', $film->getImage(), $matches), 'Image link');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMzY1ZjMwMGEtYTY1ZS00ZDllLTk0ZmUtYzA3ZTA4NmYwNGNkXkEyXkFqcGdeQXVyNDk3NzU2MTQ)@', $film->getImage(), $matches), 'Image link');
         $this->assertEquals(array("Cameron Crowe"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Comedy", "Drama"), $film->getGenres(), 'Genres');
         $this->assertEquals("tt0181875", $film->getUniqueName($site->_getSourceName()), 'Unique Name');
@@ -288,7 +288,7 @@ class ImdbTest extends RatingSyncTestCase
         $this->assertEquals("Almost Famous", $film->getTitle(), 'Title');
         $this->assertEquals(2000, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BZDExYTY1OGYtNDFmOC00NTZiLWExODktODRhZjBlNDFkZjkyXkEyXkFqcGdeQXVyMTQxNzMzNDI)@', $film->getImage(), $matches), 'Image link');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMzY1ZjMwMGEtYTY1ZS00ZDllLTk0ZmUtYzA3ZTA4NmYwNGNkXkEyXkFqcGdeQXVyNDk3NzU2MTQ)@', $film->getImage(), $matches), 'Image link');
         $this->assertEquals(array("Cameron Crowe"), $film->getDirectors(), 'Director(s)');
         $this->assertEquals(array("Adventure", "Comedy", "Drama"), $film->getGenres(), 'Genres');
         $this->assertEquals("tt0181875", $film->getUniqueName($site->_getSourceName()), 'Unique Name');
@@ -371,7 +371,7 @@ class ImdbTest extends RatingSyncTestCase
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
         $this->assertEmpty($film->getImage(), "film image");
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
         $this->assertEquals("tt2294629", $film->getUniqueName($site->_getSourceName()), 'Unique Name');
         $this->assertEquals(7.4, $film->getCriticScore($site->_getSourceName()), 'Critic score');
         $this->assertEquals(FROZEN_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
@@ -403,7 +403,7 @@ class ImdbTest extends RatingSyncTestCase
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
         $this->assertEmpty($film->getImage(), "film image");
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
         $this->assertEquals("tt2294629", $film->getUniqueName($site->_getSourceName()), 'Film ID');
         $this->assertEquals(7.4, $film->getCriticScore($site->_getSourceName()), 'Critic score');
         $this->assertEquals(FROZEN_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
@@ -578,7 +578,7 @@ class ImdbTest extends RatingSyncTestCase
         $this->assertEquals(2013, $film->getYear(), 'Year');
         $this->assertEquals("FeatureFilm", $film->getContentType(), 'Content Type');
         $this->assertEmpty($film->getImage(), 'Film image');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Image link');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Image link');
         $this->assertEquals("tt2294629", $film->getUniqueName($site->_getSourceName()), 'Unique Name');
         $this->assertEquals(7.4, $film->getCriticScore($site->_getSourceName()), 'Critic score');
         $this->assertEquals(FROZEN_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
@@ -929,7 +929,7 @@ class ImdbTest extends RatingSyncTestCase
         $success = $site->_parseDetailPageForImage($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Image');
         $this->assertEmpty($film->getImage(), 'Check matching film Image (empty film overwrite=true)');
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching source Image (empty film overwrite=true)');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching source Image (empty film overwrite=true)');
         
         $success = $site->_parseDetailPageForContentType($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Content Type');
@@ -989,7 +989,7 @@ class ImdbTest extends RatingSyncTestCase
         $success = $site->_parseDetailPageForImage($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Image');
         $this->assertEmpty($film->getImage(), "Film image (empty film overwrite=false)");
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching source Image (empty film overwrite=false)');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching source Image (empty film overwrite=false)');
         
         $success = $site->_parseDetailPageForContentType($page, $film, false);
         $this->assertTrue($success, 'Parsing film object for Content Type');
@@ -1081,7 +1081,7 @@ class ImdbTest extends RatingSyncTestCase
         $success = $site->_parseDetailPageForImage($page, $film, true);
         $this->assertTrue($success, 'Parsing film object for Image');
         $this->assertEquals("Original_Image", $film->getImage(), "Check film image (full film overwrite=true)");
-        $this->assertEquals(1, preg_match('@(http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching source Image (full film overwrite=true)');
+        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage($site->_getSourceName()), $matches), 'Check matching source Image (full film overwrite=true)');
         
         $success = $site->_parseDetailPageForContentType($page, $film, true);
         $this->assertFalse($success, 'Parsing film object for Content Type');
@@ -1127,7 +1127,7 @@ class ImdbTest extends RatingSyncTestCase
         // Setup original data
         $film->setTitle("Original_Title");
         $film->setYear(1900);
-        $film->setContentType(Film::CONTENT_TV);
+        $film->setContentType(Film::CONTENT_TV_SERIES);
         $film->setImage("Original_Image");
         $film->addGenre("Original_Genre1");
         $film->addGenre("Original_Genre2");
@@ -1172,7 +1172,7 @@ class ImdbTest extends RatingSyncTestCase
 
         $success = $site->_parseDetailPageForContentType($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Content Type');
-        $this->assertEquals(Film::CONTENT_TV, $film->getContentType(), 'Check matching Content Type (full film overwrite=false)');
+        $this->assertEquals(Film::CONTENT_TV_SERIES, $film->getContentType(), 'Check matching Content Type (full film overwrite=false)');
 
         $success = $site->_parseDetailPageForImage($page, $film, false);
         $this->assertFalse($success, 'Parsing film object for Image');
@@ -1360,10 +1360,10 @@ class ImdbTest extends RatingSyncTestCase
         $this->assertEquals("Frozen", $film->getTitle(), "Frozen title");
         $this->assertEquals(2013, $film->getYear(), "Frozen year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Frozen ContentType");
-        $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg", $film->getImage(), "Frozen image");
+        $this->assertEquals("https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_UX182_CR0,0,182,268_AL_.jpg", $film->getImage(), "Frozen image");
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Frozen directors");
         $this->assertEquals(array("Animation", "Adventure", "Comedy"), $film->getGenres(), "Frozen genres");
-        $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
+        $this->assertEquals("https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_UX182_CR0,0,182,268_AL_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Unique Name");
         $this->assertEquals(7.4, $film->getCriticScore(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." critic score");
         $this->assertEquals(7.7, $film->getUserScore(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." user score");
@@ -1396,7 +1396,7 @@ class ImdbTest extends RatingSyncTestCase
         $this->assertEquals(8, $rating->getYourScore(), "Frozen ".Constants::SOURCE_JINNI." your score");
         $this->assertEquals("5/4/15", $rating->getYourRatingDate()->format('n/j/y'), "Frozen ".Constants::SOURCE_JINNI." rating date");
         $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_JINNI." suggested score");
-        $this->assertEquals("http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
+        $this->assertEquals("https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_UX182_CR0,0,182,268_AL_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Unique Name");
         $this->assertEquals(7.4, $film->getCriticScore(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." critic score");
         $this->assertEquals(7.7, $film->getUserScore(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." user score");
@@ -1577,7 +1577,7 @@ class ImdbTest extends RatingSyncTestCase
         // Verify
         $this->assertEquals("FeatureFilm", $movie->getContentType(), 'Feature Film');
         $this->assertEquals("TvSeries", $tvSeries->getContentType(), 'TV Series');
-        $this->assertEquals("TvSeries", $tvEpisode->getContentType(), 'TV Episode');
+        $this->assertEquals("TvEpisode", $tvEpisode->getContentType(), 'TV Episode');
         //$this->assertEquals("ShortFilm", $short->getContentType(), 'Short Film');
     }
 

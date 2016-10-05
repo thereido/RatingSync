@@ -264,7 +264,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $searchTerms["title"] = TEST_XFINITY_TITLE;
         $searchTerms["year"] = TEST_XFINITY_YEAR;
         $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
-        $film = \RatingSync\search($searchTerms);
+        $film = \RatingSync\search($searchTerms)['match'];
 
         $this->assertFalse(is_null($film));
         $this->assertEquals(TEST_XFINITY_TITLE, $film->getTitle());
@@ -274,6 +274,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
      * @covers \RatingSync\RatingSyncSite::getStreamUrl
      * @depends testSetupRatings
      */
+    /* Xfinity unavailable for streams
     public function testGetStreamUrl()
     {$this->start(__CLASS__, __FUNCTION__);
 
@@ -282,7 +283,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $searchTerms["uniqueName"] = TEST_XFINITY_UNIQUENAME;
         $searchTerms["uniqueAlt"] = TEST_XFINITY_UNIQUEALT;
         $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
-        $film = \RatingSync\search($searchTerms);
+        $film = \RatingSync\search($searchTerms)['match'];
         $filmId = $film->getId();
         $xfinity = new Xfinity(TEST_XFINITY_USERNAME);
         $url = $xfinity->getStreamUrl($film->getId());
@@ -297,11 +298,13 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         // Verify
         $this->assertEquals("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT."/".TEST_XFINITY_UNIQUENAME."/movies#filter=online", $url, Constants::SOURCE_XFINITY." streaming URL");
     }
+    */
 
     /**
      * @covers \RatingSync\RatingSyncSite::getStreamUrl
      * @depends testSetupRatings
      */
+    /* Xfinity unavailable for streams
     public function testGetStreamUrlTvSeries()
     {$this->start(__CLASS__, __FUNCTION__);
 
@@ -310,7 +313,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $searchTerms["uniqueName"] = TEST_XFINITY_UNIQUENAME_TV;
         $searchTerms["uniqueAlt"] = TEST_XFINITY_UNIQUEALT_TV;
         $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
-        $film = \RatingSync\search($searchTerms);
+        $film = \RatingSync\search($searchTerms)['match'];
         $filmId = $film->getId();
         $xfinity = new Xfinity(TEST_XFINITY_USERNAME);
         $url = $xfinity->getStreamUrl($film->getId());
@@ -325,11 +328,13 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         // Verify
         $this->assertStringStartsWith("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT_TV."/".TEST_XFINITY_UNIQUENAME_TV."/full-episodes#filter=online", $url, Constants::SOURCE_XFINITY." streaming URL");
     }
+    */
 
     /**
      * @covers \RatingSync\RatingSyncSite::getStreamUrl
      * @depends testSetupRatings
      */
+    /* Xfinity unavailable for streams
     public function testGetStreamUrlTvEpisode()
     {$this->start(__CLASS__, __FUNCTION__);
 
@@ -339,7 +344,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $searchTerms["uniqueAlt"] = TEST_XFINITY_UNIQUEALT_TV;
         $searchTerms["uniqueEpisode"] = TEST_XFINITY_UNIQUEEPISODE_TV;
         $searchTerms["sourceName"] = Constants::SOURCE_XFINITY;
-        $film = \RatingSync\search($searchTerms);
+        $film = \RatingSync\search($searchTerms)['match'];
         $filmId = $film->getId();
         $xfinity = new Xfinity(TEST_XFINITY_USERNAME);
         $url = $xfinity->getStreamUrl($film->getId());
@@ -354,11 +359,13 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         // Verify
         $this->assertEquals("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT_TV."/".TEST_XFINITY_UNIQUENAME_TV."/full-episodes#filter=online&episode=".TEST_XFINITY_UNIQUEEPISODE_TV, $url, Constants::SOURCE_XFINITY." streaming URL");
     }
+    */
 
     /**
      * @covers \RatingSync\RatingSyncSite::getStreamUrl
      * @depends testObjectCanBeConstructed
      */
+    /* Xfinity unavailable for streams
     public function testGetStreamUrlFilmNoLongerAvailable()
     {$this->start(__CLASS__, __FUNCTION__);
 
@@ -375,6 +382,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         // Verify
         $this->assertEmpty($url, "Should be empty ($url)");
     }
+    */
 }
 
 ?>

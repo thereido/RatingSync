@@ -146,16 +146,22 @@ function search($searchTerms, $username = null)
     $uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
     $title = array_value_by_key("title", $searchTerms);
     $year = array_value_by_key("year", $searchTerms);
+    $parentYear = array_value_by_key("parentYear", $searchTerms);
+    $season = array_value_by_key("season", $searchTerms);
+    $episodeNumber = array_value_by_key("episodeNumber", $searchTerms);
     $episodeTitle = array_value_by_key("episodeTitle", $searchTerms);
     $contentType = array_value_by_key("contentType", $searchTerms);
     $sourceName = array_value_by_key("sourceName", $searchTerms);
-    // Need uniqueName or both title and year
+
+    // Check searchTerms
     if (empty($uniqueName) && (empty($title) || empty($year))) {
         return null;
     }
     
     $newFilm = false;
-    $film = Film::searchDb($searchTerms, $username);
+    $searchDbResult = Film::searchDb($searchTerms, $username);
+    $parentFilm = $searchDbResult['parent'];
+    $film = $searchDbResult['match'];
 
     if (empty($film)) {
         $imdb = new Imdb($username);
@@ -201,7 +207,7 @@ function search($searchTerms, $username = null)
             $newFilm = true;
         }
     }
-
+    
     if (!empty($film) && !empty($film->getId()) && !empty($uniqueName) && !empty($sourceName)) {
         // Existing film - save source data from the search by this source
         $source = $film->getSource($sourceName);
@@ -213,7 +219,10 @@ function search($searchTerms, $username = null)
         }
     }
     
-    return $film;
+    $resultFilms = array();
+    $resultFilms['match'] = $film;
+    $resultFilms['parent'] = $parentFilm;
+    return $resultFilms;
 }
 
 function searchFilms($searchTerms, $username = null)
@@ -238,14 +247,14 @@ function array_value_by_key($key, $a) {
     }
 }
 
-function setRating($uniqueName, $score)
+function setRating($filmId, $score)
 {
-    if (empty($uniqueName)) {
+    if (empty($filmId)) {
         return null;
     }
 
     $username = getUsername();
-    $film = Film::searchDb(array("uniqueName" => $uniqueName), $username);
+    $film = Film::getFilmFromDb($filmId, $username);
     if (!empty($film)) {
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $rating->setYourScore($score);

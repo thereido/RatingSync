@@ -198,7 +198,7 @@
 	<title>Frozen</title>
 	<year>2013</year>
 	<contentType>FeatureFilm</contentType>
-	<image>http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg</image>
+	<image>https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_UX182_CR0,0,182,268_AL_.jpg</image>
 	<directors>
 		<director>Chris Buck</director>
 		<director>Jennifer Lee</director>
@@ -209,7 +209,7 @@
 		<genre>Comedy</genre>
 	</genres>
 	<source name="IMDb">
-		<image>http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg</image>
+		<image>https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_UX182_CR0,0,182,268_AL_.jpg</image>
 		<uniqueName>tt2294629</uniqueName>
 		<criticScore>7.4</criticScore>
 		<userScore>7.7</userScore>
@@ -251,7 +251,7 @@
 		</rating>
 	</source>
 	<source name="IMDb">
-		<image>http://ia.media-imdb.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1._SY209_CR0,0,140,209_.jpg</image>
+		<image>https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_UX182_CR0,0,182,268_AL_.jpg</image>
 		<uniqueName>tt2294629</uniqueName>
 		<criticScore>7.4</criticScore>
 		<userScore>7.7</userScore>

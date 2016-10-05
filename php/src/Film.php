@@ -10,8 +10,11 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.
 
 class Film {
     const CONTENT_FILM      = 'FeatureFilm';
-    const CONTENT_TV        = 'TvSeries';
     const CONTENT_SHORTFILM = 'ShortFilm';
+    const CONTENT_TV_MOVIE  = 'TvMovie';
+    const CONTENT_TV_SERIES = 'TvSeries';
+    const CONTENT_TV_SEASON = 'TvSeason';
+    const CONTENT_TV_EPISODE = 'TvEpisode';
     
     protected $id;
     protected $title;
@@ -32,7 +35,13 @@ class Film {
 
     public static function validContentType($contentType)
     {
-        if (in_array($contentType, array(static::CONTENT_FILM, static::CONTENT_TV, static::CONTENT_SHORTFILM))) {
+        $validTypes = array(static::CONTENT_FILM,
+                            static::CONTENT_SHORTFILM,
+                            static::CONTENT_TV_MOVIE,
+                            static::CONTENT_TV_SERIES,
+                            static::CONTENT_TV_SEASON,
+                            static::CONTENT_TV_EPISODE);
+        if (in_array($contentType, $validTypes)) {
             return true;
         }
         return false;
@@ -149,7 +158,7 @@ class Film {
         }
     }
 
-    public function json_encode($encodeTitles = false)
+    public function asArray($encodeTitles = false)
     {
         $arr = array();
         $arr['filmId'] = $this->getId();
@@ -214,6 +223,12 @@ class Film {
             $arr['filmlists'] = $arrFilmlists;
         }
         
+        return $arr;
+    }
+
+    public function json_encode($encodeTitles = false)
+    {
+        $arr = $this->asArray($encodeTitles);
         return json_encode($arr);
     }
 
@@ -792,7 +807,7 @@ class Film {
             $selectEpisodeNumber = "episodeNumber IS NULL";
             $episodeNumber = "NULL";
         }
-
+        
         // Look for an existing film row
         $newRow = false;
         if (empty($filmId)) {
@@ -846,7 +861,7 @@ class Film {
                 }
             }
         }
-
+        
         // Directors
         foreach ($this->getDirectors() as $director) {
             $director = $db->real_escape_string($director);
@@ -876,7 +891,7 @@ class Film {
                 $errorFree = false;
             }
         }
-
+        
         // Genres
         foreach ($this->getGenres() as $genre) {
             $result = $db->query("SELECT 1 FROM genre WHERE name='$genre'");
@@ -905,7 +920,7 @@ class Film {
         if (!empty($username)) {
             Filmlist::saveToDbUserFilmlistsByFilmObjectLists($username, $this);
         }
-
+        
         // Make sure the RatingSync source has an image
         $sourceRs = $this->getSource(Constants::SOURCE_RATINGSYNC);
         $filmImage = $this->getImage();
@@ -945,7 +960,7 @@ class Film {
         if (!$success) {
             $errorFree = false;
         }
-
+        
         $db->commit();
         return $errorFree;
     }
@@ -1079,6 +1094,13 @@ class Film {
         return $this->getImage();
     }
 
+    /**
+     * Find a film with matching search terms in the database. If the search
+     * is for a TV episode return both the episode and the TV Series. Returned
+     * as an array. Both items are Film objects with keys 'match' and 'parent'.
+     *
+     * @return array Both Key 'match' is the film searched for. Key 'parent' is the TV Series for the TV Episode match.
+     */
     public static function searchDb($searchTerms, $username)
     {
         if (empty($searchTerms) || !is_array($searchTerms)) {
@@ -1087,60 +1109,130 @@ class Film {
         
         $db = getDatabase();
         $uniqueName = array_value_by_key("uniqueName", $searchTerms);
-        $uniqueEpisode = array_value_by_key("uniqueEpisode", $searchTerms);
-        $uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
+        //$uniqueEpisode = array_value_by_key("uniqueEpisode", $searchTerms);
+        //$uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
         $title = $db->real_escape_string(array_value_by_key("title", $searchTerms));
         $year = array_value_by_key("year", $searchTerms);
+        $parentYear = array_value_by_key("parentYear", $searchTerms);
+        $contentType = array_value_by_key("contentType", $searchTerms);
         $season = $db->real_escape_string(array_value_by_key("season", $searchTerms));
         $episodeNumber = array_value_by_key("episodeNumber", $searchTerms);
         $episodeTitle = $db->real_escape_string(array_value_by_key("episodeTitle", $searchTerms));
         $sourceName = array_value_by_key("sourceName", $searchTerms);
         
+        $selectTitle = "title='$title'";
         $selectYear = "year=$year";
         if (is_null($year)) $selectYear = "year IS NULL";
+        if (!is_null($parentYear)) $selectYear = "($selectYear OR year=$parentYear)";
         $selectSeason = "season='$season'";
         if (empty($season)) $selectSeason = "(season='' OR season IS NULL)";
         $selectEpisodeNumber = "episodeNumber=$episodeNumber";
         if (is_null($episodeNumber)) $selectEpisodeNumber = "episodeNumber IS NULL";
-        $selectUniqueEpisode = "uniqueEpisode='$uniqueEpisode'";
-        if (empty($uniqueEpisode)) $selectUniqueEpisode = "(uniqueEpisode='' OR uniqueEpisode IS NULL)";
+        //$selectUniqueEpisode = "uniqueEpisode='$uniqueEpisode'";
+        //if (empty($uniqueEpisode)) $selectUniqueEpisode = "(uniqueEpisode='' OR uniqueEpisode IS NULL)";
         $selectEpisodeTitle = "episodeTitle='$episodeTitle'";
-        if (is_null($episodeTitle)) $selectEpisodeTitle = "episodeTitle IS NULL";
+        if (empty($episodeTitle)) $selectEpisodeTitle = "(episodeTitle='' OR episodeTitle IS NULL)";
 
         $film = null;
-        if (!empty($uniqueName)) {
-            $query  = "SELECT film_id FROM film_source";
+        $filmParent = null;
+        $filmParentTried = false;
+        $query = null;
+
+        $uniqueNameIsUnique = true;
+        if (empty($uniqueName) || Source::doesSourceReuseUniqueNames($sourceName, $contentType)) {
+            $uniqueNameIsUnique = false;
+        }
+
+        // Use uniqueName as only criteria if it is truly unique
+        if ($uniqueNameIsUnique) {
+            $query  = "SELECT film_id as id FROM film_source WHERE uniqueName='$uniqueName'";
+        }
+
+        // Use uniqueName and season/episode
+        if (empty($query) && !empty($uniqueName)) {
+            $query  = "SELECT id FROM film f, film_source fs";
             $query .= " WHERE uniqueName='$uniqueName'";
-            $query .= "   AND $selectUniqueEpisode";
+            $query .=  "  AND (($selectSeason AND $selectEpisodeNumber) OR $selectEpisodeTitle)";
+        }
+
+        // Use Title/Year. Also using season/episode if there is a value.
+        if (empty($query) && !empty($title) && !empty($year)) {
+            $query  = "SELECT id FROM film";
+            $query .= " WHERE $selectTitle AND $selectYear";
+            $query .=  "  AND (($selectSeason AND $selectEpisodeNumber) OR $selectEpisodeTitle)";
+        } 
+
+        // Get existing film
+        if (!empty($query)) {
             $result = $db->query($query);
             if ($result->num_rows == 1) {
                 $row = $result->fetch_assoc();
-                $film = self::getFilmFromDb($row['film_id'], $username);
+                $film = self::getFilmFromDb($row['id'], $username);
             }
+        }
+
+        if (!empty($film)) {
+            $filmId = $film->getId();
+
+            // Save Film/Source changes
+            if (Source::validSource($sourceName)) {
+                $source = $film->getSource($sourceName);
+                if ($uniqueName != $source->getUniqueName()) {
+                    // This source is not in the database yet. Save it now.
+                    $source->setUniqueName($uniqueName);
+                    //$source->setUniqueEpisode($uniqueEpisode);
+                    //$source->setUniqueAlt($uniqueAlt);
+                    $source->saveFilmSourceToDb($filmId);
+                    $film = self::getFilmFromDb($filmId, $username);
+                }
+            }
+
+            // Save Film season/episode changes
+            $originalSeason = $film->getSeason();
+            $originalEpisodeNumber = $film->getEpisodeNumber();
+            $originalEpisodeTitle = $film->getEpisodeTitle();
+            $needToSaveFilm = false;
+            if (empty($originalSeason) && !empty($season)) {
+                $film->setSeason($season);
+                $needToSaveFilm = true;
+            }
+            if (empty($originalEpisodeNumber) && !empty($episodeNumber)) {
+                $film->setEpisodeNumber($episodeNumber);
+                $needToSaveFilm = true;
+            }
+            if (empty($originalEpisodeTitle) && !empty($episodeTitle)) {
+                $film->setEpisodeTitle($episodeTitle);
+                $needToSaveFilm = true;
+            }
+            if ($needToSaveFilm) {
+                $film->saveToDb($username);
+            }
+
+            $filmParent = self::getFilmParentFromDb($film, $username);
         }
         
-        if (empty($film) && !empty($title) && !empty($year)) {
-            $query  = "SELECT id FROM film";
-            $query .= " WHERE title='$title' AND $selectYear";
-            $query .= "   AND (($selectSeason AND $selectEpisodeNumber) OR $selectEpisodeTitle)";
-            $result = $db->query($query);
-            if ($result->num_rows == 1) {
-                $row = $result->fetch_assoc();
-                $filmId = $row['id'];
-
-                if (!empty($filmId) && !empty($uniqueName) && !empty($sourceName)) {
-                    $source = new Source($sourceName, $filmId);
-                    $source->setUniqueName($uniqueName);
-                    $source->setUniqueEpisode($uniqueEpisode);
-                    $source->setUniqueAlt($uniqueAlt);
-                    $source->saveFilmSourceToDb($filmId);
-                }
-
-                $film = self::getFilmFromDb($filmId, $username);
-            }
+        return array("match"=>$film, "parent"=>$filmParent);
+    }
+    
+    public static function getFilmParentFromDb($film, $username = null)
+    {
+        if (empty($film) && !in_array($film->getContentType(), array(self::CONTENT_TV_SEASON, self::CONTENT_TV_EPISODE))) {
+            return null;
+        }
+        
+        $db = getDatabase();
+        $parentFilm = null;
+        $query  = "SELECT id FROM film";
+        $query .= " WHERE contentType='". self::CONTENT_TV_SERIES ."'";
+        $query .= "   AND title='". $db->real_escape_string($film->getTitle()) ."'";
+        $query .= "   AND year=". $film->getYear();
+        $result = $db->query($query);
+        if ($result->num_rows == 1) {
+            $row = $result->fetch_assoc();
+            $parentFilm = self::getFilmFromDb($row['id'], $username);
         }
 
-        return $film;
+        return $parentFilm;
     }
 
     public static function getFilmsByFilmlist($username, $list)
