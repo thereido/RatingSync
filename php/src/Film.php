@@ -1151,19 +1151,26 @@ class Film {
         // Use uniqueName and season/episode
         if (empty($query) && !empty($uniqueName)) {
             $query  = "SELECT id FROM film f, film_source fs";
-            $query .= " WHERE uniqueName='$uniqueName'";
+            $query .= " WHERE id=film_id";
+            $query .= "   AND uniqueName='$uniqueName'";
             $query .=  "  AND (($selectSeason AND $selectEpisodeNumber) OR $selectEpisodeTitle)";
         }
 
+        // Get existing film from a source
+        if (!empty($query)) {
+            $result = $db->query($query);
+            if ($result->num_rows == 1) {
+                $row = $result->fetch_assoc();
+                $film = self::getFilmFromDb($row['id'], $username);
+            }
+        }
+
         // Use Title/Year. Also using season/episode if there is a value.
-        if (empty($query) && !empty($title) && !empty($year)) {
+        if (empty($film) && !empty($title) && !empty($year)) {
             $query  = "SELECT id FROM film";
             $query .= " WHERE $selectTitle AND $selectYear";
             $query .=  "  AND (($selectSeason AND $selectEpisodeNumber) OR $selectEpisodeTitle)";
-        } 
-
-        // Get existing film
-        if (!empty($query)) {
+            
             $result = $db->query($query);
             if ($result->num_rows == 1) {
                 $row = $result->fetch_assoc();
