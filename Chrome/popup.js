@@ -1,6 +1,7 @@
 
 document.addEventListener('DOMContentLoaded', function () {
-    chrome.tabs.executeScript(null, {file: "getSearchTerms.js"}, function() { });
+    renderStatus("RatingSync");
+    chrome.tabs.executeScript(null, { file: "getSearchTerms.js" }, function () { });
 });
 
 chrome.runtime.onMessage.addListener(function (request, sender) {
@@ -27,6 +28,11 @@ function searchFilm(searchTerms)
 {
     if (searchTerms.uniqueName == "undefined" && (searchTerms.title == "undefined" || !searchTerms.year == "undefined")) {
         notFound(searchTerms.source);
+        return;
+    }
+    if (searchTerms.source == "NF" && searchTerms.contentType == "TvSeries") {
+        var msg = "<div align='center'>Netflix is supported for movies, but not for TV yet</div>";
+        document.getElementById("searchResult").innerHTML = msg;
         return;
     }
 
