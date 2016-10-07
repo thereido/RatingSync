@@ -31,7 +31,7 @@ function searchFilm(searchTerms)
         return;
     }
     if (searchTerms.source == "NF" && searchTerms.contentType == "TvSeries") {
-        var msg = "<div align='center'>Netflix is supported for movies, but not for TV yet</div>";
+        var msg = "<div align='center'>Netflix is supported for movies, but not for TV yet. Try searching on <a href='http://www.imdb.com/find?q="+searchTerms.title+"&title_type=tv_series' target='_blank'>IMDb</a></div>";
         document.getElementById("searchResult").innerHTML = msg;
         return;
     }
