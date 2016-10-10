@@ -68,16 +68,66 @@ function renderFilmDropdownForUserlist(film, dropdownEl) {
     html = html + '  <div class="rating-date">'+dateStr+'</div>\n';
     html = html + '  <div><a href="'+imdbFilmUrl+'" target="_blank">'+imdbLabel+':</a> '+imdbScore+'</div>\n';
     html = html + '  <div id="filmlist-container-'+film.filmId+'" align="left"></div>\n';
+    html = html + "  <div id='providers-"+film.filmId+"' class='streams'></div>\n";
     html = html + '</detail>\n';
 
     dropdownEl.innerHTML = html;
     dropdownEl.style.display = "block";
     renderStars(film);
     renderFilmlists(film.filmlists, film.filmId);
+    renderSearches(film);
 }
 
 function hideFilmDropdownForUserlist(filmId, detailTimer) {
     el = document.getElementById("film-dropdown-" + filmId);
     el.style.display = "none";
     clearTimeout(detailTimer);
+}
+
+function renderSearches(film) {
+    var html = "";
+    var providers = validStreamProviders();
+    for (var providerIndex = 0; providerIndex < providers.length; providerIndex++) {
+        var sourceName = providers[providerIndex];
+
+        var uniqueName = "";
+        var streamUrl = "";
+        var source = film.sources.find( function (findSource) { return findSource.name == sourceName; } );
+        if (source) {
+            if (source.uniqueName && source.uniqueName != "undefined") {
+                uniqueName = source.uniqueName;
+            }
+            if (source.streamUrl && source.streamUrl != "undefined") {
+                streamUrl = source.streamUrl;
+            }
+        }
+
+        var searchLink = "";
+        if (!uniqueName && !streamUrl && film.title && film.title != "undefined") {
+            if (sourceName == "Netflix") {
+                searchLink = "https://www.netflix.com/search/" + encodeURI(film.title);
+            } else if (sourceName == "xfinity") {
+                searchLink = "https://tv.xfinity.com/search?q=" + encodeURI(film.title);
+            }
+        }
+
+        var attrs = "";
+        attrs = attrs + " data-film-id='" + film.filmId + "'";
+        attrs = attrs + " data-source-name='" + sourceName + "'";
+        attrs = attrs + " data-title='" + film.title + "'";
+        attrs = attrs + " data-year='" + film.year + "'";
+        attrs = attrs + " data-uniquename='" + uniqueName + "'";
+        html = html + "  <div class='stream' id='" + sourceName + "-" + film.filmId + "'" + attrs + ">\n";
+        if (searchLink != "") {
+            html = html + "    <a href='" + searchLink + "' target='_blank'>\n";
+            html = html + "      <div class='stream-icon icon-" + sourceName + "' title='Search " + sourceName + "'></div>\n";
+            html = html + "    </a>\n";
+        }
+        html = html + "  </div>\n";
+    }
+
+    var el = document.getElementById("providers-"+film.filmId);
+    if (el) {
+        el.innerHTML = html;
+    }
 }

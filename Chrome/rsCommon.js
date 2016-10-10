@@ -115,10 +115,31 @@ function renderStreams(film) {
             streamDate = source.streamDate;
         }
 
-        html = html + "  <div class='stream' id='" + sourceName + "-" + rsUniqueName + "' data-film-id='" + film.filmId + "' data-source-name='" + sourceName + "' data-title='" + film.title + "' data-year='" + film.year + "' data-uniquename='" + uniqueName + "' data-unique-episode='" + uniqueEpisode + "' data-unique-alt='" + uniqueAlt + "' data-stream-date='" + streamDate + "'>\n";
+        var streamLink = "";
+        var streamCaption = "Watch on " + sourceName;
         if (source && source.streamUrl && source.streamUrl != "undefined") {
-            html = html + "    <a href='" + source.streamUrl + "' target='_blank'>\n";
-            html = html + "      <div class='stream-icon icon-" + sourceName + "' title='Watch on " + sourceName + "'></div>\n";
+            streamLink = source.streamUrl;
+        } else if (source && source.uniqueName && source.uniqueName != "undefined") {
+            if (sourceName == "Netflix") {
+                streamLink = "https://www.netflix.com/title/" + source.uniqueName;
+            } else if (sourceName == "xfinity") {
+                streamLink = "https://tv.xfinity.com/entity/" + source.uniqueName;
+            }
+        }
+
+        var attrs = "";
+        attrs = attrs + " data-film-id='" + film.filmId + "'";
+        attrs = attrs + " data-source-name='" + sourceName + "'";
+        attrs = attrs + " data-title='" + film.title + "'";
+        attrs = attrs + " data-year='" + film.year + "'";
+        attrs = attrs + " data-uniquename='" + uniqueName + "'";
+        attrs = attrs + " data-unique-episode='" + uniqueEpisode + "'";
+        attrs = attrs + " data-unique-alt='" + uniqueAlt + "'";
+        attrs = attrs + " data-stream-date='" + streamDate + "'";
+        html = html + "  <div class='stream' id='" + sourceName + "-" + rsUniqueName + "'" + attrs + ">\n";
+        if (streamLink != "") {
+            html = html + "    <a href='" + streamLink + "' target='_blank'>\n";
+            html = html + "      <div class='stream-icon icon-" + sourceName + "' title='" + streamCaption + "'></div>\n";
             html = html + "    </a>\n";
         }
         html = html + "  </div>\n";
