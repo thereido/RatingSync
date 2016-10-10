@@ -164,35 +164,8 @@ function search($searchTerms, $username = null)
     $film = $searchDbResult['match'];
 
     if (empty($film)) {
+        // Not in the DB. Search the IMDb website.
         $imdb = new Imdb($username);
-        
-        if (empty($sourceName)) {
-            $sourceName = Constants::SOURCE_RATINGSYNC;
-        }
-
-        if (empty($title) || empty($year)) {
-            $site = null;
-            if ($sourceName == Constants::SOURCE_XFINITY) {
-                $site = new Xfinity($username);
-            }
-            /*
-              elseif ($sourceName == Constants::SOURCE_NETFLIX) {
-                $site = new Netflix($username);
-            } elseif ($sourceName == Constants::SOURCE_AMAZON) {
-                $site = new Amazon($username);
-            }
-            */
-
-            if (!empty($site)) {
-                $film = new Film();
-                $film->setUniqueName($uniqueName, $sourceName);
-                $film->setUniqueEpisode($uniqueEpisode, $sourceName);
-                $site->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_ALWAYS);
-                $film->saveToDb($username);
-                $searchTerms["title"] = $film->getTitle();
-                $searchTerms["year"] = $film->getYear();
-            }
-        }
         
         if ($sourceName != Constants::SOURCE_RATINGSYNC && $sourceName != Constants::SOURCE_IMDB) {
             // Before searching IMDb... remove terms specific to another source
