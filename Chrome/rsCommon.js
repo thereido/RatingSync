@@ -78,7 +78,7 @@ function renderStars(film) {
         starScore = starScore - 1;
     }
     while (fullStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star' id='rate-" + uniqueName + "-" + starScore + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'>★</span>";
+        starsHtml = starsHtml + "<span class='rating-star' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'>★</span>";
         fullStars = fullStars - 1;
         starScore = starScore - 1;
     }
