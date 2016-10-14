@@ -1,10 +1,10 @@
 <?php
 namespace RatingSync;
 
-require_once "/php/src/SessionUtility.php";
+require_once "php/src/SessionUtility.php";
 
-require_once "/php/main.php";
-require_once "/php/src/Constants.php";
+require_once "php/main.php";
+require_once "php/src/Constants.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (array_key_exists("reconnect", $_POST) && $_POST["reconnect"] == 1) {
