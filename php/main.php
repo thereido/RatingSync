@@ -74,7 +74,7 @@ function getDatabase($mode = Constants::DB_MODE)
     if ($mode == Constants::DB_MODE_STANDARD) {
         $db_name = Constants::DB_DATABASE;
         if (empty($db_conn_standard)) {
-            $db_conn_standard = new \mysqli("localhost", Constants::DB_ADMIN_USER, "pwd");
+            $db_conn_standard = new \mysqli("localhost", Constants::DB_ADMIN_USER, Constants::DB_ADMIN_PWD);
 
             // Check connection
             if ($db_conn_standard->connect_error) {
@@ -86,7 +86,7 @@ function getDatabase($mode = Constants::DB_MODE)
     } else if ($mode == Constants::DB_MODE_TEST) {
         $db_name = Constants::DB_TEST_DATABASE;
         if (empty($db_conn_test)) {
-            $db_conn_test = new \mysqli("localhost", Constants::DB_ADMIN_USER, "pwd");
+            $db_conn_test = new \mysqli("localhost", Constants::DB_ADMIN_USER, Constants::DB_ADMIN_PWD);
 
             // Check connection
             if ($db_conn_test->connect_error) {

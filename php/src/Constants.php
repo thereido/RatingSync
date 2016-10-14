@@ -28,6 +28,7 @@ class Constants
     const DB_DATABASE                   = "db_rs";
     const DB_TEST_DATABASE              = "db_test_rs";
     const DB_ADMIN_USER                 = "admin_rs";
+    const DB_ADMIN_PWD                  = "pwd";
     const DB_MODE_STANDARD              = "STANDARD";
     const DB_MODE_TEST                  = "TEST";
     const DB_MODE                       = self::DB_MODE_TEST;
