@@ -14,6 +14,7 @@ require_once "src/Jinni.php";
 require_once "src/Imdb.php";
 require_once "src/Xfinity.php";
 require_once "src/RatingSyncSite.php";
+require_once "src/SessionUtility.php";
 
 /**
  * Import ratings from a file to the database
@@ -129,7 +130,7 @@ function sync($username)
 }
 
 function getUsername() {
-    return Constants::LOGGED_IN_USERNAME;
+    return SessionUtility::getUsername();
 }
 
 function search($searchTerms, $username = null)
@@ -237,6 +238,35 @@ function setRating($filmId, $score)
     }
 
     return $film;
+}
+
+function getPageHeader() {
+    $accountLink = '<a id="myaccount-link" href="/php/Login">Login</a>';
+    $username = getUsername();
+    if ($username) {
+        $accountLink = '<a id="myaccount-link" href="/php/account/myAccount.php">'.$username.'</a>';
+    }
+    $html = '';
+    $html .= '  <div class="header clearfix">';
+    $html .= '    <nav>';
+    $html .= '      <ul class="nav nav-pills pull-right">';
+    $html .= '        <li role="presentation" class="active"><a href="/">Home</a></li>';
+    $html .= '        <li role="presentation">'.$accountLink.'</li>';
+    $html .= '      </ul>';
+    $html .= '    </nav>';
+    $html .= '    <h3 class="text-muted page-header-text">RatingSync</h3>';
+    $html .= '  </div>';
+
+    return $html;
+}
+
+function getPageFooter() {
+    $html = "";
+    $html .= "<p/>";
+    $html .= "<footer class=\"footer\">";
+    $html .= "</footer>";
+
+    return $html;
 }
 
 ?>

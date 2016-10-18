@@ -12,15 +12,21 @@ class SessionUtility {
     {
     }
 
+    public static function start()
+    {
+        $oldLevel = error_reporting(E_ALL & ~E_NOTICE);
+        session_start();
+        error_reporting($oldLevel);
+    }
+
     public static function login($username, $password)
     {
+        self::start();
+
         $success = false;
         SessionUtility::logout();
 
-        $db = getDatabase();
-        $username = $db->real_escape_string($_POST['username']);
-        $password = md5($db->real_escape_string($_POST['password']));
-     
+        $db = getDatabase();     
         $query = "SELECT * FROM user WHERE username='$username' AND password='$password'";
         $result = $db->query($query);
         if ($result->num_rows == 1) {

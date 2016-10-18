@@ -9,21 +9,30 @@ require_once "src/Filmlist.php";
 require_once "src/ajax/getHtmlFilmlists.php";
 
 $username = getUsername();
-
-if (array_key_exists("sync", $_GET) && $_GET["sync"] == 1) {
-    logDebug("sync $username starting", "ratings.php");
-    sync($username);
-    logDebug("sync finished", "ratings.php ".__LINE__);
-}
-$listname = array_value_by_key("l", $_GET);
-
-$site = new \RatingSync\RatingSyncSite($username);
+$site = null;
+$listname = null;
 $films = array();
-if (empty($listname)) {
-    $films = $site->getRatings();
-} else {
-    $list = Filmlist::getListFromDb($username, $listname);
-    $films = Film::getFilmsByFilmlist($username, $list);
+$pageHeader = getPageHeader();
+$pageFooter = getPageFooter();
+$filmlistHeader = "";
+
+if (!empty($username)) {
+    if (array_key_exists("sync", $_GET) && $_GET["sync"] == 1) {
+        logDebug("sync $username starting", "ratings.php");
+        sync($username);
+        logDebug("sync finished", "ratings.php ".__LINE__);
+    }
+    $listname = array_value_by_key("l", $_GET);
+
+    $site = new \RatingSync\RatingSyncSite($username);
+    if (empty($listname)) {
+        $films = $site->getRatings();
+    } else {
+        $list = Filmlist::getListFromDb($username, $listname);
+        $films = Film::getFilmsByFilmlist($username, $list);
+    }
+
+    $filmlistHeader = getHtmlFilmlistsHeader("Your Ratings");
 }
 ?>
 <!DOCTYPE html>
@@ -34,6 +43,7 @@ if (empty($listname)) {
     <title>RSync: Your Ratings</title>
     <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
     <link href="../css/rs.css" rel="stylesheet">
+    <?php if (empty($username)) { echo '<script type="text/javascript">window.location.href = "/php/Login"</script>'; } ?>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
@@ -56,28 +66,11 @@ function test_input($data)
 ?>
 
 <div class="container">
-  <!-- Header -->
-  <div class="header clearfix">
-    <nav>
-      <ul class="nav nav-pills pull-right">
-        <li role="presentation" class="active"><a href="/">Home</a></li>
-        <li role="presentation">
-            <?php
-            if (empty($username)) {
-                echo '<a id="myaccount-link" href="/php/Login">Login</a>';
-            } else {
-                echo '<a id="myaccount-link" href="/php/account/myAccount.html">'.$username.'</a>';
-            }
-            ?>
-        </li>
-      </ul>
-    </nav>
-    <h3 class="text-muted">RatingSync</h3>
-  </div> <!-- header -->
+  <?php echo $pageHeader; ?>
 
   <div class="well well-sm">
     <h2>Ratings</h2>
-    <div><?php echo getHtmlFilmlistsHeader("Your Ratings"); ?></div>
+    <div><?php echo $filmlistHeader; ?></div>
   </div>
 
   <div id='rating-detail' class='rating-detail' onMouseEnter="hideable = false;" onMouseLeave="hideable = true;"></div>
@@ -121,7 +114,8 @@ function test_input($data)
     }
     $filmsJson .= "]}";
 ?>
-
+    
+  <?php echo $pageFooter; ?>
 </div>
 
 <script>var contextData = JSON.parse('<?php echo $filmsJson; ?>');</script>

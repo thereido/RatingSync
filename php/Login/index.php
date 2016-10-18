@@ -141,7 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $loginFormDisplay = "block";
         $regFormDisplay = "none";
         if (!empty($_POST['username']) && !empty($_POST['password'])) {
-             SessionUtility::logout();
+            SessionUtility::logout();
             $db = getDatabase();
             $username = $db->real_escape_string($_POST['username']);
             $password = md5($db->real_escape_string($_POST['password']));

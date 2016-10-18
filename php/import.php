@@ -16,14 +16,19 @@ require_once "src/Constants.php";
 
 // define variables and set to empty values
 $format = $filename = $success = null;
+$username = getUsername();
+$pageHeader = getPageHeader();
+$pageFooter = getPageFooter();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $filename = $_POST["filename"];
-    $format = $_POST["format"];
+if (!empty($username)) {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $filename = $_POST["filename"];
+        $format = $_POST["format"];
 
-    $success = \RatingSync\import(getUsername(), $filename, $format);
-    if ($success) {
-        header('Location: ratings.php?sync=1');
+        $success = \RatingSync\import($username, $filename, $format);
+        if ($success) {
+            header('Location: ratings.php?sync=1');
+        }
     }
 }
 
@@ -37,6 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>RatingSync Import</title>
     <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
     <link href="../css/jumbotron-narrow.css" rel="stylesheet">
+    <?php if (empty($username)) { echo '<script type="text/javascript">window.location.href = "/php/Login"</script>'; } ?>
     <script src="../js/bootstrap.min.js"></script>
 </head>
 
@@ -44,14 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
     <div class="container">
-      <div class="header clearfix">
-        <nav>
-          <ul class="nav nav-pills pull-right">
-            <li role="presentation" class="active"><a href="/">Home</a></li>
-          </ul>
-        </nav>
-        <h3 class="text-muted">RatingSync</h3>
-      </div>
+      <?php echo $pageHeader; ?>
 
       <div class="well" style="text-align:center">
         <h1>Import Ratings</h1>
@@ -97,9 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
       </div><!-- /row -->
 
-      <p/>
-      <footer class="footer">
-      </footer>
+      <?php echo $pageFooter; ?>
     </div>
 </form>
 

@@ -6,6 +6,9 @@ require_once "php/src/SessionUtility.php";
 require_once "php/main.php";
 require_once "php/src/Constants.php";
 
+$pageHeader = getPageHeader();
+$pageFooter = getPageFooter();
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (array_key_exists("reconnect", $_POST) && $_POST["reconnect"] == 1) {
         Film::reconnectFilmImages();
@@ -27,25 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body>
 <div class="container">
-  <!-- Header -->
-  <div class="header clearfix">
-    <nav>
-      <ul class="nav nav-pills pull-right">
-        <li role="presentation" class="active"><a href="/">Home</a></li>
-        <li role="presentation">
-            <?php
-            $username = getUsername();
-            if (empty($username)) {
-                echo '<a id="myaccount-link" href="/php/Login">Login</a>';
-            } else {
-                echo '<a id="myaccount-link" href="/php/account/myAccount.html">'.$username.'</a>';
-            }
-            ?>
-        </li>
-      </ul>
-    </nav>
-    <h3 class="text-muted">RatingSync</h3>
-  </div> <!-- header -->
+  <?php echo $pageHeader; ?>
 
   <div class="well well-sm">
     <h2>RatingSync Pages</h2>
@@ -70,9 +55,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
     </div>
   </div>
-
-  <p></p>
-  <footer class="footer"></footer>
+    
+  <?php echo $pageFooter; ?>
 </div> <!-- container -->
     
 <script>
