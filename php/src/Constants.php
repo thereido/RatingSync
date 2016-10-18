@@ -4,8 +4,9 @@
  */
 namespace RatingSync;
 
+require_once "DomainConstants.php";
+
 session_start();
-date_default_timezone_set('America/New_York');
 
 class Constants
 {
@@ -26,16 +27,19 @@ class Constants
     const IMPORT_FORMAT_XML             = "XML";
     const USE_CACHE_ALWAYS              = -1;
     const USE_CACHE_NEVER               = 0;
-    const DB_DATABASE                   = "db_rs";
-    const DB_TEST_DATABASE              = "db_test_rs";
-    const DB_ADMIN_USER                 = "admin_rs";
-    const DB_ADMIN_PWD                  = "pwd";
-    const DB_MODE_STANDARD              = "STANDARD";
-    const DB_MODE_TEST                  = "TEST";
-    const DB_MODE                       = self::DB_MODE_TEST;
     const TEST_RATINGSYNC_USERNAME      = "testratingsync";
-    const LOGGED_IN_USERNAME            = self::TEST_RATINGSYNC_USERNAME; // Temporary until login works
-    const RS_HOST                       = "http://localhost:55887";
+
+    /* Constants moved to DomainConstants class
+     * php.ini include_path must have the path to DomainConstants.php
+     */
+    const DB_DATABASE                   = DomainConstants::DB_DATABASE;
+    const DB_TEST_DATABASE              = DomainConstants::DB_TEST_DATABASE;
+    const DB_ADMIN_USER                 = DomainConstants::DB_ADMIN_USER;
+    const DB_ADMIN_PWD                  = DomainConstants::DB_ADMIN_PWD;
+    const DB_MODE_STANDARD              = DomainConstants::DB_MODE_STANDARD;
+    const DB_MODE_TEST                  = DomainConstants::DB_MODE_TEST;
+    const DB_MODE                       = DomainConstants::DB_MODE;
+    const RS_HOST                       = DomainConstants::RS_HOST;
 
     static function basePath()
     {
