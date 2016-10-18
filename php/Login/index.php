@@ -117,6 +117,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
     </style>
     <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="../../js/bootstrap_rs.min.js"></script>
+<!--
     <script type="text/javascript">
         window.alert = function(){};
         var defaultCSS = document.getElementById('bootstrap-css');
@@ -129,6 +130,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
           window.parent.postMessage( iframe_height, 'http://bootsnipp.com');
         });
     </script>
+-->
   
 <?php
 // define variables and set to empty values
@@ -153,7 +155,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else if ($_POST['active-form'] == "register-form") {
         $loginFormDisplay = "none";
         $regFormDisplay = "block";
-        if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['confirm-password'])) {
+        if (!empty($_POST['username']) && !empty($_POST['password'])) {
             $db = getDatabase();
             $username = $db->real_escape_string($_POST['username']);
             $password = md5($db->real_escape_string($_POST['password']));
@@ -167,14 +169,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($result->num_rows == 1) {
                     $msg = "<h1>Username taken</h1>";
                 } else {
+                    $msg = "<h1>Registration failed</h1><br>Please try again. Maybe with a different username and/or password.<br>";
                     $columns = "username, password";
                     $values = "'$username', '$password'";
-                    if ($db->query("INSERT INTO user ($columns) VALUES ($values)")) {
-                        $_SESSION['Username'] = $username;
-                        $_SESSION['LoggedIn'] = 1;
-         
-                        echo '<script type="text/javascript">window.location.href = "/"</script>';
-                        $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/php'>here</a>.<br>";
+                    if (SessionUtility::registerUser($username, $password)) {
+                        if (SessionUtility::login($username, $password)) {
+                            echo '<script type="text/javascript">window.location.href = "/"</script>';
+                            $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/'>here</a>.<br>";
+                        } else {
+                            echo '<script type="text/javascript">window.location.href = "/php/Login"</script>';
+                            $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/php/Login'>here</a>.<br>";
+                        }
                     }
                 }
             }
@@ -238,9 +243,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <input type="hidden" name="active-form" id="active-form" value="register-form">
 									<div class="form-group">
 										<input type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username" value="">
-									</div>
-									<div class="form-group">
-										<input type="email" name="email" id="email" tabindex="1" class="form-control" placeholder="Email Address" value="">
 									</div>
 									<div class="form-group">
 										<input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password">

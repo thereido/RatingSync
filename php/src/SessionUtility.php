@@ -57,6 +57,22 @@ class SessionUtility {
     {
         $_SESSION['Username'] = $username;
     }
+
+    public static function registerUser($username, $password)
+    {
+        $success = false;
+        $db = getDatabase();
+
+        $columns = "username, password";
+        $values = "'$username', '$password'";
+        $query = "INSERT INTO user ($columns) VALUES ($values)";
+        logDebug($query, __FUNCTION__." ".__LINE__);
+        if ($db->query($query)) {
+            $success = true;
+        }
+
+        return $success;
+    }
 }
 
 ?>
