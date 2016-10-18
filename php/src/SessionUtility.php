@@ -21,10 +21,9 @@ class SessionUtility {
 
     public static function login($username, $password)
     {
-        self::start();
-
         $success = false;
-        SessionUtility::logout();
+        self::logout();
+        self::start();
 
         $db = getDatabase();     
         $query = "SELECT * FROM user WHERE username='$username' AND password='$password'";
@@ -40,8 +39,10 @@ class SessionUtility {
 
     public static function logout()
     {
-        $_SESSION['LoggedIn'] = 0;
-        $_SESSION['Username'] = "";
+        if (session_status() == PHP_SESSION_ACTIVE) {
+            $_SESSION = array();
+            session_destroy();
+        }
     }
 
     public static function getUsername()
