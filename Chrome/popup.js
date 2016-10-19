@@ -1,7 +1,8 @@
 
+var username;
+
 document.addEventListener('DOMContentLoaded', function () {
-    renderStatus("RatingSync");
-    chrome.tabs.executeScript(null, { file: "getSearchTerms.js" }, function () { });
+    contentLoaded();
 });
 
 chrome.runtime.onMessage.addListener(function (request, sender) {
@@ -11,6 +12,25 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
         notSupported(null);
     }
 });
+
+function contentLoaded()
+{
+    renderStatus("RatingSync");
+
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function () {
+	    if (xmlhttp.readyState == 4) {
+            if (xmlhttp.status == 200) {
+	            var user = JSON.parse(xmlhttp.responseText);
+	            username = user.username;
+            }
+	        chrome.tabs.executeScript(null, { file: "getSearchTerms.js" }, function () { });
+	    }
+	}
+
+	xmlhttp.open("GET", RS_URL_API + "?action=getUser", true);
+	xmlhttp.send();
+}
 
 function notFound(source)
 {
@@ -83,6 +103,11 @@ function renderFilm(film, element) {
     var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
     var uniqueName = rsSource.uniqueName;
 
+    var loginLink = "";
+    if (!username) {
+        loginLink = "<a href='" + RS_URL_BASE + "/php/Login' target='_blank'>Login for ratings</a>";
+    }
+
     var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
     var imdbLink = "";
     if (imdb && imdb.uniqueName) {
@@ -106,6 +131,7 @@ function renderFilm(film, element) {
     r = r + "  <div class='film-line'><span class='film-title'>" + film.title + "</span> (" + film.year + ")</div>\n";
     r = r + "  <div class='tv-episode-title'>" + film.episodeTitle + "</div>\n";
     r = r + "  <div><span class='tv-season'>" + season + "</span><span class='tv-episodenum'>" + episodeNumber + "</span></div>\n";
+    r = r + "  <div>" + loginLink + "</div>\n";
     r = r + "  <div class='rating-stars' id='rating-stars-"+uniqueName+"'></div>\n";
     r = r + "  <poster><img src='" + image + "' width='150px'/></poster>\n";
     r = r + "  <detail>\n";
@@ -116,9 +142,13 @@ function renderFilm(film, element) {
     r = r + "</div>\n";
 
     element.innerHTML = r;
-    renderStars(film);
+    if (username) {
+        renderStars(film);
+    }
     renderStreams(film);
-    renderFilmlists(film.filmlists, film.filmId);
+    if (username) {
+        renderFilmlists(film.filmlists, film.filmId);
+    }
 
     return r;
 }

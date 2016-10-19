@@ -27,6 +27,8 @@ if ($action == "getSearchFilm") {
     $response = api_getStream($username);
 } elseif ($action == "getFilm") {
     $response = api_getFilm($username);
+} elseif ($action == "getUser") {
+    $response = api_getUser($username);
 }
 
 echo $response;
@@ -235,6 +237,16 @@ function api_getFilm($username)
 
     $film = Film::getFilmFromDb($filmId, $username);
     $response = $film->json_encode();
+
+    return $response;
+}
+
+function api_getUser($username)
+{
+    logDebug("Params (none)", __FUNCTION__." ".__LINE__);
+
+    $userArr = array("username" => $username);
+    $response = json_encode($userArr);
 
     return $response;
 }
