@@ -4,8 +4,62 @@ namespace RatingSync;
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "SessionUtility.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Constants.php";
-?>
 
+// define variables and set to empty values
+$username = $password = $msg = $loginFormDisplay = $regFormDisplay = $headerScript = null;
+$loginFormDisplay = "block";
+$regFormDisplay = "none";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if ($_POST['active-form'] == "login-form") {
+        $loginFormDisplay = "block";
+        $regFormDisplay = "none";
+        $msg = "<p>Incorrect username or password. Please try again.</p>";
+        if (!empty($_POST['username']) && !empty($_POST['password'])) {
+            SessionUtility::logout();
+            $db = getDatabase();
+            $username = $db->real_escape_string($_POST['username']);
+            $password = md5($db->real_escape_string($_POST['password']));
+            if (SessionUtility::login($username, $password)) {
+                $headerScript = '<script type="text/javascript">window.location.href = "/"</script>';
+                $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/'>here</a>.<br>";
+            }
+        }
+    } else if ($_POST['active-form'] == "register-form") {
+        $loginFormDisplay = "none";
+        $regFormDisplay = "block";
+        if (!empty($_POST['username']) && !empty($_POST['password'])) {
+            $db = getDatabase();
+            $username = $db->real_escape_string($_POST['username']);
+            $password = md5($db->real_escape_string($_POST['password']));
+            $confirmPwd = md5($db->real_escape_string($_POST['confirm-password']));
+
+            if ($password != $confirmPwd) {
+                $msg = "<h1>Passwords do not match</h1>";
+            } else {
+                $query = "SELECT * FROM user WHERE username='$username'";
+                $result = $db->query($query);     
+                if ($result->num_rows == 1) {
+                    $msg = "<h1>Username taken</h1>";
+                } else {
+                    $msg = "<h1>Registration failed</h1><br>Please try again. Maybe with a different username and/or password.<br>";
+                    $columns = "username, password";
+                    $values = "'$username', '$password'";
+                    if (SessionUtility::registerUser($username, $password)) {
+                        if (SessionUtility::login($username, $password)) {
+                            $headerScript = '<script type="text/javascript">window.location.href = "/"</script>';
+                            $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/'>here</a>.<br>";
+                        } else {
+                            $headerScript = '<script type="text/javascript">window.location.href = "/php/Login"</script>';
+                            $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/php/Login'>here</a>.<br>";
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,78 +171,9 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
     </style>
     <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="../../js/bootstrap_rs.min.js"></script>
-<!--
-    <script type="text/javascript">
-        window.alert = function(){};
-        var defaultCSS = document.getElementById('bootstrap-css');
-        function changeCSS(css){
-            if(css) $('head > link').filter(':first').replaceWith('<link rel="stylesheet" href="'+ css +'" type="text/css" />'); 
-            else $('head > link').filter(':first').replaceWith(defaultCSS); 
-        }
-        $( document ).ready(function() {
-          var iframe_height = parseInt($('html').height()); 
-          window.parent.postMessage( iframe_height, 'http://bootsnipp.com');
-        });
-    </script>
--->
-  
-<?php
-// define variables and set to empty values
-$username = $password = $msg = $loginFormDisplay = $regFormDisplay = null;
-$loginFormDisplay = "block";
-$regFormDisplay = "none";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if ($_POST['active-form'] == "login-form") {
-        $loginFormDisplay = "block";
-        $regFormDisplay = "none";
-        if (!empty($_POST['username']) && !empty($_POST['password'])) {
-            SessionUtility::logout();
-            $db = getDatabase();
-            $username = $db->real_escape_string($_POST['username']);
-            $password = md5($db->real_escape_string($_POST['password']));
-            if (SessionUtility::login($username, $password)) {
-                echo '<script type="text/javascript">window.location.href = "/"</script>';
-                $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/'>here</a>.<br>";
-            }
-        }
-    } else if ($_POST['active-form'] == "register-form") {
-        $loginFormDisplay = "none";
-        $regFormDisplay = "block";
-        if (!empty($_POST['username']) && !empty($_POST['password'])) {
-            $db = getDatabase();
-            $username = $db->real_escape_string($_POST['username']);
-            $password = md5($db->real_escape_string($_POST['password']));
-            $confirmPwd = md5($db->real_escape_string($_POST['confirm-password']));
-
-            if ($password != $confirmPwd) {
-                $msg = "<h1>Passwords do not match</h1>";
-            } else {
-                $query = "SELECT * FROM user WHERE username='$username'";
-                $result = $db->query($query);     
-                if ($result->num_rows == 1) {
-                    $msg = "<h1>Username taken</h1>";
-                } else {
-                    $msg = "<h1>Registration failed</h1><br>Please try again. Maybe with a different username and/or password.<br>";
-                    $columns = "username, password";
-                    $values = "'$username', '$password'";
-                    if (SessionUtility::registerUser($username, $password)) {
-                        if (SessionUtility::login($username, $password)) {
-                            echo '<script type="text/javascript">window.location.href = "/"</script>';
-                            $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/'>here</a>.<br>";
-                        } else {
-                            echo '<script type="text/javascript">window.location.href = "/php/Login"</script>';
-                            $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/php/Login'>here</a>.<br>";
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-?>
-
+    <?php echo $headerScript; ?>
 </head>
+
 <body>   
 
     <?php echo $msg; ?>
