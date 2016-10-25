@@ -107,11 +107,18 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $refreshCache = Constants::USE_CACHE_NEVER;
         $films = array();
 
+        $limit = "";
+        if (!empty($limitPages)) {
+            $beginRecord = ($limitPages * $beginPage) - $limitPages;
+            $limit = "LIMIT $beginRecord, $limitPages";
+        }
+
         $db = getDatabase();
         $query = "SELECT film_id FROM rating WHERE " .
                     "user_name='" .$this->username. "' AND " .
                     "source_name='" .$this->sourceName. "'" .
-                    "ORDER BY yourRatingDate DESC";
+                    "ORDER BY yourRatingDate DESC " .
+                    $limit;
         $result = $db->query($query);
         // Iterate over films rated
         while ($row = $result->fetch_assoc()) {
@@ -121,6 +128,17 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
         
         return $films;
+    }
+
+    public function countRatings() {
+        $db = getDatabase();
+        $query = "SELECT count(1) as count FROM rating WHERE " .
+                    "user_name='" .$this->username. "' AND " .
+                    "source_name='" .$this->sourceName. "'";
+        $result = $db->query($query);
+        $row = $result->fetch_assoc();
+
+        return $row["count"];
     }
 
     /**

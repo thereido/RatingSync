@@ -9,6 +9,7 @@ require_once "src/Filmlist.php";
 require_once "src/ajax/getHtmlFilmlists.php";
 
 $username = getUsername();
+$pageSize = 100; // how many films to show in the page
 $site = null;
 $listname = null;
 $films = array();
@@ -23,16 +24,39 @@ if (!empty($username)) {
         logDebug("sync finished", "ratings.php ".__LINE__);
     }
     $listname = array_value_by_key("l", $_GET);
+    $pageNum = array_value_by_key("p", $_GET);
+    if (empty($pageNum)) {
+        $pageNum = 1;
+    }
 
     $site = new \RatingSync\RatingSyncSite($username);
     if (empty($listname)) {
-        $films = $site->getRatings();
+        $films = $site->getRatings($pageSize, $pageNum);
+        $totalRatings = $site->countRatings();
     } else {
         $list = Filmlist::getListFromDb($username, $listname);
         $films = Film::getFilmsByFilmlist($username, $list);
     }
 
     $filmlistHeader = getHtmlFilmlistsHeader("Your Ratings");
+}
+
+// Pagination
+$previousClass = "disabled";
+$nextClass = "disabled";
+$previousPageNum = 1;
+$nextPageNum = 2;
+$pageNum = array_value_by_key("p", $_GET);
+if (empty($pageNum)) {
+    $pageNum = 1;
+}
+if ($pageNum > 1) {
+    $previousClass = "";
+    $previousPageNum = $pageNum - 1;
+}
+if ($totalRatings > $pageNum * $pageSize) {
+    $nextClass = "";
+    $nextPageNum = $pageNum + 1;
 }
 ?>
 <!DOCTYPE html>
@@ -115,6 +139,11 @@ function test_input($data)
     }
     $filmsJson .= "]}";
 ?>
+
+  <ul class="pager">
+    <li class="<?php echo $previousClass; ?>"><a href="./ratings.php?p=<?php echo $previousPageNum; ?>">Previous</a></li>
+    <li class="<?php echo $nextClass; ?>"><a href="./ratings.php?p=<?php echo $nextPageNum; ?>">Next</a></li>
+  </ul>
     
   <?php echo $pageFooter; ?>
 </div>
