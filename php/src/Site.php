@@ -644,7 +644,7 @@ abstract class Site
     public function getFilmUrl($film)
     {
         try {
-            $url = $this->http->getBaseUrl() . $this->getFilmDetailPageUrl($film);
+            $url = $this->http->getBaseUrl($this->sourceName) . $this->getFilmDetailPageUrl($film);
         } catch (\Exception $e) {
             $url = null;
         }

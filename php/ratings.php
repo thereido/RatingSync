@@ -51,6 +51,7 @@ if (!empty($username)) {
     <script src="../Chrome/constants.js"></script>
     <script src="../Chrome/rsCommon.js"></script>
     <script src="../js/ratings.js"></script>
+    <script src="../js/filmlist.js"></script>
 </head>
 
 <body onclick="hideFilmDetail()">

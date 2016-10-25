@@ -175,6 +175,10 @@ detail {
     border-bottom-right-radius: 0;
 }
 
+.search-status {
+    font-weight: bold;
+}
+
 @media (min-width:768px) {
     .rating-detail {
         width: 70%;

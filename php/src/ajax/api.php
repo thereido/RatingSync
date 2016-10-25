@@ -8,7 +8,7 @@ $username = getUsername();
 $response = "";
 
 $action = array_value_by_key("action", $_GET);
-logDebug("API action: $action", "api.php");
+logDebug("API action: $action, username: $username", "api.php");
 if ($action == "getSearchFilm") {
     $response = api_getSearchFilm($username, $_GET);
 } elseif ($action == "setRating") {
@@ -233,10 +233,20 @@ function api_getStream($username)
 function api_getFilm($username)
 {
     $filmId = array_value_by_key("id", $_GET);
-    logDebug("Params id=$filmId", __FUNCTION__." ".__LINE__);
+    $imdbUniqueName = array_value_by_key("imdb", $_GET);
+    logDebug("Params id=$filmId, imdb=$imdbUniqueName", __FUNCTION__." ".__LINE__);
 
-    $film = Film::getFilmFromDb($filmId, $username);
-    $response = $film->json_encode();
+    $film = null;
+    if (!empty($filmId)) {
+        $film = Film::getFilmFromDb($filmId, $username);
+    } elseif (!empty($imdbUniqueName)) {
+        $film = Film::getFilmFromDbByImdb($imdbUniqueName, $username);
+    }
+
+    $response = '{"Success":"false"}';
+    if (!empty($film)) {
+        $response = $film->json_encode();
+    }
 
     return $response;
 }

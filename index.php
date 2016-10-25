@@ -41,6 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           <li><a href="/php/export.php">Export</a></li>
           <li><a href="/php/import.php">Import to RS</a></li>
           <li><a href="/php/ratings.php">Your Ratings</a></li>
+          <li><a href="/php/search.php">Search</a></li>
       </ul>
     </div>
   </div>

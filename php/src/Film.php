@@ -977,10 +977,18 @@ class Film {
         if ($result->num_rows != 1) {
             throw new \Exception('Film not found by Film ID: ' .$filmId);
         }
+        $row = $result->fetch_assoc();
+
+        return self::getFilmFromDbRow($row, $username);
+    }
+
+    public static function getFilmFromDbRow($row, $username = null)
+    {
+        $db = getDatabase();
+        $filmId = $row["id"];
+
         $film = new Film();
         $film->setId($filmId);
-        
-        $row = $result->fetch_assoc();
         $film->setTitle($row["title"]);
         $film->setYear($row["year"]);
         $film->setContentType($row["contentType"]);
@@ -1042,8 +1050,28 @@ class Film {
                 $film->addFilmlist($row['listname']);
             }
         }
-
+        
         return $film;
+    }
+
+    public static function getFilmFromDbByImdb($imdbUniqueName, $username = null)
+    {
+        if (empty($imdbUniqueName)) {
+            throw new \InvalidArgumentException("imdbUniqueName arg must not be empty");
+        }
+        $db = getDatabase();
+        
+        $query  = "SELECT film_id FROM film_source";
+        $query .= " WHERE source_name='" . Constants::SOURCE_IMDB . "'";
+        $query .= "   AND uniqueName='" . $imdbUniqueName . "'";
+        $result = $db->query($query);
+        if ($result->num_rows != 1) {
+            return null;
+        }
+        $row = $result->fetch_assoc();
+        $filmId = $row["film_id"];
+
+        return self::getFilmFromDb($filmId, $username);
     }
 
     /**

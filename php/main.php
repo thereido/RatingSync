@@ -133,6 +133,9 @@ function getUsername() {
     return SessionUtility::getUsername();
 }
 
+/**
+ * Looking for one specific film (and it's parent)
+ */
 function search($searchTerms, $username = null)
 {
     if (empty($searchTerms) || !is_array($searchTerms)) {
@@ -197,20 +200,6 @@ function search($searchTerms, $username = null)
     $resultFilms['match'] = $film;
     $resultFilms['parent'] = $parentFilm;
     return $resultFilms;
-}
-
-function searchFilms($searchTerms, $username = null)
-{
-    if (empty($searchTerms) || !is_array($searchTerms)) {
-        return null;
-    }
-    if (empty($username)) {
-        $username = getUsername();
-    }
-
-    $films = array();
-
-    return $films;
 }
 
 function array_value_by_key($key, $a) {

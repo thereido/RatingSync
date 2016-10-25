@@ -24,26 +24,8 @@ class Http
     public function __construct($sourceName, $username = null)
     {
         $this->username = $username;
-
-        if ($sourceName == Constants::SOURCE_RATINGSYNC) {
-            $this->baseUrl = Constants::RS_HOST;
-            $this->lightweightUrl = "/index.php";
-        } elseif ($sourceName == Constants::SOURCE_IMDB) {
-            $this->baseUrl = "http://www.imdb.com";
-            $this->lightweightUrl = "/help/?general/&ref_=hlp_brws";
-        } elseif ($sourceName == Constants::SOURCE_JINNI) {
-            $this->baseUrl = "http://www.jinni.com";
-            $this->lightweightUrl = "/about";
-        } elseif ($sourceName == Constants::SOURCE_NETFLIX) {
-            $this->baseUrl = "";
-            $this->lightweightUrl = "/Login?locale=en-US";
-        } elseif ($sourceName == Constants::SOURCE_AMAZON) {
-            $this->baseUrl = "";
-            $this->lightweightUrl = "/random?content_type=1+2&prime=2";
-        } elseif ($sourceName == Constants::SOURCE_XFINITY) {
-            $this->baseUrl = "https://tv.xfinity.com";
-            $this->lightweightUrl = "/mytv/dvr?CMPID=xtvg_footer";
-        }
+        $this->baseUrl = self::getBaseUrl($sourceName);
+        $this->lightweightUrl = self::getLightweightUrl($sourceName);
 
         if (empty($this->baseUrl) || empty($this->lightweightUrl)) {
             throw new \InvalidArgumentException("Http constructor of \$sourceName ($sourceName) invalid");
@@ -142,8 +124,45 @@ class Http
         // No-op. Made for a child class
     }
 
-    public function getBaseUrl()
+    public static function getBaseUrl($sourceName)
     {
-        return $this->baseUrl;
+        $baseUrl = "";
+
+        if ($sourceName == Constants::SOURCE_RATINGSYNC) {
+            $baseUrl = Constants::RS_HOST;
+        } elseif ($sourceName == Constants::SOURCE_IMDB) {
+            $baseUrl = "http://www.imdb.com";
+        } elseif ($sourceName == Constants::SOURCE_JINNI) {
+            $baseUrl = "http://www.jinni.com";
+        } elseif ($sourceName == Constants::SOURCE_NETFLIX) {
+            $baseUrl = "";
+        } elseif ($sourceName == Constants::SOURCE_AMAZON) {
+            $baseUrl = "";
+        } elseif ($sourceName == Constants::SOURCE_XFINITY) {
+            $baseUrl = "https://tv.xfinity.com";
+        }
+
+        return $baseUrl;
+    }
+
+    public static function getLightweightUrl($sourceName)
+    {
+        $lightweightUrl = "";
+
+        if ($sourceName == Constants::SOURCE_RATINGSYNC) {
+            $lightweightUrl = "/index.php";
+        } elseif ($sourceName == Constants::SOURCE_IMDB) {
+            $lightweightUrl = "/help/?general/&ref_=hlp_brws";
+        } elseif ($sourceName == Constants::SOURCE_JINNI) {
+            $lightweightUrl = "/about";
+        } elseif ($sourceName == Constants::SOURCE_NETFLIX) {
+            $lightweightUrl = "/Login?locale=en-US";
+        } elseif ($sourceName == Constants::SOURCE_AMAZON) {
+            $lightweightUrl = "/random?content_type=1+2&prime=2";
+        } elseif ($sourceName == Constants::SOURCE_XFINITY) {
+            $lightweightUrl = "/mytv/dvr?CMPID=xtvg_footer";
+        }
+
+        return $lightweightUrl;
     }
 }
