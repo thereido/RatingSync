@@ -163,15 +163,17 @@ class Film {
         $arr = array();
         $arr['filmId'] = $this->getId();
         $title = $this->getTitle();
+        $episodeTitle = $this->getEpisodeTitle();
         if ($encodeTitles) {
             $title = htmlentities($title, ENT_QUOTES);
+            $episodeTitle = htmlentities($episodeTitle, ENT_QUOTES);
         }
         $arr['title'] = $title;
+        $arr['episodeTitle'] = $episodeTitle;
         $arr['year'] = $this->getYear();
         $arr['contentType'] = $this->getContentType();
         $arr['season'] = $this->getSeason();
         $arr['episodeNumber'] = $this->getEpisodeNumber();
-        $arr['episodeTitle'] = htmlentities($this->getEpisodeTitle());
         $arr['image'] = $this->getImage();
 
         $arrDirectors = array();
