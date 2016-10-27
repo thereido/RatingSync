@@ -1,4 +1,15 @@
 
+function updateSearch() {
+    var query = document.getElementById("search-text").value;
+    if (query.length == 0) {
+	    var searchResultEl = document.getElementById("search-result-tbody");
+        searchResultEl.innerHTML = "";
+    } else if (query != searchQuery) {
+        searchQuery = query;
+        searchFilms(query);
+    }
+}
+
 function searchFilms(query) {
     // Search from OMDb API
     var params = "json=1";
@@ -32,46 +43,45 @@ function searchCallback(xmlhttp, query) {
 	}
 }
 
-function updateSearch() {
-    var query = document.getElementById("search-text").value;
-    if (query.length == 0) {
-	    var searchResultEl = document.getElementById("search-result-tbody");
-        searchResultEl.innerHTML = "";
-    } else if (query != searchQuery) {
-        searchQuery = query;
-        searchFilms(query);
-    }
-}
-
+/**
+ * param omdbFilm JSON from OMDB API
+ *   Title
+ *   Year
+ *   imdbID
+ *   Type - movie/series
+ *   Poster - IMDb URL to image
+ */
 function renderOmdbFilm(omdbFilm, element) {
-    var imdbLabel = "IMDb";
-    var imdbFilmUrl = IMDB_FILM_BASEURL + omdbFilm.imdbID;
-    var imdbLink = "<a href='" + imdbFilmUrl + "' target='_blank'>" + imdbLabel + "</a>";
-
     var image = "";
     if (omdbFilm.Poster && omdbFilm.Poster != "N/A") {
         image = omdbFilm.Poster;
     }
-    
-    var html = '';
-    html = html + '<poster><img src="'+image+'" width="150px"/></poster>\n';
-    html = html + '<detail>\n';
-    html = html + '  <div class="film-line"><span class="film-title">'+omdbFilm.Title+'</span> ('+omdbFilm.Year+')</div>\n';
-    html = html + "  <episodeTitle class='tv-episode-title'></episodeTitle>\n";
-    html = html + "  <div><season class='tv-season'></season><episodeNumber class='tv-episodenum'></episodeNumber></div>\n";
-    html = html + '  <div align="left">\n';
-    html = html + '    <ratingStars class="rating-stars" id="rating-stars"></ratingStars>\n';
-    html = html + '  </div>\n';
-    html = html + '  <ratingDate class="rating-date"></ratingDate>\n';
-    html = html + '  <div><a href="'+imdbFilmUrl+'" target="_blank">'+imdbLabel+'</a><imdbScore id="imdb-score-"'+omdbFilm.imdbID+'</imdbScore></div>\n';
-    html = html + '  <status class="search-status">...</status>\n';
-    html = html + '  <filmlistContainer id="filmlist-container" align="left"></filmlistContainer>\n';
-    html = html + '  <streams id="streams" class="streams"></streams>\n';
-    html = html + '</detail>\n';
+
+    // Build a JSON film from the omdbFilm
+    var filmStr =       '{ ';
+    filmStr = filmStr + '"title":"' +omdbFilm.Title+ '"';
+    filmStr = filmStr + ', "year":"' +omdbFilm.Year+ '"';
+    filmStr = filmStr + ', "image":"' +image+ '"';
+    filmStr = filmStr + ', "sources": [';
+    filmStr = filmStr +                 '{ "name":"IMDb", "uniqueName":"' +omdbFilm.imdbID+ '" }';
+    filmStr = filmStr +              ']';
+    filmStr = filmStr + ' }';
+    var film = JSON.parse(filmStr);
     
     var filmEl = document.createElement("DIV");
     filmEl.setAttribute("class", "col-xs-12 col-sm-12 col-md-12 col-lg-12");
-    filmEl.innerHTML = html;
+
+    var posterEl = document.createElement("poster");
+    posterEl.innerHTML = '<img src="'+image+'" width="150px"/>';
+
+    var detailEl = buildFilmDetailElement(film);
+    var statusEl = detailEl.getElementsByTagName("status")[0];
+    if (statusEl) {
+        statusEl.innerHTML = "...";
+    }
+
+    filmEl.appendChild(posterEl);
+    filmEl.appendChild(detailEl);
     element.appendChild(filmEl);
 
     // Get RS data for this film if it is in the db
@@ -89,11 +99,13 @@ function getRatingSync(imdbUniqueName, filmEl) {
 }
 
 function getRatingSyncCallback(xmlhttp, filmEl) {
-	if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+    if (xmlhttp.readyState == 4) {
         var statusEl = filmEl.getElementsByTagName("status")[0];
         if (statusEl) {
             statusEl.innerHTML = "";
         }
+    }
+	if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 	    var result = JSON.parse(xmlhttp.responseText);
         if (result.Success != "false" && result.filmId != "undefined") {
             var film = result;
@@ -106,48 +118,15 @@ function renderRsFilmDetails(film, filmEl) {
     var imageEl = filmEl.getElementsByTagName("poster")[0].getElementsByTagName("img")[0];
     imageEl.setAttribute("src", RS_URL_BASE + film.image);
 
-    var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
-    var imdbScoreEl = filmEl.getElementsByTagName("imdbScore")[0];
-    imdbScoreEl.innerHTML = ": " + imdb.userScore;
-
-    if (film.episodeTitle) {
-        var episodeTitleEl = filmEl.getElementsByTagName("episodeTitle")[0];
-        episodeTitleEl.innerHTML = film.episodeTitle;
+    var newDetailEl = buildFilmDetailElement(film);
+    var detailEl = filmEl.getElementsByTagName("detail")[0];
+    if (detailEl) {
+        detailEl.innerHTML = newDetailEl.innerHTML;
+    } else {
+        filmEl.appendChild(newDetailEl);
     }
     
-    if (film.season) {
-        var seasonEl = filmEl.getElementsByTagName("season")[0];
-        seasonEl.innerHTML = "Season " + film.season;
-    }
-    
-    if (film.episodeNumber) {
-        var episodeNumberEl = filmEl.getElementsByTagName("episodeNumber")[0];
-        episodeNumberEl.innerHTML = " - Episode " + film.episodeNumber;
-    }
-
-    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
-    if (rsSource) {
-        var yourRatingDate = rsSource.rating.yourRatingDate;
-        var dateStr = "";
-        if (yourRatingDate && yourRatingDate != "undefined") {
-            var reDate = new RegExp("([0-9]+)-([0-9]+)-([0-9]+)");
-            var year = reDate.exec(yourRatingDate)[1];
-            var month = reDate.exec(yourRatingDate)[2];
-            var day = reDate.exec(yourRatingDate)[3];
-            var ratingDateEl = filmEl.getElementsByTagName("ratingDate")[0];
-            ratingDateEl.innerHTML = "You rated this " + month + "/" + day + "/" + year;
-        }
-        
-        var ratingStarsEl = filmEl.getElementsByTagName("ratingStars")[0];
-        ratingStarsEl.setAttribute("id", "rating-stars-" + rsSource.uniqueName);
-        renderStars(film);
-    }
-    
-    var streamsEl = filmEl.getElementsByTagName("streams")[0];
-    streamsEl.setAttribute("id", "streams-" + film.filmId);
-    renderStreams(film);
-    
-    var filmlistContainerEl = filmEl.getElementsByTagName("filmlistContainer")[0];
-    filmlistContainerEl.setAttribute("id", "filmlist-container-" + film.filmId);
+    renderStars(film);
+    renderStreams(film, true);
     renderFilmlists(film.filmlists, film.filmId);
 }

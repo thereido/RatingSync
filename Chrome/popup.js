@@ -145,7 +145,7 @@ function renderFilm(film, element) {
     if (username) {
         renderStars(film);
     }
-    renderStreams(film);
+    renderStreams(film, true);
     if (username) {
         renderFilmlists(film.filmlists, film.filmId);
     }

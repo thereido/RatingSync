@@ -99,12 +99,12 @@ detail {
     float: left;
     padding-left: 5px;
     padding-right: 10px;
-    padding-bottom: 10px;
 }
 
 .stream {
     float: left;
     padding-right: 10px;
+    padding-bottom: 10px;
 }
 
 .stream-icon {

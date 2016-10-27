@@ -94,16 +94,22 @@ function renderStars(film) {
     addStarListeners(ratingStarsEl);
 }
 
-function renderStreams(film) {
+function renderStreams(film, displaySearch) {
     var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
     var rsUniqueName = rsSource.uniqueName;
 
-    var html = "";
+    var streamsEl = document.getElementById("streams-"+film.filmId);
+    var watchEl = document.createElement("DIV");
+    var searchSourceEl = document.createElement("DIV");
+    streamsEl.innerHTML = "";
+    streamsEl.appendChild(watchEl);
+    streamsEl.appendChild(searchSourceEl);
+
     var providers = validStreamProviders();
     for (var providerIndex = 0; providerIndex < providers.length; providerIndex++) {
         var sourceName = providers[providerIndex];
 
-        var uniqueName = "";
+        var uniqueName;
         var uniqueEpisode = "";
         var uniqueAlt = "";
         var streamDate = "";
@@ -114,40 +120,50 @@ function renderStreams(film) {
             uniqueAlt = source.uniqueAlt;
             streamDate = source.streamDate;
         }
+        if (!uniqueName || uniqueName == null || uniqueName == "null" || uniqueName == "uniqueName") {
+            uniqueName = "";
+        }
 
         var streamLink = "";
-        var streamCaption = "Watch on " + sourceName;
+        var searchLink = "";
         if (source && source.streamUrl && source.streamUrl != "undefined") {
             streamLink = source.streamUrl;
-        } else if (source && source.uniqueName && source.uniqueName != "undefined") {
+        } else {
             if (sourceName == "Netflix") {
-                streamLink = "https://www.netflix.com/title/" + source.uniqueName;
+                streamLink = "https://www.netflix.com/title/" + uniqueName;
+                searchLink = "https://www.netflix.com/search/" + encodeURI(film.title);
             } else if (sourceName == "xfinity") {
-                streamLink = "https://tv.xfinity.com/entity/" + source.uniqueName;
+                streamLink = "https://tv.xfinity.com/entity/" + uniqueName;
+                searchLink = "https://tv.xfinity.com/search?q=" + encodeURI(film.title);
             }
         }
 
-        var attrs = "";
-        attrs = attrs + " data-film-id='" + film.filmId + "'";
-        attrs = attrs + " data-source-name='" + sourceName + "'";
-        attrs = attrs + " data-title='" + film.title + "'";
-        attrs = attrs + " data-year='" + film.year + "'";
-        attrs = attrs + " data-uniquename='" + uniqueName + "'";
-        attrs = attrs + " data-unique-episode='" + uniqueEpisode + "'";
-        attrs = attrs + " data-unique-alt='" + uniqueAlt + "'";
-        attrs = attrs + " data-stream-date='" + streamDate + "'";
-        html = html + "  <div class='stream' id='" + sourceName + "-" + rsUniqueName + "'" + attrs + ">\n";
-        if (streamLink != "") {
+        var streamEl = document.createElement("DIV");
+        streamEl.setAttribute("id", sourceName + "-" + rsUniqueName);
+        streamEl.setAttribute("class", "stream");
+        streamEl.setAttribute("data-film-id", film.filmId);
+        streamEl.setAttribute("data-source-name", sourceName);
+        streamEl.setAttribute("data-title", film.title);
+        streamEl.setAttribute("data-year", film.year);
+        streamEl.setAttribute("data-uniquename", uniqueName);
+        streamEl.setAttribute("data-unique-episode", uniqueEpisode);
+        streamEl.setAttribute("data-unique-alt", uniqueAlt);
+        streamEl.setAttribute("data-stream-date", streamDate);
+        if (uniqueName && uniqueName != "" && uniqueName != "undefined") {
+            var html = "\n";
             html = html + "    <a href='" + streamLink + "' target='_blank'>\n";
-            html = html + "      <div class='stream-icon icon-" + sourceName + "' title='" + streamCaption + "'></div>\n";
+            html = html + "      <div class='stream-icon icon-" + sourceName + "' title='Watch on " + sourceName + "'></div>\n";
             html = html + "    </a>\n";
+            streamEl.innerHTML = html;
+            watchEl.appendChild(streamEl);
+        } else if (displaySearch) {
+            var html = "\n";
+            html = html + "    <a href='" + searchLink + "' target='_blank'>\n";
+            html = html + "      <div class='stream-icon icon-" + sourceName + "' title='Search " + sourceName + "'></div>\n";
+            html = html + "    </a>\n";
+            streamEl.innerHTML = html;
+            searchSourceEl.appendChild(streamEl);
         }
-        html = html + "  </div>\n";
-    }
-
-    var el = document.getElementById("streams-"+film.filmId);
-    if (el) {
-        el.innerHTML = html;
     }
 }
 

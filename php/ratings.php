@@ -75,7 +75,7 @@ if ($totalRatings > $pageNum * $pageSize) {
     <script src="../Chrome/constants.js"></script>
     <script src="../Chrome/rsCommon.js"></script>
     <script src="../js/ratings.js"></script>
-    <script src="../js/filmlist.js"></script>
+    <script src="../js/film.js"></script>
 </head>
 
 <body onclick="hideFilmDetail()">

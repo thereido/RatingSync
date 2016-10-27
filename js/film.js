@@ -1,4 +1,78 @@
 
+function buildFilmDetailElement(film) {
+    var filmId = "";
+    if (film.filmId) {
+        filmId = film.filmId;
+    }
+    var title = "";
+    if (film.title) {
+        title = film.title;
+    }
+    var year = "";
+    if (film.year) {
+        year = film.year;
+    }
+    var episodeTitle = "";
+    if (film.episodeTitle) {
+        episodeTitle = film.episodeTitle;
+    }
+    var season = "";
+    if (film.season) {
+        season = "Season " + film.season;
+    }
+    var episodeNumber = "";
+    if (film.episodeNumber) {
+        episodeNumber = " - Episode " + film.episodeNumber;
+    }
+
+    var imdbUniqueName = "";
+    var imdbLabel = "IMDb";
+    var imdbFilmUrl = "";
+    var imdbScore = "";
+    var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
+    if (imdb && imdb != "undefined") {
+        imdbUniqueName = imdb.uniqueName;
+        imdbFilmUrl = IMDB_FILM_BASEURL + imdbUniqueName;
+        imdbLabel = "IMDb";
+        if (imdb.userScore) {
+            imdbScore = imdb.userScore;
+        }
+    }
+
+    var rsUniqueName = "";
+    var dateStr = "";
+    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+    if (rsSource && rsSource != "undefined") {
+        rsUniqueName = rsSource.uniqueName;
+        var yourRatingDate = rsSource.rating.yourRatingDate;
+        if (yourRatingDate && yourRatingDate != "undefined") {
+            var reDate = new RegExp("([0-9]+)-([0-9]+)-([0-9]+)");
+            var year = reDate.exec(yourRatingDate)[1];
+            var month = reDate.exec(yourRatingDate)[2];
+            var day = reDate.exec(yourRatingDate)[3];
+            dateStr = "You rated this " + month + "/" + day + "/" + year;
+        }
+    }
+
+    var html = '\n';
+    html = html + '  <div class="film-line"><span class="film-title">'+title+'</span> ('+year+')</div>\n';
+    html = html + "  <episodeTitle class='tv-episode-title'>" + episodeTitle + "</episodeTitle>\n";
+    html = html + "  <div><season class='tv-season'>" + season + "</season><episodeNumber class='tv-episodenum'>" + episodeNumber + "</episodeNumber></div>\n";
+    html = html + '  <div align="left">\n';
+    html = html + '    <ratingStars class="rating-stars" id="rating-stars-'+rsUniqueName+'"></ratingStars>\n';
+    html = html + '  </div>\n';
+    html = html + '  <ratingDate class="rating-date">'+dateStr+'</ratingDate>\n';
+    html = html + '  <div><a href="'+imdbFilmUrl+'" target="_blank">'+imdbLabel+':</a>&nbsp;<imdbScore id="imdb-score-"'+imdbUniqueName+'>'+imdbScore+'</imdbScore></div>\n';
+    html = html + '  <status></status>\n';
+    html = html + '  <filmlistContainer id="filmlist-container-'+filmId+'" align="left"></filmlistContainer>\n';
+    html = html + '  <streams id="streams-'+filmId+'" class="streams"></streams>\n';
+    
+    var detailEl = document.createElement("detail");
+    detailEl.innerHTML = html;
+
+    return detailEl;
+}
+
 // userlist (JSON) - all of the user's filmlists
 // listnames - lists this film belongs in
 function renderFilmlists(includedListnames, filmId) {
