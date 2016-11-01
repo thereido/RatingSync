@@ -50,7 +50,7 @@ if (!empty($username)) {
                     <span class="input-group-btn">
                         <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
                     </span>
-                    <input id="search-text" type="text" class="form-control" onkeyup="updateSearch()">
+                    <input id="search-text" type="text" class="form-control">
                 </div>
             </div>
             </div>
@@ -72,7 +72,8 @@ if (!empty($username)) {
     var RS_URL_BASE = "<?php echo Constants::RS_HOST; ?>";
     var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
     var username = "<?php getUsername(); ?>";
-    var searchQuery;
+    var oldSearchQuery = "";
+    setInterval('updateSearch()', 1000);
 </script>
 
 </body>

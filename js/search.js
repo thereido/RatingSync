@@ -1,13 +1,13 @@
 
 function updateSearch() {
-    var query = document.getElementById("search-text").value;
+    var query = document.getElementById("search-text").value.trim();
     if (query.length == 0) {
 	    var searchResultEl = document.getElementById("search-result-tbody");
         searchResultEl.innerHTML = "";
-    } else if (query != searchQuery) {
-        searchQuery = query;
+    } else if (query != oldSearchQuery) {
         searchFilms(query);
     }
+    oldSearchQuery = query;
 }
 
 function searchFilms(query) {
