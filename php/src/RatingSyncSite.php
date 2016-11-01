@@ -137,7 +137,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
                     "source_name='" .$this->sourceName. "'";
         $result = $db->query($query);
         $row = $result->fetch_assoc();
-
+        
         return $row["count"];
     }
 

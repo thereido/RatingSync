@@ -179,6 +179,11 @@ detail {
     font-weight: bold;
 }
 
+.filmlist-checkbox-inline > label {
+    margin-bottom: 0px;
+    margin-top: 5px;
+}
+
 @media (min-width:768px) {
     .rating-detail {
         width: 70%;

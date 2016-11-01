@@ -15,6 +15,7 @@ $newList = array_value_by_key("nl", $_GET);
 $pageHeader = getPageHeader();
 $pageFooter = getPageFooter();
 $filmlistHeader = "";
+$displayNewListInput = "hidden";
 
 $films = array();
 $offerToAddFilmThisList = false;
@@ -32,6 +33,11 @@ if (!empty($username)) {
     }
 
     $filmlistHeader = getHtmlFilmlistsHeader($listname);
+
+    // New List input will be hidden unless "nl=1"
+    if ($newList == 1) {
+        $displayNewListInput = "";
+    }
 }
 ?>
 
@@ -59,13 +65,9 @@ if (!empty($username)) {
 
 <div class="container">
   <?php echo $pageHeader; ?>
+  <?php echo $filmlistHeader; ?>
 
-  <div class="well well-sm">
-    <h2><?php echo $listname; ?></h2>
-    <?php echo getHtmlFilmlistsHeader($listname); ?>
-  </div>
-
-  <div>
+  <div <?php echo $displayNewListInput; ?>>
     <form onsubmit="return createFilmlist()">
         <div class="row">
             <div class="col-lg-6">

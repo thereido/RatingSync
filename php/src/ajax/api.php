@@ -29,6 +29,8 @@ if ($action == "getSearchFilm") {
     $response = api_getFilm($username);
 } elseif ($action == "getUser") {
     $response = api_getUser($username);
+} elseif ($action == "getRatings") {
+    $response = api_getRatings($username);
 }
 
 echo $response;
@@ -257,6 +259,38 @@ function api_getUser($username)
 
     $userArr = array("username" => $username);
     $response = json_encode($userArr);
+
+    return $response;
+}
+
+function api_getRatings($username)
+{
+    $pageSize = array_value_by_key("ps", $_GET);
+    $beginPage = array_value_by_key("bp", $_GET);
+    logDebug("Params ps=$pageSize, bp=$beginPage", __FUNCTION__." ".__LINE__);
+    
+    if (empty($pageSize)) {
+        $pageSize = null;
+    }
+    if (empty($beginPage)) {
+        $beginPage = 1;
+    }
+
+    $site = new \RatingSync\RatingSyncSite($username);
+    $films = $site->getRatings($pageSize, $beginPage);
+    $totalRatings = $site->countRatings();
+    
+    $response = '{';
+    $response .= '"totalRatings":"' .$totalRatings. '"';
+    $response .= ', "pageSize":"' .$pageSize. '"';
+    $response .= ', "beginPage":"' .$beginPage. '"';
+    $response .= ', "films":[';
+    $delimeter = "";
+    foreach($films as $film) {
+        $response .= $delimeter . $film->json_encode(true);
+        $delimeter = ",";
+    }
+    $response .= ']}';
 
     return $response;
 }

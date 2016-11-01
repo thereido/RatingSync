@@ -13,7 +13,7 @@ $pageHeader = getPageHeader();
 $pageFooter = getPageFooter();
 $filmlistHeader = "";
 if (!empty($username)) {
-    $filmlistHeader = getHtmlFilmlistsHeader();
+    $filmlistHeader = getHtmlFilmlistsHeader("Search");
 }
 ?>
 
@@ -40,11 +40,7 @@ if (!empty($username)) {
 
 <div class="container">
     <?php echo $pageHeader; ?>
-
-    <div class="well well-sm">
-        <h2>Search</h2>
-        <div><?php echo $filmlistHeader; ?></div>
-    </div>
+    <?php echo $filmlistHeader; ?>
 
     <div>
         <form id="search-form" onsubmit="">
