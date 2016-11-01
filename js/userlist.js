@@ -42,3 +42,34 @@ function hideFilmDropdownForUserlist(filmId, detailTimer) {
     el.style.display = "none";
     clearTimeout(detailTimer);
 }
+
+function createFilmlist() {
+    var listname = document.getElementById("filmlist-listname").value;
+    if (listname == 0) {
+        document.getElementById("filmlist-create-result").innerHTML = "";
+        return;
+    }
+    
+    var params = "&l="+listname;
+    var filmIdEl = document.getElementById("filmlist-filmid");
+    if (filmIdEl != null) {
+        params = params + "&id=" + filmIdEl.value;
+        var addThisEl = document.getElementById("filmlist-add-this");
+        if (addThisEl != null && addThisEl.value == "0") {
+            params = params + "&a=0";
+        } else {
+            params = params + "&a=1";
+        }
+    }
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            window.location = "/php/userlist.php?l="+listname;
+        }
+    }
+    xmlhttp.open("GET", "/php/src/ajax/api.php?action=createFilmlist"+params, true);
+    xmlhttp.send();
+
+    return false;
+}
