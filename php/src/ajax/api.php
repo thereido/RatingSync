@@ -11,25 +11,35 @@ $action = array_value_by_key("action", $_GET);
 logDebug("API action: $action, username: $username", "api.php");
 if ($action == "getSearchFilm") {
     $response = api_getSearchFilm($username, $_GET);
-} elseif ($action == "setRating") {
+}
+elseif ($action == "setRating") {
     $response = api_setRating($username);
-} elseif ($action == "setFilmlist") {
+}
+elseif ($action == "setFilmlist") {
     $response = api_setFilmlist($username);
-} elseif ($action == "getUserLists") {
+}
+elseif ($action == "getUserLists") {
     $response = api_getUserLists($username);
-} elseif ($action == "createFilmlist") {
+}
+elseif ($action == "createFilmlist") {
     $response = api_createFilmlist($username);
-} elseif ($action == "addFilmBySearch") {
+}
+elseif ($action == "addFilmBySearch") {
     $response = api_addFilmBySearch($username, $_GET);
-} elseif ($action == "updateFilmSource") {
+}
+elseif ($action == "updateFilmSource") {
     $response = api_updateFilmSource($username);
-} elseif ($action == "getStream") {
+}
+elseif ($action == "getStream") {
     $response = api_getStream($username);
-} elseif ($action == "getFilm") {
+}
+elseif ($action == "getFilm") {
     $response = api_getFilm($username);
-} elseif ($action == "getUser") {
+}
+elseif ($action == "getUser") {
     $response = api_getUser($username);
-} elseif ($action == "getRatings") {
+}
+elseif ($action == "getRatings") {
     $response = api_getRatings($username);
 }
 
@@ -267,7 +277,11 @@ function api_getRatings($username)
 {
     $pageSize = array_value_by_key("ps", $_GET);
     $beginPage = array_value_by_key("bp", $_GET);
-    logDebug("Params ps=$pageSize, bp=$beginPage", __FUNCTION__." ".__LINE__);
+    $feature = array_value_by_key("feature", $_GET);
+    $tvseries = array_value_by_key("tvseries", $_GET);
+    $tvepisodes = array_value_by_key("tvepisodes", $_GET);
+    $shorts = array_value_by_key("shorts", $_GET);
+    logDebug("Params ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts", __FUNCTION__." ".__LINE__);
     
     if (empty($pageSize)) {
         $pageSize = null;
@@ -276,7 +290,22 @@ function api_getRatings($username)
         $beginPage = 1;
     }
 
+    $filterArr = array();
+    if ($feature === "0") {
+        $filterArr[Film::CONTENT_FILM] = false;
+    }
+    if ($tvseries === "0") {
+        $filterArr[Film::CONTENT_TV_SERIES] = false;
+    }
+    if ($tvepisodes === "0") {
+        $filterArr[Film::CONTENT_TV_EPISODE] = false;
+    }
+    if ($shorts === "0") {
+        $filterArr[Film::CONTENT_SHORTFILM] = false;
+    }
+
     $site = new \RatingSync\RatingSyncSite($username);
+    $site->setContentTypeFilter($filterArr);
     $films = $site->getRatings($pageSize, $beginPage);
     $totalRatings = $site->countRatings();
     

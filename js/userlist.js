@@ -73,3 +73,6 @@ function createFilmlist() {
 
     return false;
 }
+
+function changeContentTypeFilter() {
+}

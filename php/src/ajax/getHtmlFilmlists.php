@@ -29,17 +29,17 @@ function getHtmlFilmlistsHeader($currentListname = "") {
     // Content type filter
     $contentTypeHtml = "\n";
     $contentTypeHtml .= "    <div>";
-    $contentTypeHtml .= "      <div class='checkbox-inline filmlist-checkbox-inline'>\n";
-    $contentTypeHtml .= "        <label><input type='checkbox' value='Film::CONTENT_FILM' checked>Movies</label>\n";
+    $contentTypeHtml .= "      <div class='checkbox-inline filmlist-checkbox-inline' onchange='changeContentTypeFilter()'>\n";
+    $contentTypeHtml .= "        <label><input id='featurefilms' type='checkbox' value='Film::CONTENT_FILM' checked>Movies</label>\n";
     $contentTypeHtml .= "      </div>\n";
-    $contentTypeHtml .= "      <div class='checkbox-inline filmlist-checkbox-inline'>\n";
-    $contentTypeHtml .= "        <label><input type='checkbox' value='Film::CONTENT_TV_SERIES' checked>TV Series</label>\n";
+    $contentTypeHtml .= "      <div class='checkbox-inline filmlist-checkbox-inline' onchange='changeContentTypeFilter()'>\n";
+    $contentTypeHtml .= "        <label><input id='tvseries' type='checkbox' value='Film::CONTENT_TV_SERIES' checked>TV Series</label>\n";
     $contentTypeHtml .= "      </div>\n";
-    $contentTypeHtml .= "      <div class='checkbox-inline filmlist-checkbox-inline'>\n";
-    $contentTypeHtml .= "        <label><input type='checkbox' value='Film::CONTENT_TV_EPISODE' checked>TV Episodes</label>\n";
+    $contentTypeHtml .= "      <div class='checkbox-inline filmlist-checkbox-inline' onchange='changeContentTypeFilter()'>\n";
+    $contentTypeHtml .= "        <label><input id='tvepisodes' type='checkbox' value='Film::CONTENT_TV_EPISODE' checked>TV Episodes</label>\n";
     $contentTypeHtml .= "      </div>\n";
-    $contentTypeHtml .= "      <div class='checkbox-inline filmlist-checkbox-inline'>\n";
-    $contentTypeHtml .= "        <label><input type='checkbox' value='Film::CONTENT_SHORTFILM' checked>Short Films</label>\n";
+    $contentTypeHtml .= "      <div class='checkbox-inline filmlist-checkbox-inline' onchange='changeContentTypeFilter()'>\n";
+    $contentTypeHtml .= "        <label><input id='shortfilms' type='checkbox' value='Film::CONTENT_SHORTFILM' checked>Short Films</label>\n";
     $contentTypeHtml .= "      </div>\n";
     $contentTypeHtml .= "    </div>";
     if (empty($currentListname)) {
@@ -57,7 +57,7 @@ function getHtmlFilmlistsHeader($currentListname = "") {
     $html .= "      <a href='/php/userlist.php?nl=1' role='button' class='btn btn-primary'>New List</a>\n";
     $html .= "    </div>\n";
     $html .= "  </div>\n";
-    //$html .=    $contentTypeHtml;
+    $html .=    $contentTypeHtml;
     $html .= "</div>\n";
     
     return $html;

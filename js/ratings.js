@@ -29,9 +29,30 @@ function hideFilmDetail() {
 }
 
 function getRsRatings(pageSize, beginPage) {
+    var movies = true;
+    var series = true;
+    var episodes = true;
+    var shorts = true;
+    if (!document.getElementById("featurefilms").checked) {
+        movies = 0;
+    }
+    if (!document.getElementById("tvseries").checked) {
+        series = 0;
+    }
+    if (!document.getElementById("tvepisodes").checked) {
+        episodes = 0;
+    }
+    if (!document.getElementById("shortfilms").checked) {
+        shorts = 0;
+    }
+
     var params = "?action=getRatings";
     params = params + "&ps=" + pageSize;
     params = params + "&bp=" + beginPage;
+    if (!movies) { params = params + "&feature=" + movies; }
+    if (!series) { params = params + "&tvseries=" + series; }
+    if (!episodes) { params = params + "&tvepisodes=" + episodes; }
+    if (!shorts) { params = params + "&shorts=" + shorts; }
 	var xmlhttp = new XMLHttpRequest();
     var callbackHandler = function () { getRsRatingsCallback(xmlhttp); };
     xmlhttp.onreadystatechange = callbackHandler;
@@ -115,3 +136,7 @@ function renderRatings() {
         paginationEl.removeAttribute("hidden");
     }
 }   
+
+function changeContentTypeFilter() {
+    getRsRatings(defaultPageSize, currentPageNum);
+}

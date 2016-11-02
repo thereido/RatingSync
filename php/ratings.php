@@ -61,7 +61,9 @@ if (!empty($username)) {
 
 <script>
 var contextData;
-getRsRatings(100, <?php echo $pageNum; ?>);
+var currentPageNum = 1;
+var defaultPageSize = 100;
+getRsRatings(defaultPageSize, <?php echo $pageNum; ?>);
 </script>
           
 </body>

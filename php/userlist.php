@@ -56,9 +56,8 @@ if (!empty($username)) {
     <script src="../js/bootstrap_rs.min.js"></script>
     <script src="../Chrome/constants.js"></script>
     <script src="../Chrome/rsCommon.js"></script>
-    <script src="../js/ratings.js"></script>
-    <script src="../js/film.js"></script>
     <script src="../js/userlist.js"></script>
+    <script src="../js/film.js"></script>
 </head>
 
 <body>

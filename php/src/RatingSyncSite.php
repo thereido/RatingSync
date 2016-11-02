@@ -16,6 +16,8 @@ class RatingSyncSite extends \RatingSync\SiteRatings
 {
     const RATINGSYNC_DATE_FORMAT = "n/j/y";
 
+    protected $filter = array();
+
     public function __construct($username)
     {
         parent::__construct($username);
@@ -23,6 +25,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $this->http = new Http($this->sourceName, $username);
         $this->dateFormat = self::RATINGSYNC_DATE_FORMAT;
         $this->maxCriticScore = 100;
+        $this->clearContentTypeFilter();
     }
     
     /**
@@ -113,12 +116,24 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             $limit = "LIMIT $beginRecord, $limitPages";
         }
 
+        $query  = "SELECT film_id FROM rating";
+        $query .= " WHERE user_name='" .$this->username. "'";
+        $query .= "   AND source_name='" .$this->sourceName. "'";
+        $query .= " ORDER BY yourRatingDate DESC";
+        $query .= " " . $limit;
+
+        $filteredOut = $this->getFilterCommaDelimited();
+        if (!empty($filteredOut)) {
+            $query  = "SELECT film_id FROM rating, film";
+            $query .= " WHERE user_name='" .$this->username. "'";
+            $query .= "   AND source_name='" .$this->sourceName. "'";
+            $query .= "   AND id=film_id";
+            $query .= "   AND contentType NOT IN (" . $filteredOut . ")";
+            $query .= " ORDER BY yourRatingDate DESC";
+            $query .= " " . $limit;
+        }
+
         $db = getDatabase();
-        $query = "SELECT film_id FROM rating WHERE " .
-                    "user_name='" .$this->username. "' AND " .
-                    "source_name='" .$this->sourceName. "'" .
-                    "ORDER BY yourRatingDate DESC " .
-                    $limit;
         $result = $db->query($query);
         // Iterate over films rated
         while ($row = $result->fetch_assoc()) {
@@ -131,10 +146,20 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     }
 
     public function countRatings() {
+        $query  = "SELECT count(1) as count FROM rating";
+        $query .= " WHERE user_name='" .$this->username. "'";
+        $query .= "   AND source_name='" .$this->sourceName. "'";
+        
+        $filteredOut = $this->getFilterCommaDelimited();
+        if (!empty($filteredOut)) {
+            $query  = "SELECT count(1) as count FROM rating, film";
+            $query .= " WHERE user_name='" .$this->username. "'";
+            $query .= "   AND source_name='" .$this->sourceName. "'";
+            $query .= "   AND id=film_id";
+            $query .= "   AND contentType NOT IN (" . $filteredOut . ")";
+        }
+
         $db = getDatabase();
-        $query = "SELECT count(1) as count FROM rating WHERE " .
-                    "user_name='" .$this->username. "' AND " .
-                    "source_name='" .$this->sourceName. "'";
         $result = $db->query($query);
         $row = $result->fetch_assoc();
         
@@ -206,5 +231,32 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
 
         return $url;
+    }
+
+    /**
+     * @param array|null True/false for each contentType
+     */
+    public function setContentTypeFilter($newFilter = array()) {
+        if (is_array($newFilter)) {
+            $this->filter = $newFilter;
+        }
+    }
+    
+    public function clearContentTypeFilter() {
+        $this->filter = array();
+    }
+
+    public function getFilterCommaDelimited() {
+        $filteredOut = "";
+        $comma = "";\
+        reset($this->filter);
+        while (list($key, $val) = each($this->filter)) {
+            if (Film::validContentType($key) && $val === false) {
+                $filteredOut .= $comma . "'$key'";
+                $comma = ", ";
+            }
+        }
+        
+        return $filteredOut;
     }
 }
