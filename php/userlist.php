@@ -12,10 +12,15 @@ $username = getUsername();
 $listname = array_value_by_key("l", $_GET);
 $filmId = array_value_by_key("id", $_GET);
 $newList = array_value_by_key("nl", $_GET);
+$pageNum = array_value_by_key("p", $_GET);
 $pageHeader = getPageHeader();
 $pageFooter = getPageFooter();
 $filmlistHeader = "";
 $displayNewListInput = "hidden";
+
+if (empty($pageNum)) {
+    $pageNum = 1;
+}
 
 $films = array();
 $offerToAddFilmThisList = false;
@@ -26,10 +31,6 @@ if (!empty($username)) {
         if (!empty($film)) {
             $films[] = $film;
         }
-    } elseif (!empty($listname)) {
-        $site = new \RatingSync\RatingSyncSite($username);
-        $list = Filmlist::getListFromDb($username, $listname);
-        $films = Film::getFilmsByFilmlist($username, $list);
     }
 
     $filmlistHeader = getHtmlFilmlistsHeader($listname);
@@ -94,58 +95,24 @@ if (!empty($username)) {
     <span id="filmlist-create-result"></span>
   </div>
 
-<?php
-    $filmsJson = "{\"films\":[";
-    $delimeter = "";
-    $count = 0;
-    $row = 0;
-    $totalFilms = count($films);
-    foreach($films as $film) {
-        $count = $count + 1;
-        $column = $count % 12;
-        if ($column == 0) {
-            $column = 12;
-        }
+    <div id="film-table"></div>
 
-        $beginRow = "";
-        $endRow = "";
-        if ($column == 1) {
-            $beginRow = "<div class='row'>\n";
-        } elseif ($column == 12) {
-            $endRow = "</div>\n";
-        } elseif (count($films) == $count) {
-            $endRow = "</div>\n";
-        }
-
-        $filmId = $film->getId();
-        $title = $film->getTitle();
-        $titleNoQuotes = htmlentities($title, ENT_QUOTES);
-        $image = Constants::RS_HOST . $film->getImage(Constants::SOURCE_RATINGSYNC);
-        $uniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
-        $onMouseEnter = "onMouseEnter='detailTimer = setTimeout(function () { showFilmDropdownForUserlist($filmId); }, 500)'";
-        $onMouseLeave = "onMouseLeave='hideFilmDropdownForUserlist($filmId, detailTimer)'";
-        echo "  $beginRow";
-        echo "    <div class='col-xs-6 col-sm-4 col-md-3 col-lg-2' id='$uniqueName'>\n";
-        echo "      <div class='userlist-film' $onMouseEnter $onMouseLeave>\n";
-        echo "        <poster id='poster-$uniqueName' data-filmId='$filmId'>\n";
-        echo "          <img src='$image' alt='$titleNoQuotes' />\n";
-        echo "          <div id='film-dropdown-$filmId' class='film-dropdown-content film-dropdown-col-$column'></div>\n";
-        echo "        </poster>\n";
-        echo "        <div class='below-poster' id='poster-extension-$filmId' data-filmId='$filmId'></div>\n";
-        echo "      </div>\n";
-        echo "    </div>\n";
-        echo "  $endRow";
-
-        $filmsJson .= $delimeter . $film->json_encode(true);
-        $delimeter = ",";
-    }
-    $filmsJson .= "]}";
-?>
+  <ul id="pagination" class="pager" hidden>
+    <li id="previous"><a>Previous</a></li>
+    <li id="next"><a>Next</a></li>
+  </ul>
 
   <?php echo $pageFooter; ?>
 </div>
 
-<script>var contextData = JSON.parse('<?php echo $filmsJson; ?>');</script>
+<script>
+    var contextData;
+    var listname = "<?php echo $listname; ?>";
+    var currentPageNum = <?php echo $pageNum; ?>;
+    var defaultPageSize = 10;
+    checkFilterFromUrl();
+    getFilmsForFilmlist(defaultPageSize, currentPageNum);
+</script>
           
 </body>
 </html>

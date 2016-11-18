@@ -42,6 +42,9 @@ elseif ($action == "getUser") {
 elseif ($action == "getRatings") {
     $response = api_getRatings($username);
 }
+elseif ($action == "getFilmsByList") {
+    $response = api_getFilmsByList($username);
+}
 
 echo $response;
 
@@ -311,6 +314,58 @@ function api_getRatings($username)
     
     $response = '{';
     $response .= '"totalRatings":"' .$totalRatings. '"';
+    $response .= ', "pageSize":"' .$pageSize. '"';
+    $response .= ', "beginPage":"' .$beginPage. '"';
+    $response .= ', "films":[';
+    $delimeter = "";
+    foreach($films as $film) {
+        $response .= $delimeter . $film->json_encode(true);
+        $delimeter = ",";
+    }
+    $response .= ']}';
+
+    return $response;
+}
+
+function api_getFilmsByList($username)
+{
+    $listname = array_value_by_key("l", $_GET);
+    $pageSize = array_value_by_key("ps", $_GET);
+    $beginPage = array_value_by_key("bp", $_GET);
+    $feature = array_value_by_key("feature", $_GET);
+    $tvseries = array_value_by_key("tvseries", $_GET);
+    $tvepisodes = array_value_by_key("tvepisodes", $_GET);
+    $shorts = array_value_by_key("shorts", $_GET);
+    logDebug("Params l=$listname, ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts", __FUNCTION__." ".__LINE__);
+    
+    if (empty($pageSize)) {
+        $pageSize = null;
+    }
+    if (empty($beginPage)) {
+        $beginPage = 1;
+    }
+
+    $filterArr = array();
+    if ($feature === "0") {
+        $filterArr[Film::CONTENT_FILM] = false;
+    }
+    if ($tvseries === "0") {
+        $filterArr[Film::CONTENT_TV_SERIES] = false;
+    }
+    if ($tvepisodes === "0") {
+        $filterArr[Film::CONTENT_TV_EPISODE] = false;
+    }
+    if ($shorts === "0") {
+        $filterArr[Film::CONTENT_SHORTFILM] = false;
+    }
+    
+    $list = new Filmlist($username, $listname);
+    $list->initFromDb($filterArr);
+    $films = $list->getFilms($pageSize, $beginPage);
+    $totalCount = $list->count();
+    
+    $response = '{';
+    $response .= '"totalCount":"' .$totalCount. '"';
     $response .= ', "pageSize":"' .$pageSize. '"';
     $response .= ', "beginPage":"' .$beginPage. '"';
     $response .= ', "films":[';

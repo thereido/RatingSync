@@ -212,18 +212,32 @@ class Filmlist
         $list->removeFromDb();
     }
 
-    public function initFromDb()
+    public function initFromDb($filter = array())
     {
         $username = $this->username;
         $listname = $this->listname;
         if (empty($username) || empty($listname)) {
             throw new \InvalidArgumentException(__FUNCTION__." \$username (".$username.") and \$listName (".$listname.") must not be empty");
         }
-        $this->removeAllItems();
 
+        $this->removeAllItems();
         $db = getDatabase();
-        
-        $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
+        $filteredOut = $this->getFilterCommaDelimited($filter);
+
+        $query = "";
+        if (empty($filteredOut)) {
+            $query  = "SELECT film_id FROM filmlist";
+            $query .= " WHERE user_name='$username'";
+            $query .= "   AND listname='$listname'";
+            $query .= " ORDER BY position ASC";
+        } else {
+            $query  = "SELECT film_id FROM filmlist, film";
+            $query .= " WHERE user_name='" .$this->username. "'";
+            $query .= "   AND listname='" .$this->listname. "'";
+            $query .= "   AND id=film_id";
+            $query .= "   AND contentType NOT IN (" . $filteredOut . ")";
+            $query .= " ORDER BY position ASC";
+        }
         $result = $db->query($query);
         while ($row = $result->fetch_assoc()) {
             $this->addItem($row['film_id']);
@@ -320,5 +334,39 @@ class Filmlist
         } else {
             $this->addItem($filmId);
         }
+    }
+
+    public function getFilterCommaDelimited($filter) {
+        $filteredOut = "";
+        $comma = "";
+        reset($filter);
+        while (list($key, $val) = each($filter)) {
+            if (Film::validContentType($key) && $val === false) {
+                $filteredOut .= $comma . "'$key'";
+                $comma = ", ";
+            }
+        }
+        
+        return $filteredOut;
+    }
+
+    public function getFilms($pageSize = null, $beginPage = 1)
+    {
+        $films = array();
+        
+        $currentItems = array();
+        $chunks = array_chunk($this->listItems, $pageSize);
+        $chunkIndex = $beginPage - 1;
+        if (array_key_exists($chunkIndex, $chunks)) {
+            $currentItems = $chunks[$chunkIndex];
+        }
+        
+        $db = getDatabase();
+        foreach ($currentItems as $filmId) {
+            $film = Film::getFilmFromDb($filmId, $this->username);
+            $films[] = $film;
+        }
+        
+        return $films;
     }
 }

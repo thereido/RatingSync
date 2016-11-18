@@ -1272,21 +1272,6 @@ class Film {
         return $parentFilm;
     }
 
-    public static function getFilmsByFilmlist($username, $list)
-    {
-        if (empty($username) || !($list instanceof Filmlist)) {
-            return null;
-        }
-        $films = array();
-
-        foreach ($list->getItems() as $filmId) {
-            $film = self::getFilmFromDb($filmId, $username);
-            $films[] = $film;
-        }
-
-        return $films;
-    }
-
     /**
      * Update streams for all films for all providers
      */
