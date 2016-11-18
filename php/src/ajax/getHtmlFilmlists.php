@@ -28,7 +28,7 @@ function getHtmlFilmlistsHeader($currentListname = "") {
 
     // Content type filter
     $contentTypeHtml = "\n";
-    $contentTypeHtml .= "    <div>";
+    $contentTypeHtml .= "    <div>\n";
     $contentTypeHtml .= "      <div class='checkbox-inline filmlist-checkbox-inline' onchange='changeContentTypeFilter()'>\n";
     $contentTypeHtml .= "        <label><input id='featurefilms' type='checkbox' value='Film::CONTENT_FILM' checked>Movies</label>\n";
     $contentTypeHtml .= "      </div>\n";
@@ -41,7 +41,7 @@ function getHtmlFilmlistsHeader($currentListname = "") {
     $contentTypeHtml .= "      <div class='checkbox-inline filmlist-checkbox-inline' onchange='changeContentTypeFilter()'>\n";
     $contentTypeHtml .= "        <label><input id='shortfilms' type='checkbox' value='Film::CONTENT_SHORTFILM' checked>Short Films</label>\n";
     $contentTypeHtml .= "      </div>\n";
-    $contentTypeHtml .= "    </div>";
+    $contentTypeHtml .= "    </div>\n";
     if (empty($currentListname)) {
         $contentTypeHtml = "";
     }
