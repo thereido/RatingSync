@@ -38,6 +38,7 @@ if (!empty($username)) {
     <script src="../Chrome/constants.js"></script>
     <script src="../Chrome/rsCommon.js"></script>
     <script src="../js/ratings.js"></script>
+    <script src="../js/filmlistHeader.js"></script>
     <script src="../js/film.js"></script>
 </head>
 
@@ -63,6 +64,7 @@ if (!empty($username)) {
 var contextData;
 var currentPageNum = 1;
 var defaultPageSize = 100;
+checkFilterFromUrl();
 getRsRatings(defaultPageSize, <?php echo $pageNum; ?>);
 </script>
           

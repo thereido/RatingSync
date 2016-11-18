@@ -58,6 +58,7 @@ if (!empty($username)) {
     <script src="../Chrome/constants.js"></script>
     <script src="../Chrome/rsCommon.js"></script>
     <script src="../js/userlist.js"></script>
+    <script src="../js/filmlistHeader.js"></script>
     <script src="../js/film.js"></script>
 </head>
 
@@ -109,7 +110,7 @@ if (!empty($username)) {
     var contextData;
     var listname = "<?php echo $listname; ?>";
     var currentPageNum = <?php echo $pageNum; ?>;
-    var defaultPageSize = 10;
+    var defaultPageSize = 100;
     checkFilterFromUrl();
     getFilmsForFilmlist(defaultPageSize, currentPageNum);
 </script>

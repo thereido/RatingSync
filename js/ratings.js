@@ -29,30 +29,10 @@ function hideFilmDetail() {
 }
 
 function getRsRatings(pageSize, beginPage) {
-    var movies = true;
-    var series = true;
-    var episodes = true;
-    var shorts = true;
-    if (!document.getElementById("featurefilms").checked) {
-        movies = 0;
-    }
-    if (!document.getElementById("tvseries").checked) {
-        series = 0;
-    }
-    if (!document.getElementById("tvepisodes").checked) {
-        episodes = 0;
-    }
-    if (!document.getElementById("shortfilms").checked) {
-        shorts = 0;
-    }
-
     var params = "?action=getRatings";
     params = params + "&ps=" + pageSize;
     params = params + "&bp=" + beginPage;
-    if (!movies) { params = params + "&feature=" + movies; }
-    if (!series) { params = params + "&tvseries=" + series; }
-    if (!episodes) { params = params + "&tvepisodes=" + episodes; }
-    if (!shorts) { params = params + "&shorts=" + shorts; }
+    params = params + getFilterParams();
 	var xmlhttp = new XMLHttpRequest();
     var callbackHandler = function () { getRsRatingsCallback(xmlhttp); };
     xmlhttp.onreadystatechange = callbackHandler;
@@ -115,7 +95,7 @@ function renderRatings() {
         previousPageNum = pageNum - 1;
         previousEl.removeAttribute("class");
         var previousAnchorEl = previousEl.getElementsByTagName("A")[0];
-        previousAnchorEl.setAttribute("href", "./ratings.php?p=" + previousPageNum);
+        previousAnchorEl.setAttribute("href", "./ratings.php?p=" + previousPageNum + getFilterParams());
     } else {
         previousEl.setAttribute("class", "disabled");
     }
@@ -126,7 +106,7 @@ function renderRatings() {
         nextPageNum = pageNum + 1;
         nextEl.removeAttribute("class");
         var nextAnchorEl = nextEl.getElementsByTagName("A")[0];
-        nextAnchorEl.setAttribute("href", "./ratings.php?p=" + nextPageNum);
+        nextAnchorEl.setAttribute("href", "./ratings.php?p=" + nextPageNum + getFilterParams());
     } else {
         nextEl.setAttribute("class", "disabled");
     }
