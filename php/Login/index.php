@@ -10,6 +10,15 @@ $username = $password = $msg = $loginFormDisplay = $regFormDisplay = $headerScri
 $loginFormDisplay = "block";
 $regFormDisplay = "none";
 
+$http_referer = "";
+if (array_key_exists("destination", $_POST)) {
+    $http_referer = $_POST['destination'];
+} elseif (array_key_exists('HTTP_REFERER', $_SERVER) && array_value_by_key('dest', $_GET) != "none") {
+    if (strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST']) !== false) {
+        $http_referer = $_SERVER['HTTP_REFERER'];
+    }
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($_POST['active-form'] == "login-form") {
         $loginFormDisplay = "block";
@@ -21,8 +30,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $username = $db->real_escape_string($_POST['username']);
             $password = md5($db->real_escape_string($_POST['password']));
             if (SessionUtility::login($username, $password)) {
-                $headerScript = '<script type="text/javascript">window.location.href = "/"</script>';
-                $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/'>here</a>.<br>";
+                $destination = $_POST['destination'];
+                if (empty($destination)) {
+                    $destination = "/";
+                }
+                $headerScript = '<script type="text/javascript">window.location.href = "'.$destination.'"</script>';
+                $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='".$destination."'>here</a>.<br>";
             }
         }
     } else if ($_POST['active-form'] == "register-form") {
@@ -197,6 +210,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<div class="col-lg-12">
 								<form id="login-form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" role="form" style="display: <?php echo $loginFormDisplay; ?>;">
                                     <input type="hidden" name="active-form" id="active-form" value="login-form">
+                                    <input type="hidden" name="destination" id="destination" value="<?php echo $http_referer;?>">
 									<div class="form-group">
 										<input type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username" value="">
 									</div>

@@ -11,7 +11,7 @@ $username = SessionUtility::logout();
     <head>
         <meta charset="utf-8" />
         <title>RatingSync</title>
-        <script type="text/javascript">window.location.href = "../Login"</script>
+        <script type="text/javascript">window.location.href = "../Login?dest=none"</script>
     </head>
     <body>
         
