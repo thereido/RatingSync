@@ -47,10 +47,10 @@ function buildFilmDetailElement(film) {
         var yourRatingDate = rsSource.rating.yourRatingDate;
         if (yourRatingDate && yourRatingDate != "undefined") {
             var reDate = new RegExp("([0-9]+)-([0-9]+)-([0-9]+)");
-            var year = reDate.exec(yourRatingDate)[1];
+            var ratingYear = reDate.exec(yourRatingDate)[1];
             var month = reDate.exec(yourRatingDate)[2];
             var day = reDate.exec(yourRatingDate)[3];
-            dateStr = "You rated this " + month + "/" + day + "/" + year;
+            dateStr = "You rated this " + month + "/" + day + "/" + ratingYear;
         }
     }
 
