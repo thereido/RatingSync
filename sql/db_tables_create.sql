@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS user_filmlist
     (
         user_name VARCHAR(50) NOT NULL,
         listname VARCHAR(50) NOT NULL,
-        parent_listname INT NULL DEFAULT NULL,
+        parent_listname VARCHAR(50) NULL DEFAULT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
         PRIMARY KEY (user_name, listname),
