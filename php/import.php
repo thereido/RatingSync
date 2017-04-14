@@ -12,6 +12,7 @@
 namespace RatingSync;
 
 require_once "main.php";
+require_once "pageHeader.php";
 require_once "src/Constants.php";
 
 // define variables and set to empty values

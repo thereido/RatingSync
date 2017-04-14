@@ -2,6 +2,7 @@
 namespace RatingSync;
 
 require_once "main.php";
+require_once "pageHeader.php";
 require_once "src/SessionUtility.php";
 require_once "src/Film.php";
 require_once "src/Filmlist.php";
@@ -13,9 +14,11 @@ $listname = array_value_by_key("l", $_GET);
 $filmId = array_value_by_key("id", $_GET);
 $newList = array_value_by_key("nl", $_GET);
 $pageNum = array_value_by_key("p", $_GET);
-$pageHeader = getPageHeader();
+$listnames = Filmlist::getUserListnamesFromDbByParent($username);
+$pageHeader = getPageHeader(true, $listnames);
 $pageFooter = getPageFooter();
 $filmlistHeader = "";
+$filmlistSelectOptions = "<option>---</option>";
 $displayNewListInput = "hidden";
 
 if (empty($pageNum)) {
@@ -33,12 +36,18 @@ if (!empty($username)) {
         }
     }
 
-    $filmlistHeader = getHtmlFilmlistsHeader($listname);
+    $filmlistHeaderName = $listname;
+    $offerListFilter = true;
 
     // New List input will be hidden unless "nl=1"
     if ($newList == 1) {
         $displayNewListInput = "";
+        $filmlistHeaderName = "Create New List";
+        $offerListFilter = false;
+        $filmlistSelectOptions .= getHtmlFilmlistSelectOptions($listnames);
     }
+
+    $filmlistHeader = getHtmlFilmlistsHeader($listnames, $listname, $filmlistHeaderName, $offerListFilter);
 }
 ?>
 
@@ -57,6 +66,7 @@ if (!empty($username)) {
     <script src="../js/bootstrap_rs.min.js"></script>
     <script src="../Chrome/constants.js"></script>
     <script src="../Chrome/rsCommon.js"></script>
+    <script src="../js/pageHeader.js"></script>
     <script src="../js/userlist.js"></script>
     <script src="../js/filmlistHeader.js"></script>
     <script src="../js/film.js"></script>
@@ -65,33 +75,46 @@ if (!empty($username)) {
 <body>
 
 <div class="container">
+
   <?php echo $pageHeader; ?>
   <?php echo $filmlistHeader; ?>
-
-  <div <?php echo $displayNewListInput; ?>>
-    <form onsubmit="return createFilmlist()">
-        <div class="row">
-            <div class="col-lg-6">
-                <div class="input-group">
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" type="submit"><span>New list</span></button>
-                    </span>
-                    <input type="text" class="form-control" id="filmlist-listname">
+    
+  <div class="panel-body" <?php echo $displayNewListInput; ?>>
+    <div class="row">
+        <div class="col-lg-6">
+            <form onsubmit="return createFilmlist()">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" disabled><span>Sub-list of</span></button>
+                        </span>
+                        <select class="form-control" id="filmlist-parent">
+                            <?php echo $filmlistSelectOptions; ?>
+                        </select>
+                    </div>
+				</div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" disabled><span>New list</span></button>
+                        </span>
+                        <input type="text" class="form-control" id="filmlist-listname">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit"><span>Submit</span></button>
+                        </span>
+                    </div>
                 </div>
-            </div>
+                <div class="form-group">
+                    <?php
+                    if ($offerToAddFilmThisList) {
+                        echo "<input type='checkbox' class='checkbox' id='filmlist-add-this' checked>Add the film to this new list?</input>\n";
+                        echo "<input id='filmlist-filmid' value='$filmId' hidden></input>\n";
+                    }
+                    ?>
+                </div>
+            </form>
         </div>
-        <div class="row">
-            <div class="col-lg-1"></div>
-            <div class="col-lg-5">
-                <?php
-                if ($offerToAddFilmThisList) {
-                    echo "<input type='checkbox' class='checkbox' id='filmlist-add-this' checked>Add the film to this new list?</input>\n";
-                    echo "<input id='filmlist-filmid' value='$filmId' hidden></input>\n";
-                }
-                ?>
-            </div>
-        </div>
-    </form>
+    </div>
     <p><span id="debug"></span></p>
     <span id="filmlist-create-result"></span>
   </div>
@@ -111,8 +134,11 @@ if (!empty($username)) {
     var listname = "<?php echo $listname; ?>";
     var currentPageNum = <?php echo $pageNum; ?>;
     var defaultPageSize = 100;
-    checkFilterFromUrl();
-    getFilmsForFilmlist(defaultPageSize, currentPageNum);
+    var prevFilmlistFilterParams = getFilmlistFilterParams();
+    if (listname) {
+        checkFilterFromUrl();
+        getFilmsForFilmlist(defaultPageSize, currentPageNum);
+    }
 </script>
           
 </body>

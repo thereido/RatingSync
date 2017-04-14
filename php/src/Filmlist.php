@@ -27,15 +27,17 @@ class Filmlist
 {    
     protected $listname;
     protected $username;
+    protected $parentListname;
     protected $listItems = array();  // Each item is a filmId
 
-    public function __construct($username, $listname)
+    public function __construct($username, $listname, $parentListname = NULL)
     {
         if (empty($username) || empty($listname)) {
             throw new \InvalidArgumentException("Filmlist must have a user and a name");
         }
         $this->username = $username;
         $this->listname = $listname;
+        $this->parentListname = $parentListname;
     }
 
     /**
@@ -58,6 +60,24 @@ class Filmlist
         }
 
         $this->listname = $name;
+    }
+
+    /**
+     * @return string parent listName
+     */
+    public function getParentListname()
+    {
+        return $this->parentListname;
+    }
+
+    /**
+     * @param string $parentListname
+     *
+     * @return none
+     */
+    public function setParentListname($parent)
+    {
+        $this->parentListname = $parent;
     }
 
     /**
@@ -137,6 +157,7 @@ class Filmlist
         $errorFree = true;
         $username = $this->username;
         $listname = $this->listname;
+        $parentListname = $this->parentListname;
 
         $removeFilmIds = "";
         $comma = "";
@@ -163,9 +184,21 @@ class Filmlist
             }
         }
 
+        // Validate that the parent list is a existing list
+        $parentListColumn = "";
+        $parentListValue = "";
+        if (!empty($parentListname)) {
+            $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$parentListname'";
+            $result = $db->query($query);
+            if ($result->num_rows == 1) {
+                $parentListColumn = ", parent_listname";
+                $parentListValue = ", '" . $parentListname . "'";
+            }
+        }
+
         // Replace (or insert) the filmlist
-        $query = "REPLACE INTO user_filmlist (user_name, listname)" .
-                    " VALUES ('$username', '$listname')";
+        $query = "REPLACE INTO user_filmlist (user_name, listname".$parentListColumn.")" .
+                    " VALUES ('$username', '$listname'".$parentListValue.")";
         if (! $db->query($query)) {
             logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
             $errorFree = false;
@@ -186,33 +219,62 @@ class Filmlist
         return $errorFree;
     }
 
+    /**
+     * Delete from the DB. If the list have children this fails.
+     *
+     * @return boolean True for success. False for error or there are children.
+     */
     public function removeFromDb() {
         if (empty($this->username) || empty($this->listname)) {
             throw new \InvalidArgumentException(__FUNCTION__." username (".$this->username.") and listName (".$this->listname.") must not be empty");
         }
         $db = getDatabase();
-        
+        $success = true;
+
+        // Check for children (Don't delete a list with children)
         $username = $this->username;
         $listname = $this->listname;
-        $query = "DELETE FROM filmlist" .
-                    " WHERE user_name='$username'" .
-                    " AND listname='$listname'";
-        if (! $db->query($query)) {
-            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
-        }
+        $query = "SELECT * FROM user_filmlist" .
+                    " WHERE parent_listname='$listname'" . 
+                    "   AND user_name='$username'";
+        $result = $db->query($query);
+        if ($result->num_rows > 0) {
+            $success = false;
+        } else {
+            // Delete all entries from this list
+            $query = "DELETE FROM filmlist" .
+                        " WHERE user_name='$username'" .
+                        " AND listname='$listname'";
+            if (! $db->query($query)) {
+                $success = false;
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+            }
         
-        $query = "DELETE FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
-        if (! $db->query($query)) {
-            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+            // Delete the list itself
+            $query = "DELETE FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
+            if (! $db->query($query)) {
+                $success = false;
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+            }
         }
+
+        return $success;
     }
 
-    public static function removeListFromDb($username, $listname) {
+    /**
+     * @return boolean True for success. False for error or there are children.
+     */
+    public static function removeListFromDb($username, $listname)
+    {
         $list = new Filmlist($username, $listname);
-        $list->removeFromDb();
+        return $list->removeFromDb();
     }
 
-    public function initFromDb($filter = array())
+    /**
+     * @param array $contentFilter Filter out content in this array (do not return films that match)
+     * @param array $listFilter Filter in by the user's other filmlists (do not return films unless they do match)
+     */
+    public function initFromDb($contentFilter = array(), $listFilter = array())
     {
         $username = $this->username;
         $listname = $this->listname;
@@ -222,20 +284,40 @@ class Filmlist
 
         $this->removeAllItems();
         $db = getDatabase();
-        $filteredOut = $this->getFilterCommaDelimited($filter);
+        $contentFilteredOut = $this->getFilterCommaDelimited($contentFilter);
 
-        $query = "";
-        if (empty($filteredOut)) {
+        $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
+        $result = $db->query($query);
+        if ($result->num_rows == 1) {
+            $this->parentListname = $result->fetch_assoc()['parent_listname'];
+        }
+
+        $listFilterSubQuery = "";
+        if (!empty($listFilter) && count($listFilter) > 0) {
+            $listFilterSubQuery = "   AND film_id IN (SELECT film_id as id2 FROM filmlist as list2 WHERE user_name='$username' AND listname IN (";
+            $comma = "";
+            foreach ($listFilter as $filterListname) {
+                if ($listname != $filterListname) {
+                    $listFilterSubQuery .= $comma . "'".$filterListname."'";
+                    $comma = ", ";
+                }
+            }
+            $listFilterSubQuery .= "))";
+        }
+
+        if (empty($contentFilteredOut)) {
             $query  = "SELECT film_id FROM filmlist";
             $query .= " WHERE user_name='$username'";
             $query .= "   AND listname='$listname'";
+            $query .=     $listFilterSubQuery;
             $query .= " ORDER BY position ASC";
         } else {
             $query  = "SELECT film_id FROM filmlist, film";
             $query .= " WHERE user_name='" .$this->username. "'";
             $query .= "   AND listname='" .$this->listname. "'";
+            $query .=     $listFilterSubQuery;
             $query .= "   AND id=film_id";
-            $query .= "   AND contentType NOT IN (" . $filteredOut . ")";
+            $query .= "   AND contentType NOT IN (" . $contentFilteredOut . ")";
             $query .= " ORDER BY position ASC";
         }
         $result = $db->query($query);
@@ -244,8 +326,8 @@ class Filmlist
         }
     }
 
-    public static function getListFromDb($username, $listname) {
-        $list = new Filmlist($username, $listname);
+    public static function getListFromDb($username, $listname, $parentListname = null) {
+        $list = new Filmlist($username, $listname, $parentListname);
         $list->initFromDb();
 
         return $list;
@@ -260,7 +342,7 @@ class Filmlist
         $db = getDatabase();
         $lists = array();
 
-        $query = "SELECT * FROM user_filmlist WHERE user_name='$username' ORDER BY listname ASC";
+        $query = "SELECT * FROM user_filmlist WHERE user_name='$username' ORDER BY parent_listname ASC, listname ASC";
         $result = $db->query($query);
         while ($row = $result->fetch_assoc()) {
             $listname = $row['listname'];
@@ -327,6 +409,39 @@ class Filmlist
         }
     }
 
+    /**
+     * Returns a hierarchical array of listnames. The array has no items in the lists,
+     * just names. By default it returns all lists for the user.
+     *
+     * @return array Keys are listname, parentListname, children. Children are a another array.
+     */
+    public static function getUserListnamesFromDbByParent($username, $parentListname = null)
+    {
+        if (empty($username)) {
+            throw new \InvalidArgumentException(__FUNCTION__." \$username (".$username.") must not be empty");
+        }
+
+        $db = getDatabase();
+        $listnames = array();  // Keys are listname, parentListname, children (arrays like this one)
+
+        $parentSelect = "parent_listname IS NULL";
+        if (!empty($parentListname)) {
+            $parentSelect = "parent_listname='$parentListname'";
+        }
+
+        // From the DB build a flat array with listname the keys and parentList as the values
+        $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND $parentSelect ORDER BY listname ASC";
+        $result = $db->query($query);
+        while ($row = $result->fetch_assoc()) {
+            $listname = $row['listname'];
+            $parentListname = $row['parent_listname'];
+            $children = self::getUserListnamesFromDbByParent($username, $listname);
+            $listnames[] = array("listname" => $listname, "parentListname" => $parentListname, "children" => $children);
+        }
+
+        return $listnames;
+    }
+
     public function setFilmlist($filmId, $remove = false)
     {
         if ($remove) {
@@ -368,5 +483,25 @@ class Filmlist
         }
         
         return $films;
+    }
+
+    public static function getAncestorListnames($listname)
+    {
+        $db = getDatabase();
+        $username = getUsername();
+        $ancestors = array();
+
+        while (!empty($listname)) {
+            $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
+            $result = $db->query($query);
+            if ($result->num_rows == 1) {
+                $listname = $result->fetch_assoc()['parent_listname'];
+                if (!empty($listname)) {
+                    $ancestors[] = $listname;
+                }
+            }
+        }
+
+        return $ancestors;
     }
 }

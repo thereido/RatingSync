@@ -2,6 +2,7 @@
 namespace RatingSync;
 
 require_once "main.php";
+require_once "pageHeader.php";
 require_once "src/SessionUtility.php";
 require_once "src/Film.php";
 require_once "src/Filmlist.php";

@@ -2,6 +2,7 @@
 namespace RatingSync;
 
 require_once "main.php";
+require_once "pageHeader.php";
 require_once "src/SessionUtility.php";
 require_once "src/Film.php";
 require_once "src/Filmlist.php";
@@ -9,7 +10,8 @@ require_once "src/Filmlist.php";
 require_once "src/ajax/getHtmlFilmlists.php";
 
 $username = getUsername();
-$pageHeader = getPageHeader();
+$listnames = Filmlist::getUserListnamesFromDbByParent($username);
+$pageHeader = getPageHeader(true, $listnames);
 $pageFooter = getPageFooter();
 $filmlistHeader = "";
 $pageNum = array_value_by_key("p", $_GET);
@@ -18,7 +20,7 @@ if (empty($pageNum)) {
 }
 
 if (!empty($username)) {
-    $filmlistHeader = getHtmlFilmlistsHeader("Your Ratings");
+    $filmlistHeader = getHtmlFilmlistsHeader($listnames, null, "Your Ratings");
 }
 
 ?>

@@ -187,11 +187,13 @@ CREATE TABLE IF NOT EXISTS user_filmlist
     (
         user_name VARCHAR(50) NOT NULL,
         listname VARCHAR(50) NOT NULL,
+        parent_listname INT NULL DEFAULT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
         PRIMARY KEY (user_name, listname),
         KEY (user_name),
         KEY (listname),
+        KEY (user_name, listname, parent_listname)
 
         FOREIGN KEY (user_name)
             REFERENCES user(username)

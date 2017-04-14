@@ -132,12 +132,13 @@ function api_createFilmlist($username)
     $listname = array_value_by_key("l", $_GET);
     $filmId = array_value_by_key("id", $_GET);
     $checked = array_value_by_key("a", $_GET);
+    $parent = array_value_by_key("parent", $_GET);
     $add = false;
     if ($checked == 1) {
         $add = true;
     }
-    logDebug("Params l=$listname, id=$filmId, a=$checked", __FUNCTION__." ".__LINE__);
-    $filmlist = Filmlist::getListFromDb($username, $listname);
+    logDebug("Params l=$listname, id=$filmId, a=$checked, parent=$parent", __FUNCTION__." ".__LINE__);
+    $filmlist = Filmlist::getListFromDb($username, $listname, $parent);
     if ($add) {
         $filmlist->setFilmlist($filmId);
     }
@@ -336,7 +337,8 @@ function api_getFilmsByList($username)
     $tvseries = array_value_by_key("tvseries", $_GET);
     $tvepisodes = array_value_by_key("tvepisodes", $_GET);
     $shorts = array_value_by_key("shorts", $_GET);
-    logDebug("Params l=$listname, ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts", __FUNCTION__." ".__LINE__);
+    $filterlists = array_value_by_key("filterlists", $_GET);
+    logDebug("Params l=$listname, ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists", __FUNCTION__." ".__LINE__);
     
     if (empty($pageSize)) {
         $pageSize = null;
@@ -358,9 +360,16 @@ function api_getFilmsByList($username)
     if ($shorts === "0") {
         $filterArr[Film::CONTENT_SHORTFILM] = false;
     }
+
+    // Filter by other lists. Return only films in this list that
+    // are also in at least one of the lists being used with the filter
+    $filterListsArr = null;
+    if (!empty($filterlists)) {
+        $filterListsArr = explode("%", $filterlists);
+    }
     
     $list = new Filmlist($username, $listname);
-    $list->initFromDb($filterArr);
+    $list->initFromDb($filterArr, $filterListsArr);
     $films = $list->getFilms($pageSize, $beginPage);
     $totalCount = $list->count();
     

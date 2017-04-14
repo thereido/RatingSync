@@ -144,6 +144,14 @@ function createFilmlist() {
             params = params + "&a=1";
         }
     }
+    
+    var parentListEl = document.getElementById("filmlist-parent");
+    if (parentListEl != null) {
+        var parentList = parentListEl.value;
+        if (parentList != null && parentList != "---") {
+            params = params + "&parent=" + parentList;
+        }
+    }
 
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {

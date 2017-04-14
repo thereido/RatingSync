@@ -4,6 +4,7 @@ namespace RatingSync;
 require_once "php/src/SessionUtility.php";
 
 require_once "php/main.php";
+require_once "php/pageHeader.php";
 require_once "php/src/Constants.php";
 
 $pageHeader = getPageHeader();

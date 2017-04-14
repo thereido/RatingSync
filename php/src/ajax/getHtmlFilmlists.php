@@ -4,26 +4,18 @@ namespace RatingSync;
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Constants.php";
 
-function getHtmlFilmlistsHeader($currentListname = "") {
+function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListname = "", $offerFilter = true) {
     $username = getUsername();
-    $buttonsHtml = "";
-
-    // First list is always Your Ratings
-    $disabled = "disabled";
-    if ("Your Ratings" != $currentListname) {
-        $disabled = "";
+    if ($displayListname == "") {
+        $displayListname = $currentListname;
     }
-    $buttonsHtml .= "    <a href='/php/ratings.php' role='button' class='btn btn-primary' $disabled>Your Ratings</a>\n";
 
-    // Add all other lists
-    foreach (Filmlist::getUserListsFromDb($username) as $list) {
-        $listname = $list->getListname();
-        $safeListname = htmlentities($listname, ENT_COMPAT, "utf-8");
-        $disabled = "disabled";
-        if ($listname != $currentListname) {
-            $disabled = "";
-        }
-        $buttonsHtml .= "    <a href='/php/userlist.php?l=$safeListname' role='button' class='btn btn-primary' $disabled>$listname</a>\n";
+    // Parent lists
+    $parentListsHtml = "";
+    $ancestorListnames = Filmlist::getAncestorListnames($currentListname);
+    for ($ancestorIndex = count($ancestorListnames)-1; $ancestorIndex >= 0; $ancestorIndex--) {
+        $ancestorListname = $ancestorListnames[$ancestorIndex];
+        $parentListsHtml .= '<a href="/php/userlist.php?l='.$ancestorListname.'">'.$ancestorListname.'</a>&nbsp;->&nbsp;'."\n";
     }
 
     // Content type filter
@@ -42,24 +34,78 @@ function getHtmlFilmlistsHeader($currentListname = "") {
     $contentTypeHtml .= "        <label><input id='shortfilms' type='checkbox' value='Film::CONTENT_SHORTFILM' checked>Short Films</label>\n";
     $contentTypeHtml .= "      </div>\n";
     $contentTypeHtml .= "    </div>\n";
-    if (empty($currentListname)) {
+    if (!$offerFilter) {
         $contentTypeHtml = "";
+    }
+
+    $listFilterHtml = "";
+    if ($currentListname == "Watchlist" && count($listnames) > 1) {
+        $listFilterHtml .= '<div class="rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
+        $listFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Filter</button>'."\n";
+        $listFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="filmlist-filter">'."\n";
+        $listFilterHtml .= '    <a href="javascript:void(0)" onClick="clearFilmlistFilter();">Clear filter</a>';
+        $listFilterHtml .=      getHtmlFilmlistNamesForFilter($listnames);
+        $listFilterHtml .= '  </div>'."\n";
+        $listFilterHtml .= '</div>'."\n";
     }
     
     $html = "\n";
     $html .= "<div class='well well-sm'>\n";
-    $html .= "  <h2>$currentListname</h2>\n";
-    $html .= "  <div class='btn-toolbar' role='toolbar'>\n";
-    $html .= "    <div class='btn-group btn-group-md' role='group'>\n";
-    $html .= "      $buttonsHtml";
-    $html .= "    </div>\n";
-    $html .= "    <div class='btn-group btn-group-md' role='group'>\n";
-    $html .= "      <a href='/php/userlist.php?nl=1' role='button' class='btn btn-primary'>New List</a>\n";
-    $html .= "    </div>\n";
-    $html .= "  </div>\n";
+    $html .=    $parentListsHtml;
+    $html .= "  <h2>$displayListname</h2>\n";
     $html .=    $contentTypeHtml;
+    $html .=    $listFilterHtml;
     $html .= "</div>\n";
+
+    return $html;
+}
+
+function getHtmlFilmlistSelectOptions($listnames, $indent = 0) {
+    $username = getUsername();
+    $response = "";
     
+    foreach ($listnames as $list) {
+        $indentSpacing = "";
+        $count = $indent;
+        while ($count > 0) {
+            $indentSpacing .= "&nbsp;&nbsp;";
+            $count = $count - 1;
+        }
+
+        $listname = $list["listname"];
+        $response .= "<option value='$listname'>" . $indentSpacing . $listname . "</option>";
+        $response .= getHtmlFilmlistSelectOptions($list["children"], $indent+1);
+    }
+
+    return $response;
+}
+
+function getHtmlFilmlistNamesForFilter($listnames, $level = 0) {
+    $html = "";
+    $filterLists = explode("%", array_value_by_key("filterlists", $_GET));
+
+    $prefix = "";
+    for ($levelIndex = $level; $levelIndex > 0; $levelIndex--) {
+        $prefix .= "&nbsp;&nbsp;&nbsp;&nbsp;";
+    }
+
+    foreach ($listnames as $list) {
+        $listname = $list["listname"];
+        if ($listname != "Watchlist") {
+            $checked = "";
+            $class = "glyphicon glyphicon-check checkmark-off";
+            if (in_array($listname, $filterLists)) {
+                $checked = "checked";
+                $class = "glyphicon glyphicon-check checkmark-on";
+            }
+            $onClick = "toggleFilmlistFilter('filmlist-filter-$listname', 'filmlist-filter-checkbox-$listname');";
+
+            $html .= '    <input hidden type="checkbox" id="filmlist-filter-checkbox-'.$listname.'" data-listname="'.$listname.'" '.$checked.'>'."\n";
+            $html .= '    <a href="javascript:void(0)" onClick="'.$onClick.'" id="filmlist-filter-'.$listname.'">'.$prefix.'<span class="'.$class.'" id="filmlist-filter-checkmark-'.$listname.'"></span> '.$listname.'</a>'."\n";
+            $html .= getHtmlFilmlistNamesForFilter($list["children"], $level+1);
+        }
+    }
+
     return $html;
 }
 
