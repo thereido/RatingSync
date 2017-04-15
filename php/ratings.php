@@ -10,9 +10,7 @@ require_once "src/Filmlist.php";
 require_once "src/ajax/getHtmlFilmlists.php";
 
 $username = getUsername();
-$listnames = Filmlist::getUserListnamesFromDbByParent($username);
-$pageHeader = getPageHeader(true, $listnames);
-$pageFooter = getPageFooter();
+$listnames = null;
 $filmlistHeader = "";
 $pageNum = array_value_by_key("p", $_GET);
 if (empty($pageNum)) {
@@ -20,9 +18,12 @@ if (empty($pageNum)) {
 }
 
 if (!empty($username)) {
+    $listnames = Filmlist::getUserListnamesFromDbByParent($username);
     $filmlistHeader = getHtmlFilmlistsHeader($listnames, null, "Your Ratings");
 }
 
+$pageHeader = getPageHeader(true, $listnames);
+$pageFooter = getPageFooter();
 ?>
 <!DOCTYPE html>
 <html lang="en">

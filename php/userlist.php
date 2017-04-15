@@ -14,9 +14,7 @@ $listname = array_value_by_key("l", $_GET);
 $filmId = array_value_by_key("id", $_GET);
 $newList = array_value_by_key("nl", $_GET);
 $pageNum = array_value_by_key("p", $_GET);
-$listnames = Filmlist::getUserListnamesFromDbByParent($username);
-$pageHeader = getPageHeader(true, $listnames);
-$pageFooter = getPageFooter();
+$listnames = null;
 $filmlistHeader = "";
 $filmlistSelectOptions = "<option>---</option>";
 $displayNewListInput = "hidden";
@@ -28,6 +26,7 @@ if (empty($pageNum)) {
 $films = array();
 $offerToAddFilmThisList = false;
 if (!empty($username)) {
+    $listnames = Filmlist::getUserListnamesFromDbByParent($username);
     if (empty($listname) && !empty($filmId)) {
         $offerToAddFilmThisList = true;
         $film = Film::getFilmFromDb($filmId, $username);
@@ -49,6 +48,9 @@ if (!empty($username)) {
 
     $filmlistHeader = getHtmlFilmlistsHeader($listnames, $listname, $filmlistHeaderName, $offerListFilter);
 }
+
+$pageHeader = getPageHeader(true, $listnames);
+$pageFooter = getPageFooter();
 ?>
 
 <!DOCTYPE html>
