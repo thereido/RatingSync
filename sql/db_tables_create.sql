@@ -193,7 +193,7 @@ CREATE TABLE IF NOT EXISTS user_filmlist
         PRIMARY KEY (user_name, listname),
         KEY (user_name),
         KEY (listname),
-        KEY (user_name, listname, parent_listname)
+        KEY (user_name, listname, parent_listname),
 
         FOREIGN KEY (user_name)
             REFERENCES user(username)
