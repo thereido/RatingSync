@@ -7,12 +7,12 @@ require_once "src/SessionUtility.php";
 require_once "src/Film.php";
 require_once "src/Filmlist.php";
 
-require_once "src/ajax/getHtmlFilmlists.php";
-
 $username = getUsername();
-$searchQuery = "";
-if (array_key_exists("header-search-text", $_POST)) {
-    $searchQuery = $_POST['header-search-text'];
+$imdbUniqueName = array_value_by_key("imdb", $_GET);
+if (array_key_exists("imdb", $_GET)) {
+    $imdbUniqueName = $_GET['imdb'];
+} elseif (array_key_exists("selected-suggestion-uniquename", $_POST)) {
+    $imdbUniqueName = $_POST['selected-suggestion-uniquename'];
 }
 $pageHeader = getPageHeader();
 $pageFooter = getPageFooter();
@@ -29,35 +29,30 @@ $pageFooter = getPageFooter();
     <?php echo includeJavascriptFiles(); ?>
     <script src="../js/ratings.js"></script>
     <script src="../js/film.js"></script>
+    <script src="../js/detailPage.js"></script>
 </head>
 
 <body>
 
 <div class="container">
     <?php echo $pageHeader; ?>
-
-    <div class='well well-sm'>
-        <h2>Search</h2>
-    </div>
     
     <div id="debug"></div>
-
-    <table class="table table-striped">
-        <tbody id="search-result-tbody">
-        </tbody>
-    </table>
+    
+    <detail-film id="detail-film">
+        <poster><img width="150px"></poster>
+        <div id="detail"></div>
+    </detail-film>
     
   <?php echo $pageFooter; ?>
 </div>
 
 <script>
-    var contextData = JSON.parse('{"films":[]}');
+    var contextData = JSON.parse('{}');
     var RS_URL_BASE = "<?php echo Constants::RS_HOST; ?>";
     var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
     var username = "<?php getUsername(); ?>";
-    var oldSearchQuery = "";
-    showHeaderSearchInput("<?php echo $searchQuery; ?>");
-    fullSearch("<?php echo $searchQuery; ?>");
+    getFilmForDetailPage("<?php echo $imdbUniqueName; ?>");
 </script>
 
 </body>

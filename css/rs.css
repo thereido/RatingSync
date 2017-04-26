@@ -218,6 +218,31 @@ detail {
     display: block;
 }
 
+#header-search-suggestion {
+    position: absolute;
+    padding: 1px 5px 1px 5px;
+    border: 1px;
+    border-style: solid;
+    border-top: none;
+    border-radius: 0 4px 10px 10px;
+    z-index: 10;
+    background-color: white;
+}
+
+#header-search-suggestion div.suggestion-selected {
+	background-color: #f1f1f1;
+}
+
+#header-search-suggestion img {
+	width: 40px;
+}
+
+.search-suggestion-item {
+    padding-top: 1px;
+    padding-bottom: 1px;
+    border-bottom: 1px solid #ccc;
+}
+
 @media (min-width:768px) {
     .rating-detail {
         width: 70%;

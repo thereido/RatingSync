@@ -34,7 +34,7 @@ elseif ($action == "getStream") {
     $response = api_getStream($username);
 }
 elseif ($action == "getFilm") {
-    $response = api_getFilm($username);
+    $response = api_getFilm($username, $_GET);
 }
 elseif ($action == "getUser") {
     $response = api_getUser($username);
@@ -246,20 +246,34 @@ function api_getStream($username)
     return $response;
 }
 
-function api_getFilm($username)
+function api_getFilm($username, $get)
 {
-    $filmId = array_value_by_key("id", $_GET);
-    $imdbUniqueName = array_value_by_key("imdb", $_GET);
-    logDebug("Params id=$filmId, imdb=$imdbUniqueName", __FUNCTION__." ".__LINE__);
-
+    $filmId = array_value_by_key("id", $get);
+    $imdbUniqueName = array_value_by_key("imdb", $get);
+    $getFromRsDbOnly = array_value_by_key("rsonly", $get);
+    logDebug("Params id=$filmId, imdb=$imdbUniqueName, rsonly=$getFromRsDbOnly", __FUNCTION__." ".__LINE__);
+    
+    if ($getFromRsDbOnly === "0") {
+        $getFromRsDbOnly = false;
+    } else {
+        $getFromRsDbOnly = true;
+    }
+    
+    $response = '{"Success":"false"}';
     $film = null;
     if (!empty($filmId)) {
         $film = Film::getFilmFromDb($filmId, $username);
     } elseif (!empty($imdbUniqueName)) {
         $film = Film::getFilmFromDbByImdb($imdbUniqueName, $username);
+        if (empty($film) && !$getFromRsDbOnly) {
+            $searchTerms = array();
+            $searchTerms["uniqueName"] = $imdbUniqueName;
+            $searchTerms["sourceName"] = "IMDb";
+            $searchResponseJson = search($searchTerms, $username);
+            $film = Film::getFilmFromDbByImdb($imdbUniqueName, $username);
+        }
     }
-
-    $response = '{"Success":"false"}';
+    
     if (!empty($film)) {
         $response = $film->json_encode();
     }

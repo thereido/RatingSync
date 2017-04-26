@@ -34,12 +34,7 @@ $pageFooter = getPageFooter();
     <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
     <link href="../css/rs.css" rel="stylesheet">
     <?php if (empty($username)) { echo '<script type="text/javascript">window.location.href = "/php/Login"</script>'; } ?>
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="../js/bootstrap_rs.min.js"></script>
-    <script src="../Chrome/constants.js"></script>
-    <script src="../Chrome/rsCommon.js"></script>
+    <?php echo includeJavascriptFiles(); ?>
     <script src="../js/ratings.js"></script>
     <script src="../js/filmlistHeader.js"></script>
     <script src="../js/film.js"></script>

@@ -4,10 +4,32 @@ namespace RatingSync;
 require_once "main.php";
 require_once "src/Constants.php";
 
+/**
+ * All pages should call this function in the HTML head. Javascript files
+ * needed by all pages are inlcuded.
+ *
+ */
+function includeJavascriptFiles() {
+    $html = '';
+    $html .= '<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>' . "\n";
+    $html .= '<script src="../js/bootstrap_rs.min.js"></script>' . "\n";
+    $html .= '<script src="../Chrome/constants.js"></script>' . "\n";
+    $html .= '<script src="../Chrome/rsCommon.js"></script>' . "\n";
+    $html .= '<script src="../js/pageHeader.js"></script>' . "\n";
+    $html .= '<script src="../js/search.js"></script>' . "\n";
+
+    return $html;
+}
+
 function getPageHeader($forListnameParam = false, $listnames = null) {
     $username = getUsername();
     if (!$forListnameParam && !empty($username)) {
         $listnames = Filmlist::getUserListnamesFromDbByParent($username);
+    }
+
+    $headerSearchText = "";
+    if (array_key_exists("header-search-text", $_POST)) {
+        $headerSearchText = $_POST['header-search-text'];
     }
 
     $signupLink  = '<li><a href="/php/Login"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>'."\n";
@@ -31,8 +53,11 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '    <div class="collapse navbar-collapse" id="myNavbar">'."\n";
     // Left side buttons/links
     $html .= '      <ul class="nav navbar-nav">'."\n";
+                      // Your Ratings
     $html .= '        <li><a href="/php/ratings.php">Your Ratings</a></li>'."\n";
+                      // Watchlist
     $html .= '        <li id="nav-watchlist"><a href="/php/userlist.php?l=Watchlist">Watchlist</a></li>'."\n";
+                      // Lists
     $html .= '        <li class="dropdown">'."\n";
     $html .= '          <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0);">Lists <span class="caret"></span></a>'."\n";
     $html .= '          <ul class="dropdown-menu">'."\n";
@@ -41,18 +66,22 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '            <li><a href="/php/userlist.php?nl=1">Create a list</a></li>'."\n";
     $html .= '          </ul>'."\n";
     $html .= '        </li>'."\n";
+                      // Search
+    $html .= '        <li>'."\n";
+    $html .= '          <form class="navbar-form" id="header-search-form" action="/php/search.php" onSubmit="onSubmitHeaderSearch();" method="post">'."\n";
+    $html .= '            <div class="form-group">'."\n";
+    $html .= '              <input id="header-search-text" name="header-search-text" type="text" class="form-control" placeholder="Search" onkeyup="onKeyUpHeaderSearch(event);">'."\n";
+    $html .= '              <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>'."\n";
+    $html .= '            </div>'."\n";
+    $html .= '            <header-search-suggestion id="header-search-suggestion" hidden></header-search-suggestion>'."\n";
+    $html .= '            <input id="selected-suggestion-uniquename" name="selected-suggestion-uniquename" hidden>'."\n";
+    $html .= '          </form>'."\n";
+    $html .= '        </li>'."\n";
     $html .= '      </ul>'."\n";
     // Right side buttons/links
     $html .= '      <ul class="nav navbar-nav navbar-right">'."\n";
     $html .=          $rightSide;
     $html .= '      </ul>'."\n";
-    // Search
-    $html .= '      <form class="navbar-form navbar-right">'."\n";
-    $html .= '        <div class="form-group">'."\n";
-    $html .= '          <input type="text" class="form-control" placeholder="Search">'."\n";
-    $html .= '        </div>'."\n";
-    $html .= '        <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>'."\n";
-    $html .= '      </form>'."\n";
     $html .= '    </div>'."\n";
     $html .= '  </div>'."\n";
     $html .= '</nav>'."\n";

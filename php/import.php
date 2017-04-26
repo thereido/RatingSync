@@ -44,7 +44,7 @@ if (!empty($username)) {
     <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
     <link href="../css/jumbotron-narrow.css" rel="stylesheet">
     <?php if (empty($username)) { echo '<script type="text/javascript">window.location.href = "/php/Login"</script>'; } ?>
-    <script src="../js/bootstrap.min.js"></script>
+    <?php echo includeJavascriptFiles(); ?>
 </head>
 
 <body>  
