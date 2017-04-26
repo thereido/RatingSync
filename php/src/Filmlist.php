@@ -347,6 +347,7 @@ class Filmlist
         while ($row = $result->fetch_assoc()) {
             $listname = $row['listname'];
             $list = new Filmlist($username, $listname);
+            $list->initFromDb();
             $lists[$listname] = $list;
         }
 
@@ -365,6 +366,7 @@ class Filmlist
                 $arrList = array();
                 $arrList['listname'] = $list->getListname();
                 $arrList['username'] = $list->getUsername();
+                $arrList['parentListname'] = $list->getParentListname();
                 $arrItems = array();
                 foreach ($list->getItems() as $item) {
                     $arrItems[] = $item;
