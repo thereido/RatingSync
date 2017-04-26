@@ -11,5 +11,5 @@
 /php/output/logDebug.txt
 /web.config
 /php/tests/script/*
-/image/*.*
+/image/rs*.jpg
 /HTMLPage.html
