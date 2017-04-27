@@ -44,7 +44,7 @@ function getFilterParams() {
 
     // Filmlist Filter
     params = params + getFilmlistFilterParams();
-
+    
     return params;
 }
 
@@ -62,7 +62,7 @@ function getFilmlistFilterParams() {
             if (listFilterParams == "") {
                 listFilterParams = "&filterlists=";
             } else {
-                listFilterParams = listFilterParams + "%";
+                listFilterParams = listFilterParams + "%l";
             }
             var listname = checkboxes[i].getAttribute("data-listname");
             listFilterParams = listFilterParams + listname;
@@ -108,6 +108,12 @@ function setFilmlistFilter() {
     var newFilmlistFilterParams = getFilmlistFilterParams();
     if (prevFilmlistFilterParams != newFilmlistFilterParams) {
         prevFilmlistFilterParams = newFilmlistFilterParams;
-        getFilmsForFilmlist(defaultPageSize, 1);
+
+        var url = window.location.href;
+        if (-1 < url.indexOf("ratings.php")) {
+            getRsRatings(defaultPageSize, 1);
+        } else {
+            getFilmsForFilmlist(defaultPageSize, 1);
+        }
     }
 }

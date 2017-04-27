@@ -39,12 +39,12 @@ function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListn
     }
 
     $listFilterHtml = "";
-    if ($currentListname == "Watchlist" && count($listnames) > 1) {
+    if ($currentListname != "Create New List" && count($listnames) > 1) {
         $listFilterHtml .= '<div class="rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
         $listFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Filter</button>'."\n";
         $listFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="filmlist-filter">'."\n";
         $listFilterHtml .= '    <a href="javascript:void(0)" onClick="clearFilmlistFilter();">Clear filter</a>';
-        $listFilterHtml .=      getHtmlFilmlistNamesForFilter($listnames);
+        $listFilterHtml .=      getHtmlFilmlistNamesForFilter($listnames, $currentListname);
         $listFilterHtml .= '  </div>'."\n";
         $listFilterHtml .= '</div>'."\n";
     }
@@ -80,7 +80,7 @@ function getHtmlFilmlistSelectOptions($listnames, $indent = 0) {
     return $response;
 }
 
-function getHtmlFilmlistNamesForFilter($listnames, $level = 0) {
+function getHtmlFilmlistNamesForFilter($listnames, $currentListname, $level = 0) {
     $html = "";
     $filterLists = explode("%", array_value_by_key("filterlists", $_GET));
 
@@ -98,11 +98,17 @@ function getHtmlFilmlistNamesForFilter($listnames, $level = 0) {
                 $checked = "checked";
                 $class = "glyphicon glyphicon-check checkmark-on";
             }
-            $onClick = "toggleFilmlistFilter('filmlist-filter-$listname', 'filmlist-filter-checkbox-$listname');";
+            $checkmark = '<span class="'.$class.'" id="filmlist-filter-checkmark-'.$listname.'"></span> ';
+            $onClick = "onClick=\"toggleFilmlistFilter('filmlist-filter-$listname', 'filmlist-filter-checkbox-$listname');\"";
+
+            if ($currentListname == "$listname") {
+                $checkmark = "&nbsp;&nbsp;&nbsp;&nbsp;";
+                $onClick = "";
+            }
 
             $html .= '    <input hidden type="checkbox" id="filmlist-filter-checkbox-'.$listname.'" data-listname="'.$listname.'" '.$checked.'>'."\n";
-            $html .= '    <a href="javascript:void(0)" onClick="'.$onClick.'" id="filmlist-filter-'.$listname.'">'.$prefix.'<span class="'.$class.'" id="filmlist-filter-checkmark-'.$listname.'"></span> '.$listname.'</a>'."\n";
-            $html .= getHtmlFilmlistNamesForFilter($list["children"], $level+1);
+            $html .= '    <a href="javascript:void(0)" '.$onClick.' id="filmlist-filter-'.$listname.'">'.$prefix.$checkmark.$listname.'</a>'."\n";
+            $html .= getHtmlFilmlistNamesForFilter($list["children"], $currentListname, $level+1);
         }
     }
 

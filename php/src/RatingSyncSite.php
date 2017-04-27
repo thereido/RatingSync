@@ -16,7 +16,20 @@ class RatingSyncSite extends \RatingSync\SiteRatings
 {
     const RATINGSYNC_DATE_FORMAT = "n/j/y";
 
-    protected $filter = array();
+    /** Content Type filter
+     * Keys are the content type. Values are boolean.
+     * Filter out films by contentType if the key appears and the value is false.
+     * If the film's contentType is not in the filter or the value is anything
+     * other then false the film is not affected by the filter.
+     */
+    protected $contentTypeFilter = array();
+
+    /** List filter
+     *  No keys. Values are the listnames from the db table user_filmlist.
+     *  Filter out films that are not in any lists in the filter. The filter does
+     *  not affect results if the filter is empty.
+     */
+    protected $listFilter = array();
 
     public function __construct($username)
     {
@@ -26,6 +39,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $this->dateFormat = self::RATINGSYNC_DATE_FORMAT;
         $this->maxCriticScore = 100;
         $this->clearContentTypeFilter();
+        $this->clearListFilter();
     }
     
     /**
@@ -110,30 +124,16 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $refreshCache = Constants::USE_CACHE_NEVER;
         $films = array();
 
+        $orderBy = "ORDER BY yourRatingDate DESC";
+
         $limit = "";
         if (!empty($limitPages)) {
             $beginRecord = ($limitPages * $beginPage) - $limitPages;
             $limit = "LIMIT $beginRecord, $limitPages";
         }
-
-        $query  = "SELECT film_id FROM rating";
-        $query .= " WHERE user_name='" .$this->username. "'";
-        $query .= "   AND source_name='" .$this->sourceName. "'";
-        $query .= " ORDER BY yourRatingDate DESC";
-        $query .= " " . $limit;
-
-        $filteredOut = $this->getFilterCommaDelimited();
-        if (!empty($filteredOut)) {
-            $query  = "SELECT film_id FROM rating, film";
-            $query .= " WHERE user_name='" .$this->username. "'";
-            $query .= "   AND source_name='" .$this->sourceName. "'";
-            $query .= "   AND id=film_id";
-            $query .= "   AND contentType NOT IN (" . $filteredOut . ")";
-            $query .= " ORDER BY yourRatingDate DESC";
-            $query .= " " . $limit;
-        }
-
+        
         $db = getDatabase();
+        $query = $this->getRatingsQuery("rating.film_id", $orderBy, $limit);
         $result = $db->query($query);
         // Iterate over films rated
         while ($row = $result->fetch_assoc()) {
@@ -146,24 +146,43 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     }
 
     public function countRatings() {
-        $query  = "SELECT count(1) as count FROM rating";
-        $query .= " WHERE user_name='" .$this->username. "'";
-        $query .= "   AND source_name='" .$this->sourceName. "'";
-        
-        $filteredOut = $this->getFilterCommaDelimited();
-        if (!empty($filteredOut)) {
-            $query  = "SELECT count(1) as count FROM rating, film";
-            $query .= " WHERE user_name='" .$this->username. "'";
-            $query .= "   AND source_name='" .$this->sourceName. "'";
-            $query .= "   AND id=film_id";
-            $query .= "   AND contentType NOT IN (" . $filteredOut . ")";
-        }
-
         $db = getDatabase();
+        $query = $this->getRatingsQuery("count(1) as count");
         $result = $db->query($query);
         $row = $result->fetch_assoc();
         
         return $row["count"];
+    }
+
+    protected function getRatingsQuery($selectCols, $orderBy = "", $limit = "") {
+        $queryTables = "rating";
+
+        $contentTypeFilterWhere = "";
+        $contentTypeFilteredOut = $this->getContentTypeFilterCommaDelimited();
+        if (!empty($contentTypeFilteredOut)) {
+            $queryTables .= ", film";
+            $contentTypeFilterWhere .= " AND rating.film_id=film.id ";
+            $contentTypeFilterWhere .= " AND contentType NOT IN (" . $contentTypeFilteredOut . ") ";
+        }
+
+        $listFilterWhere = "";
+        $listsFilteredIn = $this->getListFilterCommaDelimited();
+        if (!empty($listsFilteredIn)) {
+            $queryTables .= ", filmlist";
+            $listFilterWhere .= " AND rating.user_name=filmlist.user_name ";
+            $listFilterWhere .= " AND rating.film_id=filmlist.film_id ";
+            $listFilterWhere .= " AND listname IN (" . $listsFilteredIn . ") ";
+        }
+
+        $query  = "SELECT $selectCols FROM $queryTables";
+        $query .= " WHERE rating.user_name='" .$this->username. "'";
+        $query .= "   AND source_name='" .$this->sourceName. "'";
+        $query .=     $contentTypeFilterWhere;
+        $query .=     $listFilterWhere;
+        $query .= " $orderBy";
+        $query .= " $limit";
+
+        return $query;
     }
 
     /**
@@ -234,23 +253,36 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     }
 
     /**
-     * @param array|null True/false for each contentType
+     * @param array|null Keys are contentTypes. Values are true/false.
      */
     public function setContentTypeFilter($newFilter = array()) {
         if (is_array($newFilter)) {
-            $this->filter = $newFilter;
+            $this->contentTypeFilter = $newFilter;
         }
     }
     
     public function clearContentTypeFilter() {
-        $this->filter = array();
+        $this->contentTypeFilter = array();
     }
 
-    public function getFilterCommaDelimited() {
+    /**
+     * @param array values listnames
+     */
+    public function setListFilter($newFilter = array()) {
+        if (is_array($newFilter)) {
+            $this->listFilter = $newFilter;
+        }
+    }
+    
+    public function clearListFilter() {
+        $this->listFilter = array();
+    }
+
+    public function getContentTypeFilterCommaDelimited() {
         $filteredOut = "";
         $comma = "";\
-        reset($this->filter);
-        while (list($key, $val) = each($this->filter)) {
+        reset($this->contentTypeFilter);
+        while (list($key, $val) = each($this->contentTypeFilter)) {
             if (Film::validContentType($key) && $val === false) {
                 $filteredOut .= $comma . "'$key'";
                 $comma = ", ";
@@ -258,5 +290,16 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
         
         return $filteredOut;
+    }
+
+    public function getListFilterCommaDelimited() {
+        $commaDelimitedLists = "";
+        $comma = "";
+        foreach ($this->listFilter as $listname) {
+            $commaDelimitedLists .= $comma . "'$listname'";
+            $comma = ", ";
+        }
+        
+        return $commaDelimitedLists;
     }
 }

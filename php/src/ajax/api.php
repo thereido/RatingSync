@@ -299,7 +299,8 @@ function api_getRatings($username)
     $tvseries = array_value_by_key("tvseries", $_GET);
     $tvepisodes = array_value_by_key("tvepisodes", $_GET);
     $shorts = array_value_by_key("shorts", $_GET);
-    logDebug("Params ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts", __FUNCTION__." ".__LINE__);
+    $filterlists = array_value_by_key("filterlists", $_GET);
+    logDebug("Params ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists", __FUNCTION__." ".__LINE__);
     
     if (empty($pageSize)) {
         $pageSize = null;
@@ -322,8 +323,16 @@ function api_getRatings($username)
         $filterArr[Film::CONTENT_SHORTFILM] = false;
     }
 
+    // Filter by other lists. Return only films in this list that
+    // are also in at least one of the lists being used with the filter
+    $filterListsArr = null;
+    if (!empty($filterlists)) {
+        $filterListsArr = explode("%l", $filterlists);
+    }
+
     $site = new \RatingSync\RatingSyncSite($username);
     $site->setContentTypeFilter($filterArr);
+    $site->setListFilter($filterListsArr);
     $films = $site->getRatings($pageSize, $beginPage);
     $totalRatings = $site->countRatings();
     
@@ -379,7 +388,7 @@ function api_getFilmsByList($username)
     // are also in at least one of the lists being used with the filter
     $filterListsArr = null;
     if (!empty($filterlists)) {
-        $filterListsArr = explode("%", $filterlists);
+        $filterListsArr = explode("%l", $filterlists);
     }
     
     $list = new Filmlist($username, $listname);
