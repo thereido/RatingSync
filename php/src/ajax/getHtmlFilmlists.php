@@ -15,7 +15,7 @@ function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListn
     $ancestorListnames = Filmlist::getAncestorListnames($currentListname);
     for ($ancestorIndex = count($ancestorListnames)-1; $ancestorIndex >= 0; $ancestorIndex--) {
         $ancestorListname = $ancestorListnames[$ancestorIndex];
-        $parentListsHtml .= '<a href="/php/userlist.php?l='.$ancestorListname.'">'.$ancestorListname.'</a>&nbsp;->&nbsp;'."\n";
+        $parentListsHtml .= '<a href="/php/userlist.php?l='.$ancestorListname.'">'.$ancestorListname.'</a>&nbsp;&rarr;&nbsp;'."\n";
     }
 
     // Content type filter
