@@ -1,14 +1,32 @@
 
 function checkFilterFromUrl() {
+    // Content Filter
     var url = window.location.href;
     if (-1 < url.indexOf("feature=0")) {
         document.getElementById("featurefilms").removeAttribute("checked");
-    } else if (-1 < url.indexOf("tvseries=0")) {
+    }
+    if (-1 < url.indexOf("tvseries=0")) {
         document.getElementById("tvseries").removeAttribute("checked");
-    } else if (-1 < url.indexOf("tvepisodes=0")) {
+    }
+    if (-1 < url.indexOf("tvepisodes=0")) {
         document.getElementById("tvepisodes").removeAttribute("checked");
-    } else if (-1 < url.indexOf("shorts=0")) {
+    }
+    if (-1 < url.indexOf("shorts=0")) {
         document.getElementById("shortfilms").removeAttribute("checked");
+    }
+    
+    // List Filter
+    var listFilterEl = document.getElementById("filmlist-filter");
+    var listCheckboxes = listFilterEl.getElementsByTagName("input");
+    var listCheckmarks = listFilterEl.getElementsByClassName("glyphicon-check");
+
+    var i;
+    for (i=0; i < listCheckboxes.length; i++) {
+        var listname = encodeURIComponent(listCheckboxes[i].getAttribute("data-listname"));
+        if (-1 < url.indexOf("filterlists="+listname) || -1 < url.indexOf("%l"+listname)) {
+            listCheckboxes[i].checked = true;
+            listCheckmarks[i].className = "glyphicon glyphicon-check checkmark-on";
+        }
     }
 }
 

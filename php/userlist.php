@@ -130,11 +130,11 @@ $pageFooter = getPageFooter();
     var listname = "<?php echo $listname; ?>";
     var currentPageNum = <?php echo $pageNum; ?>;
     var defaultPageSize = 100;
-    var prevFilmlistFilterParams = getFilmlistFilterParams();
     if (listname) {
         checkFilterFromUrl();
         getFilmsForFilmlist(defaultPageSize, currentPageNum);
     }
+    var prevFilmlistFilterParams = getFilmlistFilterParams();
 </script>
           
 </body>

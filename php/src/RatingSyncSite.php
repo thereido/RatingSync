@@ -133,7 +133,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
         
         $db = getDatabase();
-        $query = $this->getRatingsQuery("rating.film_id", $orderBy, $limit);
+        $query = $this->getRatingsQuery("DISTINCT rating.film_id", $orderBy, $limit);
         $result = $db->query($query);
         // Iterate over films rated
         while ($row = $result->fetch_assoc()) {
@@ -147,7 +147,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
 
     public function countRatings() {
         $db = getDatabase();
-        $query = $this->getRatingsQuery("count(1) as count");
+        $query = $this->getRatingsQuery("count(DISTINCT rating.film_id) as count");
         $result = $db->query($query);
         $row = $result->fetch_assoc();
         
