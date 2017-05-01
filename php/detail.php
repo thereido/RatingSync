@@ -48,7 +48,7 @@ $pageFooter = getPageFooter();
 </div>
 
 <script>
-    var contextData = JSON.parse('{}');
+    var contextData = JSON.parse('{"films":[]}');
     var RS_URL_BASE = "<?php echo Constants::RS_HOST; ?>";
     var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
     var username = "<?php getUsername(); ?>";
