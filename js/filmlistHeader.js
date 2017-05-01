@@ -1,41 +1,26 @@
 
-function checkFilterFromUrl() {
-    // Content Filter
-    var url = window.location.href;
-    if (-1 < url.indexOf("feature=0")) {
-        document.getElementById("featurefilms").removeAttribute("checked");
-    }
-    if (-1 < url.indexOf("tvseries=0")) {
-        document.getElementById("tvseries").removeAttribute("checked");
-    }
-    if (-1 < url.indexOf("tvepisodes=0")) {
-        document.getElementById("tvepisodes").removeAttribute("checked");
-    }
-    if (-1 < url.indexOf("shorts=0")) {
-        document.getElementById("shortfilms").removeAttribute("checked");
-    }
-    
-    // List Filter
-    var listFilterEl = document.getElementById("filmlist-filter");
-    var listCheckboxes = listFilterEl.getElementsByTagName("input");
-    var listCheckmarks = listFilterEl.getElementsByClassName("glyphicon-check");
+function getFilterParams() {
+    var paramArr = getFilterParamArray();
 
-    var i;
-    for (i=0; i < listCheckboxes.length; i++) {
-        var listname = encodeURIComponent(listCheckboxes[i].getAttribute("data-listname"));
-        if (-1 < url.indexOf("filterlists="+listname) || -1 < url.indexOf("%l"+listname)) {
-            listCheckboxes[i].checked = true;
-            listCheckmarks[i].className = "glyphicon glyphicon-check checkmark-on";
-        }
-    }
+    // Content Filter
+    var params = "";
+    if (paramArr["feature"] == 0) { params = params + "&feature=0"; }
+    if (paramArr["tvseries"] == 0) { params = params + "&tvseries=0"; }
+    if (paramArr["tvepisodes"] == 0) { params = params + "&tvepisodes=0"; }
+    if (paramArr["shorts"] == 0) { params = params + "&shorts=0"; }
+
+    // Filmlist Filter
+    if (paramArr["filterlists"] != "") { params = params + "&filterlists=" + paramArr["filterlists"]; }
+    
+    return params;
 }
 
-function getFilterParams() {
+function getFilterParamArray() {
     // Content Filter
-    var movies = true;
-    var series = true;
-    var episodes = true;
-    var shorts = true;
+    var movies = 1;
+    var series = 1;
+    var episodes = 1;
+    var shorts = 1;
 
     var featureCheckbox = document.getElementById("featurefilms");
     if (featureCheckbox && !featureCheckbox.checked) {
@@ -54,14 +39,14 @@ function getFilterParams() {
         shorts = 0;
     }
 
-    var params = "";
-    if (!movies) { params = params + "&feature=" + movies; }
-    if (!series) { params = params + "&tvseries=" + series; }
-    if (!episodes) { params = params + "&tvepisodes=" + episodes; }
-    if (!shorts) { params = params + "&shorts=" + shorts; }
+    var params = [];
+    params["feature"] = movies;
+    params["tvseries"] = series;
+    params["tvepisodes"] = episodes;
+    params["shorts"] = shorts;
 
     // Filmlist Filter
-    params = params + getFilmlistFilterParams();
+    params["filterlists"] = getListFilterParam();
     
     return params;
 }
@@ -84,6 +69,27 @@ function getFilmlistFilterParams() {
             }
             var listname = checkboxes[i].getAttribute("data-listname");
             listFilterParams = listFilterParams + listname;
+        }
+    }
+
+    return listFilterParams;
+}
+
+function getListFilterParam() {
+    var listFilterParams = "";
+    var listFilterDelimiter = "";
+    var checkboxes = [];
+    var listFilterEl = document.getElementById("filmlist-filter");
+    if (listFilterEl) {
+        checkboxes = listFilterEl.getElementsByTagName("input");
+    }
+
+    var i;
+    for (i=0; i < checkboxes.length; i++) {
+        if (checkboxes[i].type == "checkbox" && checkboxes[i].checked) {
+            var listname = checkboxes[i].getAttribute("data-listname");
+            listFilterParams = listFilterParams + listFilterDelimiter + listname;
+            listFilterDelimiter = "%l";
         }
     }
 
@@ -134,4 +140,77 @@ function setFilmlistFilter() {
             getFilmsForFilmlist(defaultPageSize, 1);
         }
     }
+}
+
+function renderPagination() {
+    var pageNum = contextData.beginPage;
+    var pageSize = contextData.pageSize;
+    var totalCount = contextData.totalCount;
+    var previousPageNum = 0;
+    var nextPageNum = 0;
+    if (!pageNum || pageNum == "") {
+        pageNum = 1;
+    }
+    pageNum = pageNum * 1;
+
+    // Previous button
+    var previousEl = document.getElementById("previous");
+    if (pageNum > 1) {
+        previousPageNum = pageNum - 1;
+        previousEl.removeAttribute("class");
+        previousEl.setAttribute("onclick", "submitPageForm(" + previousPageNum + ");");
+    } else {
+        previousEl.setAttribute("class", "disabled");
+        previousEl.removeAttribute("onclick");
+    }
+
+    // Next button
+    var nextEl = document.getElementById("next");
+    if (totalCount > pageNum * pageSize) {
+        nextPageNum = pageNum + 1;
+        nextEl.removeAttribute("class");
+        nextEl.setAttribute("onclick", "submitPageForm(" + nextPageNum + ");");
+    } else {
+        nextEl.setAttribute("class", "disabled");
+        nextEl.removeAttribute("onclick");
+    }
+
+    // Page select
+    var pageSelectEl = document.getElementById("page-select");
+    pageSelectEl.innerHTML = "";
+    for (var pageOption = 0; totalCount > pageOption * pageSize; pageOption++) {
+        var optionEl = document.createElement("option");
+        optionEl.value = pageOption + 1;
+        optionEl.innerHTML = optionEl.value;
+        if (pageOption+1 == pageNum) {
+            optionEl.selected = true;
+        }
+        pageSelectEl.appendChild(optionEl);
+    }
+    
+    var paginationEl = document.getElementById("pagination");
+    if (previousPageNum != 0 || nextPageNum != 0) {
+        paginationEl.hidden = false;
+    } else {
+        paginationEl.hidden = true;
+    }
+}   
+
+function changePageNum() {
+    var pageSelectEl = document.getElementById("page-select");
+    submitPageForm(pageSelectEl.value);
+}
+
+function submitPageForm(pageNum) {
+    var formEl = document.forms["pageForm"];
+    var filterParamsArr = getFilterParamArray();
+
+    formEl["param-p"].value = pageNum;
+    formEl["param-feature"].value = filterParamsArr["feature"];
+    formEl["param-tvseries"].value = filterParamsArr["tvseries"];
+    formEl["param-tvepisodes"].value = filterParamsArr["tvepisodes"];
+    formEl["param-shorts"].value = filterParamsArr["shorts"];
+    formEl["param-filterlists"].value = filterParamsArr["filterlists"];
+
+    document.forms["pageForm"].submit();
 }

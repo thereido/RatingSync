@@ -78,44 +78,9 @@ function renderRatings() {
         }
     }
     document.getElementById("film-table").innerHTML = html;
-    
-    var pageNum = contextData.beginPage;
-    var pageSize = contextData.pageSize;
-    var totalRatings = contextData.totalRatings;
-    var previousPageNum = 0;
-    var nextPageNum = 0;
-    if (!pageNum || pageNum == "") {
-        pageNum = 1;
-    }
-    pageNum = pageNum * 1;
 
-    // Previous button
-    var previousEl = document.getElementById("previous");
-    if (pageNum > 1) {
-        previousPageNum = pageNum - 1;
-        previousEl.removeAttribute("class");
-        var previousAnchorEl = previousEl.getElementsByTagName("A")[0];
-        previousAnchorEl.setAttribute("href", "./ratings.php?p=" + previousPageNum + getFilterParams());
-    } else {
-        previousEl.setAttribute("class", "disabled");
-    }
-
-    // Next button
-    var nextEl = document.getElementById("next");
-    if (totalRatings > pageNum * pageSize) {
-        nextPageNum = pageNum + 1;
-        nextEl.removeAttribute("class");
-        var nextAnchorEl = nextEl.getElementsByTagName("A")[0];
-        nextAnchorEl.setAttribute("href", "./ratings.php?p=" + nextPageNum + getFilterParams());
-    } else {
-        nextEl.setAttribute("class", "disabled");
-    }
-
-    if (previousPageNum != 0 || nextPageNum != 0) {
-        var paginationEl = document.getElementById("pagination");
-        paginationEl.removeAttribute("hidden");
-    }
-}   
+    renderPagination();
+}
 
 function changeContentTypeFilter() {
     getRsRatings(defaultPageSize, currentPageNum);

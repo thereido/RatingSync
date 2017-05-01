@@ -337,7 +337,7 @@ function api_getRatings($username)
     $totalRatings = $site->countRatings();
     
     $response = '{';
-    $response .= '"totalRatings":"' .$totalRatings. '"';
+    $response .= '"totalCount":"' .$totalRatings. '"';
     $response .= ', "pageSize":"' .$pageSize. '"';
     $response .= ', "beginPage":"' .$beginPage. '"';
     $response .= ', "films":[';

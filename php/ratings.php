@@ -12,7 +12,8 @@ require_once "src/ajax/getHtmlFilmlists.php";
 $username = getUsername();
 $listnames = null;
 $filmlistHeader = "";
-$pageNum = array_value_by_key("p", $_GET);
+$filmlistPagination = "";
+$pageNum = array_value_by_key("p", $_POST);
 if (empty($pageNum)) {
     $pageNum = 1;
 }
@@ -20,6 +21,7 @@ if (empty($pageNum)) {
 if (!empty($username)) {
     $listnames = Filmlist::getUserListnamesFromDbByParent($username);
     $filmlistHeader = getHtmlFilmlistsHeader($listnames, null, "Your Ratings");
+    $filmlistPagination = getHmtlFilmlistPagination("./ratings.php");
 }
 
 $pageHeader = getPageHeader(true, $listnames);
@@ -49,11 +51,8 @@ $pageFooter = getPageFooter();
   <div id='rating-detail' class='rating-detail' onMouseEnter="hideable = false;" onMouseLeave="hideable = true;"></div>
 
     <div id="film-table"></div>
-
-  <ul id="pagination" class="pager" hidden>
-    <li id="previous"><a href="javascript:void(0);">Previous</a></li>
-    <li id="next"><a href="javascript:void(0);">Next</a></li>
-  </ul>
+    
+  <?php echo $filmlistPagination; ?>
     
   <?php echo $pageFooter; ?>
 </div>
@@ -62,7 +61,6 @@ $pageFooter = getPageFooter();
 var contextData;
 var currentPageNum = <?php echo $pageNum; ?>;;
 var defaultPageSize = 100;
-checkFilterFromUrl();
 var prevFilmlistFilterParams = getFilmlistFilterParams();
 getRsRatings(defaultPageSize, <?php echo $pageNum; ?>);
 </script>

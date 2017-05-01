@@ -11,11 +11,15 @@ require_once "src/ajax/getHtmlFilmlists.php";
 
 $username = getUsername();
 $listname = array_value_by_key("l", $_GET);
+if (empty($listname)) {
+    $listname = array_value_by_key("l", $_POST);
+}
 $filmId = array_value_by_key("id", $_GET);
 $newList = array_value_by_key("nl", $_GET);
-$pageNum = array_value_by_key("p", $_GET);
+$pageNum = array_value_by_key("p", $_POST);
 $listnames = null;
 $filmlistHeader = "";
+$filmlistPagination = "";
 $filmlistSelectOptions = "<option>---</option>";
 $displayNewListInput = "hidden";
 
@@ -47,6 +51,7 @@ if (!empty($username)) {
     }
 
     $filmlistHeader = getHtmlFilmlistsHeader($listnames, $listname, $filmlistHeaderName, $offerListFilter);
+    $filmlistPagination = getHmtlFilmlistPagination("./userlist.php?l=" . $listname);
 }
 
 $pageHeader = getPageHeader(true, $listnames);
@@ -117,10 +122,7 @@ $pageFooter = getPageFooter();
 
     <div id="film-table"></div>
 
-  <ul id="pagination" class="pager" hidden>
-    <li id="previous"><a>Previous</a></li>
-    <li id="next"><a>Next</a></li>
-  </ul>
+  <?php echo $filmlistPagination; ?>
 
   <?php echo $pageFooter; ?>
 </div>
@@ -131,7 +133,6 @@ $pageFooter = getPageFooter();
     var currentPageNum = <?php echo $pageNum; ?>;
     var defaultPageSize = 100;
     if (listname) {
-        checkFilterFromUrl();
         getFilmsForFilmlist(defaultPageSize, currentPageNum);
     }
     var prevFilmlistFilterParams = getFilmlistFilterParams();
