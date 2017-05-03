@@ -19,7 +19,7 @@ if (empty($pageNum)) {
 }
 
 if (!empty($username)) {
-    $listnames = Filmlist::getUserListnamesFromDbByParent($username);
+    $listnames = Filmlist::getUserListsFromDbByParent($username, false);
     $filmlistHeader = getHtmlFilmlistsHeader($listnames, null, "Your Ratings");
     $filmlistPagination = getHmtlFilmlistPagination("./ratings.php");
 }

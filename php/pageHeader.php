@@ -24,7 +24,7 @@ function includeJavascriptFiles() {
 function getPageHeader($forListnameParam = false, $listnames = null) {
     $username = getUsername();
     if (!$forListnameParam && !empty($username)) {
-        $listnames = Filmlist::getUserListnamesFromDbByParent($username);
+        $listnames = Filmlist::getUserListsFromDbByParent($username, false);
     }
 
     $headerSearchText = "";

@@ -162,33 +162,19 @@ function renderFilmlists(includedListnames, filmId) {
         return;
     }
     
-    var defaultList = "Watchlist";
-    var defaultListClass = "glyphicon glyphicon-check checkmark-off";
-    var userlists = JSON.parse(userlistsJson);
+    var viewListsUrl = RS_URL_BASE + "/php/userlist.php?l=" + getDefaultList();
+    var viewNewListUrl = RS_URL_BASE + "/php/userlist.php?nl=1";
+    var defaultList = getDefaultList();
+    var defaultListClass = getCheckmarkClass(false);
     if (includedListnames === undefined) {
         includedListnames = [];
     }
-    
-    var listItemsHtml = "";
-    for (var x = 0; x < userlists.length; x++) {
-        var viewListsUrl = RS_URL_BASE + "/php/userlist.php?l=" + defaultList;
-        var viewNewListUrl = RS_URL_BASE + "/php/userlist.php?nl=0";
-        var currentUserlist = userlists[x].listname;
-        if (currentUserlist == defaultList) {
-            if (-1 != includedListnames.indexOf(currentUserlist)) {
-                defaultListClass = "glyphicon glyphicon-check checkmark-on";
-            }
-        } else {
-            var checkmarkClass = "glyphicon glyphicon-check checkmark-off";
-            if (-1 != includedListnames.indexOf(currentUserlist)) {
-                checkmarkClass = "glyphicon glyphicon-check checkmark-on";
-            }
-            
-            listItemsHtml = listItemsHtml + "  <li class='btn-filmlist' id='filmlist-btn-"+currentUserlist+"-"+filmId+"' data-listname='"+currentUserlist+"' data-filmId='"+filmId+"'>";
-            listItemsHtml = listItemsHtml + "      <span class='"+checkmarkClass+"' id='filmlist-checkmark-"+filmId+"'>&#10003;</span> "+currentUserlist;
-            listItemsHtml = listItemsHtml + "  </li>";
-        }
+    if (-1 != includedListnames.indexOf(defaultList)) {
+        defaultListClass = getCheckmarkClass(true);
     }
+    
+    var userlists = JSON.parse(userlistsJson);
+    listItemsHtml = renderFilmlistItems(userlists, includedListnames, filmId, "");
     
     var html = "";
     html = html + "<div class='btn-group-vertical'>";
@@ -211,4 +197,26 @@ function renderFilmlists(includedListnames, filmId) {
     var container = document.getElementById("filmlist-container");
     container.innerHTML = html;
     addFilmlistListeners(container, filmId);
+}
+
+function renderFilmlistItems(userlists, includedListnames, filmId, prefix) {
+    var html = "";
+    for (var x = 0; x < userlists.length; x++) {
+        var currentUserlist = userlists[x].listname;
+        if (currentUserlist != getDefaultList()) {
+            var checkmarkClass = getCheckmarkClass(false);
+            if (-1 != includedListnames.indexOf(currentUserlist)) {
+                checkmarkClass = getCheckmarkClass(true);
+            }
+            
+            html = html + "  <li class='btn-filmlist' id='filmlist-btn-"+currentUserlist+"-"+filmId+"' data-listname='"+currentUserlist+"' data-filmId='"+filmId+"'>";
+            html = html +        prefix;
+            html = html + "      <span class='"+checkmarkClass+"' id='filmlist-checkmark-"+filmId+"'>&#10003;</span> "+currentUserlist;
+            html = html + "  </li>";
+
+            html = html + renderFilmlistItems(userlists[x].children, includedListnames, filmId, prefix + "&nbsp;&nbsp;&nbsp;&nbsp;");
+        }
+    }
+
+    return html;
 }

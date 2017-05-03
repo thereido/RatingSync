@@ -236,6 +236,18 @@ function getFilmlists(callback) {
     }
 }
 
+function getCheckmarkClass(checked) {
+    if (checked) {
+        return "glyphicon glyphicon-check checkmark-on";
+    } else {
+        return "glyphicon glyphicon-check checkmark-off";
+    }
+}
+
+function getDefaultList() {
+    return "Watchlist";
+}
+
 function toggleHideFilmlists(elementId) {
 	var el = document.getElementById(elementId);
     el.hidden = !el.hidden;

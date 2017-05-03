@@ -333,7 +333,7 @@ class Filmlist
         return $list;
     }
 
-    public static function getUserListsFromDb($username, $asJson = false)
+    public static function getUserListsFromDb($username)
     {
         if (empty($username)) {
             throw new \InvalidArgumentException(__FUNCTION__." \$username (".$username.") must not be empty");
@@ -360,24 +360,7 @@ class Filmlist
             $lists[$listname]->addItem($filmId);
         }
         
-        if ($asJson) {
-            $arr = array();
-            foreach ($lists as $list) {
-                $arrList = array();
-                $arrList['listname'] = $list->getListname();
-                $arrList['username'] = $list->getUsername();
-                $arrList['parentListname'] = $list->getParentListname();
-                $arrItems = array();
-                foreach ($list->getItems() as $item) {
-                    $arrItems[] = $item;
-                }
-                $arrList['items'] = $arrItems;
-                $arr[] = $arrList;
-            }
-            return json_encode($arr);
-        } else {
-            return $lists;
-        }
+        return $lists;
     }
 
     public static function saveToDbUserFilmlistsByFilmObjectLists($username, $film)
@@ -417,7 +400,7 @@ class Filmlist
      *
      * @return array Keys are listname, parentListname, children. Children are a another array.
      */
-    public static function getUserListnamesFromDbByParent($username, $parentListname = null)
+    public static function getUserListsFromDbByParent($username, $populateFilms, $parentListname = null)
     {
         if (empty($username)) {
             throw new \InvalidArgumentException(__FUNCTION__." \$username (".$username.") must not be empty");
@@ -437,8 +420,14 @@ class Filmlist
         while ($row = $result->fetch_assoc()) {
             $listname = $row['listname'];
             $parentListname = $row['parent_listname'];
-            $children = self::getUserListnamesFromDbByParent($username, $listname);
-            $listnames[] = array("listname" => $listname, "parentListname" => $parentListname, "children" => $children);
+            $items = array();
+            if ($populateFilms) {
+                $filmlist = new Filmlist($username, $listname, $parentListname);
+                $filmlist->initFromDb();
+                $items = $filmlist->getItems();
+            }
+            $children = self::getUserListsFromDbByParent($username, $populateFilms, $listname);
+            $listnames[] = array("listname" => $listname, "parentListname" => $parentListname, "items" => $items, "children" => $children);
         }
 
         return $listnames;

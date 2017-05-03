@@ -30,7 +30,7 @@ if (empty($pageNum)) {
 $films = array();
 $offerToAddFilmThisList = false;
 if (!empty($username)) {
-    $listnames = Filmlist::getUserListnamesFromDbByParent($username);
+    $listnames = Filmlist::getUserListsFromDbByParent($username, false);
     if (empty($listname) && !empty($filmId)) {
         $offerToAddFilmThisList = true;
         $film = Film::getFilmFromDb($filmId, $username);

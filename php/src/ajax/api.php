@@ -123,8 +123,8 @@ function api_setFilmlist($username)
  */
 function api_getUserLists($username)
 {
-    $json = Filmlist::getUserListsFromDb($username, true);
-    return $json;
+    $lists = Filmlist::getUserListsFromDbByParent($username, true);
+    return json_encode($lists);
 }
 
 function api_createFilmlist($username)

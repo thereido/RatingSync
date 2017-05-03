@@ -82,37 +82,18 @@ function renderFilmlists(includedListnames, filmId) {
         return;
     }
     
-    var defaultList = "Watchlist";
+    var defaultList = getDefaultList();
     var defaultListHtmlSafe = defaultList;
-    var classCheckmarkOn = "glyphicon glyphicon-check checkmark-on";
-    var classCheckmarkOff = "glyphicon glyphicon-check checkmark-off";
-    var defaultListClass = classCheckmarkOff;
-    var userlists = JSON.parse(userlistsJson);
+    var defaultListClass = getCheckmarkClass(false);
     if (includedListnames === undefined) {
         includedListnames = [];
     }
-    
-    var listItemsHtml = "";
-    for (var x = 0; x < userlists.length; x++) {
-        var currentUserlist = userlists[x].listname;
-        if (currentUserlist == defaultList) {
-            if (-1 != includedListnames.indexOf(currentUserlist)) {
-                defaultListClass = classCheckmarkOn;
-            }
-        } else {
-            listnameHtmlSafe = currentUserlist;
-            var checkmarkClass = classCheckmarkOff;
-            if (-1 != includedListnames.indexOf(currentUserlist)) {
-                checkmarkClass = classCheckmarkOn;
-            }
-
-            listItemsHtml = listItemsHtml + "      <li class='filmlist' id='filmlist-"+listnameHtmlSafe+"-"+filmId+"'>\n";
-            listItemsHtml = listItemsHtml + "        <a href='#' onClick='toggleFilmlist(\""+listnameHtmlSafe+"\", "+filmId+", \"filmlist-btn-"+listnameHtmlSafe+"-"+filmId+"\")' id='filmlist-btn-"+listnameHtmlSafe+"-"+filmId+"'><span class='"+checkmarkClass+"' id='filmlist-checkmark-"+filmId+"'></span> "+currentUserlist+"</a>\n";
-            listItemsHtml = listItemsHtml + "      </li>\n";
-        }
+    if (-1 != includedListnames.indexOf(defaultList)) {
+        defaultListClass = getCheckmarkClass(true);
     }
-    listItemsHtml = listItemsHtml + "      <li class='divider'></li>\n";
-    listItemsHtml = listItemsHtml + "      <li><a href='/php/userlist.php?id="+filmId+"'>New list</a></li>\n";
+
+    var userlists = JSON.parse(userlistsJson);
+    listItemsHtml = renderFilmlistItems(userlists, includedListnames, filmId, "");
     
     var html = "";
     html = html + "<div class='btn-group-vertical film-filmlists'>\n";
@@ -125,6 +106,8 @@ function renderFilmlists(includedListnames, filmId) {
     html = html + "    </button>";
     html = html + "    <ul class='dropdown-menu' id='filmlists-"+filmId+"' role='menu'  >\n";
     html = html +        listItemsHtml + "\n";
+    html = html + "      <li class='divider'></li>\n";
+    html = html + "      <li><a href='/php/userlist.php?id="+filmId+"'>New list</a></li>\n";
     html = html + "    </ul>\n";
     html = html + "  </div>\n";
     html = html + "</div>\n";
@@ -132,4 +115,26 @@ function renderFilmlists(includedListnames, filmId) {
     var container = document.getElementById("filmlist-container-"+filmId);
     container.innerHTML = html;
     addFilmlistListeners(container, filmId);
+}
+
+function renderFilmlistItems(userlists, includedListnames, filmId, prefix) {
+    var html = "";
+    for (var x = 0; x < userlists.length; x++) {
+        var currentUserlist = userlists[x].listname;
+        if (currentUserlist != getDefaultList()) {
+            listnameHtmlSafe = currentUserlist;
+            var checkmarkClass = getCheckmarkClass(false);
+            if (-1 != includedListnames.indexOf(currentUserlist)) {
+                checkmarkClass = getCheckmarkClass(true);
+            }
+
+            html = html + "      <li class='filmlist' id='filmlist-"+listnameHtmlSafe+"-"+filmId+"'>\n";
+            html = html + "        <a href='#' onClick='toggleFilmlist(\""+listnameHtmlSafe+"\", "+filmId+", \"filmlist-btn-"+listnameHtmlSafe+"-"+filmId+"\")' id='filmlist-btn-"+listnameHtmlSafe+"-"+filmId+"'>"+prefix+"<span class='"+checkmarkClass+"' id='filmlist-checkmark-"+filmId+"'></span> "+currentUserlist+"</a>\n";
+            html = html + "      </li>\n";
+
+            html = html + renderFilmlistItems(userlists[x].children, includedListnames, filmId, prefix + "&nbsp;&nbsp;&nbsp;&nbsp;");
+        }
+    }
+
+    return html;
 }
