@@ -30,6 +30,20 @@ class RatingSyncSite extends \RatingSync\SiteRatings
      *  not affect results if the filter is empty.
      */
     protected $listFilter = array();
+    
+    /** Genre filter
+     *  No keys. Values are genre names from the db genre table.
+     *  Filter out films with a matching genres. The filter does not affect results
+     *  if the filter is empty.  $genreFilterMatchAny affects whether the films must
+     *  have one or more genres in the filter (Any=true) OR the films must have all
+     *  of the genres in the filter (Any=false).
+     */
+    protected $genreFilter = array();
+
+    // Genre filter with Any or All
+    //   True matches a film with Any genre in the filter
+    //   False matches a film with All genres in the filter
+    protected $genreFilterMatchAny = true;
 
     public function __construct($username)
     {
@@ -174,11 +188,24 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             $listFilterWhere .= " AND listname IN (" . $listsFilteredIn . ") ";
         }
 
+        $genreFilterWhere = "";
+        if (count($this->getGenreFilter()) > 0) {
+            if ($this->getGenreFilterMatchAny()) {
+                $genresFilteredIn = $this->getGenreFilterCommaDelimited();
+                $genreFilterWhere .= " AND rating.film_id IN (SELECT film_id FROM film_genre WHERE genre_name IN ($genresFilteredIn)) ";
+            } else {
+                foreach ($this->getGenreFilter() as $genre) {
+                    $genreFilterWhere .= " AND EXISTS (SELECT * FROM film_genre WHERE rating.film_id=film_genre.film_id AND genre_name='$genre') ";
+                }
+            }
+        }
+
         $query  = "SELECT $selectCols FROM $queryTables";
         $query .= " WHERE rating.user_name='" .$this->username. "'";
         $query .= "   AND source_name='" .$this->sourceName. "'";
         $query .=     $contentTypeFilterWhere;
         $query .=     $listFilterWhere;
+        $query .=     $genreFilterWhere;
         $query .= " $orderBy";
         $query .= " $limit";
 
@@ -278,6 +305,54 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $this->listFilter = array();
     }
 
+    /**
+     * @return array Genre filter
+     */
+    protected function getGenreFilter()
+    {
+        return $this->genreFilter;
+    }
+
+    /**
+     * @param array $genreFilter
+     *
+     * @return none
+     */
+    public function setGenreFilter($genreFilter)
+    {
+        if (!is_array($genreFilter) && !is_null($genreFilter)) {
+            throw new \InvalidArgumentException(__FUNCTION__.' param must be an array or null');
+        }
+
+        if (is_null($genreFilter)) {
+            $genreFilter = array();
+        }
+
+        $this->genreFilter = $genreFilter;
+    }
+
+    /**
+     * @return string genreFilterMatchAny
+     */
+    public function getGenreFilterMatchAny()
+    {
+        return $this->genreFilterMatchAny;
+    }
+
+    /**
+     * @param string $genreFilterMatchAny
+     *
+     * @return none
+     */
+    public function setGenreFilterMatchAny($genreFilterMatchAny)
+    {
+        if (!is_bool($genreFilterMatchAny)) {
+            throw new \InvalidArgumentException(__FUNCTION__." param must have be a boolean");
+        }
+
+        $this->genreFilterMatchAny = $genreFilterMatchAny;
+    }
+
     public function getContentTypeFilterCommaDelimited() {
         $filteredOut = "";
         $comma = "";\
@@ -297,6 +372,17 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $comma = "";
         foreach ($this->listFilter as $listname) {
             $commaDelimitedLists .= $comma . "'$listname'";
+            $comma = ", ";
+        }
+        
+        return $commaDelimitedLists;
+    }
+
+    public function getGenreFilterCommaDelimited() {
+        $commaDelimitedLists = "";
+        $comma = "";
+        foreach ($this->genreFilter as $item) {
+            $commaDelimitedLists .= $comma . "'$item'";
             $comma = ", ";
         }
         

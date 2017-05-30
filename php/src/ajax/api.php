@@ -300,7 +300,9 @@ function api_getRatings($username)
     $tvepisodes = array_value_by_key("tvepisodes", $_GET);
     $shorts = array_value_by_key("shorts", $_GET);
     $filterlists = array_value_by_key("filterlists", $_GET);
-    logDebug("Params ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists", __FUNCTION__." ".__LINE__);
+    $filtergenres = array_value_by_key("filtergenres", $_GET);
+    $filtergenreany = array_value_by_key("filtergenreany", $_GET);
+    logDebug("Params ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany", __FUNCTION__." ".__LINE__);
     
     if (empty($pageSize)) {
         $pageSize = null;
@@ -330,9 +332,21 @@ function api_getRatings($username)
         $filterListsArr = explode("%l", $filterlists);
     }
 
+    // Filter by genres. Return only films in at least one of the genres
+    $filterGenresArr = array();
+    if (!empty($filtergenres)) {
+        $filterGenresArr = explode("%g", $filtergenres);
+    }
+    $filterGenresMatchAny = true;
+    if ($filtergenreany === "0") {
+        $filterGenresMatchAny = false;
+    }
+
     $site = new \RatingSync\RatingSyncSite($username);
     $site->setContentTypeFilter($filterArr);
     $site->setListFilter($filterListsArr);
+    $site->setGenreFilter($filterGenresArr);
+    $site->setGenreFilterMatchAny($filterGenresMatchAny);
     $films = $site->getRatings($pageSize, $beginPage);
     $totalRatings = $site->countRatings();
     
@@ -361,7 +375,9 @@ function api_getFilmsByList($username)
     $tvepisodes = array_value_by_key("tvepisodes", $_GET);
     $shorts = array_value_by_key("shorts", $_GET);
     $filterlists = array_value_by_key("filterlists", $_GET);
-    logDebug("Params l=$listname, ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists", __FUNCTION__." ".__LINE__);
+    $filtergenres = array_value_by_key("filtergenres", $_GET);
+    $filtergenreany = array_value_by_key("filtergenreany", $_GET);
+    logDebug("Params l=$listname, ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany", __FUNCTION__." ".__LINE__);
     
     if (empty($pageSize)) {
         $pageSize = null;
@@ -386,13 +402,27 @@ function api_getFilmsByList($username)
 
     // Filter by other lists. Return only films in this list that
     // are also in at least one of the lists being used with the filter
-    $filterListsArr = null;
+    $filterListsArr = array();
     if (!empty($filterlists)) {
         $filterListsArr = explode("%l", $filterlists);
     }
+
+    // Filter by genres. Return only films in at least one of the genres
+    $filterGenresArr = array();
+    if (!empty($filtergenres)) {
+        $filterGenresArr = explode("%g", $filtergenres);
+    }
+    $filterGenresMatchAny = true;
+    if ($filtergenreany === "0") {
+        $filterGenresMatchAny = false;
+    }
     
     $list = new Filmlist($username, $listname);
-    $list->initFromDb($filterArr, $filterListsArr);
+    $list->setContentFilter($filterArr);
+    $list->setListFilter($filterListsArr);
+    $list->setGenreFilter($filterGenresArr);
+    $list->setGenreFilterMatchAny($filterGenresMatchAny);
+    $list->initFromDb();
     $films = $list->getFilms($pageSize, $beginPage);
     $totalCount = $list->count();
     

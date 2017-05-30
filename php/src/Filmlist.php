@@ -29,6 +29,14 @@ class Filmlist
     protected $username;
     protected $parentListname;
     protected $listItems = array();  // Each item is a filmId
+    protected $contentFilter = array();
+    protected $listFilter = array();
+    protected $genreFilter = array();
+
+    // Genre filter with Any or All
+    //   True matches a film with Any genre in the filter
+    //   False matches a film with All genres in the filter
+    protected $genreFilterMatchAny = true;
 
     public function __construct($username, $listname, $parentListname = NULL)
     {
@@ -100,6 +108,106 @@ class Filmlist
         }
 
         $this->username = $name;
+    }
+
+    /**
+     * @return array Content Type filter
+     */
+    protected function getContentFilter()
+    {
+        return $this->contentFilter;
+    }
+
+    /**
+     * @param array $contentFilter
+     *
+     * @return none
+     */
+    public function setContentFilter($contentFilter)
+    {
+        if (!is_array($contentFilter) && !is_null($contentFilter)) {
+            throw new \InvalidArgumentException(__FUNCTION__.' param must be an array or null');
+        }
+
+        if (is_null($contentFilter)) {
+            $contentFilter = array();
+        }
+
+        $this->contentFilter = $contentFilter;
+    }
+
+    /**
+     * @return array List filter
+     */
+    protected function getListFilter()
+    {
+        return $this->listFilter;
+    }
+
+    /**
+     * @param array $listFilter
+     *
+     * @return none
+     */
+    public function setListFilter($listFilter)
+    {
+        if (!is_array($listFilter) && !is_null($listFilter)) {
+            throw new \InvalidArgumentException(__FUNCTION__.' param must be an array or null');
+        }
+
+        if (is_null($listFilter)) {
+            $listFilter = array();
+        }
+
+        $this->listFilter = $listFilter;
+    }
+
+    /**
+     * @return array Genre filter
+     */
+    protected function getGenreFilter()
+    {
+        return $this->genreFilter;
+    }
+
+    /**
+     * @param array $genreFilter
+     *
+     * @return none
+     */
+    public function setGenreFilter($genreFilter)
+    {
+        if (!is_array($genreFilter) && !is_null($genreFilter)) {
+            throw new \InvalidArgumentException(__FUNCTION__.' param must be an array or null');
+        }
+
+        if (is_null($genreFilter)) {
+            $genreFilter = array();
+        }
+
+        $this->genreFilter = $genreFilter;
+    }
+
+    /**
+     * @return string genreFilterMatchAny
+     */
+    public function getGenreFilterMatchAny()
+    {
+        return $this->genreFilterMatchAny;
+    }
+
+    /**
+     * @param string $genreFilterMatchAny
+     *
+     * @return none
+     */
+    public function setGenreFilterMatchAny($genreFilterMatchAny)
+    {
+        if (!is_bool($genreFilterMatchAny)) {
+            throw new \InvalidArgumentException(__FUNCTION__." param must have be a boolean");
+        }
+
+        $this->genreFilterMatchAny = $genreFilterMatchAny;
     }
 
     public function addItem($filmId)
@@ -270,11 +378,7 @@ class Filmlist
         return $list->removeFromDb();
     }
 
-    /**
-     * @param array $contentFilter Filter out content in this array (do not return films that match)
-     * @param array $listFilter Filter in by the user's other filmlists (do not return films unless they do match)
-     */
-    public function initFromDb($contentFilter = array(), $listFilter = array())
+    public function initFromDb()
     {
         $username = $this->username;
         $listname = $this->listname;
@@ -284,42 +388,52 @@ class Filmlist
 
         $this->removeAllItems();
         $db = getDatabase();
-        $contentFilteredOut = $this->getFilterCommaDelimited($contentFilter);
 
         $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
         $result = $db->query($query);
         if ($result->num_rows == 1) {
             $this->parentListname = $result->fetch_assoc()['parent_listname'];
         }
+        
+        $queryTables = "filmlist";
+        $usingFilmTable = false;
 
-        $listFilterSubQuery = "";
-        if (!empty($listFilter) && count($listFilter) > 0) {
-            $listFilterSubQuery = "   AND film_id IN (SELECT film_id as id2 FROM filmlist as list2 WHERE user_name='$username' AND listname IN (";
-            $comma = "";
-            foreach ($listFilter as $filterListname) {
-                if ($listname != $filterListname) {
-                    $listFilterSubQuery .= $comma . "'".$filterListname."'";
-                    $comma = ", ";
+        $contentTypeFilterWhere = "";
+        $contentTypeFilteredOut = $this->getContentTypeFilterCommaDelimited();
+        if (!empty($contentTypeFilteredOut)) {
+            $queryTables .= ", film";
+            $usingFilmTable = true;
+            $contentTypeFilterWhere .= " AND filmlist.film_id=film.id ";
+            $contentTypeFilterWhere .= " AND contentType NOT IN (" . $contentTypeFilteredOut . ") ";
+        }
+
+        $listFilterWhere = "";
+        $listsFilteredIn = $this->getListFilterCommaDelimited();
+        if (!empty($listsFilteredIn)) {
+            $listFilterWhere = " AND filmlist.film_id IN (SELECT film_id as id2 FROM filmlist as list2 WHERE user_name='$username' AND listname IN ($listsFilteredIn)) ";
+        }
+
+        $genreFilterWhere = "";
+        if (count($this->getGenreFilter()) > 0) {
+            if ($this->getGenreFilterMatchAny()) {
+                $genresFilteredIn = $this->getGenreFilterCommaDelimited();
+                $genreFilterWhere .= " AND filmlist.film_id IN (SELECT film_id as id3 FROM film_genre WHERE genre_name IN ($genresFilteredIn)) ";
+            } else {
+                foreach ($this->getGenreFilter() as $genre) {
+                    $genreFilterWhere .= " AND EXISTS (SELECT * FROM film_genre WHERE filmlist.film_id=film_genre.film_id AND genre_name='$genre') ";
                 }
             }
-            $listFilterSubQuery .= "))";
         }
+        
+        $query  = "SELECT film_id FROM $queryTables";
+        $query .= " WHERE user_name='$username'";
+        $query .= "   AND listname='$listname'";
+        $query .=     $contentTypeFilterWhere;
+        $query .=     $listFilterWhere;
+        $query .=     $genreFilterWhere;
+        $query .= " ORDER BY position ASC";
 
-        if (empty($contentFilteredOut)) {
-            $query  = "SELECT film_id FROM filmlist";
-            $query .= " WHERE user_name='$username'";
-            $query .= "   AND listname='$listname'";
-            $query .=     $listFilterSubQuery;
-            $query .= " ORDER BY position ASC";
-        } else {
-            $query  = "SELECT film_id FROM filmlist, film";
-            $query .= " WHERE user_name='" .$this->username. "'";
-            $query .= "   AND listname='" .$this->listname. "'";
-            $query .=     $listFilterSubQuery;
-            $query .= "   AND id=film_id";
-            $query .= "   AND contentType NOT IN (" . $contentFilteredOut . ")";
-            $query .= " ORDER BY position ASC";
-        }
+/*RT*/logDebug($query);
         $result = $db->query($query);
         while ($row = $result->fetch_assoc()) {
             $this->addItem($row['film_id']);
@@ -442,11 +556,11 @@ class Filmlist
         }
     }
 
-    public function getFilterCommaDelimited($filter) {
+    public function getContentTypeFilterCommaDelimited() {
         $filteredOut = "";
         $comma = "";
-        reset($filter);
-        while (list($key, $val) = each($filter)) {
+        reset($this->contentFilter);
+        while (list($key, $val) = each($this->contentFilter)) {
             if (Film::validContentType($key) && $val === false) {
                 $filteredOut .= $comma . "'$key'";
                 $comma = ", ";
@@ -454,6 +568,28 @@ class Filmlist
         }
         
         return $filteredOut;
+    }
+
+    public function getListFilterCommaDelimited() {
+        $commaDelimitedLists = "";
+        $comma = "";
+        foreach ($this->listFilter as $item) {
+            $commaDelimitedLists .= $comma . "'$item'";
+            $comma = ", ";
+        }
+        
+        return $commaDelimitedLists;
+    }
+
+    public function getGenreFilterCommaDelimited() {
+        $commaDelimitedLists = "";
+        $comma = "";
+        foreach ($this->genreFilter as $item) {
+            $commaDelimitedLists .= $comma . "'$item'";
+            $comma = ", ";
+        }
+        
+        return $commaDelimitedLists;
     }
 
     public function getFilms($pageSize = null, $beginPage = 1)

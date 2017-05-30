@@ -3,6 +3,7 @@ namespace RatingSync;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Constants.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Genre.php";
 
 function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListname = "", $offerFilter = true) {
     $username = getUsername();
@@ -51,15 +52,37 @@ function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListn
         $contentTypeHtml = "";
     }
 
+    // List filter
     $listFilterHtml = "";
     if ($currentListname != "Create New List" && count($listnames) > 1) {
         $listFilterHtml .= '<div class="rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
-        $listFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Filter</button>'."\n";
+        $listFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">List Filter</button>'."\n";
         $listFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="filmlist-filter">'."\n";
         $listFilterHtml .= '    <a href="javascript:void(0)" onClick="clearFilmlistFilter();">Clear filter</a>';
         $listFilterHtml .=      getHtmlFilmlistNamesForFilter($listnames, $currentListname);
         $listFilterHtml .= '  </div>'."\n";
         $listFilterHtml .= '</div>'."\n";
+    }
+    
+    // Genre filter
+    $filterGenreAnyChecked = array("all" => "checked", "any" => "");
+    if (array_value_by_key("filtergenreany", $_POST) == "1") {
+        $filterGenreAnyChecked["all"] = "";
+        $filterGenreAnyChecked["any"] = "checked";
+    }
+
+    $genreFilterHtml = "";
+    $genres = Genre::getGenresFromDb();
+    if ($currentListname != "Create New List" && count($genres) > 1) {
+        $genreFilterHtml .= '<div class="rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
+        $genreFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Genre Filter</button>'."\n";
+        $genreFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="genre-filter">'."\n";
+        $genreFilterHtml .= '    <checklist-line><input type="radio" name="genreMatchAny" id="genre-filter-matchall" '.$filterGenreAnyChecked["all"].'>Must match all</checklist-line>'."\n";
+        $genreFilterHtml .= '    <checklist-line><input type="radio" name="genreMatchAny" id="genre-filter-matchany" '.$filterGenreAnyChecked["any"].'>Match any</checklist-line>'."\n";
+        $genreFilterHtml .= '    <a href="javascript:void(0)" onClick="clearGenreFilter();">Clear filter</a>'."\n";
+        $genreFilterHtml .=      getHtmlGenresForFilter($genres);
+        $genreFilterHtml .= '  </div>'."\n";
+        $genreFilterHtml .= '</div>'."\n";
     }
     
     $html = "\n";
@@ -68,6 +91,7 @@ function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListn
     $html .= "  <h2>$displayListname</h2>\n";
     $html .=    $contentTypeHtml;
     $html .=    $listFilterHtml;
+    $html .=    $genreFilterHtml;
     $html .= "</div>\n";
 
     return $html;
@@ -128,6 +152,27 @@ function getHtmlFilmlistNamesForFilter($listnames, $currentListname, $level = 0)
     return $html;
 }
 
+function getHtmlGenresForFilter($genres) {
+    $html = "";
+    $filterGenres = explode("%g", array_value_by_key("filtergenres", $_POST));
+
+    foreach ($genres as $genre) {
+        $checked = "";
+        $class = "glyphicon glyphicon-check checkmark-off";
+        if (in_array($genre, $filterGenres)) {
+            $checked = "checked";
+            $class = "glyphicon glyphicon-check checkmark-on";
+        }
+        $checkmark = '<span class="'.$class.'" id="genre-filter-checkmark-'.$genre.'"></span> ';
+        $onClick = "onClick=\"toggleFilmlistFilter('genre-filter-$genre', 'genre-filter-checkbox-$genre');\"";
+
+        $html .= '    <input hidden type="checkbox" id="genre-filter-checkbox-'.$genre.'" data-genre="'.$genre.'" '.$checked.'>'."\n";
+        $html .= '    <a href="javascript:void(0)" '.$onClick.' id="genre-filter-'.$genre.'">'.$checkmark.$genre.'</a>'."\n";
+    }
+
+    return $html;
+}
+
 function getHmtlFilmlistPagination($action) {
     $html = "";
     $html .= '<form name="pageForm" action="'.$action.'" method="post">';
@@ -137,6 +182,8 @@ function getHmtlFilmlistPagination($action) {
     $html .= '    <input id="param-tvepisodes" name="tvepisodes" hidden>';
     $html .= '    <input id="param-shorts" name="shorts" hidden>';
     $html .= '    <input id="param-filterlists" name="filterlists" hidden>';
+    $html .= '    <input id="param-filtergenreany" name="filtergenreany" hidden>';
+    $html .= '    <input id="param-filtergenres" name="filtergenres" hidden>';
     $html .= '    <ul id="pagination" class="pager" hidden>';
     $html .= '        <li id="previous"><a href="javascript:void(0);">Previous</a></li>';
     $html .= '        <li><select id="page-select" onchange="changePageNum()"></select></li>';

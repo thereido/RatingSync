@@ -203,7 +203,6 @@ detail {
 /* Links inside the dropdown */
 .rs-dropdown-checklist-content a {
     color: black;
-    padding: 12px 16px;
     text-decoration: none;
     display: block;
     white-space: nowrap;
@@ -216,6 +215,17 @@ detail {
 /* Show the dropdown menu on hover */
 .rs-dropdown-checklist:hover .rs-dropdown-checklist-content {
     display: block;
+}
+
+/* Any line inside the dropdown other than <a> */
+.rs-dropdown-checklist-content checklist-line {
+    white-space: nowrap;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+checklist-line input[type="radio"] {
+    margin-right: 3px;
 }
 
 #header-search-suggestion {
