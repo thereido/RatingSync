@@ -60,7 +60,7 @@ $pageFooter = getPageFooter();
 <script>
 var contextData;
 var currentPageNum = <?php echo $pageNum; ?>;;
-var defaultPageSize = 100;
+var defaultPageSize = 96;
 var prevFilmlistFilterParams = getFilmlistFilterParams();
 getRsRatings(defaultPageSize, <?php echo $pageNum; ?>);
 </script>

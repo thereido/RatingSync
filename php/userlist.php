@@ -131,7 +131,7 @@ $pageFooter = getPageFooter();
     var contextData;
     var listname = "<?php echo $listname; ?>";
     var currentPageNum = <?php echo $pageNum; ?>;
-    var defaultPageSize = 100;
+    var defaultPageSize = 96;
     if (listname) {
         getFilmsForFilmlist(defaultPageSize, currentPageNum);
     }
