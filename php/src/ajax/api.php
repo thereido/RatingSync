@@ -370,6 +370,8 @@ function api_getFilmsByList($username)
     $listname = array_value_by_key("l", $_GET);
     $pageSize = array_value_by_key("ps", $_GET);
     $beginPage = array_value_by_key("bp", $_GET);
+    $sort = array_value_by_key("sort", $_GET);
+    $sortDirection = array_value_by_key("direction", $_GET);
     $feature = array_value_by_key("feature", $_GET);
     $tvseries = array_value_by_key("tvseries", $_GET);
     $tvepisodes = array_value_by_key("tvepisodes", $_GET);
@@ -377,13 +379,29 @@ function api_getFilmsByList($username)
     $filterlists = array_value_by_key("filterlists", $_GET);
     $filtergenres = array_value_by_key("filtergenres", $_GET);
     $filtergenreany = array_value_by_key("filtergenreany", $_GET);
-    logDebug("Params l=$listname, ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany", __FUNCTION__." ".__LINE__);
+    logDebug("Params l=$listname, ps=$pageSize, bp=$beginPage, sort=$sort, sortDirection=$sortDirection, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany", __FUNCTION__." ".__LINE__);
     
     if (empty($pageSize)) {
         $pageSize = null;
     }
     if (empty($beginPage)) {
         $beginPage = 1;
+    }
+
+    if (strtolower($sort) == "pos") {
+        $sort = Filmlist::SORT_POSITION;
+    } elseif (strtolower($sort) == "mod") {
+        $sort = Filmlist::SORT_MODIFIED;
+    } elseif (!Filmlist::validSortDirection($sort)) {
+        $sort = Filmlist::SORT_POSITION;
+    }
+
+    if (strtolower($sortDirection) == "desc") {
+        $sortDirection = Filmlist::SORTDIR_DESC;
+    } elseif (strtolower($sortDirection) == "asc") {
+        $sortDirection = Filmlist::SORTDIR_ASC;
+    } elseif (!Filmlist::validSortDirection($sortDirection)) {
+        $sortDirection = Filmlist::SORTDIR_DESC;
     }
 
     $filterArr = array();
@@ -418,6 +436,8 @@ function api_getFilmsByList($username)
     }
     
     $list = new Filmlist($username, $listname);
+    $list->setSort($sort);
+    $list->setSortDirection($sortDirection);
     $list->setContentFilter($filterArr);
     $list->setListFilter($filterListsArr);
     $list->setGenreFilter($filterGenresArr);

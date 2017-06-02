@@ -24,11 +24,18 @@ require_once "Constants.php";
  * @link     https://github.com/thereido/RatingSync
  */
 class Filmlist
-{    
+{
+    const SORT_POSITION     = 'filmlist.position';
+    const SORT_MODIFIED     = 'filmlist.ts';
+    const SORTDIR_ASC       = 'ASC';
+    const SORTDIR_DESC      = 'DESC';
+
     protected $listname;
     protected $username;
     protected $parentListname;
     protected $listItems = array();  // Each item is a filmId
+    protected $sort;
+    protected $sortDirection;
     protected $contentFilter = array();
     protected $listFilter = array();
     protected $genreFilter = array();
@@ -46,6 +53,26 @@ class Filmlist
         $this->username = $username;
         $this->listname = $listname;
         $this->parentListname = $parentListname;
+        $this->sort = static::SORT_POSITION;
+        $this->sortDirection = static::SORTDIR_DESC;
+    }
+
+    public static function validSort($sort)
+    {
+        $validSorts = array(static::SORT_POSITION, static::SORT_MODIFIED);
+        if (in_array($sort, $validSorts)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function validSortDirection($sortDirection)
+    {
+        $validSortDirection = array(static::SORTDIR_ASC, static::SORTDIR_DESC);
+        if (in_array($sortDirection, $validSortDirection)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -108,6 +135,34 @@ class Filmlist
         }
 
         $this->username = $name;
+    }
+
+    public function setSort($sort)
+    {
+        if (! $this->validSort($sort) ) {
+            throw new \InvalidArgumentException(__FUNCTION__." Invalid sort param '$sort'");
+        }
+
+        $this->sort = $sort;
+    }
+
+    public function getSort()
+    {
+        return $this->sort;
+    }
+
+    public function setSortDirection($sortDirection)
+    {
+        if (! $this->validSortDirection($sortDirection) ) {
+            throw new \InvalidArgumentException(__FUNCTION__." Invalid sortDirection param '$sortDirection'");
+        }
+
+        $this->sortDirection = $sortDirection;
+    }
+
+    public function getSortDirection()
+    {
+        return $this->sortDirection;
     }
 
     /**
@@ -431,9 +486,8 @@ class Filmlist
         $query .=     $contentTypeFilterWhere;
         $query .=     $listFilterWhere;
         $query .=     $genreFilterWhere;
-        $query .= " ORDER BY position ASC";
+        $query .= " ORDER BY " . $this->getSort() . " " . $this->getSortDirection();
 
-/*RT*/logDebug($query);
         $result = $db->query($query);
         while ($row = $result->fetch_assoc()) {
             $this->addItem($row['film_id']);
