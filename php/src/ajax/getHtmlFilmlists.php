@@ -84,6 +84,17 @@ function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListn
         $genreFilterHtml .= '  </div>'."\n";
         $genreFilterHtml .= '</div>'."\n";
     }
+
+    // Sort
+    $sortHtml = "";
+    $sortHtml .= '<div class="rs-filmlist-sort">'."\n";
+    $sortHtml .= '  <select id="sort" onchange="onChangeSort();">'."\n";
+    $sortHtml .= '    <option value="pos">Position</option>'."\n";
+    $sortHtml .= '    <option value="mod">Added</option>'."\n";
+    $sortHtml .= '  </select>'."\n";
+    $sortHtml .= '  <input type="text" id="direction" value="desc" hidden>'."\n";
+    $sortHtml .= '  <a href="javascript::void(0);"><img id="direction-image" alt="Ascending order" src="/image/sort-desc.png" onclick="toggleSortDirection();"></a>'."\n";
+    $sortHtml .= '</div>'."\n";
     
     $html = "\n";
     $html .= "<div class='well well-sm'>\n";
@@ -92,6 +103,7 @@ function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListn
     $html .=    $contentTypeHtml;
     $html .=    $listFilterHtml;
     $html .=    $genreFilterHtml;
+    $html .=    $sortHtml;
     $html .= "</div>\n";
 
     return $html;

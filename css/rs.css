@@ -253,6 +253,15 @@ checklist-line input[type="radio"] {
     border-bottom: 1px solid #ccc;
 }
 
+.rs-filmlist-sort {
+    text-align: right;
+    width: 100%;
+}
+
+.rs-filmlist-sort img {
+    height: 25px;
+}
+
 @media (min-width:768px) {
     .rating-detail {
         width: 70%;

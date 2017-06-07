@@ -1,9 +1,13 @@
 
 function getFilterParams() {
+    var params = "";
     var paramArr = getFilterParamArray();
 
+    // Sort
+    if (paramArr["sort"] != "") { params = params + "&sort=" + paramArr["sort"]; }
+    if (paramArr["direction"] != "") { params = params + "&direction=" + paramArr["direction"]; }
+
     // Content Filter
-    var params = "";
     if (paramArr["feature"] == 0) { params = params + "&feature=0"; }
     if (paramArr["tvseries"] == 0) { params = params + "&tvseries=0"; }
     if (paramArr["tvepisodes"] == 0) { params = params + "&tvepisodes=0"; }
@@ -20,6 +24,24 @@ function getFilterParams() {
 }
 
 function getFilterParamArray() {
+    var params = [];
+
+    // Sort
+    var sort = "";
+    var direction = "";
+
+    var sortSelect = document.getElementById("sort");
+    if (sortSelect) {
+        sort = sortSelect.value;
+    }
+    var directionInput = document.getElementById("direction");
+    if (directionInput) {
+        direction = directionInput.value;
+    }
+
+    params["sort"] = sort;
+    params["direction"] = direction;
+
     // Content Filter
     var movies = 1;
     var series = 1;
@@ -43,7 +65,6 @@ function getFilterParamArray() {
         shorts = 0;
     }
 
-    var params = [];
     params["feature"] = movies;
     params["tvseries"] = series;
     params["tvepisodes"] = episodes;
@@ -73,6 +94,16 @@ function getFilmlistFilterParams() {
     }
 
     params = params + "&filtergenreany=" + getGenreFilterMatchAnyParam();
+
+    var sortParam = getSortParam();
+    if (sortParam != "") {
+        params = params + "&sort=" + sortParam;
+    }
+
+    var directionParam = getDirectionParam();
+    if (directionParam != "") {
+        params = params + "&direction=" + directionParam;
+    }
 
     return params;
 }
@@ -254,6 +285,8 @@ function submitPageForm(pageNum) {
     var filterParamsArr = getFilterParamArray();
 
     formEl["param-p"].value = pageNum;
+    formEl["param-sort"].value = filterParamsArr["sort"];
+    formEl["param-direction"].value = filterParamsArr["direction"];
     formEl["param-feature"].value = filterParamsArr["feature"];
     formEl["param-tvseries"].value = filterParamsArr["tvseries"];
     formEl["param-tvepisodes"].value = filterParamsArr["tvepisodes"];
@@ -263,4 +296,67 @@ function submitPageForm(pageNum) {
     formEl["param-filtergenres"].value = filterParamsArr["filtergenres"];
 
     document.forms["pageForm"].submit();
+}
+
+function getSortParam() {
+    var sort = "";
+    var sortSelect = document.getElementById("sort");
+    if (sortSelect) {
+        sort = sortSelect.value;
+    }
+    
+    return sort;
+}
+
+function getDirectionParam() {
+    var direction = "";
+    var directionEl = document.getElementById("direction");
+    if (directionEl) {
+        direction = directionEl.value;
+    }
+    
+    return direction;
+}
+
+function onChangeSort() {
+    // Set sort direction to default
+    setSortDirection();
+    
+    setFilmlistFilter();
+}
+
+function setSortDirection(direction) {
+    var directionEl = document.getElementById("direction");
+    var imageEl = document.getElementById("direction-image");
+
+    // Use default (desc) unless it is specifcally setting to asc
+    if (!direction || direction != "asc") {
+        direction = "desc";
+    }
+
+    if (directionEl) {
+        directionEl.value = direction;
+    }
+
+    if (imageEl) {
+        if (direction == "asc") {
+            imageEl.setAttribute("src", "/image/sort-asc.png");
+            imageEl.setAttribute("alt", "Ascending order");
+        } else {
+            imageEl.setAttribute("src", "/image/sort-desc.png");
+            imageEl.setAttribute("alt", "Descending order");
+        }
+    }
+}
+
+function toggleSortDirection() {
+    var direction = "desc";
+    var directionEl = document.getElementById("direction");
+
+    if (directionEl && directionEl.value == "desc") {
+        direction = "asc";
+    }
+
+    setSortDirection(direction);
+    setFilmlistFilter();
 }
