@@ -14,6 +14,7 @@ function searchFilms(query, xmlhttp, callback) {
     // Search from OMDb API
     var params = "json=1";
     params = params + "&s=" + encodeURIComponent(query);
+    params = params + "&apikey=" + OMDB_API_KEY;
     var callbackHandler = function () { searchFilmsCallback(query, xmlhttp, callback); };
     xmlhttp.onreadystatechange = callbackHandler;
 	xmlhttp.open("GET", "http://www.omdbapi.com/?" + params, true);

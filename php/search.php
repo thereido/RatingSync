@@ -54,6 +54,7 @@ $pageFooter = getPageFooter();
     var contextData = JSON.parse('{"films":[]}');
     var RS_URL_BASE = "<?php echo Constants::RS_HOST; ?>";
     var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
+    var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
     var username = "<?php getUsername(); ?>";
     var oldSearchQuery = "";
     showHeaderSearchInput("<?php echo $searchQuery; ?>");

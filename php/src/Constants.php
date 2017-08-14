@@ -40,6 +40,7 @@ class Constants
     const DB_MODE_TEST                  = DomainConstants::DB_MODE_TEST;
     const DB_MODE                       = DomainConstants::DB_MODE;
     const RS_HOST                       = DomainConstants::RS_HOST;
+    const OMDB_API_KEY                  = DomainConstants::OMDB_API_KEY;
 
     static function basePath()
     {

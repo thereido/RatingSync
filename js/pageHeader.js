@@ -58,7 +58,7 @@ function updateHeaderSearch() {
 	    var suggestionEl = document.getElementById("header-search-suggestion");
         suggestionEl.innerHTML = "";
         suggestionEl.hidden = true;
-    } else if (query != oldHeaderSearchQuery) {
+    } else if (query.length > 2 && query != oldHeaderSearchQuery) {
 	    document.getElementById("selected-suggestion-uniquename").value = "";
 	    var xmlhttp = new XMLHttpRequest();
         var callbackHandler = function () { searchSuggestionCallback(query, xmlhttp); };

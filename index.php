@@ -62,6 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </div> <!-- container -->
     
 <script>
+    var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
 function reconnectImages() {
     document.getElementById("reconnect").value = "1";
 }

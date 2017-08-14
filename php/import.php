@@ -101,5 +101,9 @@ if (!empty($username)) {
     </div>
 </form>
 
+<script>
+    var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
+</script>
+
 </body>
 </html>
