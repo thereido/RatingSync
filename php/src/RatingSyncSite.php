@@ -15,6 +15,9 @@ require_once "SiteRatings.php";
 class RatingSyncSite extends \RatingSync\SiteRatings
 {
     const RATINGSYNC_DATE_FORMAT = "n/j/y";
+    const SORT_MODIFIED     = 'yourRatingDate';
+    const SORTDIR_ASC       = 'ASC';
+    const SORTDIR_DESC      = 'DESC';
 
     /** Content Type filter
      * Keys are the content type. Values are boolean.
@@ -44,6 +47,9 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     //   True matches a film with Any genre in the filter
     //   False matches a film with All genres in the filter
     protected $genreFilterMatchAny = true;
+    
+    protected $sort;
+    protected $sortDirection;
 
     public function __construct($username)
     {
@@ -52,8 +58,28 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $this->http = new Http($this->sourceName, $username);
         $this->dateFormat = self::RATINGSYNC_DATE_FORMAT;
         $this->maxCriticScore = 100;
+        $this->sort = static::SORT_MODIFIED;
+        $this->sortDirection = static::SORTDIR_DESC;
         $this->clearContentTypeFilter();
         $this->clearListFilter();
+    }
+
+    public static function validSort($sort)
+    {
+        $validSorts = array(static::SORT_MODIFIED);
+        if (in_array($sort, $validSorts)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function validSortDirection($sortDirection)
+    {
+        $validSortDirection = array(static::SORTDIR_ASC, static::SORTDIR_DESC);
+        if (in_array($sortDirection, $validSortDirection)) {
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -138,7 +164,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $refreshCache = Constants::USE_CACHE_NEVER;
         $films = array();
 
-        $orderBy = "ORDER BY yourRatingDate DESC";
+        $orderBy = "ORDER BY yourRatingDate " . $this->getSortDirection();
 
         $limit = "";
         if (!empty($limitPages)) {
@@ -387,5 +413,33 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
         
         return $commaDelimitedLists;
+    }
+
+    public function setSort($sort)
+    {
+        if (! $this->validSort($sort) ) {
+            throw new \InvalidArgumentException(__FUNCTION__." Invalid sort param '$sort'");
+        }
+
+        $this->sort = $sort;
+    }
+
+    public function getSort()
+    {
+        return $this->sort;
+    }
+
+    public function setSortDirection($sortDirection)
+    {
+        if (! $this->validSortDirection($sortDirection) ) {
+            throw new \InvalidArgumentException(__FUNCTION__." Invalid sortDirection param '$sortDirection'");
+        }
+
+        $this->sortDirection = $sortDirection;
+    }
+
+    public function getSortDirection()
+    {
+        return $this->sortDirection;
     }
 }

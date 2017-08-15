@@ -86,9 +86,13 @@ function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListn
     }
 
     // Sort
+    $hiddenSort = "";
+    if ($displayListname == Constants::RATINGS_PAGE_LABEL) {
+        $hiddenSort = "hidden";
+    }
     $sortHtml = "";
     $sortHtml .= '<div class="rs-filmlist-sort">'."\n";
-    $sortHtml .= '  <select id="sort" onchange="onChangeSort();">'."\n";
+    $sortHtml .= '  <select id="sort" onchange="onChangeSort();" '.$hiddenSort.'>'."\n";
     $sortHtml .= '    <option value="pos">Position</option>'."\n";
     $sortHtml .= '    <option value="mod">Added</option>'."\n";
     $sortHtml .= '  </select>'."\n";
@@ -189,6 +193,8 @@ function getHmtlFilmlistPagination($action) {
     $html = "";
     $html .= '<form name="pageForm" action="'.$action.'" method="post">';
     $html .= '    <input id="param-p" name="p" hidden>';
+    $html .= '    <input id="param-sort" name="sort" hidden>';
+    $html .= '    <input id="param-direction" name="direction" hidden>';
     $html .= '    <input id="param-feature" name="feature" hidden>';
     $html .= '    <input id="param-tvseries" name="tvseries" hidden>';
     $html .= '    <input id="param-tvepisodes" name="tvepisodes" hidden>';

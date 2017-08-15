@@ -23,6 +23,7 @@ class Constants
     const SOURCE_YOUTUBE                = "YouTube";
     const SOURCE_HBO                    = "HBO";
     const LIST_DEFAULT                  = "Watchlist";
+    const RATINGS_PAGE_LABEL            = "Your Ratings";
     const EXPORT_FORMAT_XML             = "XML";
     const IMPORT_FORMAT_XML             = "XML";
     const USE_CACHE_ALWAYS              = -1;

@@ -295,6 +295,8 @@ function api_getRatings($username)
 {
     $pageSize = array_value_by_key("ps", $_GET);
     $beginPage = array_value_by_key("bp", $_GET);
+    $sort = array_value_by_key("sort", $_GET);
+    $sortDirection = array_value_by_key("direction", $_GET);
     $feature = array_value_by_key("feature", $_GET);
     $tvseries = array_value_by_key("tvseries", $_GET);
     $tvepisodes = array_value_by_key("tvepisodes", $_GET);
@@ -302,13 +304,29 @@ function api_getRatings($username)
     $filterlists = array_value_by_key("filterlists", $_GET);
     $filtergenres = array_value_by_key("filtergenres", $_GET);
     $filtergenreany = array_value_by_key("filtergenreany", $_GET);
-    logDebug("Params ps=$pageSize, bp=$beginPage, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany", __FUNCTION__." ".__LINE__);
+    logDebug("Params ps=$pageSize, bp=$beginPage, sort=$sort (ignored), sortDirection=$sortDirection, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany", __FUNCTION__." ".__LINE__);
     
     if (empty($pageSize)) {
         $pageSize = null;
     }
     if (empty($beginPage)) {
         $beginPage = 1;
+    }
+
+    if (strtolower($sort) == "pos") {
+        $sort = Filmlist::SORT_POSITION;
+    } elseif (strtolower($sort) == "mod") {
+        $sort = Filmlist::SORT_MODIFIED;
+    } elseif (!Filmlist::validSortDirection($sort)) {
+        $sort = Filmlist::SORT_MODIFIED;
+    }
+
+    if (strtolower($sortDirection) == "desc") {
+        $sortDirection = Filmlist::SORTDIR_DESC;
+    } elseif (strtolower($sortDirection) == "asc") {
+        $sortDirection = Filmlist::SORTDIR_ASC;
+    } elseif (!Filmlist::validSortDirection($sortDirection)) {
+        $sortDirection = Filmlist::SORTDIR_DESC;
     }
 
     $filterArr = array();
@@ -343,6 +361,7 @@ function api_getRatings($username)
     }
 
     $site = new \RatingSync\RatingSyncSite($username);
+    $site->setSortDirection($sortDirection);
     $site->setContentTypeFilter($filterArr);
     $site->setListFilter($filterListsArr);
     $site->setGenreFilter($filterGenresArr);
