@@ -45,6 +45,9 @@ elseif ($action == "getRatings") {
 elseif ($action == "getFilmsByList") {
     $response = api_getFilmsByList($username);
 }
+elseif ($action == "searchFilms") {
+    $response = api_searchFilms($username);
+}
 
 echo $response;
 
@@ -470,6 +473,30 @@ function api_getFilmsByList($username)
     $response .= ', "pageSize":"' .$pageSize. '"';
     $response .= ', "beginPage":"' .$beginPage. '"';
     $response .= ', "films":[';
+    $delimeter = "";
+    foreach($films as $film) {
+        $response .= $delimeter . $film->json_encode(true);
+        $delimeter = ",";
+    }
+    $response .= ']}';
+
+    return $response;
+}
+
+function api_searchFilms($username)
+{
+    $searchDomain = array_value_by_key("sd", $_GET);
+    $listname = array_value_by_key("list", $_GET);
+    $query = array_value_by_key("q", $_GET);
+    logDebug("Params sd=$searchDomain, list=$listname, q=$query", __FUNCTION__." ".__LINE__);
+
+    $site = new RatingSyncSite($username);
+    $limit = 5;
+    // Search domains supported: ratings, list, both
+    $films = $site->search($query, $searchDomain, $listname, $limit);
+    
+    $response = '{';
+    $response .= '"films":[';
     $delimeter = "";
     foreach($films as $film) {
         $response .= $delimeter . $film->json_encode(true);

@@ -239,17 +239,37 @@ checklist-line input[type="radio"] {
     background-color: white;
 }
 
-#header-search-suggestion div.suggestion-selected {
-	background-color: #f1f1f1;
+#header-search-suggestion a {
+    text-decoration-line: none;
 }
 
-#header-search-suggestion img {
-	width: 40px;
+#header-search-suggestion a.suggestion-selected > div {
+	background-color: #f1f1f1;
 }
 
 .search-suggestion-item {
     padding-top: 1px;
     padding-bottom: 1px;
+    border-bottom: 1px solid #ccc;
+    min-height: 61px;
+}
+
+.search-suggestion-item > poster {
+    padding: 0px;
+    padding-right: 1px;
+}
+
+.search-suggestion-item > poster > img {
+	width: 40px;
+    height: auto;
+}
+
+.search-suggestion-rating-rs {
+    color: orange;
+}
+
+.search-suggestion-label {
+    text-align: center;
     border-bottom: 1px solid #ccc;
 }
 

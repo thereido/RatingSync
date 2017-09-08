@@ -442,4 +442,136 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     {
         return $this->sortDirection;
     }
+
+    public function search($searchQuery, $searchDomain, $listname, $limit)
+    {
+        $films = array();
+        $filmIds = array();
+        $db = getDatabase();
+
+        // Search titles with the full $searchQuery
+        $query = $this->getSearchSql($searchDomain, $searchQuery, $limit);
+        $result = $db->query($query);
+        while ($row = $result->fetch_assoc()) {
+            $filmId = intval($row["film_id"]);
+            $film = Film::getFilmFromDb($filmId, $this->username);
+            $films[] = $film;
+            $filmIds[] = $film->getId();
+        }
+
+        // Search titles with any words in $searchQuery
+        $queryWords = explode(" ", $searchQuery);
+        if (count($films) < $limit) {
+            foreach ($queryWords as $word) {
+                $query = $this->getSearchSql($searchDomain, $word, $limit);
+                $result = $db->query($query);
+                while ($row = $result->fetch_assoc()) {
+                    $filmId = intval($row["film_id"]);
+                    if (!in_array($filmId, $filmIds)) {
+                        $film = Film::getFilmFromDb($filmId, $this->username);
+                        $films[] = $film;
+                        $filmIds[] = $film->getId();
+                    }
+                }
+
+                if (count($films) >= $limit) {
+                    break;
+                }
+            }
+        }
+        
+        // Search titles with anything that sounds like words in $searchQuery
+        /* This works, but the benefit is probably not worth the performance hit
+        if (count($films) < $limit) {
+            foreach ($queryWords as $word) {
+                $query = $this->getRatingsSqlQuery($word, $limit, true);
+                $result = $db->query($query);
+                while ($row = $result->fetch_assoc()) {
+                    $filmId = intval($row["film_id"]);
+                    if (!in_array($filmId, $filmIds)) {
+                        $film = Film::getFilmFromDb($filmId, $this->username);
+                        $films[] = $film;
+                        $filmIds[] = $film->getId();
+                    }
+                }
+
+                if (count($films) >= $limit) {
+                    break;
+                }
+            }
+        }
+        */
+        
+        return $films;
+    }
+
+    protected function getSearchSql($searchDomain, $search, $limit, $useSounds = false)
+    {
+        $sql = "";
+
+        if ($searchDomain == "ratings") {
+            $sql = $this->getRatingsSqlQuery($search, $limit, $useSounds);
+        } else if ($searchDomain == "list") {
+            $sql = $this->getDefaultListSqlQuery($search, $limit, $useSounds);
+        } else if ($searchDomain == "both") {
+            $sql = $this->getBothSqlQuery($search, $limit, $useSounds);
+        }
+
+        return $sql;
+    }
+
+    protected function getRatingsSqlQuery($search, $limit, $useSounds = false)
+    {
+        $sounds = "";
+        if ($useSounds) {
+            $sounds = "SOUNDS";
+        }
+        
+        $query  = "SELECT DISTINCT rating.film_id FROM rating, film";
+        $query .= " WHERE film.title $sounds LIKE '%$search%'";
+        $query .= "   AND rating.user_name = '". $this->username ."'";
+        $query .= "   AND rating.source_name = 'RatingSync'";
+        $query .= "   AND rating.film_id = film.id";
+        $query .= " LIMIT $limit";
+
+        return $query;
+    }
+
+    protected function getDefaultListSqlQuery($search, $limit, $useSounds = false)
+    {
+        $sounds = "";
+        if ($useSounds) {
+            $sounds = "SOUNDS";
+        }
+        
+        $query  = "SELECT DISTINCT filmlist.film_id FROM filmlist, film";
+        $query .= " WHERE film.title $sounds LIKE '%$search%'";
+        $query .= "   AND filmlist.user_name = '". $this->username ."'";
+        $query .= "   AND filmlist.listname = '" . Constants::LIST_DEFAULT . "'";
+        $query .= "   AND filmlist.film_id = film.id";
+        $query .= " LIMIT $limit";
+
+        return $query;
+    }
+
+    protected function getBothSqlQuery($search, $limit, $useSounds = false)
+    {
+        $sounds = "";
+        if ($useSounds) {
+            $sounds = "SOUNDS";
+        }
+        $username = $this->username;
+        $listname = Constants::LIST_DEFAULT;
+        
+        $query  = "SELECT DISTINCT id as film_id FROM film";
+        $query .= "  WHERE film.title $sounds LIKE '%$search%'";
+        $query .= "    AND (";
+        $query .= "      id IN (SELECT film_id FROM rating WHERE rating.user_name = '$username' AND rating.source_name = 'RatingSync')";
+        $query .= "      OR";
+        $query .= "      id IN (SELECT film_id FROM filmlist WHERE filmlist.user_name = '$username' AND filmlist.listname = '$listname')";
+        $query .= "    )";
+        $query .= "  LIMIT $limit";
+
+        return $query;
+    }
 }

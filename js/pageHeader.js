@@ -1,5 +1,6 @@
 
 var oldHeaderSearchQuery = "";
+var searchDomain = "all"; // all, ratings, list, both
 
 function toggleHidden(elementId) {
 	var el = document.getElementById(elementId);
@@ -7,8 +8,8 @@ function toggleHidden(elementId) {
 }
 
 function onKeyUpHeaderSearch(event) {
-    var keyCode = ('which' in event) ? event.which : event.keyCode;
-    if (keyCode == 38 || keyCode == 40) {
+    var key = event.key;
+    if (key == 'ArrowUp' || key == "ArrowDown") {
         // Up or Down arrow
         var newSelectedEl;
 	    var selectedUniqueNameEl = document.getElementById("selected-suggestion-uniquename");
@@ -20,45 +21,59 @@ function onKeyUpHeaderSearch(event) {
             var originallySelected = selectedEls[0];
             newSelectedEl = originallySelected;
             var sibling;
-            if (keyCode == 38) {
+            if (key == "ArrowUp") {
                 // Up arrow
                 sibling = originallySelected.previousSibling;
                 newSelectedEl = sibling;
-                originallySelected.setAttribute("class", "search-suggestion-item"); // Not selected
+                originallySelected.setAttribute("class", ""); // Not selected
             } else {
                 // Down arrow (keycode 40)
                 sibling = originallySelected.nextSibling;
             }
             if (sibling) {
                 newSelectedEl = sibling;
-                originallySelected.setAttribute("class", "search-suggestion-item"); // Not selected
-                newSelectedEl.setAttribute("class", "search-suggestion-item suggestion-selected");
+                originallySelected.setAttribute("class", ""); // Not selected
+                newSelectedEl.setAttribute("class", "suggestion-selected");
             }
-        } else if (keyCode == 40) {
+        } else if (key == "ArrowDown") {
             // None selected. Select the first item
-            var suggestionEls = suggestionBoxEl.getElementsByTagName("div");
+            var suggestionEls = suggestionBoxEl.getElementsByTagName("a");
             if (suggestionEls.length > 0) {
                 newSelectedEl = suggestionEls[0];
-                newSelectedEl.setAttribute("class", "search-suggestion-item suggestion-selected");
+                newSelectedEl.setAttribute("class", "suggestion-selected");
             }
         }
 
         if (newSelectedEl) {
-	        selectedUniqueNameEl.value = newSelectedEl.getAttribute("data-imdb-uniquename");
+            var selectedItemEl = newSelectedEl.getElementsByClassName("search-suggestion-item")[0];
+	        selectedUniqueNameEl.value = selectedItemEl.getAttribute("data-imdb-uniquename");
         }
+    } else if (key == 'Escape') {
+        document.getElementById("header-search-suggestion").hidden = true;
     } else {
         updateHeaderSearch();
     }
 }
 
-function updateHeaderSearch() {
+function updateHeaderSearch(newSearchDomain) {
     var query = document.getElementById("header-search-text").value.trim();
+	var suggestionEl = document.getElementById("header-search-suggestion");
+	var changedSearchDomain = false;
+    if (newSearchDomain && searchDomain != newSearchDomain) {
+        searchDomain = newSearchDomain;
+        changedSearchDomain = true;
+    }
+
     if (query.length == 0) {
 	    document.getElementById("selected-suggestion-uniquename").value = "";
-	    var suggestionEl = document.getElementById("header-search-suggestion");
         suggestionEl.innerHTML = "";
         suggestionEl.hidden = true;
-    } else if (query.length > 2 && query != oldHeaderSearchQuery) {
+    } else if (query.length > 2 && (query != oldHeaderSearchQuery || changedSearchDomain)) {
+        if (changedSearchDomain) {
+            suggestionEl.innerHTML = "";
+            suggestionEl.hidden = true;
+        }
+
 	    document.getElementById("selected-suggestion-uniquename").value = "";
 	    var xmlhttp = new XMLHttpRequest();
         var callbackHandler = function () { searchSuggestionCallback(query, xmlhttp); };
@@ -82,4 +97,29 @@ function showHeaderSearchInput(searchQuery) {
     if (inputEl) {
         inputEl.value = searchQuery;
     }
+}
+
+function onClickSearchDropdown(newSearchDomain) {
+    if (newSearchDomain == searchDomain) {
+        return;
+    }
+
+    var hintText = "";
+    var clickedItem = "";
+    if (newSearchDomain == "ratings") {
+        hintText = "Search your ratings";
+    } else if (newSearchDomain == "list") {
+        hintText = "Search watchlist";
+    } else if (newSearchDomain == "both") {
+        hintText = "Search both";
+    } else {
+        hintText = "Search";
+    }
+    
+    // Set hint text
+    var searchTextEl = document.getElementById("header-search-text");
+    searchTextEl.placeholder = hintText;
+
+    // Update the search
+    updateHeaderSearch(newSearchDomain);
 }
