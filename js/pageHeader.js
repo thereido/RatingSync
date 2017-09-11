@@ -55,14 +55,9 @@ function onKeyUpHeaderSearch(event) {
     }
 }
 
-function updateHeaderSearch(newSearchDomain) {
+function updateHeaderSearch(changedSearchDomain) {
     var query = document.getElementById("header-search-text").value.trim();
 	var suggestionEl = document.getElementById("header-search-suggestion");
-	var changedSearchDomain = false;
-    if (newSearchDomain && searchDomain != newSearchDomain) {
-        searchDomain = newSearchDomain;
-        changedSearchDomain = true;
-    }
 
     if (query.length == 0) {
 	    document.getElementById("selected-suggestion-uniquename").value = "";
@@ -88,7 +83,7 @@ function onSubmitHeaderSearch() {
     if (selectedUniqueNameEl.value) {
         formEl.action = "/php/detail.php";
     } else {
-        formEl.action = "/php/search.php";
+        formEl.action = "/php/search.php?sd=" + searchDomain;
     }
 }
 
@@ -103,6 +98,14 @@ function onClickSearchDropdown(newSearchDomain) {
     if (newSearchDomain == searchDomain) {
         return;
     }
+
+    // Update the search
+    updateHeaderSearchDomain(newSearchDomain);
+    updateHeaderSearch(true);
+}
+
+function updateHeaderSearchDomain(newSearchDomain) {
+    searchDomain = newSearchDomain;
 
     var hintText = "";
     var clickedItem = "";
@@ -119,7 +122,4 @@ function onClickSearchDropdown(newSearchDomain) {
     // Set hint text
     var searchTextEl = document.getElementById("header-search-text");
     searchTextEl.placeholder = hintText;
-
-    // Update the search
-    updateHeaderSearch(newSearchDomain);
 }

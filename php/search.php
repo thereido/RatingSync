@@ -11,8 +11,20 @@ require_once "src/ajax/getHtmlFilmlists.php";
 
 $username = getUsername();
 $searchQuery = "";
+$searchDomain = "";
+$searchPageLabel = "Search";
 if (array_key_exists("header-search-text", $_POST)) {
     $searchQuery = $_POST['header-search-text'];
+}
+if (array_key_exists("sd", $_GET)) {
+    $searchDomain = $_GET['sd'];
+}
+if ($searchDomain == "ratings") {
+    $searchPageLabel = "Search Your Ratings";
+} else if ($searchDomain == "list") {
+    $searchPageLabel = "Search " . Constants::LIST_DEFAULT;
+} else if ($searchDomain == "both") {
+    $searchPageLabel = "Search Your Ratings & " . Constants::LIST_DEFAULT;
 }
 $pageHeader = getPageHeader();
 $pageFooter = getPageFooter();
@@ -37,7 +49,7 @@ $pageFooter = getPageFooter();
     <?php echo $pageHeader; ?>
 
     <div class='well well-sm'>
-        <h2>Search</h2>
+        <h2><?php echo $searchPageLabel; ?></h2>
     </div>
     
     <div id="debug"></div>
@@ -57,6 +69,10 @@ $pageFooter = getPageFooter();
     var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
     var username = "<?php getUsername(); ?>";
     var oldSearchQuery = "";
+    var pageParamSearchDomain = "<?php echo $searchDomain; ?>";
+    if (pageParamSearchDomain != "" && pageParamSearchDomain != searchDomain) {
+        updateHeaderSearchDomain(pageParamSearchDomain);
+    }
     showHeaderSearchInput("<?php echo $searchQuery; ?>");
     fullSearch("<?php echo $searchQuery; ?>");
 </script>

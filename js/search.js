@@ -40,19 +40,45 @@ function searchFilmsCallback(query, xmlhttp, callback) {
 
 function searchPageCallback(query, xmlhttp) {
 	var result = JSON.parse(xmlhttp.responseText);
+	var films = [];
 	var searchResultEl = document.getElementById("search-result-tbody");
+    var limit = 10;
 
-    // OMDB
+	// Is the result from OMDB or RatingSync
+    var dataFromOmdb = false;
+	if (result.Search) {
+	    dataFromOmdb = true;
+	    films = result.Search;
+	} else {
+	    films = result.films;
+	}
+
 	searchResultEl.innerHTML = "";
 	var suggestionCount = 0;
-	while (suggestionCount < 10 && result.Search && result.Search.length > suggestionCount) {
-	    var omdbFilm = result.Search[suggestionCount];
+	while (suggestionCount < 10 && films && films.length > suggestionCount) {
+	    var film = films[suggestionCount];
+
+        // Get IMDb uniqueName
+	    var imdbUniqueName = "";
+        if (dataFromOmdb) {
+            imdbUniqueName = film.imdbID;
+        } else {
+            var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
+            if (imdb && imdb != "undefined") {
+                imdbUniqueName = imdb.uniqueName;
+            }
+        }
 
         var rowEl = document.createElement("DIV");
         rowEl.setAttribute("class", "row");
-        rowEl.setAttribute("id", "search-" + omdbFilm.imdbID);
+        rowEl.setAttribute("id", "search-" + imdbUniqueName);
         searchResultEl.appendChild(rowEl);
-        renderOmdbFilm(omdbFilm, rowEl);
+        if (dataFromOmdb) {
+            renderOmdbFilm(film, rowEl);
+        } else {
+            var filmEl = renderSearchResultFilm(film, rowEl);
+            renderRsFilmDetails(film, filmEl);
+        }
 
         suggestionCount = suggestionCount + 1;
 	}
@@ -62,23 +88,11 @@ function searchSuggestionCallback(query, xmlhttp) {
 	var result = JSON.parse(xmlhttp.responseText);
 	var films = result.films;
 	var suggestionEl = document.getElementById("header-search-suggestion");
-	var suggestionCount = 0;
 	var limit = 5;
 
     if (result.Search && result.Search.length > 0) {
         // This is a result from OMDB. Convert to RatingSync style
-        films = { "films":[] }.films;
-        while (suggestionCount < limit && result.Search && result.Search.length > suggestionCount) {
-	        var omdbFilm = result.Search[suggestionCount];
-            var rsFilm = {};
-            rsFilm.image = omdbFilm.Poster;
-            rsFilm.title = omdbFilm.Title;
-            rsFilm.year = omdbFilm.Year;
-            rsFilm.sources = [{ "name": "IMDb", "image": omdbFilm.Poster, "uniqueName": omdbFilm.imdbID }];
-            films[suggestionCount] = rsFilm;
-
-            suggestionCount = suggestionCount + 1;
-        }
+	    films = convertOmdbToRs(result, limit);
     }
 
     var suggestionLabelEl = document.createElement("div");
@@ -98,7 +112,7 @@ function searchSuggestionCallback(query, xmlhttp) {
 
 	suggestionEl.innerHTML = "";
 	suggestionEl.appendChild(suggestionLabelEl);
-	suggestionCount = 0;
+	var suggestionCount = 0;
 	while (suggestionCount < limit && films && films.length > suggestionCount) {
 	    var film = films[suggestionCount];
         var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
@@ -178,12 +192,19 @@ function renderOmdbFilm(omdbFilm, element) {
     filmStr = filmStr +              ']';
     filmStr = filmStr + ' }';
     var film = JSON.parse(filmStr);
-    
+
+    var filmEl = renderSearchResultFilm(film, element);
+
+    // Get RS data for this film if it is in the db
+    getRatingSync(omdbFilm, filmEl, true);
+}
+
+function renderSearchResultFilm(film, element) {
     var filmEl = document.createElement("DIV");
     filmEl.setAttribute("class", "col-xs-12 col-sm-12 col-md-12 col-lg-12");
 
     var posterEl = document.createElement("poster");
-    posterEl.innerHTML = '<img src="'+image+'" width="150px"/>';
+    posterEl.innerHTML = '<img src="'+film.image+'" width="150px" alt="'+film.title+'"/>';
 
     var detailEl = buildFilmDetailElement(film);
     var statusEl = detailEl.getElementsByTagName("status")[0];
@@ -195,8 +216,7 @@ function renderOmdbFilm(omdbFilm, element) {
     filmEl.appendChild(detailEl);
     element.appendChild(filmEl);
 
-    // Get RS data for this film if it is in the db
-    getRatingSync(omdbFilm, filmEl, true);
+    return filmEl;
 }
 
 function getRatingSync(omdbFilm, filmEl, detailFromRsOnly) {
@@ -273,4 +293,22 @@ function renderNoRsFilmDetails(filmEl, omdbFilm) {
 function onClickSeeMore(omdbFilm, filmEl, seeMoreEl) {
     seeMoreEl.innerHTML = '<img src="/image/processing.gif" alt="Please wait Icon" width="28" height="28">';
     getRatingSync(omdbFilm, filmEl, false);
+}
+
+function convertOmdbToRs(omdbSearchResult, limit) {
+    var films = { "films":[] }.films;
+    var suggestionCount = 0;
+    while (suggestionCount < limit && omdbSearchResult.Search && omdbSearchResult.Search.length > suggestionCount) {
+	    var omdbFilm = omdbSearchResult.Search[suggestionCount];
+        var rsFilm = {};
+        rsFilm.image = omdbFilm.Poster;
+        rsFilm.title = omdbFilm.Title;
+        rsFilm.year = omdbFilm.Year;
+        rsFilm.sources = [{ "name": "IMDb", "image": omdbFilm.Poster, "uniqueName": omdbFilm.imdbID }];
+        films[suggestionCount] = rsFilm;
+
+        suggestionCount = suggestionCount + 1;
+    }
+
+    return films;
 }
