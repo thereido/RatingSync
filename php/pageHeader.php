@@ -85,7 +85,7 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '              <input id="header-search-text" name="header-search-text" type="text" class="form-control" placeholder="Search" onkeyup="onKeyUpHeaderSearch(event);">'."\n";
     $html .= '            </div>'."\n";
     $html .= '            <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>'."\n";
-    $html .= '            <header-search-suggestion id="header-search-suggestion" hidden></header-search-suggestion>'."\n";
+    $html .= '            <div id="header-search-suggestion" hidden></div>'."\n";
     $html .= '            <input id="selected-suggestion-uniquename" name="selected-suggestion-uniquename" hidden>'."\n";
     $html .= '          </form>'."\n";
     $html .= '        </li>'."\n";
