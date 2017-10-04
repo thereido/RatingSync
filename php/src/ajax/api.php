@@ -48,6 +48,9 @@ elseif ($action == "getFilmsByList") {
 elseif ($action == "searchFilms") {
     $response = api_searchFilms($username);
 }
+elseif ($action == "validateNewUsername") {
+    $response = api_validateNewUsername();
+}
 
 echo $response;
 
@@ -503,6 +506,20 @@ function api_searchFilms($username)
         $delimeter = ",";
     }
     $response .= ']}';
+
+    return $response;
+}
+
+function api_validateNewUsername()
+{
+    $newUsername = array_value_by_key("u", $_GET);
+    logDebug("Params u=$newUsername", __FUNCTION__." ".__LINE__);
+
+    $isValid = "false";
+    if (!RatingSyncSite::usernameExists($newUsername)) {
+        $isValid = "true";
+    }
+    $response = '{"valid":"' . $isValid . '"}';
 
     return $response;
 }

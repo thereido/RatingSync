@@ -62,13 +62,36 @@ class SessionUtility {
     public static function registerUser($username, $password)
     {
         $success = false;
+        $failure = false;
         $db = getDatabase();
 
-        $columns = "username, password";
-        $values = "'$username', '$password'";
+        // Create User
+        $columns = "username, password, enabled";
+        $values = "'$username', '$password', FALSE";
         $query = "INSERT INTO user ($columns) VALUES ($values)";
         logDebug($query, __FUNCTION__." ".__LINE__);
-        if ($db->query($query)) {
+        $failure = !($db->query($query));
+
+        // Create default userlist
+        if (!$failure) {
+            $columns = "user_name, listname";
+            $values = "'$username', '".Constants::LIST_DEFAULT."'";
+            $query = "INSERT INTO user_filmlist ($columns) VALUES ($values)";
+            logDebug($query, __FUNCTION__." ".__LINE__);
+            $failure = !($db->query($query));
+        }
+
+        // Enable the user
+        if (!$failure) {
+            $columns = "username, password, enabled";
+            $values = "'$username', '$password', FALSE";
+            $query = "UPDATE user SET enabled=TRUE WHERE username='$username'";
+            logDebug($query, __FUNCTION__." ".__LINE__);
+            $failure = !($db->query($query));
+        }
+
+        // If there were no failures, that means success
+        if (!$failure) {
             $success = true;
         }
 

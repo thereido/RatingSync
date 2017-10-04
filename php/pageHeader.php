@@ -12,11 +12,11 @@ require_once "src/Constants.php";
 function includeJavascriptFiles() {
     $html = '';
     $html .= '<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>' . "\n";
-    $html .= '<script src="../js/bootstrap_rs.min.js"></script>' . "\n";
-    $html .= '<script src="../Chrome/constants.js"></script>' . "\n";
-    $html .= '<script src="../Chrome/rsCommon.js"></script>' . "\n";
-    $html .= '<script src="../js/pageHeader.js"></script>' . "\n";
-    $html .= '<script src="../js/search.js"></script>' . "\n";
+    $html .= '<script src="/js/bootstrap_rs.min.js"></script>' . "\n";
+    $html .= '<script src="/Chrome/constants.js"></script>' . "\n";
+    $html .= '<script src="/Chrome/rsCommon.js"></script>' . "\n";
+    $html .= '<script src="/js/pageHeader.js"></script>' . "\n";
+    $html .= '<script src="/js/search.js"></script>' . "\n";
 
     return $html;
 }

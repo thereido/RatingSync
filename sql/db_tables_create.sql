@@ -1,8 +1,29 @@
 CREATE TABLE IF NOT EXISTS user
     (
-        username VARCHAR(50) NOT NULL PRIMARY KEY,
+        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50) NOT NULL UNIQUE,
         password VARCHAR(50) NULL DEFAULT NULL,
-        ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        email VARCHAR(50) NULL DEFAULT NULL,
+        enabled BOOLEAN NOT NULL DEFAULT FALSE,
+        ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        INDEX idx_username (username, enabled),
+        INDEX idx_id (id, enabled)
+    );
+
+CREATE TABLE IF NOT EXISTS verify_user
+    (
+        user_id INT NOT NULL,
+        verified BOOLEAN NOT NULL DEFAULT FALSE,
+        code VARCHAR(50) NULL DEFAULT NULL,
+        complete_ts TIMESTAMP NULL DEFAULT NULL,
+        create_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+        INDEX idx_user (user_id),
+        INDEX idx_user_complete (user_id, complete_ts),
+        
+        FOREIGN KEY (user_id)
+            REFERENCES user(id)
     );
 
 CREATE TABLE IF NOT EXISTS source

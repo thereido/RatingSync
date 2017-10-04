@@ -1,4 +1,6 @@
-INSERT INTO user (username, password) VALUES ('testratingsync', 'cf5c3cbc0b0f4c5b3c98a4fec08307f9');
+INSERT INTO user (username, password, email, enabled) VALUES ('testratingsync', 'cf5c3cbc0b0f4c5b3c98a4fec08307f9', 'testratingsync@example.com', TRUE);
+
+INSERT INTO verify_user (user_id, verified, code, complete_ts) VALUES (1, TRUE, '123abc', CURRENT_TIMESTAMP);
 
 INSERT INTO source (name) VALUES ('RatingSync');
 INSERT INTO source (name) VALUES ('Jinni');

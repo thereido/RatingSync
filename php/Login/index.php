@@ -2,13 +2,17 @@
 namespace RatingSync;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "pageHeader.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "SessionUtility.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Constants.php";
 
 // define variables and set to empty values
-$username = $password = $msg = $loginFormDisplay = $regFormDisplay = $headerScript = null;
+$username = $password = $loginFormDisplay = $regFormDisplay = $headerScript = null;
+$msgSuccess = $msgInfo = $msgWarning = $msgRegSuccess = $msgRegInfo = $msgRegWarning = null;
 $loginFormDisplay = "block";
+$loginHeaderClass = "active";
 $regFormDisplay = "none";
+$regHeaderClass = "";
 
 $http_referer = "";
 if (array_key_exists("destination", $_POST)) {
@@ -22,8 +26,10 @@ if (array_key_exists("destination", $_POST)) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($_POST['active-form'] == "login-form") {
         $loginFormDisplay = "block";
+        $loginHeaderClass = "active";
         $regFormDisplay = "none";
-        $msg = "<p>Incorrect username or password. Please try again.</p>";
+        $regHeaderClass = "";
+        $msgInfo = "<p>Incorrect username or password. Please try again.</p>";
         if (!empty($_POST['username']) && !empty($_POST['password'])) {
             SessionUtility::logout();
             $db = getDatabase();
@@ -35,39 +41,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $destination = "/";
                 }
                 $headerScript = '<script type="text/javascript">window.location.href = "'.$destination.'"</script>';
-                $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='".$destination."'>here</a>.<br>";
+                $msgSuccess = "<strong>Success</strong><br>If not redirected automatically, follow the link <a href='".$destination."'>here</a>.<br>";
             }
         }
-    } else if ($_POST['active-form'] == "register-form") {
+    } else if ($_POST['active-form'] == "verify-form") {
         $loginFormDisplay = "none";
+        $loginHeaderClass = "";
         $regFormDisplay = "block";
+        $regHeaderClass = "active";
         if (!empty($_POST['username']) && !empty($_POST['password'])) {
             $db = getDatabase();
             $username = $db->real_escape_string($_POST['username']);
             $password = md5($db->real_escape_string($_POST['password']));
-            $confirmPwd = md5($db->real_escape_string($_POST['confirm-password']));
-
-            if ($password != $confirmPwd) {
-                $msg = "<h1>Passwords do not match</h1>";
-            } else {
-                $query = "SELECT * FROM user WHERE username='$username'";
-                $result = $db->query($query);     
-                if ($result->num_rows == 1) {
-                    $msg = "<h1>Username taken</h1>";
+            if (SessionUtility::registerUser($username, $password)) {
+                if (SessionUtility::login($username, $password)) {
+                    $headerScript = '<script type="text/javascript">window.location.href = "/"</script>';
+                    $msgRegSuccess = "<strong>Success</strong><br>If not redirected automatically, follow the link <a href='/'>here</a>.<br>";
                 } else {
-                    $msg = "<h1>Registration failed</h1><br>Please try again. Maybe with a different username and/or password.<br>";
-                    $columns = "username, password";
-                    $values = "'$username', '$password'";
-                    if (SessionUtility::registerUser($username, $password)) {
-                        if (SessionUtility::login($username, $password)) {
-                            $headerScript = '<script type="text/javascript">window.location.href = "/"</script>';
-                            $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/'>here</a>.<br>";
-                        } else {
-                            $headerScript = '<script type="text/javascript">window.location.href = "/php/Login"</script>';
-                            $msg = "<h1>Success</h1><br>If not redirected automatically, follow the link <a href='/php/Login'>here</a>.<br>";
-                        }
-                    }
+                    $headerScript = '<script type="text/javascript">window.location.href = "/php/Login"</script>';
+                    $msgRegSuccess = "<strong>Success</strong><br>If not redirected automatically, follow the link <a href='/php/Login'>here</a>.<br>";
                 }
+            } else {
+                $msgRegWarning = "<strong>Registration failed</strong><br>Please try again. Maybe with a different username and/or password.<br>";
             }
         }
     }
@@ -80,6 +75,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>RatingSync Login</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="../../css/bootstrap_rs.min.css" rel="stylesheet" id="bootstrap-css">
+    <link href="../../css/rs.css" rel="stylesheet">
+    <?php echo includeJavascriptFiles(); ?>
+    <script src="../../js/login.js"></script>
     <style type="text/css">
     body {
     padding-top: 90px;
@@ -189,7 +187,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body>   
 
-    <?php echo $msg; ?>
 	<div class="container">
     	<div class="row">
 			<div class="col-md-6 col-md-offset-3">
@@ -197,10 +194,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					<div class="panel-heading">
 						<div class="row">
 							<div class="col-xs-6">
-								<a href="#" class="active" id="login-form-link">Login</a>
+								<a href="#" class="<?php echo $loginHeaderClass;?>" id="login-form-link">Login</a>
 							</div>
 							<div class="col-xs-6">
-								<a href="#" id="register-form-link">Register</a>
+								<a href="#" class="<?php echo $regHeaderClass;?>" id="register-form-link">Register</a>
 							</div>
 						</div>
 						<hr>
@@ -211,13 +208,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								<form id="login-form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" role="form" style="display: <?php echo $loginFormDisplay; ?>;">
                                     <input type="hidden" name="active-form" id="active-form" value="login-form">
                                     <input type="hidden" name="destination" id="destination" value="<?php echo $http_referer;?>">
+                                    <div id="msg-success" class="alert alert-success" hidden></div>
+                                    <div id="msg-info" class="alert alert-info" hidden></div>
+                                    <div id="msg-warning" class="alert alert-warning" hidden></div>
 									<div class="form-group">
 										<input type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username" value="">
 									</div>
 									<div class="form-group">
 										<input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password">
 									</div>
-									<div class="form-group text-center">
+									<div class="form-group text-center" hidden>
 										<input type="checkbox" tabindex="3" class="" name="remember" id="remember">
 										<label for="remember"> Remember Me</label>
 									</div>
@@ -228,7 +228,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 											</div>
 										</div>
 									</div>
-									<div class="form-group">
+									<div class="form-group" hidden>
 										<div class="row">
 											<div class="col-lg-12">
 												<div class="text-center">
@@ -238,24 +238,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 										</div>
 									</div>
 								</form>
-								<form id="register-form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" role="form" style="display: <?php echo $regFormDisplay; ?>;">
+								<form id="register-form" method="post" role="form" style="display: <?php echo $regFormDisplay; ?>;" onsubmit="validateRegistrationInput(); return false;">
                                     <input type="hidden" name="active-form" id="active-form" value="register-form">
+                                    <div id="msg-reg-success" class="alert alert-success" hidden></div>
+                                    <div id="msg-reg-info" class="alert alert-info" hidden></div>
+                                    <div id="msg-reg-warning" class="alert alert-warning" hidden></div>
 									<div class="form-group">
-										<input type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username" value="">
+										<input type="text" name="username" id="username-reg" tabindex="1" class="form-control" placeholder="Username" value="" required>
 									</div>
 									<div class="form-group">
-										<input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password">
+										<input type="password" name="password" id="password-reg" tabindex="2" class="form-control" placeholder="Password" required>
 									</div>
 									<div class="form-group">
-										<input type="password" name="confirm-password" id="confirm-password" tabindex="2" class="form-control" placeholder="Confirm Password">
+										<input type="password" name="confirm-password" id="password-reg-confirm" tabindex="2" class="form-control" placeholder="Confirm Password" required>
 									</div>
 									<div class="form-group">
 										<div class="row">
 											<div class="col-sm-6 col-sm-offset-3">
-												<input type="submit" name="register-submit" id="register-submit" tabindex="4" class="form-control btn btn-register" value="Register Now">
+                                                <button type="button" class="form-control btn btn-register" tabindex="4" onclick="validateRegistrationInput()">
+                                                  Register
+                                                </button>
 											</div>
 										</div>
-									</div>
+									</div>  
+								</form>    
+                                <form id="verify-form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" role="form">
+                                    <input type="hidden" name="active-form" id="active-form" value="verify-form">
+                                    <input type="text" name="username" id="username-verify" hidden>
+                                    <input type="text" name="password" id="password-verify" hidden>
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="registerModalLabel">
+                                      <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                          <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                            <h4 class="modal-title" id="myModalLabel">Password warning</h4>
+                                          </div>
+                                          <div class="modal-body">
+                                              <p><strong>Do not forget your password!</strong></p>
+                                              This site has many limitations as it is still in development.
+                                              <ul>
+                                                  <li>If you forget your password we cannot reset it</li>
+                                                  <li>You cannot change your password after you register</li>
+                                              </ul>
+                                          </div>
+                                          <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+                                            <button type="submit" class="btn btn-register">&nbsp;&nbsp;Register&nbsp;&nbsp;</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
 								</form>
 							</div>
 						</div>
@@ -264,7 +297,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			</div>
 		</div>
 	</div>
+
+<script>
+    renderMsg("<?php echo $msgSuccess; ?>", document.getElementById("msg-success"));
+    renderMsg("<?php echo $msgInfo; ?>", document.getElementById("msg-info"));
+    renderMsg("<?php echo $msgWarning; ?>", document.getElementById("msg-warning"));
+    renderMsg("<?php echo $msgRegSuccess; ?>", document.getElementById("msg-reg-success"));
+    renderMsg("<?php echo $msgRegInfo; ?>", document.getElementById("msg-reg-info"));
+    renderMsg("<?php echo $msgRegWarning; ?>", document.getElementById("msg-reg-warning"));
+</script>
+
 <script type="text/javascript">
+
     $(function () {
 
         $('#login-form-link').click(function (e) {

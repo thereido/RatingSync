@@ -574,4 +574,19 @@ class RatingSyncSite extends \RatingSync\SiteRatings
 
         return $query;
     }
+
+    public static function usernameExists($username) {
+        $db = getDatabase();
+
+        $query = "SELECT count(1) as count FROM user WHERE username='" . $username . "'";
+        $result = $db->query($query);
+        $row = $result->fetch_assoc();
+        
+        $exists = false;
+        if ($row["count"] > 0) {
+            $exists = true;
+        }
+
+        return $exists;
+    }
 }
