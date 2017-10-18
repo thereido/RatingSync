@@ -102,7 +102,7 @@ function getDatabase($mode = Constants::DB_MODE)
     return $db_conn;
 }
 
-function logDebug($input, $prefix = null, $showTime = true)
+function logDebug($input, $prefix = null, $showTime = true, $printArray = null)
 {
     if (!empty($prefix)) {
         $time = "";
@@ -111,9 +111,24 @@ function logDebug($input, $prefix = null, $showTime = true)
         }
         $prefix = $time . " " . $prefix . ":\t";
     }
+    $suffix = "";
+    if ($printArray !== null && is_array($printArray)) {
+        $keys = array_keys($printArray);
+        $length = count($keys);
+        $suffix .= "\narray($length) {\n";
+        foreach ($keys as $key) {
+            $quote = '"';
+            if (is_numeric($key)) {
+                $quote = "";
+            }
+            $value = $printArray[$key];
+            $suffix .= "\t[$quote$key$quote] => $value\n";
+        }
+        $suffix .= "}";
+    }
     $logfilename =  Constants::outputFilePath() . "logDebug.txt";
     $fp = fopen($logfilename, "a");
-    fwrite($fp, $prefix . $input . PHP_EOL);
+    fwrite($fp, $prefix . $input . $suffix . PHP_EOL);
     fclose($fp);
 }
 
