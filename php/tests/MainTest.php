@@ -38,11 +38,11 @@ class MainTest extends RatingSyncTestCase
 
         // Test
         $searchTerms = array("uniqueName" => "tt2294629", "sourceName" => Constants::SOURCE_IMDB);
-        $film = search($searchTerms)['match']; // Frozen (2013)
+        $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match']; // Frozen (2013)
         $filmId = $film->getId();
 
         // Verify database - film
-        $film = Film::GetFilmFromDb($filmId, getUsername());
+        $film = Film::GetFilmFromDb($filmId, Constants::TEST_RATINGSYNC_USERNAME);
         $this->assertEquals("Frozen", $film->getTitle(), "Title");
         $this->assertEquals(2013, $film->getYear(), "Year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
@@ -98,7 +98,7 @@ class MainTest extends RatingSyncTestCase
     public function testSearchEmptyQuery()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = search("", getUsername())['match'];
+        $film = search("", Constants::TEST_RATINGSYNC_USERNAME)['match'];
         $this->assertEmpty($film, "Empty query should return nothing");
     }
     
@@ -120,7 +120,7 @@ class MainTest extends RatingSyncTestCase
 
         // Test
         $searchTerms = array("uniqueName" => "tt0094819", "sourceName" => Constants::SOURCE_IMDB);
-        $film = search($searchTerms)['match']; // Buster (1988)
+        $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match']; // Buster (1988)
         $filmId = $film->getId();
 
         // Verify film object
@@ -132,7 +132,7 @@ class MainTest extends RatingSyncTestCase
         $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
         $this->assertEquals(5.8, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
         $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(array("Adventure", "Biography", "Comedy"), $film->getGenres(), 'Genres');
+        $this->assertEquals(array("Comedy", "Crime", "Drama"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals("tt0094819", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
         $this->assertNull($rating->getYourScore(), 'Your Score');
@@ -142,7 +142,7 @@ class MainTest extends RatingSyncTestCase
         // Verify database
 
         $film = null;
-        $film = Film::getFilmFromDb($filmId, getUsername());
+        $film = Film::getFilmFromDb($filmId, Constants::TEST_RATINGSYNC_USERNAME);
 
         // Verify the db film the same way as the object before
         $this->assertEquals("Buster", $film->getTitle(), "Title");
@@ -153,7 +153,7 @@ class MainTest extends RatingSyncTestCase
         $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
         $this->assertEquals(6, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
         $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(array("Adventure", "Biography", "Comedy"), $film->getGenres(), 'Genres');
+        $this->assertEquals(array("Comedy", "Crime", "Drama"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals("tt0094819", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
         $this->assertNull($rating->getYourScore(), 'Your Score');
@@ -187,7 +187,7 @@ class MainTest extends RatingSyncTestCase
 
         // Test
         $searchTerms = array("uniqueName" => "rs1", "sourceName" => Constants::SOURCE_RATINGSYNC);
-        $film = search($searchTerms)['match']; // Buster (1988)
+        $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match']; // Buster (1988)
 
         // Verify
         $this->assertFalse(empty($film), "Film search result should not be empty");
@@ -215,7 +215,7 @@ class MainTest extends RatingSyncTestCase
 
         // Test
         $searchTerms = array("uniqueName" => "rs1");
-        $film = search($searchTerms, getUsername())['match'];
+        $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match'];
 
         // Verify
         $this->assertEquals("Buster", $film->getTitle(), "Title");
@@ -230,7 +230,7 @@ class MainTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Set up
-        $username = getUsername();
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
         $searchTerms = array("uniqueName" => "rs1");
         $setupFilm = search($searchTerms, $username)['match']; // Buster (1988)
         $setupFilm->setYourScore(5, Constants::SOURCE_RATINGSYNC);
@@ -259,8 +259,8 @@ class MainTest extends RatingSyncTestCase
     public function testSearchDbNoMatchSiteNoMatch()
     {$this->start(__CLASS__, __FUNCTION__);
     
-        $searchTerms = array("uniqueName" => "garbage_query");
-        $film = search($searchTerms)['match'];
+        $searchTerms = array("uniqueName" => "garbage_query", "sourceName" => Constants::SOURCE_IMDB);
+        $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match'];
         $this->assertEmpty($film, "Film from uniqueName=garbage_query should be empty");
     }
 }
