@@ -103,7 +103,7 @@ function createFilmlist() {
     if (filmIdEl != null) {
         params = params + "&id=" + filmIdEl.value;
         var addThisEl = document.getElementById("filmlist-add-this");
-        if (addThisEl != null && addThisEl.value == "0") {
+        if (addThisEl != null && addThisEl.checked == false) {
             params = params + "&a=0";
         } else {
             params = params + "&a=1";
