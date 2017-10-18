@@ -107,7 +107,7 @@ function renderFilmlists(includedListnames, filmId) {
     html = html + "    <ul class='dropdown-menu' id='filmlists-"+filmId+"' role='menu'  >\n";
     html = html +        listItemsHtml + "\n";
     html = html + "      <li class='divider'></li>\n";
-    html = html + "      <li><a href='/php/userlist.php?id="+filmId+"'>New list</a></li>\n";
+    html = html + "      <li><a href='/php/userlist.php?nl=1&id="+filmId+"'>New list</a></li>\n";
     html = html + "    </ul>\n";
     html = html + "  </div>\n";
     html = html + "</div>\n";
