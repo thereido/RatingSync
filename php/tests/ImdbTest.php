@@ -9,7 +9,7 @@ require_once "10DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
 const TEST_IMDB_USERNAME = "ur60460017";
-const FROZEN_USER_SCORE = 7.6;
+const FROZEN_USER_SCORE = 7.5;
 
 // Class to expose protected members and functions
 class ImdbExt extends \RatingSync\Imdb {
