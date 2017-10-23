@@ -62,7 +62,7 @@ class Source
 
     public static function supportedSourceWebsites()
     {
-        return array(Constants::SOURCE_IMDB, Constants::SOURCE_XFINITY);
+        return array(Constants::SOURCE_IMDB);
     }
 
     public function getName()

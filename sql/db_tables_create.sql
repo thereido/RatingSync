@@ -191,6 +191,8 @@ CREATE TABLE IF NOT EXISTS filmlist
         film_id INT NOT NULL,
         listname VARCHAR(50) NOT NULL,
         position INT NULL DEFAULT NULL,
+        next_film_id INT NULL DEFAULT NULL,
+        /* create_ts TIMESTAMP NOT NULL, */
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
         PRIMARY KEY (user_name, film_id, listname),
@@ -203,12 +205,15 @@ CREATE TABLE IF NOT EXISTS filmlist
         FOREIGN KEY (film_id)
             REFERENCES film(id)
     );
+ALTER TABLE filmlist ADD COLUMN create_ts TIMESTAMP NOT NULL DEFAULT 0 AFTER position;
+ALTER TABLE filmlist ALTER COLUMN create_ts DROP DEFAULT;
   
 CREATE TABLE IF NOT EXISTS user_filmlist
     (
         user_name VARCHAR(50) NOT NULL,
         listname VARCHAR(50) NOT NULL,
         parent_listname VARCHAR(50) NULL DEFAULT NULL,
+        /* create_ts TIMESTAMP NOT NULL, */
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
         PRIMARY KEY (user_name, listname),
@@ -219,3 +224,5 @@ CREATE TABLE IF NOT EXISTS user_filmlist
         FOREIGN KEY (user_name)
             REFERENCES user(username)
     );
+ALTER TABLE user_filmlist ADD COLUMN create_ts TIMESTAMP NOT NULL DEFAULT 0 AFTER parent_listname;
+ALTER TABLE user_filmlist ALTER COLUMN create_ts DROP DEFAULT;

@@ -25,8 +25,8 @@ require_once "Constants.php";
  */
 class Filmlist
 {
-    const SORT_POSITION     = 'filmlist.position';
-    const SORT_MODIFIED     = 'filmlist.ts';
+    const SORT_POSITION     = 'Position';
+    const SORT_ADDED        = 'Added';
     const SORTDIR_ASC       = 'ASC';
     const SORTDIR_DESC      = 'DESC';
 
@@ -59,7 +59,7 @@ class Filmlist
 
     public static function validSort($sort)
     {
-        $validSorts = array(static::SORT_POSITION, static::SORT_MODIFIED);
+        $validSorts = array(static::SORT_POSITION, static::SORT_ADDED);
         if (in_array($sort, $validSorts)) {
             return true;
         }
@@ -149,6 +149,19 @@ class Filmlist
     public function getSort()
     {
         return $this->sort;
+    }
+
+    public function getOrderColumn()
+    {
+        $column = "";
+
+        if ($this->getSort() == static::SORT_POSITION) {
+            $column = "filmlist.next_film_id";
+        } elseif ($this->getSort() == static::SORT_ADDED) {
+            $column = "filmlist.create_ts";
+        }
+
+        return $column;
     }
 
     public function setSortDirection($sortDirection)
@@ -265,30 +278,182 @@ class Filmlist
         $this->genreFilterMatchAny = $genreFilterMatchAny;
     }
 
-    public function addItem($filmId)
+    public function addItem($filmId, $saveToDb = false)
     {
         if (!is_numeric($filmId)) {
             throw new \InvalidArgumentException(__FUNCTION__.' param must be a number');
         }
 
+        $errorFree = true;
+
         if (!in_array(intval($filmId), $this->listItems)) {
             $this->listItems[] = intval($filmId);
-        }
-    }
 
-    public function removeItem($removeThisFilmId)
-    {
-        if (!in_array($removeThisFilmId, $this->listItems)) {
-            return;
-        }
-        
-        $remainingItems = array();
-        foreach ($this->listItems as $filmId) {
-            if ($removeThisFilmId != $filmId) {
-                $remainingItems[] = $filmId;
+            if ($saveToDb) {
+                if (! $this->addItemToDb($filmId)) {
+                    $errorFree = false;
+                }
             }
         }
-        $this->listItems = $remainingItems;
+
+        return $errorFree;
+    }
+
+    protected function addItemToDb($filmId)
+    {
+        $db = getDatabase();
+        $errorFree = true;
+        $isDuplicate = false;
+        $prevItemUpdated = false;
+        $username = $this->username;
+        $listname = $this->listname;
+        $wherePrefix = " WHERE user_name='$username' AND listname='$listname' ";
+
+        // Check for an duplicate
+        $query = "SELECT count(1) as count FROM filmlist $wherePrefix" .
+                    "   AND film_id=$filmId";
+        $result = $db->query($query);
+        $row = $result->fetch_assoc();
+        if ($row["count"] > 0) {
+            $isDuplicate = true;
+        }
+
+        // Update the current last item to point to the new item
+        if ($errorFree && !$isDuplicate) {
+            $query = "UPDATE filmlist SET next_film_id=$filmId $wherePrefix" .
+                        "   AND next_film_id IS NULL";
+            if (! $db->query($query)) {
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+                $errorFree = false;
+            } else {
+                $prevItemUpdated = true;
+            }
+        }
+
+        // Insert the new item
+        if ($errorFree && $prevItemUpdated) {
+            // Get the new position (highest existing position + 1)
+            $position = 1;
+            $query = "SELECT position FROM filmlist $wherePrefix" .
+                        " ORDER BY position DESC LIMIT 1";
+            $result = $db->query($query);
+            if ($result->num_rows == 1) {
+                $position = $result->fetch_assoc()["position"] + 1;
+            }
+
+            $columns = "user_name, film_id, listname, position, next_film_id, create_ts";
+            $values = "'$username', $filmId, '$listname', $position, NULL, CURRENT_TIMESTAMP";
+            $query = "INSERT INTO filmlist ($columns) VALUES ($values)";
+            if (! $db->query($query)) {
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+                $errorFree = false;
+                if ($prevItemUpdated) {
+                    // Undo the update
+                    $query = "UPDATE filmlist SET next_film_id=NULL $wherePrefix" .
+                                "   AND next_film_id=$filmId";
+                    $db->query($query);
+                }
+            }
+        }
+
+        return $errorFree;
+    }
+
+    public function removeItem($removeThisFilmId, $saveToDb = false)
+    {
+        $errorFree = true;
+
+        if (in_array($removeThisFilmId, $this->listItems)) {
+            $remainingItems = array();
+            foreach ($this->listItems as $filmId) {
+                if ($removeThisFilmId != $filmId) {
+                    $remainingItems[] = $filmId;
+                }
+            }
+            $this->listItems = $remainingItems;
+        }
+        
+        if ($saveToDb && $errorFree) {
+            $errorFree = $this->removeItemFromDb($removeThisFilmId);
+        }
+
+        return $errorFree;
+    }
+
+    protected function removeItemFromDb($removeThisFilmId)
+    {
+        $db = getDatabase();
+        $errorFree = true;
+        $rowExists = false;
+        $username = $this->username;
+        $listname = $this->listname;
+        $wherePrefix = " WHERE user_name='$username' AND listname='$listname' ";
+
+        $query = "SELECT next_film_id, position FROM filmlist $wherePrefix" .
+                    "   AND film_id=$removeThisFilmId";
+        $result = $db->query($query);
+        if ($result->num_rows == 1) {
+            $rowExists = true;
+            $row = $result->fetch_assoc();
+            $nextFilmId = $row["next_film_id"];
+            if (empty($nextFilmId)) {
+                $nextFilmId = "NULL";
+            }
+            $position = $row["position"];
+        }
+
+        if (! $rowExists) {
+            return $errorFree;
+        }
+
+        // Update next_film_id for the item pointing to the removed item
+        $nextIdUpdated = false;
+        $query = "UPDATE filmlist SET next_film_id=$nextFilmId $wherePrefix" .
+                    "   AND next_film_id=$removeThisFilmId";
+        if ($db->query($query)) {
+            $nextIdUpdated = true;
+        } else {
+            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+            $errorFree = false;
+        }
+                
+        // Update positions for all items after the item removed
+        $positionsUpdated = false;
+        if ($nextIdUpdated) {
+            $query = "UPDATE filmlist SET position=position-1 $wherePrefix" .
+                        "   AND position > $position";
+            if ($db->query($query)) {
+                $positionsUpdated = true;
+            } else {
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+                $errorFree = false;
+            }
+        }
+
+        // Undo the next_film_id update if $positionsUpdated failed
+        if (! $positionsUpdated) {
+            $query = "UPDATE filmlist SET next_film_id=$removeThisFilmId $wherePrefix" .
+                        "   AND next_film_id=$nextFilmId";
+            if ($db->query($query)) {
+                $nextIdUpdated = false;
+            } else {
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+                $errorFree = false;
+            }
+        }
+
+        // Delete the removed item
+        if ($nextIdUpdated && $positionsUpdated) {
+            $query = "DELETE FROM filmlist $wherePrefix" .
+                        "   AND film_id=$removeThisFilmId";
+            logDebug("Delete filmlist item: " . $query, __FUNCTION__." ".__LINE__);
+            if (! $db->query($query)) {
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+                $errorFree = false;
+            }
+        }
+
+        return $errorFree;
     }
 
     public function removeAllItems()
@@ -310,7 +475,7 @@ class Filmlist
         return count($this->listItems);
     }
 
-    public function saveToDb()
+    public function createToDb()
     {
         if (empty($this->username) || empty($this->listname)) {
             throw new \InvalidArgumentException(__FUNCTION__." username (".$this->username.") and listName (".$this->listname.") must not be empty");
@@ -322,29 +487,11 @@ class Filmlist
         $listname = $this->listname;
         $parentListname = $this->parentListname;
 
-        $removeFilmIds = "";
-        $comma = "";
-        $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
+        // Error if the list already exists
+        $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname'";
         $result = $db->query($query);
-        while ($row = $result->fetch_assoc()) {
-            $filmId = $row['film_id'];
-            if (!in_array($filmId, $this->listItems)) {
-                // Array for removing items
-                $removeFilmIds = $filmId;
-                $comma = ", ";
-            }
-        }
-
-        // Remove items
-        if (!empty($removeFilmIds)) {
-            $query = "DELETE FROM filmlist" .
-                     " WHERE user_name='$username'" .
-                       " AND listname='$listname'" .
-                       " AND film_id IN ($removeFilmIds)";
-            if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
-                $errorFree = false;
-            }
+        if ($result->num_rows > 1) {
+            throw new \InvalidArgumentException(__FUNCTION__." username (".$this->username.") and listName (".$this->listname.") existing list cannot be created");
         }
 
         // Validate that the parent list is a existing list
@@ -356,27 +503,39 @@ class Filmlist
             if ($result->num_rows == 1) {
                 $parentListColumn = ", parent_listname";
                 $parentListValue = ", '" . $parentListname . "'";
+            } else {
+                logDebug("Warning: Creating filmlist '$listname' with parent '$parentListname'.\nParent does not exist. Continuing to create the list without a parent.", __FUNCTION__." ".__LINE__);
+                $errorFree = false;
             }
         }
 
-        // Replace (or insert) the filmlist
-        $query = "REPLACE INTO user_filmlist (user_name, listname".$parentListColumn.")" .
-                    " VALUES ('$username', '$listname'".$parentListValue.")";
+        // Insert filmlist
+        $query = "INSERT INTO user_filmlist (user_name, listname, create_ts".$parentListColumn.")" .
+                    " VALUES ('$username', '$listname', CURRENT_TIMESTAMP".$parentListValue.")";
+        logDebug($query, __FUNCTION__." ".__LINE__);
         if (! $db->query($query)) {
             logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
             $errorFree = false;
         }
 
-        // Replace (or insert) items
-        $position = 1;
-        foreach ($this->listItems as $filmId) {
-            $query = "REPLACE INTO filmlist (user_name, listname, film_id, position)" .
-                     " VALUES ('$username', '$listname', $filmId, $position)";
+        // Insert list items
+        $length = count($this->listItems);
+        for ($i=0; $i < $length; $i++) {
+            $filmId = $this->listItems[$i];
+            $position = $i+1;
+            $nextFilmId = "NULL";
+            if ($i+1 < $length) {
+                // Not last item
+                $nextFilmId = $this->listItems[$i+1];
+            }
+
+            $query = "INSERT INTO filmlist (user_name, listname, position, film_id, next_film_id, create_ts)" .
+                     " VALUES ('$username', '$listname', $position, $filmId, $nextFilmId, CURRENT_TIMESTAMP)";
+            logDebug($query, __FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
                 logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
-            $position++;
         }
 
         return $errorFree;
@@ -408,6 +567,7 @@ class Filmlist
             $query = "DELETE FROM filmlist" .
                         " WHERE user_name='$username'" .
                         " AND listname='$listname'";
+            logDebug($query, __FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
                 $success = false;
                 logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
@@ -465,14 +625,14 @@ class Filmlist
         $listFilterWhere = "";
         $listsFilteredIn = $this->getListFilterCommaDelimited();
         if (!empty($listsFilteredIn)) {
-            $listFilterWhere = " AND filmlist.film_id IN (SELECT film_id as id2 FROM filmlist as list2 WHERE user_name='$username' AND listname IN ($listsFilteredIn)) ";
+            $listFilterWhere = " AND filmlist.film_id IN (SELECT DISTINCT(film_id) as id2 FROM filmlist as list2 WHERE user_name='$username' AND listname IN ($listsFilteredIn)) ";
         }
 
         $genreFilterWhere = "";
         if (count($this->getGenreFilter()) > 0) {
             if ($this->getGenreFilterMatchAny()) {
                 $genresFilteredIn = $this->getGenreFilterCommaDelimited();
-                $genreFilterWhere .= " AND filmlist.film_id IN (SELECT film_id as id3 FROM film_genre WHERE genre_name IN ($genresFilteredIn)) ";
+                $genreFilterWhere .= " AND filmlist.film_id IN (SELECT DISTINCT(film_id) as id3 FROM film_genre WHERE genre_name IN ($genresFilteredIn)) ";
             } else {
                 foreach ($this->getGenreFilter() as $genre) {
                     $genreFilterWhere .= " AND EXISTS (SELECT * FROM film_genre WHERE filmlist.film_id=film_genre.film_id AND genre_name='$genre') ";
@@ -486,11 +646,31 @@ class Filmlist
         $query .=     $contentTypeFilterWhere;
         $query .=     $listFilterWhere;
         $query .=     $genreFilterWhere;
-        $query .= " ORDER BY " . $this->getSort() . " " . $this->getSortDirection();
 
         $result = $db->query($query);
+        $filteredFilmIds = array();
         while ($row = $result->fetch_assoc()) {
-            $this->addItem($row['film_id']);
+            $filmId = $row['film_id'];
+            $filteredFilmIds[] = $filmId;
+        }
+        
+        $query  = "SELECT film_id, next_film_id FROM filmlist";
+        $query .= " WHERE user_name='$username'";
+        $query .= "   AND listname='$listname'";
+        $query .= " ORDER BY " . $this->getOrderColumn() . " " . $this->getSortDirection();
+        $result = $db->query($query);
+
+        $sortedFilmIds = null;
+        if ($this->getSort() == static::SORT_POSITION) {
+            $sortedFilmIds = $this->getItemsByNextId($this->getSortDirection());
+        } else {
+            $sortedFilmIds = $this->getItemsByCreate($this->getSortDirection());
+        }
+
+        foreach ($sortedFilmIds as $filmId) {
+            if (in_array($filmId, $filteredFilmIds)) {
+                $this->listItems[] = $filmId;
+            }
         }
     }
 
@@ -545,8 +725,7 @@ class Filmlist
         foreach ($dbLists as $dbList) {
             // Remove an item that the object does not have this listname
             if (!in_array($dbList->getListname(), $objectListnames)) {
-                $dbList->removeItem($filmId);
-                $dbList->saveToDb();
+                $dbList->removeItem($filmId, true);
             }
 
             $dbListnames[] = $dbList->getListname();
@@ -556,8 +735,7 @@ class Filmlist
         foreach ($objectListnames as $name) {
             if (!in_array($name, $dbListnames)) {
                 $newList = new Filmlist($username, $name);
-                $newList->addItem($filmId);
-                $newList->saveToDb();
+                $newList->addItem($filmId, true);
             }
         }
     }
@@ -599,15 +777,6 @@ class Filmlist
         }
 
         return $listnames;
-    }
-
-    public function setFilmlist($filmId, $remove = false)
-    {
-        if ($remove) {
-            $this->removeItem($filmId);
-        } else {
-            $this->addItem($filmId);
-        }
     }
 
     public function getContentTypeFilterCommaDelimited() {
@@ -684,5 +853,213 @@ class Filmlist
         }
 
         return $ancestors;
+    }
+
+    public function moveItem($myFilmId, $nextFilmId, $saveToDb = false)
+    {
+        $errorFree = true;
+        
+        // Do nothing if it will not move. This not a error.
+        if ($myFilmId == $nextFilmId) {
+            return $errorFree;
+        }
+        
+        $items = $this->listItems;
+        $inList = in_array($myFilmId, $items);
+        $nextFilmIdValid = in_array($nextFilmId, $items) || $nextFilmId == -1;
+        if ($inList && $nextFilmIdValid) {
+            // Build a new list one item at a time. Add my item before nextFilmId
+            // and remove my original location.
+            $newListItems = array();
+            $madeAChange = false;
+            while ($currentFilmId = array_shift($items)) {
+                if ($currentFilmId == $nextFilmId) {
+                    $newListItems[] = $myFilmId;
+                    $newListItems[] = $nextFilmId;
+                    $madeAChange = true;
+                } elseif ($currentFilmId == $myFilmId) {
+                    // Doing nothing removes this item in this location
+                    $madeAChange = true;
+                } else {
+                    $newListItems[] = $currentFilmId;
+                }
+            }
+        
+            // Param nextFilmId -1 goes to the end
+            if ($nextFilmId == -1) {
+                $newListItems[] = $myFilmId;
+            }
+
+            // Replace items with the new list
+            if ($madeAChange) {
+                $this->listItems = $newListItems;
+            } else {
+                $errorFree = false;
+            }
+        } else {
+            $errorFree = false;
+        }
+
+        
+        if ($saveToDb) {
+            $dbErrorFree = $this->moveItemInDb($myFilmId, $nextFilmId);
+            if (! $dbErrorFree) {
+                $errorFree = false;
+            }
+        }
+
+        return $errorFree;
+    }
+
+    protected function moveItemInDb($myFilmId, $nextFilmId)
+    {
+        $errorFree = true;
+
+        // Do nothing if it will not move
+        if ($myFilmId == $nextFilmId) {
+            return $errorFree;
+        }
+        
+        $newPrevFilmId = null;
+        $origPrevFilmId = null;
+        $origNextFilmId = "NULL";
+
+        $db = getDatabase();
+        $wherePrefix = " WHERE user_name='" . $this->username . "'" .
+                    "   AND listname='" . $this->listname . "' ";
+        $queryPrefix = "SELECT film_id FROM filmlist" . $wherePrefix; 
+        $newPrevQuery = $queryPrefix . "AND next_film_id=$nextFilmId";    
+
+        // Validate that myFilmID and nextFilmId are in the db 
+        $filmIdsValid = false;
+        if ($nextFilmId != -1) {
+            $result = $db->query($queryPrefix . "AND (film_id=$myFilmId OR film_id=$nextFilmId)");
+            if ($result->num_rows == 2) {
+                $filmIdsValid = true;
+            }
+        } else {
+            $newPrevQuery = $queryPrefix . "AND next_film_id IS NULL";
+
+            $result = $db->query($queryPrefix . "AND film_id=$myFilmId");
+            if ($result->num_rows == 1) {
+                $filmIdsValid = true;
+            }
+        }
+        if (! $filmIdsValid) {
+            $errorFree = false;
+            return $errorFree;
+        }
+
+        $result = $db->query($newPrevQuery);
+        if ($result->num_rows == 1) {
+            $newPrevFilmId = $result->fetch_assoc()['film_id'];
+        }
+        $result = $db->query($queryPrefix . "AND next_film_id=$myFilmId");    
+        if ($result->num_rows == 1) {
+            $origPrevFilmId = $result->fetch_assoc()['film_id'];
+        }
+        $result = $db->query("SELECT next_film_id FROM filmlist" . $wherePrefix . "AND film_id=$myFilmId");    
+        if ($result->num_rows == 1) {
+            $origNextFilmId = $result->fetch_assoc()['next_film_id'];
+            if (empty($origNextFilmId)) {
+                $origNextFilmId = "NULL";
+            }
+        }
+
+        // Do nothing if I am already in the new location
+        if ($newPrevFilmId == $myFilmId) {
+            return $errorFree;
+        }
+
+        // Set my original previous item to point to my original next item
+        if (! empty($origPrevFilmId))
+        {
+            $query = "UPDATE filmlist SET next_film_id=$origNextFilmId" .
+                        $wherePrefix . " AND film_id=$origPrevFilmId";
+            if (! $db->query($query)) {
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+                $errorFree = false;
+            }
+        }
+
+        // Set the new previous item to point to me as the next item
+        if (! empty($newPrevFilmId))
+        {
+            $query = "UPDATE filmlist SET next_film_id=$myFilmId" .
+                        $wherePrefix . " AND film_id=$newPrevFilmId";
+            if (! $db->query($query)) {
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+                $errorFree = false;
+            }
+        }
+
+        // Set my item to point to the new next item
+        $nextFilmIdSet = "next_film_id=$nextFilmId";
+        if ($nextFilmId == -1) {
+            $nextFilmIdSet = "next_film_id=NULL";
+        }
+        $query = "UPDATE filmlist SET $nextFilmIdSet" .
+                    $wherePrefix . " AND film_id=$myFilmId";
+        if (! $db->query($query)) {
+            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __FUNCTION__." ".__LINE__);
+            $errorFree = false;
+        }
+
+        return $errorFree;
+    }
+
+    public function getItemsByNextId($sortDirection) {
+        $username = $this->getUsername();
+        $listname = $this->getListname();
+        
+        $db = getDatabase();
+        $query  = "SELECT film_id, next_film_id FROM filmlist";
+        $query .= " WHERE user_name='$username'";
+        $query .= "   AND listname='$listname'";
+        $result = $db->query($query);
+        
+        $items = array(); // Keys are next_film_id, Values are film_id
+        while ($row = $result->fetch_assoc()) {
+            $filmId = $row['film_id'];
+            $next = $row['next_film_id'];
+            $items[$next] = intval($filmId);
+        }
+        
+        $orderedItems = array();
+        $nextFilmId = "";
+        while (array_key_exists($nextFilmId, $items)) {
+            $filmId = $items[$nextFilmId];
+            $orderedItems[] = intval($filmId);
+
+            $nextFilmId = $filmId;
+        }
+            
+        if ($sortDirection == static::SORTDIR_ASC) {
+            $orderedItems = array_reverse($orderedItems);
+        }
+
+        return $orderedItems;
+    }
+
+    public function getItemsByCreate($sortDirection) {
+        if (empty($sortDirection)) {
+            $sortDirection = static::SORTDIR_ASC;
+        }
+        $username = $this->getUsername();
+        $listname = $this->getListname();
+
+        $db = getDatabase();
+        $query  = "SELECT film_id, next_film_id FROM filmlist";
+        $query .= " WHERE user_name='$username'";
+        $query .= "   AND listname='$listname'";
+        $query .= " ORDER BY create_ts $sortDirection";
+        $result = $db->query($query);
+        
+        $items = array(); // Keys are next_film_id, Values are film_id
+        while ($row = $result->fetch_assoc()) {
+            $items[] = $row['film_id'];
+        }
+
+        return $items;
     }
 }

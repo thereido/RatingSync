@@ -24,4 +24,4 @@ INSERT INTO user_source (user_name, source_name, username, password) VALUES ('te
 INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'YouTube', 'testratingsync', 'password');
 INSERT INTO user_source (user_name, source_name, username, password) VALUES ('testratingsync', 'HBO', 'testratingsync', 'password');
 
-INSERT INTO user_filmlist (user_name, listname) VALUES ('testratingsync', 'Watchlist');
+INSERT INTO user_filmlist (user_name, listname, create_ts) VALUES ('testratingsync', 'Watchlist', CURRENT_TIMESTAMP);

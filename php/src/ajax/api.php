@@ -115,8 +115,11 @@ function api_setFilmlist($username)
     }
     logDebug("Params l=$listname, id=$filmId, c=$checked", __FUNCTION__." ".__LINE__);
     $filmlist = Filmlist::getListFromDb($username, $listname);
-    $filmlist->setFilmlist($filmId, $remove);
-    $filmlist->saveToDb();
+    if ($remove) {
+        $filmlist->removeItem($filmId, true);
+    } else {
+        $filmlist->addItem($filmId, true);
+    }
 
     $film = Film::getFilmFromDb($filmId, $username);
     $response = $film->json_encode();
@@ -146,9 +149,10 @@ function api_createFilmlist($username)
     logDebug("Params l=$listname, id=$filmId, a=$checked, parent=$parent", __FUNCTION__." ".__LINE__);
     $filmlist = Filmlist::getListFromDb($username, $listname, $parent);
     if ($add) {
-        $filmlist->setFilmlist($filmId);
+        $filmlist->addItem($filmId);
     }
-    $filmlist->saveToDb();
+
+    $filmlist->createToDb();
 }
 
 function api_addFilmBySearch($username, $get)
@@ -322,9 +326,9 @@ function api_getRatings($username)
     if (strtolower($sort) == "pos") {
         $sort = Filmlist::SORT_POSITION;
     } elseif (strtolower($sort) == "mod") {
-        $sort = Filmlist::SORT_MODIFIED;
+        $sort = Filmlist::SORT_ADDED;
     } elseif (!Filmlist::validSortDirection($sort)) {
-        $sort = Filmlist::SORT_MODIFIED;
+        $sort = Filmlist::SORT_ADDED;
     }
 
     if (strtolower($sortDirection) == "desc") {
@@ -416,7 +420,7 @@ function api_getFilmsByList($username)
     if (strtolower($sort) == "pos") {
         $sort = Filmlist::SORT_POSITION;
     } elseif (strtolower($sort) == "mod") {
-        $sort = Filmlist::SORT_MODIFIED;
+        $sort = Filmlist::SORT_ADDED;
     } elseif (!Filmlist::validSortDirection($sort)) {
         $sort = Filmlist::SORT_POSITION;
     }
