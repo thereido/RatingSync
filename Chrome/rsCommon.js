@@ -313,7 +313,7 @@ function addStarListener(elementId) {
 }
 
 function validStreamProviders() {
-    return ["Netflix", "xfinity"];
+    return [];
 }
 
 function updateContextDataFilm(updateFilm) {

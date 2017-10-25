@@ -78,6 +78,7 @@ detail {
     float: left;
     vertical-align: middle;
     padding: 15px;
+    padding-bottom: 5px;
 }
 
 .checkmark-off {
@@ -136,7 +137,7 @@ detail {
 }
 
 .userlist-film {
-    min-height: 275px;
+    min-height: 231px;
     width: 160px;
     background-color: #f9f9f9;
     border-style: outset;
@@ -151,7 +152,7 @@ detail {
     top: 0;
     z-index: 1;
     min-width: 325px;
-    min-height: 275px;
+    min-height: 231px;
     background-color: rgba(249, 249, 249, 0.95);
     border-style: outset;
     border-width: thin;

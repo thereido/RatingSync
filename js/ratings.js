@@ -3,29 +3,19 @@ var hideable = true;
 
 // Needs "contextData" JSON in the page
 function showFilmDetail(filmId) {
-    var filmEl = document.getElementById("rating-detail");
+    var dropdownEl = document.getElementById("film-dropdown-" + filmId);
     var film = contextData.films.find( function (findFilm) { return findFilm.filmId == filmId; } );
-    renderFilmDetail(film, filmEl);
+    renderFilmDetail(film, dropdownEl);
 }
 
-function renderFilmDetail(film, filmEl) {
-    var image = RS_URL_BASE + film.image;
-    var posterEl = document.createElement("poster");
-    posterEl.innerHTML = '<img src="'+image+'" width="150px"/>';
-    filmEl.innerHTML = "";
-    filmEl.appendChild(posterEl);
-    filmEl.appendChild(buildFilmDetailElement(film));
+function renderFilmDetail(film, dropdownEl) {
+    dropdownEl.innerHTML = "";
+    dropdownEl.appendChild(buildFilmDetailElement(film));
+    dropdownEl.style.display = "block";
 
     renderStars(film);
     renderStreams(film, true);
     renderFilmlists(film.filmlists, film.filmId);
-}
-
-function hideFilmDetail() {
-    if (hideable) {
-        el = document.getElementById("rating-detail");
-        el.innerHTML = "";
-    }
 }
 
 function getRsRatings(pageSize, beginPage) {
@@ -56,6 +46,11 @@ function renderRatings() {
             html = html + "<div class='row'>\n";
         }
 
+        var column = (filmIndex + 1) % 12;
+        if (column == 0) {
+            column = 12;
+        }
+
         var film = films[filmIndex];
         var filmId = film.filmId;
         var title = film.title;
@@ -66,11 +61,14 @@ function renderRatings() {
         var uniqueName = rsSource.uniqueName;
         var onClick = "onClick='" + showFilmDetailJS + "'";
         var onMouseEnter = "onMouseEnter='detailTimer = setTimeout(function () { " + showFilmDetailJS + "; }, 500)'";
-        var onMouseLeave = "onMouseLeave='clearTimeout(detailTimer)'";
+        var onMouseLeave = "onMouseLeave='hideFilmDropdownForUserlist(" + filmId + ", detailTimer)'";
         html = html + "  <div class='col-xs-6 col-sm-4 col-md-3 col-lg-2' id='" + uniqueName + "'>\n";
-        html = html + "    <poster id='poster-" + uniqueName + "' data-filmId='" + filmId + "'>\n";
-        html = html + "      <img src='" + image + "' alt='" + titleNoQuotes + "' " + onClick + " " + onMouseEnter + " " + onMouseLeave + " />\n";
-        html = html + "    </poster>\n";
+        html = html + "    <div class='userlist-film' " + onMouseEnter + " " + onMouseLeave + ">\n";
+        html = html + "      <poster id='poster-" + uniqueName + "' data-filmId='" + filmId + "'>\n";
+        html = html + "        <img src='" + image + "' alt='" + titleNoQuotes + "' " + onClick + " />\n";
+        html = html + "        <div id='film-dropdown-" + filmId + "' class='film-dropdown-content film-dropdown-col-" + column + "'></div>\n";
+        html = html + "      </poster>\n";
+        html = html + "    </div>\n";
         html = html + "  </div>\n";
 
         if (filmIndex % 12 == 11 || filmIndex == films.length-1) {

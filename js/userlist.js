@@ -49,9 +49,6 @@ function renderUserlistFilms() {
         html = html + "        <img src='" + image + "' alt='" + titleNoQuotes + "' />\n";
         html = html + "        <div id='film-dropdown-" + filmId + "' class='film-dropdown-content film-dropdown-col-" + column + "'></div>\n";
         html = html + "      </poster>\n";
-        html = html + "      <div class='below-poster' id='poster-extension-" + filmId + "' data-filmId='" + filmId + "'>\n";
-        html = html + "        <div id='streams-" + film.filmId + "' class='streams'></div>\n'";
-        html = html + "      </div>\n";
         html = html + "    </div>\n";
         html = html + "  </div>\n";
 

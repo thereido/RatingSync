@@ -40,6 +40,7 @@ $pageFooter = getPageFooter();
     <script src="../js/ratings.js"></script>
     <script src="../js/filmlistHeader.js"></script>
     <script src="../js/film.js"></script>
+    <script src="../js/userlist.js"></script>
 </head>
 
 <body onclick="hideFilmDetail()">
@@ -47,8 +48,6 @@ $pageFooter = getPageFooter();
 <div class="container">
   <?php echo $pageHeader; ?>
   <?php echo $filmlistHeader; ?>
-
-  <div id='rating-detail' class='rating-detail' onMouseEnter="hideable = false;" onMouseLeave="hideable = true;"></div>
 
     <div id="film-table"></div>
     
