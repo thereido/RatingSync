@@ -43,8 +43,6 @@ $pageFooter = getPageFooter();
     <script src="../js/userlist.js"></script>
 </head>
 
-<body onclick="hideFilmDetail()">
-
 <div class="container">
   <?php echo $pageHeader; ?>
   <?php echo $filmlistHeader; ?>
