@@ -48,6 +48,9 @@ elseif ($action == "getFilmsByList") {
 elseif ($action == "searchFilms") {
     $response = api_searchFilms($username);
 }
+elseif ($action == "getFilms") {
+    $response = api_getFilms($username, $_GET);
+}
 elseif ($action == "validateNewUsername") {
     $response = api_validateNewUsername();
 }
@@ -270,6 +273,17 @@ function api_getFilm($username, $get)
     }
     
     $response = '{"Success":"false"}';
+    $film = getFilmApi($username, $filmId, $imdbUniqueName, $getFromRsDbOnly);
+    
+    if (!empty($film)) {
+        $response = $film->json_encode();
+    }
+
+    return $response;
+}
+
+function getFilmApi($username, $filmId, $imdbUniqueName, $getFromRsDbOnly)
+{
     $film = null;
     if (!empty($filmId)) {
         $film = Film::getFilmFromDb($filmId, $username);
@@ -283,12 +297,8 @@ function api_getFilm($username, $get)
             $film = Film::getFilmFromDbByImdb($imdbUniqueName, $username);
         }
     }
-    
-    if (!empty($film)) {
-        $response = $film->json_encode();
-    }
 
-    return $response;
+    return $film;
 }
 
 function api_getUser($username)
@@ -501,6 +511,56 @@ function api_searchFilms($username)
     $limit = 5;
     // Search domains supported: ratings, list, both
     $films = $site->search($query, $searchDomain, $listname, $limit);
+    
+    $response = '{';
+    $response .= '"films":[';
+    $delimeter = "";
+    foreach($films as $film) {
+        $response .= $delimeter . $film->json_encode(true);
+        $delimeter = ",";
+    }
+    $response .= ']}';
+
+    return $response;
+}
+
+function api_getFilms($username, $params)
+{
+    $filmIdsParam = array_value_by_key("id", $params);
+    $imdbIdsParam = array_value_by_key("imdb", $params);
+    logDebug("Params id=$filmIdsParam, imdb=$imdbIdsParam", __FUNCTION__." ".__LINE__);
+
+    $filmIds = explode(" ", $filmIdsParam);
+    $imdbIds = explode(" ", $imdbIdsParam);
+    $getFromRsDbOnly = true;
+
+    $films = array();
+    foreach ($filmIds as $filmId) {
+        $film = null;
+        try {
+            $film = getFilmApi($username, $filmId, null, $getFromRsDbOnly);
+        } catch (\Exception $e) {
+            $errorMsg = "Error api.php::getFilmApi(\$username, $filmId, null, $getFromRsDbOnly) Called from api_getFilms()" . 
+                        "\nException (" . $e->getCode() . ") " . $e->getMessage();
+            logDebug($errorMsg, __FUNCTION__." ".__LINE__);
+        }
+        if (! empty($film)) {
+            $films[] = $film;
+        }
+    }
+    foreach ($imdbIds as $imdbUniqueName) {
+        $film = null;
+        try {
+            $film = getFilmApi($username, null, $imdbUniqueName, $getFromRsDbOnly);
+        } catch (\Exception $e) {
+            $errorMsg = "Error api.php::getFilmApi(\$username, $filmId, null, $getFromRsDbOnly) Called from api_getFilms()" . 
+                        "\nException (" . $e->getCode() . ") " . $e->getMessage();
+            logDebug($errorMsg, __FUNCTION__." ".__LINE__);
+        }
+        if (! empty($film)) {
+            $films[] = $film;
+        }
+    }
     
     $response = '{';
     $response .= '"films":[';

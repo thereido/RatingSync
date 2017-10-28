@@ -63,10 +63,7 @@ function searchPageCallback(query, xmlhttp) {
         if (dataFromOmdb) {
             imdbUniqueName = film.imdbID;
         } else {
-            var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
-            if (imdb && imdb != "undefined") {
-                imdbUniqueName = imdb.uniqueName;
-            }
+            imdbUniqueName = getUniqueName(film, "IMDb");
         }
 
         var rowEl = document.createElement("DIV");
@@ -87,12 +84,15 @@ function searchPageCallback(query, xmlhttp) {
 function searchSuggestionCallback(query, xmlhttp) {
 	var result = JSON.parse(xmlhttp.responseText);
 	var films = result.films;
-	var suggestionEl = document.getElementById("header-search-suggestion");
+	var suggestionBoxEl = document.getElementById("header-search-suggestion");
 	var limit = 5;
+	var fromOmdb = false;
+	var imdbIds = [];
 
     if (result.Search && result.Search.length > 0) {
         // This is a result from OMDB. Convert to RatingSync style
 	    films = convertOmdbToRs(result, limit);
+	    fromOmdb = true;
     }
 
     var suggestionLabelEl = document.createElement("div");
@@ -105,67 +105,108 @@ function searchSuggestionCallback(query, xmlhttp) {
         suggestionLabelEl.innerHTML = "Ratings/Watchlist";
     }
     
-    suggestionEl.hidden = true;
+    suggestionBoxEl.hidden = true;
     if (films && films.length > 0) {
-        suggestionEl.hidden = false;
+        suggestionBoxEl.hidden = false;
     }
 
-	suggestionEl.innerHTML = "";
-	suggestionEl.appendChild(suggestionLabelEl);
+	suggestionBoxEl.innerHTML = "";
+	suggestionBoxEl.appendChild(suggestionLabelEl);
 	var suggestionCount = 0;
 	while (suggestionCount < limit && films && films.length > suggestionCount) {
 	    var film = films[suggestionCount];
-        var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
-        var imdbId = "";
-        if (imdb && imdb != "undefined") {
-            imdbId = imdb.uniqueName;
+        var imdbUniqueName = getUniqueName(film, "IMDb");
+        if (imdbUniqueName != "") {
+            imdbIds.push(imdbUniqueName);
         }
-        
-        var linkEl = document.createElement("a");
-	    var itemEl = document.createElement("div");
-	    var posterEl = document.createElement("poster");
-	    var detailEl = document.createElement("div");
-	    itemEl.appendChild(posterEl);
-	    itemEl.appendChild(detailEl);
-        linkEl.appendChild(itemEl);
 
-        // Poster
-        var posterImageEl = document.createElement("img");
-	    posterImageEl.setAttribute("class", "suggestion-poster");
-	    posterImageEl.setAttribute("src", film.image);
-	    posterEl.appendChild(posterImageEl);
+        var suggestionEl = document.createElement("a");
+        suggestionBoxEl.appendChild(suggestionEl);
+        renderSuggestionFilm(film, suggestionEl)
 
-        // Detail - title line
-	    detailEl.setAttribute("class", "suggestion-item-detail");
-	    var titleLineEl = document.createElement("div");
-	    titleLineEl.innerHTML = film.title + ' (' + film.year + ')';
-	    detailEl.appendChild(titleLineEl);
-
-        // Detail - ratings line
-	    var ratingsLineEl = document.createElement("div");
-        var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
-        if (rsSource && rsSource != "undefined") {
-            var score = null;
-            if (rsSource.rating && rsSource.rating != "undefined") {
-                score = rsSource.rating.yourScore;
-            }
-            if (score != null) {
-                var rsRatingEl = document.createElement("span");
-                rsRatingEl.setAttribute("class", "search-suggestion-rating-rs");
-                rsRatingEl.innerHTML = '<span class="rating-star">★</span>' + score;
-                ratingsLineEl.appendChild(rsRatingEl);
-            }
-        }
-	    detailEl.appendChild(ratingsLineEl);
-
-        // Link & Item
-	    linkEl.setAttribute("href", "/php/detail.php?imdb=" + imdbId);
-	    itemEl.setAttribute("class", "search-suggestion-item");
-	    itemEl.setAttribute("data-imdb-uniquename", imdbId);
-
-        suggestionEl.appendChild(linkEl);
         suggestionCount = suggestionCount + 1;
 	}
+    
+    if (fromOmdb) {
+        var params = "?action=getFilms";
+        params = params + "&imdb=";
+        var delim = "";
+	    for (i = 0; i < imdbIds.length; i++) {
+	        params = params + delim + imdbIds[i];
+	        delim = "+";
+	    }
+	    var xmlhttp = new XMLHttpRequest();
+        var callbackHandler = function () { suggestionRatingCallback(xmlhttp); };
+        xmlhttp.onreadystatechange = callbackHandler;
+	    xmlhttp.open("GET", RS_URL_API + params, true);
+	    xmlhttp.send();
+    }
+}
+
+function renderSuggestionFilm(film, suggestionEl) {
+    var imdbUniqueName = getUniqueName(film, "IMDb");
+        
+	var itemEl = document.createElement("div");
+	var posterEl = document.createElement("poster");
+	var detailEl = document.createElement("div");
+	itemEl.appendChild(posterEl);
+	itemEl.appendChild(detailEl);
+    suggestionEl.appendChild(itemEl);
+
+    // Poster
+    var posterImageEl = document.createElement("img");
+	posterImageEl.setAttribute("class", "suggestion-poster");
+	posterImageEl.setAttribute("src", film.image);
+	posterEl.appendChild(posterImageEl);
+
+    // Detail - title line
+	detailEl.setAttribute("class", "suggestion-item-detail");
+	var titleLineEl = document.createElement("div");
+	titleLineEl.innerHTML = film.title + ' (' + film.year + ')';
+	detailEl.appendChild(titleLineEl);
+
+    // Detail - ratings line
+	var ratingsLineEl = document.createElement("div");
+	ratingsLineEl.setAttribute("id", "suggestion-rating-" + imdbUniqueName);
+	renderSuggestionRatings(film, ratingsLineEl);
+	detailEl.appendChild(ratingsLineEl);
+
+    // Link & Item
+	suggestionEl.setAttribute("href", "/php/detail.php?imdb=" + imdbUniqueName);
+	itemEl.setAttribute("class", "search-suggestion-item");
+	itemEl.setAttribute("data-imdb-uniquename", imdbUniqueName);
+}
+
+function renderSuggestionRatings(film, ratingsLineEl) {
+    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+    if (rsSource && rsSource != "undefined") {
+        var score = null;
+        if (rsSource.rating && rsSource.rating != "undefined") {
+            score = rsSource.rating.yourScore;
+        }
+        if (score != null) {
+            var rsRatingEl = document.createElement("span");
+            rsRatingEl.setAttribute("class", "search-suggestion-rating-rs");
+            rsRatingEl.innerHTML = '<span class="rating-star">★</span>' + score;
+            ratingsLineEl.appendChild(rsRatingEl);
+        }
+    }
+}
+
+function suggestionRatingCallback(xmlhttp) {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+	    var result = JSON.parse(xmlhttp.responseText);
+        var films = result.films;
+
+        for (var i=0; i<films.length; i++) {
+            var film = films[i];
+            var imdbUniqueName = getUniqueName(film, "IMDb");
+	        var ratingsLineEl = document.getElementById("suggestion-rating-" + imdbUniqueName);
+            if (ratingsLineEl) {
+                renderSuggestionRatings(film, ratingsLineEl);
+            }
+        }
+    }
 }
 
 /**
@@ -311,4 +352,15 @@ function convertOmdbToRs(omdbSearchResult, limit) {
     }
 
     return films;
+}
+
+function getUniqueName(film, sourceName)
+{
+	var imdbUniqueName = "";
+    var source = film.sources.find( function (findSource) { return findSource.name == sourceName; } );
+    if (source && source != "undefined") {
+        imdbUniqueName = source.uniqueName;
+    }
+
+    return imdbUniqueName;
 }

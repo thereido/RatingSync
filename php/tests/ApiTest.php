@@ -17,6 +17,44 @@ class ApiTest extends RatingSyncTestCase
         parent::setup();
         //$this->verbose = true;
     }
+    
+    public static function setupFilms()
+    {
+        $errorFree = true;
+        
+        $searchTerms = array();
+        $searchTerms['sourceName'] = Constants::SOURCE_IMDB;
+
+        // Frozen 2013
+        $searchTerms['uniqueName'] = "tt2294629";
+        $response = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME);
+        if (empty($response)) {
+            $errorFree = false;
+        }
+
+        // Inception 2010
+        $searchTerms['uniqueName'] = "tt1375666";
+        $response = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME);
+        if (empty($response)) {
+            $errorFree = false;
+        }
+
+        // Interstellar 2014
+        $searchTerms['uniqueName'] = "tt0816692";
+        $response = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME);
+        if (empty($response)) {
+            $errorFree = false;
+        }
+
+        return $errorFree;
+    }
+
+    public function testSetup()
+    {$this->start(__CLASS__, __FUNCTION__);
+        
+        DatabaseTest::resetDb();
+        $this->assertTrue(self::setupFilms(), "setupFilms() failed");
+    }
 
     public function testApi_getSearchFilm()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -30,7 +68,7 @@ class ApiTest extends RatingSyncTestCase
         $season = NULL;
         $episodeNumber = NULL;
         $episodeTitle = NULL;
-        /*RT $contentType = "FeatureFilm";*/ $contentType = NULL;
+        $contentType = NULL;
         $sourceName = "IM";
 
         $searchTerms = array();
@@ -47,21 +85,10 @@ class ApiTest extends RatingSyncTestCase
 
         // Test
         $responseJson = api_getSearchFilm(Constants::TEST_RATINGSYNC_USERNAME, $searchTerms);
-/*RT
-echo "\ndump response\n";
-var_dump($responseJson);
-echo "\nprint response\n";
-print $responseJson;
-echo "\necho response\n$responseJson\n";
-*RT*/
 
         // Verify
         $this->assertFalse(empty($responseJson));
         $obj = json_decode($responseJson);
-/*RT*
-echo "\ndump decode\n";
-var_dump($obj);
-*RT*/
     }
 
     public function testApi_getFilm()
@@ -107,6 +134,222 @@ var_dump($obj);
         $this->assertFalse(empty($responseJson));
         $obj = json_decode($responseJson);
         $this->assertEquals("false", $obj->Success);
+    }
+    
+    /**
+     * - Get 2 films by Film Ids existing in the db
+     *
+     * Expect
+     *   - Response is JSON with 2 films
+     *   - Check the titles
+     *
+     * @covers  \RatingSync\api_getFilms()
+     * @depends testSetup
+     */
+    public function testApi_getFilmsFilmIds()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $filmId1 = "1"; // Frozen 2013
+        $filmId2 = "2"; // Inception 2010
+        $params = array();
+        $params["id"] = "$filmId1 $filmId2";
+
+        // Test
+        $responseJson = api_getFilms(Constants::TEST_RATINGSYNC_USERNAME, $params);
+
+        // Verify
+        $this->assertFalse(empty($responseJson));
+        $obj = json_decode($responseJson);
+        $films = $obj->films;
+        $this->assertEquals(2, count($films), "Response should have 2 films");
+        $this->assertEquals("Frozen", $films[0]->title, "First title");
+        $this->assertEquals("Inception", $films[1]->title, "Second title");
+    }
+    
+    /**
+     * - Get 2 films by IMDb unique names existing in the db
+     *
+     * Expect
+     *   - Response is JSON with 2 films
+     *   - Check the titles
+     *
+     * @covers  \RatingSync\api_getFilms()
+     * @depends testSetup
+     */
+    public function testApi_getFilmsImdbIds()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $imdbId1 = "tt2294629"; // Frozen 2013
+        $imdbId2 = "tt1375666"; // Inception 2010
+        $params = array();
+        $params["imdb"] = "$imdbId1 $imdbId2";
+
+        // Test
+        $responseJson = api_getFilms(Constants::TEST_RATINGSYNC_USERNAME, $params);
+
+        // Verify
+        $this->assertFalse(empty($responseJson));
+        $obj = json_decode($responseJson);
+        $films = $obj->films;
+        $this->assertEquals(2, count($films), "Response should have 2 films");
+        $this->assertEquals("Frozen", $films[0]->title, "First title");
+        $this->assertEquals("Inception", $films[1]->title, "Second title");
+    }
+    
+    /**
+     * - Use 2 bogus Film Ids
+     *
+     * Expect
+     *   - Response is JSON with 0 films
+     *
+     * @covers  \RatingSync\api_getFilms()
+     * @depends testSetup
+     */
+    public function testApi_getFilmsFilmIdsNoResult()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $params = array();
+        $params["id"] = "9999991 9999992";
+
+        // Test
+        $responseJson = api_getFilms(Constants::TEST_RATINGSYNC_USERNAME, $params);
+
+        // Verify
+        $this->assertFalse(empty($responseJson));
+        $obj = json_decode($responseJson);
+        $films = $obj->films;
+        $this->assertEquals(0, count($films), "Response should have 0 films");
+    }
+    
+    /**
+     * - Use 2 bogus IMDb unique names
+     *
+     * Expect
+     *   - Response is JSON with 0 films
+     *
+     * @covers  \RatingSync\api_getFilms()
+     * @depends testSetup
+     */
+    public function testApi_getFilmsImdbIdsNoResult()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $params = array();
+        $params["imdb"] = "9999991 9999992";
+
+        // Test
+        $responseJson = api_getFilms(Constants::TEST_RATINGSYNC_USERNAME, $params);
+
+        // Verify
+        $this->assertFalse(empty($responseJson));
+        $obj = json_decode($responseJson);
+        $films = $obj->films;
+        $this->assertEquals(0, count($films), "Response should have 0 films");
+    }
+    
+    /**
+     * - Get 2 films by Film Ids existing in the db and 1 bogus one
+     *
+     * Expect
+     *   - Response is JSON with 2 films
+     *   - Check the titles
+     *
+     * @covers  \RatingSync\api_getFilms()
+     * @depends testSetup
+     */
+    public function testApi_getFilmsFilmIdsSomeResultsSomeMiss()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $filmId1 = "1"; // Frozen 2013
+        $filmId2 = "2"; // Inception 2010
+        $params = array();
+        $params["id"] = "$filmId1 $filmId2 9999991";
+
+        // Test
+        $responseJson = api_getFilms(Constants::TEST_RATINGSYNC_USERNAME, $params);
+
+        // Verify
+        $this->assertFalse(empty($responseJson));
+        $obj = json_decode($responseJson);
+        $films = $obj->films;
+        $this->assertEquals(2, count($films), "Response should have 2 films");
+        $this->assertEquals("Frozen", $films[0]->title, "First title");
+        $this->assertEquals("Inception", $films[1]->title, "Second title");
+    }
+    
+    /**
+     * - Get 2 films by IMDb unique names existing in the db and 1 bogus one
+     *
+     * Expect
+     *   - Response is JSON with 2 films
+     *   - Check the titles
+     *
+     * @covers  \RatingSync\api_getFilms()
+     * @depends testSetup
+     */
+    public function testApi_getFilmsImdbsIdsSomeResultsSomeMiss()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $imdbId1 = "tt2294629"; // Frozen 2013
+        $imdbId2 = "tt1375666"; // Inception 2010
+        $params = array();
+        $params["imdb"] = "$imdbId1 $imdbId2 9999991";
+
+        // Test
+        $responseJson = api_getFilms(Constants::TEST_RATINGSYNC_USERNAME, $params);
+
+        // Verify
+        $this->assertFalse(empty($responseJson));
+        $obj = json_decode($responseJson);
+        $films = $obj->films;
+        $this->assertEquals(2, count($films), "Response should have 2 films");
+        $this->assertEquals("Frozen", $films[0]->title, "First title");
+        $this->assertEquals("Inception", $films[1]->title, "Second title");
+    }
+    
+    /**
+     * - Get
+     *     - 2 films by Film Ids existing in the db
+     *     - 1 film by Film bogus Id
+     *     - 1 film by IMDb unique names existing in the db
+     *
+     * Expect
+     *   - Response is JSON with 3 films
+     *   - Check the titles
+     *
+     * @covers  \RatingSync\api_getFilms()
+     * @depends testSetup
+     */
+    public function testApi_getFilms()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $filmId1 = "1"; // Frozen 2013
+        $imdbId2 = "tt1375666"; // Inception 2010
+        $filmId3 = "3"; // Interstellar 2014
+        $params = array();
+        $params["id"] = "$filmId1 9999991 $filmId3";
+        $params["imdb"] = "$imdbId2";
+
+        // Test
+        $responseJson = api_getFilms(Constants::TEST_RATINGSYNC_USERNAME, $params);
+
+        // Verify
+        $this->assertFalse(empty($responseJson));
+        $obj = json_decode($responseJson);
+        $films = $obj->films;
+        $this->assertEquals(3, count($films), "Response should have 3 films");
+        $titles = array();
+        foreach ($films as $film) {
+            $titles[] = $film->title;
+        }
+        sort($titles, SORT_STRING);
+        $this->assertEquals(array("Frozen", "Inception", "Interstellar"), $titles, "Titles in response should match");
     }
 }
 
