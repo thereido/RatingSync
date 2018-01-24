@@ -79,6 +79,7 @@ $pageFooter = getPageFooter();
 
   <?php echo $pageHeader; ?>
   <?php echo $filmlistHeader; ?>
+  <div><p><span id="debug"></span></p></div>
     
   <div class="panel-body" <?php echo $displayNewListInput; ?>>
     <div class="row">
@@ -116,7 +117,6 @@ $pageFooter = getPageFooter();
             </form>
         </div>
     </div>
-    <p><span id="debug"></span></p>
     <span id="filmlist-create-result"></span>
   </div>
 
