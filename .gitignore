@@ -13,3 +13,4 @@
 /php/tests/script/*
 /image/rs*.jpg
 /HTMLPage.html
+/.vscode/*
