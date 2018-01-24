@@ -58,11 +58,6 @@ function renderUserlistFilms() {
     }
     document.getElementById("film-table").innerHTML = html;
 
-    for (var filmIndex = 0; filmIndex < films.length; filmIndex++) {
-        var film = films[filmIndex];
-        renderStreams(film, false);
-    }
-
     renderPagination();
 }
 
