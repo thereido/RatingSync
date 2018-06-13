@@ -224,8 +224,8 @@ function search($searchTerms, $username = null)
     return $resultFilms;
 }
 
-function array_value_by_key($key, $a) {
-    if (!empty($a) && array_key_exists($key, $a)) {
+function array_value_by_key($key, $a, $nullValue = null) {
+    if (!empty($a) && array_key_exists($key, $a) && $a[$key] !== $nullValue) {
         return $a[$key];
     } else {
         return null;
