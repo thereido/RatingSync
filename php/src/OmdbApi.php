@@ -69,18 +69,18 @@ class OmdbApi extends \RatingSync\Site
         $this->printResultToLog($filmJson);
 
         // Get values from the API result
-        $uniqueName = array_value_by_key("imdbID", $filmJson);
-        $title = array_value_by_key("Title", $filmJson);
+        $uniqueName = array_value_by_key("imdbID", $filmJson, "N/A");
+        $title = array_value_by_key("Title", $filmJson, "N/A");
         $episodeTitle = null;
-        $year = array_value_by_key("Year", $filmJson);
+        $year = array_value_by_key("Year", $filmJson, "N/A");
         if (!empty($year)) { $year = substr($year, 0, 4); };
-        $image = array_value_by_key("Poster", $filmJson);
-        $userScore = array_value_by_key("imdbRating", $filmJson);
-        $season = array_value_by_key("Season", $filmJson);
-        $episodeNum = array_value_by_key("Episode", $filmJson);
+        $image = array_value_by_key("Poster", $filmJson, "N/A");
+        $userScore = array_value_by_key("imdbRating", $filmJson, "N/A");
+        $season = array_value_by_key("Season", $filmJson, "N/A");
+        $episodeNum = array_value_by_key("Episode", $filmJson, "N/A");
         $genres = array_value_by_key("Genre", $filmJson);
         $directors = array_value_by_key("Director", $filmJson);
-        $seriesID = array_value_by_key("seriesID", $filmJson);
+        $seriesID = array_value_by_key("seriesID", $filmJson, "N/A");
 
         $contentType = Film::CONTENT_FILM;
         $type = array_value_by_key("Type", $filmJson);
@@ -102,7 +102,7 @@ class OmdbApi extends \RatingSync\Site
             }
         }
 
-        $metacriticScore = array_value_by_key("Metascore", $filmJson);
+        $metacriticScore = array_value_by_key("Metascore", $filmJson, "N/A");
         if (empty($metacriticScore) || !is_numeric($metacriticScore)) {
             $metacriticScore = null;
         } else {
