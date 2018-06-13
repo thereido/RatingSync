@@ -151,7 +151,7 @@ class SiteTest extends RatingSyncTestCase
         $site = new SiteChild(TEST_SITE_USERNAME);
 
         $film = new Film();
-        $film->setUniqueName("tt2294629", Constants::SOURCE_IMDB);
+        $film->setUniqueName("tt2294629", Constants::SOURCE_OMDBAPI);
         $site->getFilmDetailFromWebsite($film, true, Constants::USE_CACHE_NEVER);
         
         $this->assertEquals("Frozen", $film->getTitle(), 'Title');

@@ -46,6 +46,7 @@ class Http
         if ($useBase) {
             $path = $this->baseUrl.$path;
         }
+        logDebug("path: $path", __CLASS__."::".__FUNCTION__." ".__LINE__);
         $ch = curl_init($path);
         $this->putCookiesInRequest($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -131,7 +132,9 @@ class Http
         if ($sourceName == Constants::SOURCE_RATINGSYNC) {
             $baseUrl = Constants::RS_HOST;
         } elseif ($sourceName == Constants::SOURCE_IMDB) {
-            $baseUrl = "http://www.imdb.com";
+            $baseUrl = "https://www.imdb.com";
+        } elseif ($sourceName == Constants::SOURCE_OMDBAPI) {
+            $baseUrl = "http://www.omdbapi.com/?apikey=" . Constants::OMDB_API_KEY . "&v=1";
         } elseif ($sourceName == Constants::SOURCE_JINNI) {
             $baseUrl = "http://www.jinni.com";
         } elseif ($sourceName == Constants::SOURCE_NETFLIX) {
@@ -153,6 +156,8 @@ class Http
             $lightweightUrl = "/index.php";
         } elseif ($sourceName == Constants::SOURCE_IMDB) {
             $lightweightUrl = "/help/?general/&ref_=hlp_brws";
+        } elseif ($sourceName == Constants::SOURCE_OMDBAPI) {
+            $lightweightUrl = "&s=foo";
         } elseif ($sourceName == Constants::SOURCE_JINNI) {
             $lightweightUrl = "/about";
         } elseif ($sourceName == Constants::SOURCE_NETFLIX) {

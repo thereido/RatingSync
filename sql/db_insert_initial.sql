@@ -5,6 +5,7 @@ INSERT INTO verify_user (user_id, verified, code, complete_ts) VALUES (1, TRUE, 
 INSERT INTO source (name) VALUES ('RatingSync');
 INSERT INTO source (name) VALUES ('Jinni');
 INSERT INTO source (name) VALUES ('IMDb');
+INSERT INTO source (name) VALUES ('OMDb');
 INSERT INTO source (name) VALUES ('Netflix');
 INSERT INTO source (name) VALUES ('RottenTomatoes');
 INSERT INTO source (name) VALUES ('xfinity');

@@ -12,6 +12,7 @@ namespace RatingSync;
 require_once "src/Constants.php";
 require_once "src/Jinni.php";
 require_once "src/Imdb.php";
+require_once "src/OmdbApi.php";
 require_once "src/Xfinity.php";
 require_once "src/RatingSyncSite.php";
 require_once "src/SessionUtility.php";
@@ -122,6 +123,11 @@ function logDebug($input, $prefix = null, $showTime = true, $printArray = null)
                 $quote = "";
             }
             $value = $printArray[$key];
+            try {
+                $value = "" . $value;
+            } catch (\Exception $e) {
+                $value = "Cannot be converted to string";
+            }
             $suffix .= "\t[$quote$key$quote] => $value\n";
         }
         $suffix .= "}";
@@ -183,17 +189,18 @@ function search($searchTerms, $username = null)
     $film = $searchDbResult['match'];
 
     if (empty($film)) {
-        // Not in the DB. Search the IMDb website.
-        $imdb = new Imdb($username);
+        // Not in the DB. Search the OMDb API.
+        $omdb = new OmdbApi();
         
-        if ($sourceName != Constants::SOURCE_RATINGSYNC && $sourceName != Constants::SOURCE_IMDB) {
-            // Before searching IMDb... remove terms specific to another source
+        if ($sourceName != Constants::SOURCE_RATINGSYNC && $sourceName != Constants::SOURCE_IMDB && $sourceName != Constants::SOURCE_OMDBAPI) {
+            // Before searching OMDb... remove terms specific to another source
             $searchTerms['uniqueName'] = null;
             $searchTerms['uniqueEpisode'] = null;
             $searchTerms['uniqueAlt'] = null;
         }
         
-        $film = $imdb->getFilmBySearch($searchTerms);
+        $film = $omdb->getFilmBySearch($searchTerms);
+
         if (!empty($film)) {
             $film->saveToDb($username);
             $newFilm = true;

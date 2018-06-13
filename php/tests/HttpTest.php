@@ -5,6 +5,7 @@
 namespace RatingSync;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Http.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 
 require_once "RatingSyncTestCase.php";
 
@@ -108,13 +109,29 @@ class HttpTest extends RatingSyncTestCase
      * @covers \RatingSync\Http::getPage
      * @depends testObjectCanBeConstructed
      */
+    public function testGetPageOmdbApi()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $http = new Http(Constants::SOURCE_OMDBAPI);
+        $json = $http->getPage("&i=tt2294629");
+        $result = json_decode($json, true);
+        $this->assertFalse(empty($result), "Result should not be empty");
+        $this->assertEquals("True", $result["Response"], "Result 'Response' should be 'True'");
+    }
+
+    /**
+     * @covers \RatingSync\Http::getPage
+     * @depends testObjectCanBeConstructed
+     */
+    /*
     public function testGetPageImdb()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $http = new Http(Constants::SOURCE_IMDB);
-        $page = $http->getPage("/help/?general/&ref_=hlp_brws");
-        $this->assertGreaterThan(0, stripos($page, "<title>Help : General Info</title>"), "Get IMDb 'About' page");
+        $page = $http->getPage("/conditions");
+        $this->assertGreaterThan(0, stripos($page, "<title>Conditions of Use - IMDb</title>"), "Get IMDb 'Conditions' page");
     }
+    */
 
     /**
      * @covers \RatingSync\Http::getPage

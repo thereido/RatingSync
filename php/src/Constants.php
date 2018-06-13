@@ -14,6 +14,7 @@ class Constants
     const RS_IMAGE_URL_PATH             = "/image/";
     const SOURCE_JINNI                  = "Jinni";
     const SOURCE_IMDB                   = "IMDb";
+    const SOURCE_OMDBAPI                = "OMDb";
     const SOURCE_NETFLIX                = "Netflix";
     const SOURCE_RT                     = "RottenTomatoes";
     const SOURCE_XFINITY                = "xfinity";

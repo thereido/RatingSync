@@ -1100,10 +1100,10 @@ class Film {
 
     public function downloadImage()
     {
-        $imdb = new Imdb("empty_userame");
+        $omdbApi = new OmdbApi("empty_userame");
         try {
-            $imdb->getFilmDetailFromWebsite($this, false, Constants::USE_CACHE_ALWAYS);
-            $image = $this->getImage(Constants::SOURCE_IMDB);
+            $omdbApi->getFilmDetailFromWebsite($this, false, Constants::USE_CACHE_ALWAYS);
+            $image = $this->getImage(Constants::SOURCE_OMDBAPI);
         } catch (\Exception $e) {
             // Do nothing, $image will be empty
         }

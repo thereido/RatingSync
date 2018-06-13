@@ -71,7 +71,7 @@ class ImdbTest extends RatingSyncTestCase
      * @depends testObjectCanBeConstructed
      * @expectedException \RatingSync\HttpNotFoundException
      */
-    public function testGetRatingsUsernameWithNoMatch()
+    public function OBSELETE_testGetRatingsUsernameWithNoMatch()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb("---Username--No--Match---");
@@ -133,7 +133,7 @@ class ImdbTest extends RatingSyncTestCase
      * @depends testObjectCanBeConstructed
      * @depends testCacheRatingsPage
      */
-    public function testGetRatings()
+    public function OBSELETE_testGetRatings()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
@@ -144,7 +144,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getRatings
      * @depends testGetRatings
      */
-    public function testGetRatingsUsingCacheAlways()
+    public function OBSELETE_testGetRatingsUsingCacheAlways()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Want cached files ready for this test: Yes
@@ -158,7 +158,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getRatings
      * @depends testGetRatings
      */
-    public function testGetRatingsUsingCacheNever()
+    public function OBSELETE_testGetRatingsUsingCacheNever()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Want cached files ready for this test: Yes
@@ -172,7 +172,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getRatings
      * @depends testGetRatings
      */
-    public function testGetRatingsUsingCacheWithRecentFiles()
+    public function OBSELETE_testGetRatingsUsingCacheWithRecentFiles()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Want cached files ready for this test: Yes
@@ -191,7 +191,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getRatings
      * @depends testGetRatings
      */
-    public function testGetRatingsUsingCacheWithOldFiles()
+    public function OBSELETE_testGetRatingsUsingCacheWithOldFiles()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Want cached files ready for this test: Yes
@@ -211,7 +211,7 @@ class ImdbTest extends RatingSyncTestCase
      * @depends testObjectCanBeConstructed
      * @depends testGetRatings
      */
-    public function testGetRatingsCount()
+    public function OBSELETE_testGetRatingsCount()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
@@ -224,7 +224,7 @@ class ImdbTest extends RatingSyncTestCase
      * @depends testObjectCanBeConstructed
      * @depends testGetRatings
      */
-    public function testGetRatingsLimitPages()
+    public function OBSELETE_testGetRatingsLimitPages()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
@@ -237,7 +237,7 @@ class ImdbTest extends RatingSyncTestCase
      * @depends testObjectCanBeConstructed
      * @depends testGetRatings
      */
-    public function testGetRatingsBeginPage()
+    public function OBSELETE_testGetRatingsBeginPage()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
@@ -251,7 +251,7 @@ class ImdbTest extends RatingSyncTestCase
      * @depends testGetRatingsLimitPages
      * @depends testGetRatingsBeginPage
      */
-    public function testGetRatingsDetailsNoCache()
+    public function OBSELETE_testGetRatingsDetailsNoCache()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -278,7 +278,7 @@ class ImdbTest extends RatingSyncTestCase
      * @depends testCacheRatingsPage
      * @depends testCacheFilmDetailPage
      */
-    public function testGetRatingsDetails()
+    public function OBSELETE_testGetRatingsDetails()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -308,7 +308,7 @@ class ImdbTest extends RatingSyncTestCase
      * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
-    public function testGetFilmDetailFromWebsiteFromNull()
+    public function OBSOLETE_testGetFilmDetailFromWebsiteFromNull()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
@@ -320,7 +320,7 @@ class ImdbTest extends RatingSyncTestCase
      * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
-    public function testGetFilmDetailFromWebsiteFromString()
+    public function OBSOLETE_testGetFilmDetailFromWebsiteFromString()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
@@ -332,7 +332,7 @@ class ImdbTest extends RatingSyncTestCase
      * @depends testObjectCanBeConstructed
      * @expectedException \InvalidArgumentException
      */
-    public function testGetFilmDetailFromWebsiteWithoutUniqueName()
+    public function OBSOLETE_testGetFilmDetailFromWebsiteWithoutUniqueName()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
@@ -345,7 +345,7 @@ class ImdbTest extends RatingSyncTestCase
      * @depends testObjectCanBeConstructed
      * @expectedException \Exception
      */
-    public function testGetFilmDetailFromWebsiteNoMatch()
+    public function OBSOLETE_testGetFilmDetailFromWebsiteNoMatch()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -358,7 +358,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getFilmDetailFromWebsite
      * @depends testObjectCanBeConstructed
      */
-    public function testGetFilmDetailFromWebsite()
+    public function OBSOLETE_testGetFilmDetailFromWebsite()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -389,7 +389,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getFilmDetailFromWebsite
      * @depends testGetFilmDetailFromWebsite
      */
-    public function testGetFilmDetailFromWebsiteOverwriteTrueOverEmpty()
+    public function OBSOLETE_testGetFilmDetailFromWebsiteOverwriteTrueOverEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -415,7 +415,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getFilmDetailFromWebsite
      * @depends testGetFilmDetailFromWebsite
      */
-    public function testGetFilmDetailFromWebsiteOverwriteTrueOverOriginalData()
+    public function OBSOLETE_testGetFilmDetailFromWebsiteOverwriteTrueOverOriginalData()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
@@ -491,7 +491,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getFilmDetailFromWebsite
      * @depends testGetFilmDetailFromWebsiteOverwriteTrueOverEmpty
      */
-    public function testGetFilmDetailFromWebsiteOverwriteFalseOverOriginalData()
+    public function OBSOLETE_testGetFilmDetailFromWebsiteOverwriteFalseOverOriginalData()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
@@ -564,7 +564,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getFilmDetailFromWebsite
      * @depends testGetFilmDetailFromWebsite
      */
-    public function testGetFilmDetailFromWebsiteOverwriteFalseOverEmpty()
+    public function OBSOLETE_testGetFilmDetailFromWebsiteOverwriteFalseOverEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -591,7 +591,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getFilmDetailFromWebsite
      * @depends testGetFilmDetailFromWebsiteOverwriteTrueOverOriginalData
      */
-    public function testGetFilmDetailFromWebsiteOverwriteDefault()
+    public function OBSOLETE_testGetFilmDetailFromWebsiteOverwriteDefault()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
@@ -667,7 +667,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getFilmDetailFromWebsite
      * @expectedException \InvalidArgumentException
      */
-    public function testGetFilmDetailFromWebsiteOverwriteFalseOverEmptyFilm()
+    public function OBSOLETE_testGetFilmDetailFromWebsiteOverwriteFalseOverEmptyFilm()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new Imdb(TEST_IMDB_USERNAME);
@@ -679,7 +679,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getFilmDetailFromWebsite
      * @depends testGetFilmDetailFromWebsite
      */
-    public function testMultipleGenres()
+    public function OBSOLETE_testMultipleGenres()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -695,7 +695,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getFilmDetailFromWebsite
      * @depends testGetFilmDetailFromWebsite
      */
-    public function testMultipleDirectors()
+    public function OBSOLETE_testMultipleDirectors()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -872,7 +872,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getNextRatingPageNumber
      * @depends testGetRatingPageUrl
      */
-    public function testGetNextRatingPageNumberFirstPage()
+    public function OBSELETE_testGetNextRatingPageNumberFirstPage()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -886,7 +886,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getNextRatingPageNumber
      * @depends testGetRatingPageUrl
      */
-    public function testGetNextRatingPageNumberLastPage()
+    public function OBSELETE_testGetNextRatingPageNumberLastPage()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -906,7 +906,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::parseDetailPageGenres
      * @covers \RatingSync\Imdb::parseDetailPageDirectors
      */
-    public function testParseDetailPageEmptyFilmOverwriteTrue()
+    public function OBSELETE_testParseDetailPageEmptyFilmOverwriteTrue()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -966,7 +966,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::parseDetailPageGenres
      * @covers \RatingSync\Imdb::parseDetailPageDirectors
      */
-    public function testParseDetailPageEmptyFilmOverwriteFalse()
+    public function OBSELETE_testParseDetailPageEmptyFilmOverwriteFalse()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -1026,7 +1026,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::parseDetailPageGenres
      * @covers \RatingSync\Imdb::parseDetailPageDirectors
      */
-    public function testParseDetailPageFullFilmOverwriteTrue()
+    public function OBSELETE_testParseDetailPageFullFilmOverwriteTrue()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -1118,7 +1118,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::parseDetailPageGenres
      * @covers \RatingSync\Imdb::parseDetailPageDirectors
      */
-    public function testParseDetailPageFullFilmOverwriteFalse()
+    public function OBSELETE_testParseDetailPageFullFilmOverwriteFalse()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
@@ -1548,7 +1548,7 @@ class ImdbTest extends RatingSyncTestCase
      * @covers \RatingSync\Imdb::getDetailPageRegexForContentType
      * @depends testGetFilmDetailFromWebsite
      */
-    public function testGetDetailPageRegexForContentType()
+    public function OBSELETE_testGetDetailPageRegexForContentType()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new ImdbExt(TEST_IMDB_USERNAME);
