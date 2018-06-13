@@ -8,7 +8,7 @@ $username = getUsername();
 $response = "";
 
 $action = array_value_by_key("action", $_GET);
-logDebug("API action: $action, username: $username", "api.php");
+logDebug("API action: $action, username: $username", "api.php ".__LINE__);
 if ($action == "getSearchFilm") {
     $response = api_getSearchFilm($username, $_GET);
 }
@@ -75,8 +75,6 @@ function api_getSearchFilm($username, $get)
     }
     
     $responseArr = array();
-    $matchAsArray = "";
-    $parentAsArray = "";
     if (!empty($matchFilm)) {
         $responseArr['match'] = $matchFilm->asArray();
     }
