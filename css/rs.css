@@ -72,6 +72,8 @@ poster {
 poster > img {
     width: 150px;
     height: 221px;
+    object-fit: cover;
+    object-position: center;
 }
 
 detail {

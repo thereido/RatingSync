@@ -245,7 +245,7 @@ function renderSearchResultFilm(film, element) {
     filmEl.setAttribute("class", "col-xs-12 col-sm-12 col-md-12 col-lg-12");
 
     var posterEl = document.createElement("poster");
-    posterEl.innerHTML = '<img src="'+film.image+'" width="150px" alt="'+film.title+'"/>';
+    posterEl.innerHTML = '<img src="'+film.image+'" alt="'+film.title+'"/>';
 
     var detailEl = buildFilmDetailElement(film);
     var statusEl = detailEl.getElementsByTagName("status")[0];

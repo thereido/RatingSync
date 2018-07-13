@@ -40,7 +40,7 @@ $pageFooter = getPageFooter();
     <div id="debug"></div>
     
     <detail-film id="detail-film">
-        <poster><img width="150px"></poster>
+        <poster><img></poster>
         <div id="detail"></div>
     </detail-film>
     

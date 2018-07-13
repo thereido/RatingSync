@@ -213,3 +213,10 @@
     overflow:hidden;
     background-color:#e5e5e5;
 }
+
+poster > img {
+    width: 150px;
+    height: 221px;
+    object-fit: cover;
+    object-position: center;
+}

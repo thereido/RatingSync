@@ -133,7 +133,7 @@ function renderFilm(film, element) {
     r = r + "  <div><span class='tv-season'>" + season + "</span><span class='tv-episodenum'>" + episodeNumber + "</span></div>\n";
     r = r + "  <div>" + loginLink + "</div>\n";
     r = r + "  <div class='rating-stars' id='rating-stars-"+uniqueName+"'></div>\n";
-    r = r + "  <poster><img src='" + image + "' width='150px'/></poster>\n";
+    r = r + "  <poster><img src='" + image + "'/></poster>\n";
     r = r + "  <detail>\n";
     r = r + "    <div align='left'>" + imdbLink + "</div>\n";
     r = r + "    <div id='streams-"+film.filmId+"' class='streams'></div>\n";
