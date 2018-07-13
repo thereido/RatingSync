@@ -72,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>RatingSync Login</title>
+    <title><?php echo Constants::SITE_NAME; ?> Login</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="../../css/bootstrap_rs.min.css" rel="stylesheet" id="bootstrap-css">
     <link href="../../css/rs.css" rel="stylesheet">

@@ -48,7 +48,7 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '        <span class="icon-bar"></span>'."\n";
     $html .= '        <span class="icon-bar"></span>'."\n";
     $html .= '      </button>'."\n";
-    $html .= '      <a class="navbar-brand" href="/">RatingSync</a>'."\n";
+    $html .= '      <a class="navbar-brand" href="/">'.Constants::SITE_NAME.'</a>'."\n";
     $html .= '    </div>'."\n";
     $html .= '    <div class="collapse navbar-collapse" id="myNavbar">'."\n";
     // Left side buttons/links

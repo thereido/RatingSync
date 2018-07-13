@@ -9,7 +9,7 @@ require_once "../src/Constants.php";
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>Register RatingSync</title>
+        <title>Register <?php echo Constants::SITE_NAME; ?></title>
 <?php
 $msg = null;
 

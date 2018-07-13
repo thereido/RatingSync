@@ -10,7 +10,7 @@ $username = SessionUtility::logout();
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>RatingSync</title>
+        <title><?php echo Constants::SITE_NAME; ?></title>
         <script type="text/javascript">window.location.href = "../Login?dest=none"</script>
     </head>
     <body>

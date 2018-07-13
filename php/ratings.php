@@ -32,7 +32,7 @@ $pageFooter = getPageFooter();
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>RSync: Your Ratings</title>
+    <title><?php echo Constants::SITE_NAME; ?> Ratings</title>
     <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
     <link href="../css/rs.css" rel="stylesheet">
     <?php if (empty($username)) { echo '<script type="text/javascript">window.location.href = "/php/Login"</script>'; } ?>

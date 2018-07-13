@@ -10,7 +10,7 @@ $username = SessionUtility::getUsername();
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>RatingSync</title>
+    <title><?php echo Constants::SITE_NAME; ?></title>
 </head>
 <body>
 <?php
