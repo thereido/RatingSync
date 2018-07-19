@@ -134,7 +134,7 @@ class Http
         } elseif ($sourceName == Constants::SOURCE_IMDB) {
             $baseUrl = "https://www.imdb.com";
         } elseif ($sourceName == Constants::SOURCE_OMDBAPI) {
-            $baseUrl = "http://www.omdbapi.com/?apikey=" . Constants::OMDB_API_KEY . "&v=1";
+            $baseUrl = "http://private.omdbapi.com/?apikey=" . Constants::OMDB_API_KEY . "&v=1";
         } elseif ($sourceName == Constants::SOURCE_JINNI) {
             $baseUrl = "http://www.jinni.com";
         } elseif ($sourceName == Constants::SOURCE_NETFLIX) {
