@@ -32,9 +32,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $msgInfo = "<p>Incorrect username or password. Please try again.</p>";
         if (!empty($_POST['username']) && !empty($_POST['password'])) {
             SessionUtility::logout();
-            $db = getDatabase();
-            $username = $db->real_escape_string($_POST['username']);
-            $password = md5($db->real_escape_string($_POST['password']));
+            $username = $_POST['username'];
+            $password = $_POST['password'];
             if (SessionUtility::login($username, $password)) {
                 $destination = $_POST['destination'];
                 if (empty($destination)) {
@@ -50,9 +49,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $regFormDisplay = "block";
         $regHeaderClass = "active";
         if (!empty($_POST['username']) && !empty($_POST['password'])) {
-            $db = getDatabase();
-            $username = $db->real_escape_string($_POST['username']);
-            $password = md5($db->real_escape_string($_POST['password']));
+            $username = $_POST['username'];
+            $password = $_POST['password'];
             if (SessionUtility::registerUser($username, $password)) {
                 if (SessionUtility::login($username, $password)) {
                     $headerScript = '<script type="text/javascript">window.location.href = "/"</script>';
