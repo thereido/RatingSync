@@ -44,6 +44,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     } else if ($_POST['active-form'] == "verify-form") {
+		/*
+		 * UNCOMMENT when you are ready to register users
+		 * 
         $loginFormDisplay = "none";
         $loginHeaderClass = "";
         $regFormDisplay = "block";
@@ -62,7 +65,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } else {
                 $msgRegWarning = "<strong>Registration failed</strong><br>Please try again. Maybe with a different username and/or password.<br>";
             }
-        }
+		}
+		*/
     }
 }
 ?>
@@ -194,7 +198,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<div class="col-xs-6">
 								<a href="#" class="<?php echo $loginHeaderClass;?>" id="login-form-link">Login</a>
 							</div>
-							<div class="col-xs-6">
+							<div class="col-xs-6" hidden>
 								<a href="#" class="<?php echo $regHeaderClass;?>" id="register-form-link">Register</a>
 							</div>
 						</div>
@@ -236,7 +240,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 										</div>
 									</div>
 								</form>
-								<form id="register-form" method="post" role="form" style="display: <?php echo $regFormDisplay; ?>;" onsubmit="validateRegistrationInput(); return false;">
+								<form id="register-form" hidden method="post" role="form" style="display: <?php echo $regFormDisplay; ?>;" onsubmit="validateRegistrationInput(); return false;">
                                     <input type="hidden" name="active-form" id="active-form" value="register-form">
                                     <div id="msg-reg-success" class="alert alert-success" hidden></div>
                                     <div id="msg-reg-info" class="alert alert-info" hidden></div>
@@ -260,11 +264,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 										</div>
 									</div>  
 								</form>    
-                                <form id="verify-form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" role="form">
+                                <form id="verify-form" hidden action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" role="form">
                                     <input type="hidden" name="active-form" id="active-form" value="verify-form">
                                     <input type="text" name="username" id="username-verify" hidden>
                                     <input type="text" name="password" id="password-verify" hidden>
-                                    <!-- Modal -->
                                     <div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="registerModalLabel">
                                       <div class="modal-dialog" role="document">
                                         <div class="modal-content">
