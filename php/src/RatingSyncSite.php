@@ -508,53 +508,78 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     protected function getSearchSql($searchDomain, $search, $limit, $useSounds = false)
     {
         $sql = "";
+        $imdbId = null;
+
+        if (preg_match('/(tt\d{7})/i', $search, $matches)) {
+            $imdbId = $matches[1];
+        }
 
         if ($searchDomain == "ratings") {
-            $sql = $this->getRatingsSqlQuery($search, $limit, $useSounds);
+            $sql = $this->getRatingsSqlQuery($search, $limit, $useSounds, $imdbId);
         } else if ($searchDomain == "list") {
-            $sql = $this->getDefaultListSqlQuery($search, $limit, $useSounds);
+            $sql = $this->getDefaultListSqlQuery($search, $limit, $useSounds, $imdbId);
         } else if ($searchDomain == "both") {
-            $sql = $this->getBothSqlQuery($search, $limit, $useSounds);
+            $sql = $this->getBothSqlQuery($search, $limit, $useSounds, $imdbId);
         }
 
         return $sql;
     }
 
-    protected function getRatingsSqlQuery($search, $limit, $useSounds = false)
+    protected function getRatingsSqlQuery($search, $limit, $useSounds = false, $imdbId = null)
     {
         $sounds = "";
         if ($useSounds) {
             $sounds = "SOUNDS";
         }
         
-        $query  = "SELECT DISTINCT rating.film_id FROM rating, film";
-        $query .= " WHERE film.title $sounds LIKE '%$search%'";
-        $query .= "   AND rating.user_name = '". $this->username ."'";
-        $query .= "   AND rating.source_name = 'RatingSync'";
-        $query .= "   AND rating.film_id = film.id";
-        $query .= " LIMIT $limit";
+        if (empty($imdbId)) {
+            $query  = "SELECT DISTINCT rating.film_id FROM rating, film";
+            $query .= " WHERE film.title $sounds LIKE '%$search%'";
+            $query .= "   AND rating.user_name = '". $this->username ."'";
+            $query .= "   AND rating.source_name = 'RatingSync'";
+            $query .= "   AND rating.film_id = film.id";
+            $query .= " LIMIT $limit";
+        } else {
+            $query  = "SELECT DISTINCT rating.film_id FROM rating, film_source";
+            $query .= " WHERE film_source.uniqueName = '$imdbId'";
+            $query .= "   AND film_source.source_name = 'IMDb'";
+            $query .= "   AND rating.user_name = '". $this->username ."'";
+            $query .= "   AND rating.source_name = 'RatingSync'";
+            $query .= "   AND rating.film_id = film_source.film_id";
+            $query .= " LIMIT $limit";
+        }
 
         return $query;
     }
 
-    protected function getDefaultListSqlQuery($search, $limit, $useSounds = false)
+    protected function getDefaultListSqlQuery($search, $limit, $useSounds = false, $imdbId = null)
     {
         $sounds = "";
         if ($useSounds) {
             $sounds = "SOUNDS";
         }
         
-        $query  = "SELECT DISTINCT filmlist.film_id FROM filmlist, film";
-        $query .= " WHERE film.title $sounds LIKE '%$search%'";
-        $query .= "   AND filmlist.user_name = '". $this->username ."'";
-        $query .= "   AND filmlist.listname = '" . Constants::LIST_DEFAULT . "'";
-        $query .= "   AND filmlist.film_id = film.id";
-        $query .= " LIMIT $limit";
+        if (empty($imdbId)) {
+            $query  = "SELECT DISTINCT filmlist.film_id FROM filmlist, film";
+            $query .= " WHERE film.title $sounds LIKE '%$search%'";
+            $query .= "   AND filmlist.user_name = '". $this->username ."'";
+            $query .= "   AND filmlist.listname = '" . Constants::LIST_DEFAULT . "'";
+            $query .= "   AND filmlist.film_id = film.id";
+            $query .= " LIMIT $limit";
+        } else {
+            $query  = "SELECT DISTINCT filmlist.film_id FROM filmlist, film_source";
+            $query .= " WHERE film_source.uniqueName = '$imdbId'";
+            $query .= "   AND film_source.source_name = 'IMDb'";
+            $query .= "   AND filmlist.user_name = '". $this->username ."'";
+            $query .= "   AND filmlist.listname = '" . Constants::LIST_DEFAULT . "'";
+            $query .= "   AND filmlist.film_id = film_source.film_id";
+            $query .= " LIMIT $limit";
+        }
 
         return $query;
     }
 
-    protected function getBothSqlQuery($search, $limit, $useSounds = false)
+    protected function getBothSqlQuery($search, $limit, $useSounds = false, $imdbId = null)
     {
         $sounds = "";
         if ($useSounds) {
@@ -563,14 +588,26 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $username = $this->username;
         $listname = Constants::LIST_DEFAULT;
         
-        $query  = "SELECT DISTINCT id as film_id FROM film";
-        $query .= "  WHERE film.title $sounds LIKE '%$search%'";
-        $query .= "    AND (";
-        $query .= "      id IN (SELECT film_id FROM rating WHERE rating.user_name = '$username' AND rating.source_name = 'RatingSync')";
-        $query .= "      OR";
-        $query .= "      id IN (SELECT film_id FROM filmlist WHERE filmlist.user_name = '$username' AND filmlist.listname = '$listname')";
-        $query .= "    )";
-        $query .= "  LIMIT $limit";
+        if (empty($imdbId)) {
+            $query  = "SELECT DISTINCT id as film_id FROM film";
+            $query .= "  WHERE film.title $sounds LIKE '%$search%'";
+            $query .= "    AND (";
+            $query .= "      id IN (SELECT film_id FROM rating WHERE rating.user_name = '$username' AND rating.source_name = 'RatingSync')";
+            $query .= "      OR";
+            $query .= "      id IN (SELECT film_id FROM filmlist WHERE filmlist.user_name = '$username' AND filmlist.listname = '$listname')";
+            $query .= "    )";
+            $query .= "  LIMIT $limit";
+        } else {
+            $query  = "SELECT DISTINCT film_id FROM film_source";
+            $query .= " WHERE film_source.uniqueName = '$imdbId'";
+            $query .= "   AND film_source.source_name = 'IMDb'";
+            $query .= "   AND (";
+            $query .= "      film_id IN (SELECT film_id FROM rating WHERE rating.user_name = '$username' AND rating.source_name = 'RatingSync')";
+            $query .= "      OR";
+            $query .= "      film_id IN (SELECT film_id FROM filmlist WHERE filmlist.user_name = '$username' AND filmlist.listname = '$listname')";
+            $query .= "      )";
+            $query .= " LIMIT $limit";
+        }
 
         return $query;
     }

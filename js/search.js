@@ -22,13 +22,18 @@ function searchFilms(query, xmlhttp, callback) {
 	    xmlhttp.send();
     } else {
         // Search from OMDb API
+        var searchParam = "&s=" + encodeURIComponent(query);
+        var imdbIdIndex = query.search(/tt\d{7}/i);
+        if (imdbIdIndex > -1) {
+            searchParam = "&i=" + query.substring(imdbIdIndex, 9);
+        }
         var params = "json=1";
-        params = params + "&s=" + encodeURIComponent(query);
+        params = params + searchParam;
         params = params + "&apikey=" + OMDB_API_KEY;
         var callbackHandler = function () { searchFilmsCallback(query, xmlhttp, callback); };
         xmlhttp.onreadystatechange = callbackHandler;
-	    xmlhttp.open("GET", "https://www.omdbapi.com/?" + params, true);
-	    xmlhttp.send();
+	    xmlhttp.open("GET", "https://private.omdbapi.com/?" + params, true);
+        xmlhttp.send();
     }
 }
 
@@ -44,11 +49,15 @@ function searchPageCallback(query, xmlhttp) {
 	var searchResultEl = document.getElementById("search-result-tbody");
     var limit = 10;
 
-	// Is the result from OMDB or RatingSync
+	// Is the result from OMDB search, OMDB item, or RatingSync
     var dataFromOmdb = false;
-	if (result.Search) {
-	    dataFromOmdb = true;
-	    films = result.Search;
+	if (result.Search || result.Title) {
+        dataFromOmdb = true;
+        if (result.Title) {
+            films = [result];
+        } else {
+	        films = result.Search;
+        }
 	} else {
 	    films = result.films;
 	}
@@ -89,9 +98,9 @@ function searchSuggestionCallback(query, xmlhttp) {
 	var fromOmdb = false;
 	var imdbIds = [];
 
-    if (result.Search && result.Search.length > 0) {
+    if ((result.Search && result.Search.length > 0) || result.Title) {
         // This is a result from OMDB. Convert to RatingSync style
-	    films = convertOmdbToRs(result, limit);
+	    films = convertOmdbListToRs(result, limit);
 	    fromOmdb = true;
     }
 
@@ -336,22 +345,29 @@ function onClickSeeMore(omdbFilm, filmEl, seeMoreEl) {
     getRatingSync(omdbFilm, filmEl, false);
 }
 
-function convertOmdbToRs(omdbSearchResult, limit) {
+function convertOmdbListToRs(omdbSearchResult, limit) {
     var films = { "films":[] }.films;
-    var suggestionCount = 0;
-    while (suggestionCount < limit && omdbSearchResult.Search && omdbSearchResult.Search.length > suggestionCount) {
-	    var omdbFilm = omdbSearchResult.Search[suggestionCount];
-        var rsFilm = {};
-        rsFilm.image = omdbFilm.Poster;
-        rsFilm.title = omdbFilm.Title;
-        rsFilm.year = omdbFilm.Year;
-        rsFilm.sources = [{ "name": "IMDb", "image": omdbFilm.Poster, "uniqueName": omdbFilm.imdbID }];
-        films[suggestionCount] = rsFilm;
+    while (films.length < limit && omdbSearchResult.Search && omdbSearchResult.Search.length > films.length) {
+        var omdbFilm = omdbSearchResult.Search[films.length];
+        films[films.length] = convertOmdbItemToRs(omdbFilm);
+    }
 
-        suggestionCount = suggestionCount + 1;
+    if (omdbSearchResult.Title) {
+        // The result is a single item
+        films[films.length] = convertOmdbItemToRs(omdbSearchResult);
     }
 
     return films;
+}
+
+function convertOmdbItemToRs(omdbFilm) {
+    var rsFilm = {};
+    rsFilm.image = omdbFilm.Poster;
+    rsFilm.title = omdbFilm.Title;
+    rsFilm.year = omdbFilm.Year;
+    rsFilm.sources = [{ "name": "IMDb", "image": omdbFilm.Poster, "uniqueName": omdbFilm.imdbID }];
+
+    return rsFilm;
 }
 
 function getUniqueName(film, sourceName)
