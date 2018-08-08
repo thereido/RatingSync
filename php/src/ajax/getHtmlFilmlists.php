@@ -101,7 +101,7 @@ function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListn
     $sortHtml .= '</div>'."\n";
     
     $html = "\n";
-    $html .= "<div class='well well-sm'>\n";
+    $html .= "<div class='well well-sm filmlist-header'>\n";
     $html .=    $parentListsHtml;
     $html .= "  <h2>$displayListname</h2>\n";
     $html .=    $contentTypeHtml;

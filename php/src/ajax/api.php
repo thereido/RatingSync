@@ -54,6 +54,9 @@ elseif ($action == "getFilms") {
 elseif ($action == "validateNewUsername") {
     $response = api_validateNewUsername();
 }
+elseif ($action == "getSeason") {
+    $response = api_getSeason($username);
+}
 
 echo $response;
 
@@ -293,6 +296,13 @@ function getFilmApi($username, $filmId, $imdbUniqueName, $getFromRsDbOnly)
             $searchTerms["sourceName"] = "IMDb";
             $searchResponseJson = search($searchTerms, $username);
             $film = Film::getFilmFromDbByImdb($imdbUniqueName, $username);
+        }
+    }
+
+    if (!empty($film)) {
+        $changesWereMade = $film->refresh();
+        if ($changesWereMade) {
+            $film->saveToDb($username);
         }
     }
 
@@ -584,6 +594,22 @@ function api_validateNewUsername()
     $response = '{"valid":"' . $isValid . '"}';
 
     return $response;
+}
+
+function api_getSeason($username)
+{
+    $filmId = array_value_by_key("id", $_GET);
+    $seasonNum = array_value_by_key("s", $_GET);
+    logDebug("Params id=$filmId, s=$seasonNum", __FUNCTION__." ".__LINE__);
+
+    $omdbApi = new OmdbApi("empty_userame");
+    $seasonArray = $omdbApi->getSeason($filmId, $seasonNum);
+    $response = json_encode($seasonArray);
+    if (!$response) {
+        $response = json_encode(array("Response" => "False"));
+    }
+
+    return json_encode($seasonArray);
 }
 
 ?>

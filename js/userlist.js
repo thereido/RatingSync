@@ -46,7 +46,9 @@ function renderUserlistFilms() {
         html = html + "  <div class='col-xs-6 col-sm-4 col-md-3 col-lg-2' id='" + uniqueName + "'>\n";
         html = html + "    <div class='userlist-film' " + onMouseEnter + " " + onMouseLeave + ">\n";
         html = html + "      <poster id='poster-" + uniqueName + "' data-filmId='" + filmId + "'>\n";
-        html = html + "        <img src='" + image + "' alt='" + titleNoQuotes + "' />\n";
+        html = html + "        <a href='/php/detail.php?i=" + filmId + "'>\n";
+        html = html + "          <img src='" + image + "' alt='" + titleNoQuotes + "' />\n";
+        html = html + "        </a>\n";
         html = html + "        <div id='film-dropdown-" + filmId + "' class='film-dropdown-content film-dropdown-col-" + column + "'></div>\n";
         html = html + "      </poster>\n";
         html = html + "    </div>\n";

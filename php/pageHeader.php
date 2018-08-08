@@ -40,7 +40,7 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
         $rightSide = $accountLink;
     }
 
-    $html  = '<nav class="navbar navbar-default">'."\n";
+    $html  = '<nav class="navbar navbar-default rs-navbar">'."\n";
     $html .= '  <div class="container-fluid">'."\n";
     $html .= '    <div class="navbar-header">'."\n";
     $html .= '      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">'."\n";

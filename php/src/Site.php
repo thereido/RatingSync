@@ -318,6 +318,7 @@ abstract class Site
         try {
             $this->getFilmDetailFromWebsite($film);
         } catch (\Exception $e) {
+            logDebug("Exception " . $e->getCode() . " " . $e->getMessage(), __CLASS__."::".__FUNCTION__." ".__LINE__);
             $film = null;
         }
         

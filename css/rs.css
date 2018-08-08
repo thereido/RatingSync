@@ -54,6 +54,9 @@
     font-size: 125%;
     font-weight: bold;
 }
+.film-line > .film-title > a {
+    color: black;
+}
 
 .tv-episode-title {
     font-size: 110%;
@@ -69,7 +72,8 @@ poster {
     border-radius: 3px;
 }
 
-poster > img {
+poster > img,
+poster > a > img {
     width: 150px;
     height: 221px;
     object-fit: cover;
@@ -262,7 +266,8 @@ checklist-line input[type="radio"] {
     padding-right: 1px;
 }
 
-.search-suggestion-item > poster > img {
+.search-suggestion-item > poster > img,
+.search-suggestion-item > poster > a > img {
 	width: 40px;
     height: auto;
 }
@@ -283,6 +288,32 @@ checklist-line input[type="radio"] {
 
 .rs-filmlist-sort img {
     height: 25px;
+}
+
+.rs-navbar {
+    margin-bottom: 0px;
+}
+
+.filmlist-header {
+    margin-top: 20px;
+}
+
+detail-film {
+}
+
+detail-episodes {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+detail-episode {
+    margin-left: 30px;
+    margin-right: 30px;
+}
+
+detail-episode-rating {
+    padding-left: 5px;
+    color: orange;
 }
 
 @media (min-width:768px) {

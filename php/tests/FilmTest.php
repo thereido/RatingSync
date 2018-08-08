@@ -1682,7 +1682,7 @@ class FilmTest extends RatingSyncTestCase
         $xml = new \SimpleXMLElement("<films/>");
         $film->addXmlChild($xml);
         $xmlStr = "<?xml version=\"1.0\"?>\n";
-        $xmlStr .= "<films><film title=\"Film_Title\"><title>Film_Title</title><year/><contentType/><image/><directors/><genres/></film></films>";
+        $xmlStr .= "<films><film title=\"Film_Title\"><title>Film_Title</title><year/><contentType/><image/><refreshDate/><directors/><genres/></film></films>";
         $xmlStr .= "\n";
         $this->assertEquals($xmlStr, $xml->asXml());
     }
@@ -1698,7 +1698,7 @@ class FilmTest extends RatingSyncTestCase
         $xml = new \SimpleXMLElement("<films/>");
         $film->addXmlChild($xml);
         $xmlStr = "<?xml version=\"1.0\"?>\n";
-        $xmlStr .= "<films><film title=\"\"><title/><year/><contentType/><image/><directors/><genres/></film></films>";
+        $xmlStr .= "<films><film title=\"\"><title/><year/><contentType/><image/><refreshDate/><directors/><genres/></film></films>";
         $xmlStr .= "\n";
         $this->assertEquals($xmlStr, $xml->asXml());
     }
@@ -1741,6 +1741,7 @@ class FilmTest extends RatingSyncTestCase
         $xmlStr .=     "<year>2013</year>";
         $xmlStr .=     "<contentType>FeatureFilm</contentType>";
         $xmlStr .=     "<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>";
+        $xmlStr .=     "<refreshDate/>";
         $xmlStr .=     "<directors><director>Chris Buck</director></directors>";
         $xmlStr .=     "<genres><genre>Family</genre></genres>";
         $xmlStr .=     "<source name=\"Jinni\">";
@@ -1808,6 +1809,7 @@ class FilmTest extends RatingSyncTestCase
         $xmlStr .=     "<year>2013</year>";
         $xmlStr .=     "<contentType>FeatureFilm</contentType>";
         $xmlStr .=     "<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>";
+        $xmlStr .=     "<refreshDate/>";
         $xmlStr .=     "<directors><director>Chris Buck</director></directors>";
         $xmlStr .=     "<genres><genre>Family</genre></genres>";
         $xmlStr .=     "<source name=\"Jinni\">";
@@ -1858,6 +1860,7 @@ class FilmTest extends RatingSyncTestCase
         $xmlStr .=     "<year/>";
         $xmlStr .=     "<contentType/>";
         $xmlStr .=     "<image/>";
+        $xmlStr .=     "<refreshDate/>";
         $xmlStr .=     "<directors/>";
         $xmlStr .=     "<genres><genre>Family</genre><genre>Fantasy</genre></genres>";
         $xmlStr .= "</film>";
@@ -1886,6 +1889,7 @@ class FilmTest extends RatingSyncTestCase
         $xmlStr .=     "<year/>";
         $xmlStr .=     "<contentType/>";
         $xmlStr .=     "<image/>";
+        $xmlStr .=     "<refreshDate/>";
         $xmlStr .=     "<directors><director>Chris Buck</director><director>Jennifer Lee</director></directors>";
         $xmlStr .=     "<genres/>";
         $xmlStr .= "</film>";
@@ -2142,6 +2146,7 @@ class FilmTest extends RatingSyncTestCase
         $xmlStr .= "<film title=\"Les Mis&#xE9;rables &amp; Gromit's\">";
         $xmlStr .=     "<title>Les Mis&#xE9;rables &amp; Gromit's</title>";
         $xmlStr .=     "<year/><contentType/><image/>";
+        $xmlStr .=     "<refreshDate/>";
         $xmlStr .=     "<directors><director>Georges M&#xE9;li&#xE8;s</director></directors>";
         $xmlStr .=     "<genres><genre>Sci-Fi</genre></genres>";
         $xmlStr .= "</film>";
@@ -2222,7 +2227,7 @@ class FilmTest extends RatingSyncTestCase
         $this->assertEquals("Frozen", $film->getTitle(), "Title");
         $this->assertEquals(2013, $film->getYear(), "Year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "ContentType");
-        $this->assertEquals(1, preg_match('@(frozen_rs_image)@', $film->getImage(), $matches), 'Image link');
+        $this->assertEquals(1, preg_match('@(frozen)@', $film->getImage(), $matches), 'Image link');
     }
 
     /**
@@ -2316,9 +2321,10 @@ class FilmTest extends RatingSyncTestCase
         // Test
         $film = new Film();
         $film->setYear(2015);
-        $film->saveToDb();
+        $success = $film->saveToDb();
 
         // Verify
+        $this->assertFalse($success, "saveToDb() should fail");
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='' OR title IS NULL";
         $result = $db->query($query);
@@ -2337,9 +2343,10 @@ class FilmTest extends RatingSyncTestCase
         // Test
         $film = new Film();
         $film->setTitle("Title no year");
-        $film->saveToDb();
+        $success = $film->saveToDb();
 
         // Verify
+        $this->assertTrue($success, "saveToDb() should succeed");
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='Title no year' AND year IS NULL";
         $result = $db->query($query);
@@ -2388,9 +2395,10 @@ class FilmTest extends RatingSyncTestCase
         $film->setUserScore(4, $sourceName);
 
         // Test
-        $film->saveToDb($username_rs);
+        $success = $film->saveToDb($username_rs);
 
         // Verify
+        $this->assertTrue($success, "saveToDb() should succeed");
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
         $result = $db->query($query);
@@ -2466,9 +2474,10 @@ class FilmTest extends RatingSyncTestCase
         $film->setUniqueName("Original_UniqueName2", $sourceRs);
 
         // Test
-        $film->saveToDb();
+        $success = $film->saveToDb();
 
         // Verify
+        $this->assertTrue($success, "saveToDb() should succeed");
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
         $result = $db->query($query);
@@ -2522,9 +2531,10 @@ class FilmTest extends RatingSyncTestCase
         $film->addDirector("Original_Director3");
 
         // Test
-        $film->saveToDb($username_rs);
+        $success = $film->saveToDb($username_rs);
 
         // Verify
+        $this->assertTrue($success, "saveToDb() should succeed");
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
         $result = $db->query($query);
@@ -2623,9 +2633,10 @@ class FilmTest extends RatingSyncTestCase
         $film->setUserScore(9, $sourceNameRs);
 
         // Test
-        $film->saveToDb($username_rs);
+        $success = $film->saveToDb($username_rs);
 
         // Verify
+        $this->assertTrue($success, "saveToDb() should succeed");
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
         $result = $db->query($query);
@@ -2729,9 +2740,10 @@ class FilmTest extends RatingSyncTestCase
         $film->setUniqueName("tt0094819", $sourceName);
 
         // Test
-        $film->saveToDb($username_rs);
+        $success = $film->saveToDb($username_rs);
 
         // Verify
+        $this->assertTrue($success, "saveToDb() should succeed");
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
         $result = $db->query($query);

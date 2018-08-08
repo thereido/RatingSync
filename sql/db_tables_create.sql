@@ -53,13 +53,16 @@ CREATE TABLE IF NOT EXISTS user_source
 CREATE TABLE IF NOT EXISTS film
     (
         id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        parent_id INT NULL,
         title VARCHAR(75) NOT NULL,
         year INT NULL DEFAULT NULL,
         contentType VARCHAR(50) NULL DEFAULT NULL,
+        seasonCount INT NULL DEFAULT NULL,
         season VARCHAR(75) NULL DEFAULT NULL,
         episodeNumber INT NULL DEFAULT NULL,
         episodeTitle VARCHAR(75) NULL DEFAULT NULL,
         image VARCHAR(200) NULL DEFAULT NULL,
+        refreshDate DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
         UNIQUE KEY idx_title_year (title, year, season, episodeTitle)

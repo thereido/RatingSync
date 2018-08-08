@@ -8,10 +8,10 @@ require_once "src/Film.php";
 require_once "src/Filmlist.php";
 
 $username = getUsername();
+$filmId = array_value_by_key("i", $_GET);
 $imdbUniqueName = array_value_by_key("imdb", $_GET);
-if (array_key_exists("imdb", $_GET)) {
-    $imdbUniqueName = $_GET['imdb'];
-} elseif (array_key_exists("selected-suggestion-uniquename", $_POST)) {
+$seasonNum = array_value_by_key("season", $_GET);
+if (empty($imdbUniqueName) && array_key_exists("selected-suggestion-uniquename", $_POST)) {
     $imdbUniqueName = $_POST['selected-suggestion-uniquename'];
 }
 $pageHeader = getPageHeader();
@@ -37,12 +37,21 @@ $pageFooter = getPageFooter();
 <div class="container">
     <?php echo $pageHeader; ?>
     
-    <div id="debug"></div>
+    <div id="debug" class="container-fluid"></div>
     
-    <detail-film id="detail-film">
+    <detail-film id="detail-film" class="container-fluid">
         <poster><img></poster>
         <div id="detail"></div>
     </detail-film>
+
+    <div id="seasons" class="container-fluid" hidden>
+        <div class="form-group">
+            <label for="seasonSel">Season:</label>
+            <select class="form-control" id="seasonSel" onchange="changeSeasonNum()"></select>
+        </div> 
+    </div>
+    
+    <detail-episodes id="episodes" class="container-fluid"></detail-episodes>
     
   <?php echo $pageFooter; ?>
 </div>
@@ -53,7 +62,8 @@ $pageFooter = getPageFooter();
     var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
     var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
     var username = "<?php getUsername(); ?>";
-    getFilmForDetailPage("<?php echo $imdbUniqueName; ?>");
+    var seasonNumParam = "<?php echo $seasonNum; ?>";
+    getFilmForDetailPage("<?php echo $filmId; ?>", "<?php echo $imdbUniqueName; ?>");
 </script>
 
 </body>

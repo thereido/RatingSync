@@ -202,6 +202,7 @@ function search($searchTerms, $username = null)
         $film = $omdb->getFilmBySearch($searchTerms);
 
         if (!empty($film)) {
+            $film->setRefreshDate(new \DateTime());
             $film->saveToDb($username);
             $newFilm = true;
         }
@@ -254,7 +255,7 @@ function setRating($filmId, $score)
 function getPageFooter() {
     $html = "";
     $html .= "<p/>";
-    $html .= "<footer class=\"footer\">";
+    $html .= "<footer class=\"footer container-fluid\">";
     $html .= "</footer>";
 
     return $html;

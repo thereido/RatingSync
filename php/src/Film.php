@@ -17,13 +17,16 @@ class Film {
     const CONTENT_TV_EPISODE = 'TvEpisode';
     
     protected $id;
+    protected $parentId;
     protected $title;
     protected $year;
     protected $contentType;
+    protected $seasonCount;
     protected $season;
     protected $episodeNumber;
     protected $episodeTitle;
     protected $image;
+    protected $refreshDate;
     protected $sources = array();
     protected $genres = array();
     protected $directors = array();
@@ -49,13 +52,16 @@ class Film {
 
     /**
      * <film title="">
+           <parentId/>
            <title/>
            <year/>
            <contentType/>
+           <seasonCount/>
            <season/>
            <episodeNumber/>
            <episodeTitle/>
            <image/>
+           <refreshDate/>
            <directors>
                <director/>
            </directors>
@@ -94,9 +100,15 @@ class Film {
 
         $filmXml = $xml->addChild("film");
         $filmXml->addAttribute('title', $this->getTitle());
+        if (!empty($this->getParentId())) {
+            $filmXml->addChild('parentId', $this->getParentId());
+        }
         $filmXml->addChild('title', htmlspecialchars($this->getTitle()));
         $filmXml->addChild('year', $this->getYear());
         $filmXml->addChild('contentType', $this->getContentType());
+        if (!empty($this->getSeasonCount())) {
+            $filmXml->addChild('seasonCount', $this->getSeasonCount());
+        }
         if (!empty($this->getSeason())) {
             $filmXml->addChild('season', htmlspecialchars($this->getSeason()));
         }
@@ -107,6 +119,7 @@ class Film {
             $filmXml->addChild('episodeTitle', htmlspecialchars($this->getEpisodeTitle()));
         }
         $filmXml->addChild('image', $this->getImage());
+        $filmXml->addChild('refreshDate', $this->getRefreshDate());
 
         $directorsXml = $filmXml->addChild('directors');
         $directors = $this->getDirectors();
@@ -162,6 +175,7 @@ class Film {
     {
         $arr = array();
         $arr['filmId'] = $this->getId();
+        $arr['parentId'] = $this->getParentId();
         $title = $this->getTitle();
         $episodeTitle = $this->getEpisodeTitle();
         if ($encodeTitles) {
@@ -172,9 +186,11 @@ class Film {
         $arr['episodeTitle'] = $episodeTitle;
         $arr['year'] = $this->getYear();
         $arr['contentType'] = $this->getContentType();
+        $arr['seasonCount'] = $this->getSeasonCount();
         $arr['season'] = $this->getSeason();
         $arr['episodeNumber'] = $this->getEpisodeNumber();
         $arr['image'] = $this->getImage();
+        $arr['refreshDate'] = $this->getRefreshDate();
 
         $arrDirectors = array();
         foreach ($this->getDirectors() as $director) {
@@ -250,13 +266,19 @@ class Film {
         }
 
         $film = new Film();
+        $film->setParentId(Self::xmlStringByKey('parentId', $filmSxe));
         $film->setTitle(html_entity_decode(Self::xmlStringByKey('title', $filmSxe), ENT_QUOTES, "utf-8"));
         $film->setYear(Self::xmlStringByKey('year', $filmSxe));
         $film->setContentType(Self::xmlStringByKey('contentType', $filmSxe));
+        $film->setSeasonCount(Self::xmlStringByKey('seasonCount', $filmSxe));
         $film->setSeason(html_entity_decode(Self::xmlStringByKey('season', $filmSxe), ENT_QUOTES, "utf-8"));
         $film->setEpisodeNumber(Self::xmlStringByKey('episodeNumber', $filmSxe));
         $film->setEpisodeTitle(html_entity_decode(Self::xmlStringByKey('episodeTitle', $filmSxe), ENT_QUOTES, "utf-8"));
         $film->setImage(Self::xmlStringByKey('image', $filmSxe));
+        $refreshDateStr = Self::xmlStringByKey('refreshDate', $filmSxe);
+        if (!empty($refreshDateStr)) {
+            $film->setRefreshDate(new \DateTime($refreshDateStr));
+        }
 
         foreach ($filmSxe->xpath('directors') as $directorsSxe) {
             foreach ($directorsSxe[0]->children() as $directorSxe) {
@@ -366,7 +388,13 @@ class Film {
             throw new \InvalidArgumentException('Source $source invalid getting Unique Name');
         }
 
-        return $this->getSource($source)->getUniqueName();
+        $uniqueName = $this->getSource($source)->getUniqueName();
+        if (empty($uniqueName) && $source == Constants::SOURCE_OMDBAPI) {
+            $uniqueName = $this->getUniqueName(Constants::SOURCE_IMDB);
+            $this->setUniqueName($uniqueName, $source);
+        }
+
+        return $uniqueName;
     }
 
     public function setUniqueEpisode($uniqueEpisode, $source)
@@ -521,6 +549,16 @@ class Film {
         return $this->id;
     }
 
+    public function setParentId($id)
+    {
+        $this->parentId = $id;
+    }
+
+    public function getParentId()
+    {
+        return $this->parentId;
+    }
+
     public function setTitle($title)
     {
         $this->title = $title;
@@ -567,6 +605,27 @@ class Film {
     public function getContentType()
     {
         return $this->contentType;
+    }
+
+    public function setSeasonCount($seasonCount)
+    {
+        if ("" == $seasonCount) {
+            $seasonCount = null;
+        }
+        if (! ((is_numeric($seasonCount) && ((float)$seasonCount == (int)$seasonCount)) || is_null($seasonCount)) ) {
+            throw new \InvalidArgumentException('Season count must be an integer');
+        }
+
+        if (!is_null($seasonCount)) {
+            $seasonCount = (int)$seasonCount;
+        }
+
+        $this->seasonCount = $seasonCount;
+    }
+
+    public function getSeasonCount()
+    {
+        return $this->seasonCount;
     }
 
     public function setSeason($season)
@@ -647,6 +706,16 @@ class Film {
             }
             return $this->getSource($source)->getImage();
         }
+    }
+
+    public function setRefreshDate($refreshDate)
+    {
+        $this->refreshDate = $refreshDate;
+    }
+
+    public function getRefreshDate()
+    {
+        return $this->refreshDate;
     }
 
     public function addGenre($new_genre)
@@ -791,18 +860,31 @@ class Film {
         $errorFree = true;
 
         $filmId = $this->id;
+        $parentId = $this->parentId;
         $title = $db->real_escape_string($this->getTitle());
         $year = $this->getYear();
         $contentType = $this->getContentType();
+        $seasonCount = $this->getSeasonCount();
         $season = $db->real_escape_string($this->getSeason());
         $episodeNumber = $this->getEpisodeNumber();
         $episodeTitle = $db->real_escape_string($this->getEpisodeTitle());
         $image = $this->getImage();
+        $refreshDate = $this->getRefreshDate();
+        $refreshDateUpdate = ", refreshDate=NULL";
+        if (!empty($refreshDate)) {
+            $refreshDateUpdate = ", refreshDate='" . $refreshDate->format('Y-m-d H:i:s') . "'";
+        }
         
+        if (is_null($parentId)) {
+            $parentId = "NULL";
+        }
         $selectYear = "year=$year";
         if (is_null($year)) {
             $selectYear = "year IS NULL";
             $year = "NULL";
+        }
+        if (is_null($seasonCount)) {
+            $seasonCount = "NULL";
         }
         $selectEpisodeNumber = "episodeNumber=$episodeNumber";
         if (is_null($episodeNumber)) {
@@ -831,13 +913,14 @@ class Film {
         
         // Insert Film row
         if ($newRow) {
-            $columns = "title, year, contentType, season, episodeNumber, episodeTitle, image";
-            $values = "'$title', $year, '$contentType', '$season', $episodeNumber, '$episodeTitle', '$image'";
+            $columns = "parent_id, title, year, contentType, seasonCount, season, episodeNumber, episodeTitle, image";
+            $values = "$parentId, '$title', $year, '$contentType', $seasonCount, '$season', $episodeNumber, '$episodeTitle', '$image'";
             $query = "INSERT INTO film ($columns) VALUES ($values)";
             logDebug($query, __FUNCTION__." ".__LINE__);
             if ($db->query($query)) {
                 $filmId = $db->insert_id;
                 $this->id = $filmId;
+                $refreshDateUpdate = "";
             }
         }
         
@@ -954,7 +1037,7 @@ class Film {
         
         // Update Film row. If this is a new film then this update is
         // only for setting an image.
-        $values = "title='$title', year=$year, contentType='$contentType', season='$season', episodeNumber=$episodeNumber, episodeTitle='$episodeTitle', image='$filmImage'";
+        $values = "parent_id=$parentId, title='$title', year=$year, contentType='$contentType', seasonCount=$seasonCount, season='$season', episodeNumber=$episodeNumber, episodeTitle='$episodeTitle', image='$filmImage' $refreshDateUpdate";
         $where = "id=$filmId";
         $query = "UPDATE film SET $values WHERE $where";
         logDebug($query, __FUNCTION__." ".__LINE__);
@@ -991,13 +1074,20 @@ class Film {
 
         $film = new Film();
         $film->setId($filmId);
+        $film->setParentId($row["parent_id"]);
         $film->setTitle($row["title"]);
         $film->setYear($row["year"]);
         $film->setContentType($row["contentType"]);
+        $film->setSeasonCount($row["seasonCount"]);
         $film->setSeason($row["season"]);
         $film->setEpisodeNumber($row["episodeNumber"]);
         $film->setEpisodeTitle($row["episodeTitle"]);
         $film->setImage($row["image"]);
+        $refreshDateStr = $row['refreshDate'];
+        if (!empty($refreshDateStr) && $refreshDateStr != "0000-00-00") {
+            $refreshDate = new \DateTime($refreshDateStr);
+            $film->setRefreshDate(new \DateTime($refreshDateStr));
+        }
 
         // Sources
         $result = $db->query("SELECT * FROM film_source WHERE film_id=$filmId");
@@ -1223,6 +1313,8 @@ class Film {
                     $film = self::getFilmFromDb($filmId, $username);
                 }
             }
+            
+            $filmParent = self::getFilmParentFromDb($film, $username);
 
             // Save Film season/episode changes
             $originalSeason = $film->getSeason();
@@ -1241,11 +1333,17 @@ class Film {
                 $film->setEpisodeTitle($episodeTitle);
                 $needToSaveFilm = true;
             }
+            if (in_array($film->getContentType(), array(self::CONTENT_TV_SEASON, self::CONTENT_TV_EPISODE))) {
+                $parentId = $film->getParentId();
+                if (empty($parentId) && !empty($filmParent)) {
+                    $parentId = $filmParent->getId();
+                    $film->setParentId($parentId);
+                    $needToSaveFilm = true;
+                }
+            }
             if ($needToSaveFilm) {
                 $film->saveToDb($username);
             }
-
-            $filmParent = self::getFilmParentFromDb($film, $username);
         }
         
         return array("match"=>$film, "parent"=>$filmParent);
@@ -1259,10 +1357,17 @@ class Film {
         
         $db = getDatabase();
         $parentFilm = null;
-        $query  = "SELECT id FROM film";
-        $query .= " WHERE contentType='". self::CONTENT_TV_SERIES ."'";
-        $query .= "   AND title='". $db->real_escape_string($film->getTitle()) ."'";
-        $query .= "   AND year=". $film->getYear();
+        $query = "SELECT id FROM film";
+
+        $parentId = $film->getParentId();
+        if (empty($parentId)) {
+            $query .= " WHERE contentType='". self::CONTENT_TV_SERIES ."'";
+            $query .= "   AND title='". $db->real_escape_string($film->getTitle()) ."'";
+            $query .= "   AND year=". $film->getYear();
+        } else {
+            $query .= " WHERE id=$parentId";
+        }
+
         $result = $db->query($query);
         if ($result->num_rows == 1) {
             $row = $result->fetch_assoc();
@@ -1284,5 +1389,72 @@ class Film {
         while ($row = $result->fetch_assoc()) {
             Source::createAllSourcesToDb($row['id']);
         }
+    }
+
+    public function refresh()
+    {
+        $refreshed = false;
+        $needToRefresh = false;
+        $currentImageValid = $this->validateImage();
+        $currentSeasonCount = $this->getSeasonCount();
+        $currentRefreshDate = $this->getRefreshDate();
+        $now = new \DateTime();
+        $staleDay = $now->sub(new \DateInterval('P30D')); // 30 days ago
+        $now = new \DateTime();
+    
+        // Refresh now if it has been too long or if the image is not valid
+        if (empty($currentRefreshDate) || $currentRefreshDate <= $staleDay || !($currentImageValid)) {
+            $needToRefresh = true;
+        }
+
+        // Refresh a TV series does not have seasonCount set
+        if ($this->getContentType() == self::CONTENT_TV_SERIES && empty($currentSeasonCount)) {
+            $needToRefresh = true;
+        }
+        
+        if ($needToRefresh) {
+            $omdbApi = new OmdbApi("empty_userame");
+            $omdbApi->getFilmDetailFromWebsite($this, true, Constants::USE_CACHE_ALWAYS);
+
+            // Any changes?
+            if (!$currentImageValid) {
+                // Validate the new image before using it
+                $http = new Http(Constants::SOURCE_RATINGSYNC);
+                if (!empty($refreshedImage) && $http->isPageValid($refreshedImage)) {
+                    $this->setImage($refreshedImage, Constants::SOURCE_OMDBAPI);
+                    // Download the image
+                    if (!empty($refreshedImage)) {
+                        $uniqueName = $this->getUniqueName(Constants::SOURCE_RATINGSYNC);
+                        $filename = "$uniqueName.jpg";
+                        try {
+                            file_put_contents(Constants::imagePath() . $filename, file_get_contents($refreshedImage));
+                        } catch (\Exception $e) {
+                            logDebug("Exception downloading an image for $filename.\n" . $e, __FUNCTION__." ".__LINE__);
+                        }
+                        
+                        $this->setImage(Constants::RS_IMAGE_URL_PATH . $filename);
+                        $this->setImage($this->setImage(), Constants::SOURCE_RATINGSYNC);
+                    }
+                }
+            }
+    
+            $this->setRefreshDate($now);
+            $refreshed = true;
+        }
+
+        return $refreshed;
+    }
+
+    public function validateImage()
+    {
+        $isValid = false;
+        $image = $this->getImage();
+    
+        $http = new Http(Constants::SOURCE_RATINGSYNC);
+        if (!empty($image) && $http->isPageValid($image)) {
+            $isValid = true;
+        }
+        
+        return $isValid;
     }
 }

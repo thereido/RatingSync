@@ -70,12 +70,14 @@ class OmdbApi extends \RatingSync\Site
 
         // Get values from the API result
         $uniqueName = array_value_by_key("imdbID", $filmJson, "N/A");
+        $parentId = null;
         $title = array_value_by_key("Title", $filmJson, "N/A");
         $episodeTitle = null;
         $year = array_value_by_key("Year", $filmJson, "N/A");
         if (!empty($year)) { $year = substr($year, 0, 4); };
         $image = array_value_by_key("Poster", $filmJson, "N/A");
         $userScore = array_value_by_key("imdbRating", $filmJson, "N/A");
+        $seasonCount = array_value_by_key("totalSeasons", $filmJson, "N/A");
         $season = array_value_by_key("Season", $filmJson, "N/A");
         $episodeNum = array_value_by_key("Episode", $filmJson, "N/A");
         $genres = array_value_by_key("Genre", $filmJson);
@@ -98,6 +100,7 @@ class OmdbApi extends \RatingSync\Site
             $seriesSearchResult = search($searchTerms);
             if (!empty($seriesSearchResult) && !empty($seriesSearchResult["match"])) {
                 $seriesFilm = $seriesSearchResult["match"];
+                $parentId = $seriesFilm->getId();
                 $title = $seriesFilm->getTitle();
             }
         }
@@ -111,11 +114,13 @@ class OmdbApi extends \RatingSync\Site
 
         // Get the existing values
         $existingUniqueName = $film->getUniqueName($this->sourceName);
+        $existingParentId = $film->getParentId();
         $existingTitle = $film->getTitle();
         $existingEpisodeTitle = $film->getEpisodeTitle();
         $existingYear = $film->getYear();
         $existingOMDbImage = $film->getImage($this->sourceName);
         $existingContentType = $film->getContentType();
+        $existingSeasonCount = $film->getSeasonCount();
         $existingSeason = $film->getSeason();
         $existingEpisodeNum = $film->getEpisodeNumber();
         $existingUserScore = $film->getUserScore($this->sourceName);
@@ -125,11 +130,13 @@ class OmdbApi extends \RatingSync\Site
 
         // Init/Replace the values when appropiate
         if ($overwrite || is_null($existingUniqueName)) { $film->setImage($uniqueName, $this->sourceName); }
+        if ($overwrite || is_null($existingParentId)) { $film->setParentId($parentId); }
         if ($overwrite || is_null($existingTitle)) { $film->setTitle($title); }
         if ($overwrite || is_null($existingEpisodeTitle)) { $film->setEpisodeTitle($episodeTitle); }
         if ($overwrite || is_null($existingYear)) { $film->setYear($year); }
         if ($overwrite || is_null($existingOMDbImage)) { $film->setImage($image, $this->sourceName); }
         if ($overwrite || is_null($existingContentType)) { $film->setContentType($contentType); }
+        if ($overwrite || is_null($existingSeasonCount)) { $film->setSeasonCount($seasonCount); }
         if ($overwrite || is_null($existingSeason)) { $film->setSeason($season); }
         if ($overwrite || is_null($existingEpisodeNum)) { $film->setEpisodeNumber($episodeNum); }
         if ($overwrite || is_null($existingUserScore)) { $film->setUserScore($userScore, $this->sourceName); }
@@ -292,5 +299,111 @@ class OmdbApi extends \RatingSync\Site
         }
 
         return $filmUrl;
+    }
+    
+    public function getSeason($seriesFilmId, $seasonNum, $refreshCache = 60)
+    {
+        if (is_null($seriesFilmId) || !is_numeric($seriesFilmId) ) {
+            throw new \InvalidArgumentException('arg1 must be numeric');
+        } else if (is_null($seasonNum) || !is_numeric($seasonNum) ) {
+            throw new \InvalidArgumentException('arg2 must be numeric');
+        }
+
+        $resultAsArray = null;
+
+        $film = Film::getFilmFromDb($seriesFilmId);
+        if (empty($film)) {
+            return false;
+        }
+        $uniqueName = $film->getUniqueName($this->sourceName);
+
+        $seasonPage = $this->getSeasonPageFromCache($seriesFilmId, $seasonNum, $refreshCache);
+        if (empty($seasonPage) && !empty($uniqueName)) {
+            try {
+                $seasonUrl = "&i=" . $uniqueName . "&Season=" . $seasonNum;
+                $seasonPage = $this->http->getPage($seasonUrl);
+                $resultAsArray =  json_decode($seasonPage, true);
+        
+                if (!empty($resultAsArray) && $resultAsArray["Response"] != "False") {
+                    $this->cacheSeasonPage($seasonPage, $seriesFilmId, $seasonNum);
+                }
+            } catch (\Exception $e) {
+                logDebug($e, __FUNCTION__." ".__LINE__);
+                throw $e;
+            }
+        } else {
+            $resultAsArray =  json_decode($seasonPage, true);
+        }
+
+        if (empty($resultAsArray) || !is_array($resultAsArray) || $resultAsArray["Response"] == "False") {
+            $errorMsg = "OMDb API request failed. Title=".$film->getTitle();
+            $errorMsg .= ", Season=" . $seasonNum;
+            $errorMsg .= ", UniqueName=" . $uniqueName;
+            logDebug($errorMsg, __CLASS__."::".__FUNCTION__." ".__LINE__, true, $resultAsArray);
+            throw new \Exception('OMDbApi season failed');
+        }
+
+        return $resultAsArray;
+    }
+
+    /**
+     * Return a cached film page if the cached file is fresh enough. The $refreshCache param
+     * shows if it is fresh enough. If the file is out of date return null.
+     *
+     * @param \RatingSync\Film $film         Film needed detail for
+     * @param int              $seasonNum    Season looking for within the film (series)
+     * @param int|0            $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
+     *
+     * @return string File as a string. Null if the use cache is not used.
+     */
+    public function getSeasonPageFromCache($seriesFilmId, $seasonNum, $refreshCache = Constants::USE_CACHE_NEVER)
+    {
+        if (Constants::USE_CACHE_NEVER == $refreshCache) {
+            return null;
+        }
+        
+        $filename = Constants::cacheFilePath() . $this->sourceName;
+        $filename .= "_series_" . $seriesFilmId;
+        $filename .= "_season_" . $seasonNum;
+        $filename .= ".html";
+
+        if (!file_exists($filename) || (filesize($filename) == 0)) {
+            return null;
+        }
+
+        $fileDateString = filemtime($filename);
+        if (!$fileDateString) {
+            return null;
+        }
+
+        $filestamp = date("U", $fileDateString);
+        $refresh = true;
+        if (Constants::USE_CACHE_ALWAYS == $refreshCache || ($filestamp >= (time() - ($refreshCache * 60)))) {
+            $refresh = false;
+        }
+        
+        if (!$refresh) {
+            return file_get_contents($filename);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Cache a season result in json in a local file
+     *
+     * @param string    $page           File as a string
+     * @param int       $seriesFilmId   DB film_id of the series
+     * @param int       $seasonNum      Season number
+     */
+    public function cacheSeasonPage($page, $seriesFilmId, $seasonNum)
+    {
+        $filename = Constants::cacheFilePath() . $this->sourceName;
+        $filename .= "_series_" . $seriesFilmId;
+        $filename .= "_season_" . $seasonNum;
+        $filename .= ".html";
+        $fp = fopen($filename, "w");
+        fwrite($fp, $page);
+        fclose($fp);
     }
 }

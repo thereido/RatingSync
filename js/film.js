@@ -1,21 +1,9 @@
 
 function buildFilmDetailElement(film) {
-    var filmId = "";
-    if (film.filmId) {
-        filmId = film.filmId;
-    }
-    var title = "";
-    if (film.title) {
-        title = film.title;
-    }
-    var year = "";
-    if (film.year) {
-        year = film.year;
-    }
-    var episodeTitle = "";
-    if (film.episodeTitle) {
-        episodeTitle = film.episodeTitle;
-    }
+    var filmId = getFilmId(film);
+    var title = getFilmTitle(film);
+    var year = getFilmYear(film);
+    var episodeTitle = getFilmEpisodeTitle(film);
     var season = "";
     if (film.season) {
         season = "Season " + film.season;
@@ -71,6 +59,60 @@ function buildFilmDetailElement(film) {
     detailEl.innerHTML = html;
 
     return detailEl;
+}
+
+function getFilmId(film) {
+    var filmId = "";
+    if (film.filmId) {
+        filmId = film.filmId;
+    }
+
+    return filmId;
+}
+
+function getFilmTitle(film) {
+    var title = "";
+    if (film.title) {
+        title = film.title;
+    }
+
+    return title;
+}
+
+function getFilmYear(film) {
+    var year = "";
+    if (film.year) {
+        year = film.year;
+    }
+
+    return year;
+}
+
+function getFilmSeason(film) {
+    var season = "";
+    if (film.season) {
+        season = film.season;
+    }
+
+    return season;
+}
+
+function getFilmEpisodeTitle(film) {
+    var episodeTitle = "";
+    if (film.episodeTitle) {
+        episodeTitle = film.episodeTitle;
+    }
+
+    return episodeTitle;
+}
+
+function getFilmEpisodeNum(film) {
+    var episodeNumber = "";
+    if (film.episodeNumber) {
+        episodeNumber = film.episodeNumber;
+    }
+
+    return episodeNumber;
 }
 
 // userlist (JSON) - all of the user's filmlists
