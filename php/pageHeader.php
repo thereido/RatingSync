@@ -28,8 +28,8 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     }
 
     $headerSearchText = "";
-    if (array_key_exists("header-search-text", $_POST)) {
-        $headerSearchText = $_POST['header-search-text'];
+    if (array_key_exists("search", $_GET)) {
+        $headerSearchText = $_GET['search'];
     }
 
     $signupLink  = '<li><a href="/php/Login"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>'."\n";
@@ -68,7 +68,7 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '        </li>'."\n";
                       // Search
     $html .= '        <li>'."\n";
-    $html .= '          <form class="navbar-form" id="header-search-form" action="/php/search.php" onSubmit="onSubmitHeaderSearch();" method="post">'."\n";
+    $html .= '          <form class="navbar-form" id="header-search-form" action="/php/search.php" onSubmit="onSubmitHeaderSearch();" method="get">'."\n";
     $html .= '            <div class="input-group">'."\n";
     $html .= '              <div class="input-group-btn"  id="search-dropdown">'."\n";
     $html .= '                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'."\n";
@@ -82,11 +82,11 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '                  <li><a class="dropdown-item" href="javascript:onClickSearchDropdown(\'both\');">Ratings & Watchlist</a></li>'."\n";
     $html .= '                </ul>'."\n";
     $html .= '              </div>'."\n";
-    $html .= '              <input id="header-search-text" name="header-search-text" type="text" class="form-control" placeholder="Search" onkeyup="onKeyUpHeaderSearch(event);">'."\n";
+    $html .= '              <input id="header-search-text" name="search" type="text" class="form-control" placeholder="Search" onkeyup="onKeyUpHeaderSearch(event);" value="'.$headerSearchText.'">'."\n";
     $html .= '            </div>'."\n";
     $html .= '            <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>'."\n";
     $html .= '            <div id="header-search-suggestion" hidden></div>'."\n";
-    $html .= '            <input id="selected-suggestion-uniquename" name="selected-suggestion-uniquename" hidden>'."\n";
+    $html .= '            <input id="selected-suggestion-uniquename" name="selsug-un" hidden>'."\n";
     $html .= '          </form>'."\n";
     $html .= '        </li>'."\n";
     $html .= '      </ul>'."\n";

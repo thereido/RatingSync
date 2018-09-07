@@ -103,8 +103,7 @@ function getDatabase($mode = Constants::DB_MODE)
     return $db_conn;
 }
 
-function logDebug($input, $prefix = null, $showTime = true, $printArray = null)
-{
+function debugMessage($input, $prefix = null, $showTime = true, $printArray = null) {
     if (!empty($prefix)) {
         $time = "";
         if ($showTime) {
@@ -132,10 +131,24 @@ function logDebug($input, $prefix = null, $showTime = true, $printArray = null)
         }
         $suffix .= "}";
     }
+
+    return $prefix . $input . $suffix . PHP_EOL;
+}
+
+function logDebug($input, $prefix = null, $showTime = true, $printArray = null)
+{
+    $message = debugMessage($input, $prefix, $showTime, $printArray);
+
     $logfilename =  Constants::outputFilePath() . "logDebug.txt";
     $fp = fopen($logfilename, "a");
-    fwrite($fp, $prefix . $input . $suffix . PHP_EOL);
+    fwrite($fp, $message);
     fclose($fp);
+}
+
+function printDebug($input, $prefix = null, $showTime = false, $printArray = null)
+{
+    $message = debugMessage($input, $prefix, $showTime, $printArray);
+    print($message);
 }
 
 /**
@@ -189,17 +202,17 @@ function search($searchTerms, $username = null)
     $film = $searchDbResult['match'];
 
     if (empty($film)) {
-        // Not in the DB. Search the OMDb API.
-        $omdb = new OmdbApi();
+        // Not in the DB. Search the API to the content source.
+        $sourceApi = new OmdbApi();
         
         if ($sourceName != Constants::SOURCE_RATINGSYNC && $sourceName != Constants::SOURCE_IMDB && $sourceName != Constants::SOURCE_OMDBAPI) {
-            // Before searching OMDb... remove terms specific to another source
+            // Before searching the source API... remove terms specific to another source
             $searchTerms['uniqueName'] = null;
             $searchTerms['uniqueEpisode'] = null;
             $searchTerms['uniqueAlt'] = null;
         }
         
-        $film = $omdb->getFilmBySearch($searchTerms);
+        $film = $sourceApi->getFilmBySearch($searchTerms);
 
         if (!empty($film)) {
             $film->setRefreshDate(new \DateTime());
@@ -243,10 +256,24 @@ function setRating($filmId, $score)
     $film = Film::getFilmFromDb($filmId, $username);
     if (!empty($film)) {
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+        $existingScore = $rating->getYourScore();
+        $existingRatingDate = $rating->getYourRatingDate();
         $rating->setYourScore($score);
         $rating->setYourRatingDate(new \DateTime());
         $film->setRating($rating);
-        $film->saveToDb($username);
+        $success = false;
+        try {
+            $success = $film->saveToDb($username);
+        }
+        catch (\Exception $e) {
+            $success = false;
+        }
+
+        if (!$success) {
+            $rating->setYourScore($existingScore);
+            $rating->setYourRatingDate($existingRatingDate);
+            $film->setRating($rating);
+        }
     }
 
     return $film;

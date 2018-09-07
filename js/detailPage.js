@@ -16,6 +16,7 @@ function detailPageCallback(xmlhttp) {
         var result = JSON.parse(xmlhttp.responseText);
         if (result.Success != "false" && result.filmId != "undefined") {
             var film = result;
+            contextData.films.push(film);
             var filmEl = document.getElementById("detail-film");
             renderRsFilmDetails(film, filmEl);
 

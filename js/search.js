@@ -61,6 +61,7 @@ function searchPageCallback(query, xmlhttp) {
 	} else {
 	    films = result.films;
 	}
+    contextData.films = films;
 
 	searchResultEl.innerHTML = "";
 	var suggestionCount = 0;
@@ -87,7 +88,7 @@ function searchPageCallback(query, xmlhttp) {
         }
 
         suggestionCount = suggestionCount + 1;
-	}
+    }
 }
 
 function searchSuggestionCallback(query, xmlhttp) {
@@ -297,6 +298,7 @@ function getRatingSyncCallback(xmlhttp, filmEl, omdbFilm) {
 	    var result = JSON.parse(xmlhttp.responseText);
         if (result.Success != "false" && result.filmId != "undefined") {
             var film = result;
+            updateContextDataOmdbFilm(film, omdbFilm.imdbID);
             renderRsFilmDetails(film, filmEl);
         } else {
             renderNoRsFilmDetails(filmEl, omdbFilm);

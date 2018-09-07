@@ -98,12 +98,15 @@ function api_setRating($username)
     $score = array_value_by_key("s", $_GET);
     logDebug("Params fid=$filmId, un=$uniqueName, s=$score, tn=$titleNum", __FUNCTION__." ".__LINE__);
 
-    if (!empty($uniqueName) && !empty($score)) {
-        logDebug("filmId: $filmId, uniqueName: $uniqueName, score: $score", __FUNCTION__." ".__LINE__);
+    if (!empty($username) && !empty($filmId) && !empty($score)) {
         $film = setRating($filmId, $score);
     }
 
-    $response = $film->json_encode();
+    if (empty($film)) {
+        $response = '{"Success":"false"}';
+    } else {
+        $response = $film->json_encode();
+    }
 
     return $response;
 }

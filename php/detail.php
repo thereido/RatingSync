@@ -11,8 +11,8 @@ $username = getUsername();
 $filmId = array_value_by_key("i", $_GET);
 $imdbUniqueName = array_value_by_key("imdb", $_GET);
 $seasonNum = array_value_by_key("season", $_GET);
-if (empty($imdbUniqueName) && array_key_exists("selected-suggestion-uniquename", $_POST)) {
-    $imdbUniqueName = $_POST['selected-suggestion-uniquename'];
+if (empty($imdbUniqueName) && array_key_exists("selsug-un", $_GET)) {
+    $imdbUniqueName = $_GET['selsug-un'];
 }
 $pageHeader = getPageHeader();
 $pageFooter = getPageFooter();
