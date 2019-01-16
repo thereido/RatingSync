@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS film_source
         uniqueEpisode VARCHAR(100) NULL DEFAULT NULL,
         uniqueAlt VARCHAR(100) NULL DEFAULT NULL,
         streamUrl VARCHAR(200) NULL DEFAULT NULL,
-        streamDate DATE DEFAULT 0,
+        streamDate DATE DEFAULT '1000-01-01',
         criticScore INT NULL DEFAULT NULL,
         userScore INT NULL DEFAULT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -208,7 +208,7 @@ CREATE TABLE IF NOT EXISTS filmlist
         FOREIGN KEY (film_id)
             REFERENCES film(id)
     );
-ALTER TABLE filmlist ADD COLUMN create_ts TIMESTAMP NOT NULL DEFAULT 0 AFTER position;
+ALTER TABLE filmlist ADD COLUMN create_ts TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:01' AFTER position;
 ALTER TABLE filmlist ALTER COLUMN create_ts DROP DEFAULT;
   
 CREATE TABLE IF NOT EXISTS user_filmlist
@@ -227,5 +227,5 @@ CREATE TABLE IF NOT EXISTS user_filmlist
         FOREIGN KEY (user_name)
             REFERENCES user(username)
     );
-ALTER TABLE user_filmlist ADD COLUMN create_ts TIMESTAMP NOT NULL DEFAULT 0 AFTER parent_listname;
+ALTER TABLE user_filmlist ADD COLUMN create_ts TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:01' AFTER parent_listname;
 ALTER TABLE user_filmlist ALTER COLUMN create_ts DROP DEFAULT;

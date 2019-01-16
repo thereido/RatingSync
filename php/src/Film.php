@@ -1099,7 +1099,7 @@ class Film {
             $source->setUniqueAlt($row['uniqueAlt']);
             $source->setStreamUrl($row['streamUrl']);
             $streamDate = $row['streamDate'];
-            if (!empty($streamDate) && $streamDate != "0000-00-00") {
+            if (!empty($streamDate) && $streamDate >= "1000-01-01") {
                 $source->setStreamDate($streamDate);
             }
             $source->setCriticScore($row['criticScore']);
