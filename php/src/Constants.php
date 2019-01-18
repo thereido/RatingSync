@@ -44,6 +44,7 @@ class Constants
     const RS_HOST                       = DomainConstants::RS_HOST;
     const OMDB_API_KEY                  = DomainConstants::OMDB_API_KEY;
     const SITE_NAME                     = DomainConstants::SITE_NAME;
+    const FAVICON_URL                   = DomainConstants::FAVICON_URL;
 
     static function basePath()
     {

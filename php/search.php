@@ -38,6 +38,7 @@ $pageFooter = getPageFooter();
     <title><?php echo Constants::SITE_NAME; ?></title>
     <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
     <link href="../css/rs.css" rel="stylesheet">
+    <link rel="icon" href="<?php echo Constants::FAVICON_URL; ?>">
     <?php if (empty($username)) { echo '<script type="text/javascript">window.location.href = "/php/Login"</script>'; } ?>
     <?php echo includeJavascriptFiles(); ?>
     <script src="../js/ratings.js"></script>

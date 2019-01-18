@@ -12,5 +12,6 @@
 /web.config
 /php/tests/script/*
 /image/rs*.jpg
+/image/favicon.png
 /HTMLPage.html
 /.vscode/*
