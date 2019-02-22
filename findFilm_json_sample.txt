@@ -1,0 +1,30 @@
+Outline of JSON structure
+
+        filmId
+        parentId - DB id of the series for tv episodes
+        title
+        episodeTitle
+        year
+        contentType - Feature, Short, TV Series, TV Episode
+        seasonCount
+        season
+        episodeNumber
+        image - Default poster URL
+        refreshDate
+        directors [] - List of full names
+        genre []
+        sources - IMDb, Local Site, Netflix, RottenTomatoes, etc
+            name
+            image - Poster URL from the source
+            uniqueName
+            uniqueEpisode - obsolete (from Xfinity)
+            uniqueAlt - obsolete (from Xfinity)
+            streamUrl - obsolete
+            streamDate - obsolete
+            criticScore
+            userScore
+            rating
+                yourScore
+                yourRatingDate
+                suggestedScore
+            filmlists [] - The lists this item are in
