@@ -1,4 +1,4 @@
-INSERT INTO user (username, password, email, enabled) VALUES ('testratingsync', '$2y$10$5UUSvDqzr5skXFA.Koz6rulgdA6GeSB4TqGpB35VI2EBpfWqPGCR2', 'testratingsync@example.com', TRUE);
+INSERT INTO user (username, password, email, enabled) VALUES ('testratingsync', '$2y$10$F3rnoPbKTrj8PgEiEFc66uQf5IVPt.bp6t7Xlis9hGSlCsnI58LZS', 'testratingsync@example.com', TRUE);
 
 INSERT INTO verify_user (user_id, verified, code, complete_ts) VALUES (1, TRUE, '123abc', CURRENT_TIMESTAMP);
 
