@@ -1084,7 +1084,7 @@ class Film {
         $film->setEpisodeTitle($row["episodeTitle"]);
         $film->setImage($row["image"]);
         $refreshDateStr = $row['refreshDate'];
-        if (!empty($refreshDateStr) && $refreshDateStr != "0000-00-00") {
+        if (!empty($refreshDateStr) && $refreshDateStr >= Constants::DATE_MIN_STR) {
             $refreshDate = new \DateTime($refreshDateStr);
             $film->setRefreshDate(new \DateTime($refreshDateStr));
         }
