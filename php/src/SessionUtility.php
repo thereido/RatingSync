@@ -88,7 +88,7 @@ class SessionUtility {
             $columns = "username, password, enabled";
             $values = "'$username', '$passwordHash', FALSE";
             $query = "INSERT INTO user ($columns) VALUES ($values)";
-            logDebug($query, __FUNCTION__." ".__LINE__);
+            logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             $failure = !($db->query($query));
         }
 
@@ -97,7 +97,7 @@ class SessionUtility {
             $columns = "user_name, listname, create_ts";
             $values = "'$username', '".Constants::LIST_DEFAULT."', CURRENT_TIMESTAMP";
             $query = "INSERT INTO user_filmlist ($columns) VALUES ($values)";
-            logDebug($query, __FUNCTION__." ".__LINE__);
+            logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             $failure = !($db->query($query));
         }
 
@@ -106,7 +106,7 @@ class SessionUtility {
             $columns = "username, password, enabled";
             $values = "'$username', '$password', FALSE";
             $query = "UPDATE user SET enabled=TRUE WHERE username='$username'";
-            logDebug($query, __FUNCTION__." ".__LINE__);
+            logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             $failure = !($db->query($query));
         }
 

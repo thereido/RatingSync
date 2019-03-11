@@ -328,7 +328,7 @@ class OmdbApi extends \RatingSync\Site
                     $this->cacheSeasonPage($seasonPage, $seriesFilmId, $seasonNum);
                 }
             } catch (\Exception $e) {
-                logDebug($e, __FUNCTION__." ".__LINE__);
+                logDebug($e, __CLASS__."::".__FUNCTION__." ".__LINE__);
                 throw $e;
             }
         } else {

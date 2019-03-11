@@ -916,7 +916,7 @@ class Film {
             $columns = "parent_id, title, year, contentType, seasonCount, season, episodeNumber, episodeTitle, image";
             $values = "$parentId, '$title', $year, '$contentType', $seasonCount, '$season', $episodeNumber, '$episodeTitle', '$image'";
             $query = "INSERT INTO film ($columns) VALUES ($values)";
-            logDebug($query, __FUNCTION__." ".__LINE__);
+            logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if ($db->query($query)) {
                 $filmId = $db->insert_id;
                 $this->id = $filmId;
@@ -959,7 +959,7 @@ class Film {
                 $columns = "fullname, lastname";
                 $values = "'$director', '$director'";
                 $query = "INSERT INTO person ($columns) VALUES ($values)";
-                logDebug($query, __FUNCTION__." ".__LINE__);
+                logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $success = $db->query($query);
                 if (!$success) {
                     $errorFree = false;
@@ -970,7 +970,7 @@ class Film {
             $columns = "person_id, film_id, position";
             $values = "$personId, $filmId, 'Director'";
             $query = "REPLACE INTO credit ($columns) VALUES ($values)";
-            logDebug($query, __FUNCTION__." ".__LINE__);
+            logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             $success = $db->query($query);
             if (!$success) {
                 $errorFree = false;
@@ -984,7 +984,7 @@ class Film {
                 $columns = "name";
                 $values = "'$genre'";
                 $query = "INSERT INTO genre ($columns) VALUES ($values)";
-                logDebug($query, __FUNCTION__." ".__LINE__);
+                logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $success = $db->query($query);
                 if (!$success) {
                     $errorFree = false;
@@ -994,7 +994,7 @@ class Film {
             $columns = "film_id, genre_name";
             $values = "$filmId, '$genre'";
             $query = "REPLACE INTO film_genre ($columns) VALUES ($values)";
-            logDebug($query, __FUNCTION__." ".__LINE__);
+            logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             $success = $db->query($query);
             if (!$success) {
                 $errorFree = false;
@@ -1040,7 +1040,7 @@ class Film {
         $values = "parent_id=$parentId, title='$title', year=$year, contentType='$contentType', seasonCount=$seasonCount, season='$season', episodeNumber=$episodeNumber, episodeTitle='$episodeTitle', image='$filmImage' $refreshDateUpdate";
         $where = "id=$filmId";
         $query = "UPDATE film SET $values WHERE $where";
-        logDebug($query, __FUNCTION__." ".__LINE__);
+        logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
         $success = $db->query($query);
         if (!$success) {
             $errorFree = false;
@@ -1205,7 +1205,7 @@ class Film {
             try {
                 file_put_contents(Constants::imagePath() . $filename, file_get_contents($image));
             } catch (\Exception $e) {
-                logDebug("Exception downloading an image for $filename.\n" . $e, __FUNCTION__." ".__LINE__);
+                logDebug("Exception downloading an image for $filename.\n" . $e, __CLASS__."::".__FUNCTION__." ".__LINE__);
             }
             
             $this->setImage(Constants::RS_IMAGE_URL_PATH . $filename);
@@ -1429,7 +1429,7 @@ class Film {
                         try {
                             file_put_contents(Constants::imagePath() . $filename, file_get_contents($refreshedImage));
                         } catch (\Exception $e) {
-                            logDebug("Exception downloading an image for $filename.\n" . $e, __FUNCTION__." ".__LINE__);
+                            logDebug("Exception downloading an image for $filename.\n" . $e, __CLASS__."::".__FUNCTION__." ".__LINE__);
                         }
                         
                         $this->setImage(Constants::RS_IMAGE_URL_PATH . $filename);
