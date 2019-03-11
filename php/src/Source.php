@@ -13,6 +13,7 @@ require_once "Constants.php";
  */
 class Source
 {
+    
     protected $name;
     protected $image;
     protected $uniqueName;
@@ -175,11 +176,17 @@ class Source
 
     public function setStreamDate($streamDate)
     {
+        if (empty($streamDate) || $streamDate < Constants::DATE_MIN_STR) {
+            $streamDate = Constants::DATE_MIN_STR;
+        }
         $this->streamDate = $streamDate;
     }
 
     public function getStreamDate()
     {
+        if ($this->streamDate < Constants::DATE_MIN_STR) {
+            $this->setStreamDate(Constants::DATE_MIN_STR);
+        }
         return $this->streamDate;
     }
 

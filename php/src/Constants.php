@@ -30,6 +30,7 @@ class Constants
     const USE_CACHE_ALWAYS              = -1;
     const USE_CACHE_NEVER               = 0;
     const TEST_RATINGSYNC_USERNAME      = "testratingsync";
+    const DATE_MIN_STR                  = "1000-01-01";
 
     /* Constants moved to DomainConstants class
      * php.ini include_path must have the path to DomainConstants.php
