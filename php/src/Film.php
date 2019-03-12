@@ -1252,6 +1252,8 @@ class Film {
         //if (empty($uniqueEpisode)) $selectUniqueEpisode = "(uniqueEpisode='' OR uniqueEpisode IS NULL)";
         $selectEpisodeTitle = "episodeTitle='$episodeTitle'";
         if (empty($episodeTitle)) $selectEpisodeTitle = "(episodeTitle='' OR episodeTitle IS NULL)";
+        $selectSourceName = "";
+        if (!empty($sourceName)) $selectSourceName = " AND source_name='$sourceName'";
 
         $film = null;
         $filmParent = null;
@@ -1265,7 +1267,7 @@ class Film {
 
         // Use uniqueName as only criteria if it is truly unique
         if ($uniqueNameIsUnique) {
-            $query  = "SELECT film_id as id FROM film_source WHERE uniqueName='$uniqueName'";
+            $query  = "SELECT film_id as id FROM film_source WHERE uniqueName='$uniqueName' $selectSourceName";
         }
 
         // Use uniqueName and season/episode
@@ -1274,6 +1276,7 @@ class Film {
             $query .= " WHERE id=film_id";
             $query .= "   AND uniqueName='$uniqueName'";
             $query .=  "  AND (($selectSeason AND $selectEpisodeNumber) OR $selectEpisodeTitle)";
+            $query .=     $selectSourceName;
         }
 
         // Get existing film from a source
