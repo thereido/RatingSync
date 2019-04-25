@@ -510,7 +510,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $sql = "";
         $imdbId = null;
 
-        if (preg_match('/(tt\d{7})/i', $search, $matches)) {
+        if (preg_match('/(^tt\d{7}\d*$)/i', $search, $matches)) {
             $imdbId = $matches[1];
         }
 

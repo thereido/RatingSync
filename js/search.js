@@ -23,9 +23,9 @@ function searchFilms(query, xmlhttp, callback) {
     } else {
         // Search from OMDb API
         var searchParam = "&s=" + encodeURIComponent(query);
-        var imdbIdIndex = query.search(/tt\d{7}/i);
+        var imdbIdIndex = query.trim().search(/^tt\d{7}\d*$/i); // "tt" followed by at least 7 digits
         if (imdbIdIndex > -1) {
-            searchParam = "&i=" + query.substring(imdbIdIndex, 9);
+            searchParam = "&i=" + query.trim();
         }
         var params = "json=1";
         params = params + searchParam;
