@@ -46,14 +46,18 @@ function buildFilmDetailElement(film) {
     html = html + '  <div class="film-line"><span class="film-title">'+title+'</span> ('+year+')</div>\n';
     html = html + "  <episodeTitle class='tv-episode-title'>" + episodeTitle + "</episodeTitle>\n";
     html = html + "  <div><season class='tv-season'>" + season + "</season><episodeNumber class='tv-episodenum'>" + episodeNumber + "</episodeNumber></div>\n";
-    html = html + '  <div align="left">\n';
-    html = html + '    <ratingStars class="rating-stars" id="rating-stars-'+rsUniqueName+'"></ratingStars>\n';
+    html = html + '  <div id="action-area-'+rsUniqueName+'">\n';
+    html = html + '    <div align="left">\n';
+    html = html + '      <ratingStars class="rating-stars" id="rating-stars-'+rsUniqueName+'"></ratingStars>\n';
+    html = html + '    </div>\n';
+    html = html + '    <ratingDate class="rating-date">'+dateStr+'</ratingDate>\n';
+    html = html + '    <div><a href="'+imdbFilmUrl+'" target="_blank">'+imdbLabel+':</a>&nbsp;<imdbScore id="imdb-score-"'+imdbUniqueName+'>'+imdbScore+'</imdbScore></div>\n';
+    html = html + '    <status></status>\n';
+    html = html + '    <filmlistContainer id="filmlist-container-'+filmId+'" align="left"></filmlistContainer>\n';
+    html = html + '    <streams id="streams-'+filmId+'" class="streams"></streams>\n';
     html = html + '  </div>\n';
-    html = html + '  <ratingDate class="rating-date">'+dateStr+'</ratingDate>\n';
-    html = html + '  <div><a href="'+imdbFilmUrl+'" target="_blank">'+imdbLabel+':</a>&nbsp;<imdbScore id="imdb-score-"'+imdbUniqueName+'>'+imdbScore+'</imdbScore></div>\n';
-    html = html + '  <status></status>\n';
-    html = html + '  <filmlistContainer id="filmlist-container-'+filmId+'" align="left"></filmlistContainer>\n';
-    html = html + '  <streams id="streams-'+filmId+'" class="streams"></streams>\n';
+    html = html + '  <div id="rate-confirmation-'+rsUniqueName+'" hidden>\n';
+    html = html + '  </div>\n';
     
     var detailEl = document.createElement("detail");
     detailEl.innerHTML = html;

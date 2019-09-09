@@ -215,6 +215,61 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
     xmlhttp.send();
 }
 
+function clickStar(filmId, uniqueName, score, titleNum) {
+    var originalScore = document.getElementById("original-score-" + uniqueName).getAttribute('data-score');
+    if (score == originalScore || (score == 10 && originalScore == "01")) {
+        showConfirmationRating(filmId, uniqueName, score, titleNum);
+    } else {
+        rateFilm(filmId, uniqueName, score, titleNum);
+    }
+}
+
+function showConfirmationRating(filmId, uniqueName, score, titleNum) {
+    // Show confirmation dialog asking what to do
+    
+    // Hide the action area & show the dialog
+    var actionAreaEl = document.getElementById("action-area-" + uniqueName);
+    actionAreaEl.setAttribute("hidden", true);
+    var confirmationEl = document.getElementById("rate-confirmation-" + uniqueName);
+    confirmationEl.removeAttribute("hidden");
+
+    // A function to undo the dialog content and show the action area
+    var undoDialogFunc = function () {
+            confirmationEl.setAttribute("hidden", true);
+            confirmationEl.innerHTML = "";
+            actionAreaEl.removeAttribute("hidden");
+        }
+    
+    var rateButton = document.createElement("button");
+    rateButton.setAttribute("type", "button");
+    rateButton.setAttribute("class", "btn btn-primary");
+    rateButton.innerHTML = "Rate " + score + " Again";
+    var rateHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, score, titleNum); };
+    rateButton.addEventListener("click", rateHandler);
+
+    var removeButton = document.createElement("button");
+    removeButton.setAttribute("type", "button");
+    removeButton.setAttribute("class", "btn btn-secondary btn-sm");
+    removeButton.innerHTML = "Remove Rating";
+    var removeHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, 0, titleNum); };
+    removeButton.addEventListener("click", removeHandler);
+
+    var cancelButton = document.createElement("button");
+    cancelButton.setAttribute("type", "button");
+    cancelButton.setAttribute("class", "btn btn-link btn-sm");
+    cancelButton.innerHTML = "Cancel";
+    var cancelHandler = function () { undoDialogFunc(); };
+    cancelButton.addEventListener("click", cancelHandler);
+
+    var row1El = document.createElement("div");
+    var row2El = document.createElement("div");
+    row1El.append(rateButton);
+    row2El.append(removeButton);
+    row2El.append(cancelButton);
+    confirmationEl.append(row1El);
+    confirmationEl.append(row2El);
+}
+
 function getFilmlists(callback) {
     if (userlistsJson) {
         callback();
@@ -311,7 +366,7 @@ function addStarListener(elementId) {
 
 		var mouseoverHandler = function () { renderYourScore(uniqueName, score, 'new'); };
 		var mouseoutHandler = function () { renderYourScore(uniqueName, score, 'original'); };
-		var clickHandler = function () { rateFilm(filmId, uniqueName, score, titleNum); };
+		var clickHandler = function () { clickStar(filmId, uniqueName, score, titleNum); };
 
         star.addEventListener("mouseover", mouseoverHandler);
         star.addEventListener("mouseout", mouseoutHandler);

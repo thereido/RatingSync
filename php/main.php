@@ -256,23 +256,45 @@ function setRating($filmId, $score)
     $film = Film::getFilmFromDb($filmId, $username);
     if (!empty($film)) {
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
-        $existingScore = $rating->getYourScore();
-        $existingRatingDate = $rating->getYourRatingDate();
-        $rating->setYourScore($score);
-        $rating->setYourRatingDate(new \DateTime());
-        $film->setRating($rating);
-        $success = false;
-        try {
-            $success = $film->saveToDb($username);
-        }
-        catch (\Exception $e) {
-            $success = false;
-        }
 
-        if (!$success) {
-            $rating->setYourScore($existingScore);
-            $rating->setYourRatingDate($existingRatingDate);
+        if ($score == 0) {
+            // Delete rating
+
+            $success = false;
+            try {
+                $success = $rating->deleteToDb($username, $filmId);
+            }
+            catch (\Exception $e) {
+                $success = false;
+            }
+
+            if ($success) {
+                $film->setRating(null, Constants::SOURCE_RATINGSYNC);
+            }
+
+        } else {
+            // Set rating
+            
+            $existingScore = $rating->getYourScore();
+            $existingRatingDate = $rating->getYourRatingDate();
+            $rating->setYourScore($score);
+            $rating->setYourRatingDate(new \DateTime());
+
             $film->setRating($rating);
+            $success = false;
+            try {
+                $success = $film->saveToDb($username);
+            }
+            catch (\Exception $e) {
+                $success = false;
+            }
+            
+            if (!$success) {
+                $rating->setYourScore($existingScore);
+                $rating->setYourRatingDate($existingRatingDate);
+                $film->setRating($rating);
+            }
+            
         }
     }
 

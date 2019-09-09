@@ -295,6 +295,25 @@ class Rating
         return $arr;
     }
 
+    public function deleteToDb($username, $filmId)
+    {
+        if (empty($username) || empty($filmId)) {
+            throw new \InvalidArgumentException("\$username ($username) and \$filmId ($filmId) must not be empty");
+        } elseif (empty($this->sourceName)) {
+            throw new \InvalidArgumentException("Rating must have a sourceName");
+        }
+
+        $sourceName = $this->sourceName;
+        $ratingDate = $this->getYourRatingDate();
+        $db = getDatabase();
+
+        $query = "DELETE FROM rating WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId'";
+        logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
+        $success = $db->query($query);
+
+        return $success;
+    }
+
     /**
      * Save rating data from one source to the RatingSync source rating
      * if this one is newer (rating date) than the original
