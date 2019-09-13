@@ -279,19 +279,17 @@ function setRating($filmId, $score)
             $existingRatingDate = $rating->getYourRatingDate();
             $rating->setYourScore($score);
             $rating->setYourRatingDate(new \DateTime());
-
-            $film->setRating($rating);
+            
             $success = false;
             try {
-                $success = $film->saveToDb($username);
+                $success = $rating->saveToDb($username, $filmId);
             }
             catch (\Exception $e) {
+                logDebug($e, __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__);
                 $success = false;
             }
             
-            if (!$success) {
-                $rating->setYourScore($existingScore);
-                $rating->setYourRatingDate($existingRatingDate);
+            if ($success) {
                 $film->setRating($rating);
             }
             

@@ -33,13 +33,7 @@ function buildFilmDetailElement(film) {
     if (rsSource && rsSource != "undefined") {
         rsUniqueName = rsSource.uniqueName;
         var yourRatingDate = rsSource.rating.yourRatingDate;
-        if (yourRatingDate && yourRatingDate != "undefined") {
-            var reDate = new RegExp("([0-9]+)-([0-9]+)-([0-9]+)");
-            var ratingYear = reDate.exec(yourRatingDate)[1];
-            var month = reDate.exec(yourRatingDate)[2];
-            var day = reDate.exec(yourRatingDate)[3];
-            dateStr = "You rated this " + month + "/" + day + "/" + ratingYear;
-        }
+        dateStr = getRatingDateText(yourRatingDate);
     }
 
     var html = '\n';
@@ -50,7 +44,7 @@ function buildFilmDetailElement(film) {
     html = html + '    <div align="left">\n';
     html = html + '      <ratingStars class="rating-stars" id="rating-stars-'+rsUniqueName+'"></ratingStars>\n';
     html = html + '    </div>\n';
-    html = html + '    <ratingDate class="rating-date">'+dateStr+'</ratingDate>\n';
+    html = html + '    <ratingDate class="rating-date" id="rating-date-'+rsUniqueName+'">'+dateStr+'</ratingDate>\n';
     html = html + '    <div><a href="'+imdbFilmUrl+'" target="_blank">'+imdbLabel+':</a>&nbsp;<imdbScore id="imdb-score-"'+imdbUniqueName+'>'+imdbScore+'</imdbScore></div>\n';
     html = html + '    <status></status>\n';
     html = html + '    <filmlistContainer id="filmlist-container-'+filmId+'" align="left"></filmlistContainer>\n';

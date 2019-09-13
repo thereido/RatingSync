@@ -185,22 +185,31 @@ class Rating
         } elseif (empty($this->sourceName)) {
             throw new \InvalidArgumentException("Rating must have a sourceName");
         }
-
+        
+        $saveSuccess = false;
         $originalThis = $this;
         $sourceName = $this->sourceName;
         $ratingDate = $this->getYourRatingDate();
         $db = getDatabase();
 
-        $existingRating = null;
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId'";
-        $result = $db->query($query);
-        if (!empty($result) && $result->num_rows == 1) {
+        $existingRating = self::getRatingFromDb($username, $sourceName, $filmId);
+        if (empty($existingRating)) {
+            // This is a new rating. Simply insert it to the db.
+            $thisValues = self::setColumnsAndValues($this, $username, $filmId);
+            $insertThisRating = "REPLACE INTO rating (".$thisValues['columns'].") VALUES (".$thisValues['values'].")";
+            logDebug($insertThisRating, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            $saveSuccess = $db->query($insertThisRating);
+        } else {
+            // There is an existing rating. This one goes to the rating
+            // table and the other goes the archive table.
+            
+            // Don't save a rating with a empty date unless the boolean param
+            // says it's ok.
             if (empty($ratingDate) && !$overwriteIfDateEmpty) {
                 return false;
             }
-            $existingRating = new Rating($sourceName);
-            $existingRating->initFromDbRow($result->fetch_assoc());
-
+            
+            // Copy missing values from the existing rating
             if (empty($this->getYourScore())) {
                 $this->setYourScore($existingRating->getYourScore());
             }
@@ -211,34 +220,13 @@ class Rating
                 $ratingDate = $existingRating->getYourRatingDate();
                 $this->setYourRatingDate($ratingDate);
             }
-        }
-
-        $saveSuccess = false;
-        if (empty($existingRating)) {
-            // This is a new rating. Simply insert it to the db.
-            $thisValues = self::setColumnsAndValues($this, $username, $filmId);
-            $insertThisRating = "REPLACE INTO rating (".$thisValues['columns'].") VALUES (".$thisValues['values'].")";
-            logDebug($insertThisRating, __CLASS__."::".__FUNCTION__." ".__LINE__);
-            $saveSuccess = $db->query($insertThisRating);
-        } else {
-            // There is an existing rating. Existing vs. This. One goes to the rating
-            // table and the other goes the archive table.
+            
             $existingRatingDate = $existingRating->getYourRatingDate();
             if (empty($existingRatingDate) || $originalThis->getYourRatingDate() > $existingRatingDate) {
                 // This rating is newer than the existing one. Archive the existing
                 // one and update this to the rating table.
-                $existingValues = self::setColumnsAndValues($existingRating, $username, $filmId);
-                $archive = "INSERT rating_archive (".$existingValues['columns'].") VALUES (".$existingValues['values'].")";
-                // Archive
-                logDebug($archive, __CLASS__."::".__FUNCTION__." ".__LINE__);
-                if ($db->query($archive)) {
+                if ($existingRating->archiveToDb($username, $filmId)) {
                     // Replace
-                    if ($this->getYourScore() == $existingRating->getYourScore()) {
-                        // The score the score didn't change. Use the existing rating date,
-                        // because you don't want to look like the user changed their opinion
-                        // today
-                        $this->setYourRatingDate($existingRating->getYourRatingDate());
-                    }
                     $thisValues = self::setColumnsAndValues($this, $username, $filmId);
                     $replaceThisRating = "REPLACE INTO rating (".$thisValues['columns'].") VALUES (".$thisValues['values'].")";
                     logDebug($replaceThisRating, __CLASS__."::".__FUNCTION__." ".__LINE__);
@@ -255,6 +243,21 @@ class Rating
         }
         
         return $saveSuccess;
+    }
+    
+    protected  static function getRatingFromDb($username, $sourceName, $filmId)
+    {
+        $db = getDatabase();
+        
+        $rating = null;
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId'";
+        $result = $db->query($query);
+        if (!empty($result) && $result->num_rows == 1) {
+            $rating = new Rating($sourceName);
+            $rating->initFromDbRow($result->fetch_assoc());
+        }
+        
+        return $rating;
     }
 
     public static function setColumnsAndValues($rating, $username, $filmId)
@@ -302,16 +305,57 @@ class Rating
         } elseif (empty($this->sourceName)) {
             throw new \InvalidArgumentException("Rating must have a sourceName");
         }
-
-        $sourceName = $this->sourceName;
-        $ratingDate = $this->getYourRatingDate();
+        
+        // Archive this rating before delete it
+        /* Not archive it because removing a rating it is likely to be getting
+         * rid of a mistake. It could be that there was a real rating and the user
+         * decide to remove it later on, but that's less likely.
+        $this->archiveToDb($username, $filmId);
+        */
+        
         $db = getDatabase();
+        $sourceName = $this->sourceName;
 
         $query = "DELETE FROM rating WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId'";
         logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
         $success = $db->query($query);
 
         return $success;
+    }
+    
+    public function archiveToDb($username, $filmId)
+    {
+        $db = getDatabase();
+        
+        // Check a duplicate, meaning if the most recent rating in the archive
+        // with the same score & rating.
+        $duplicate = false;
+        $sourceName = $this->sourceName;
+        $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId' ORDER BY ts DESC LIMIT 1";
+        $result = $db->query($query);
+        if (!empty($result) && $result->num_rows == 1) {
+            $row = $result->fetch_assoc();
+            $existingScore = $row['yourScore'];
+            $existingDate = new \DateTime($row['yourRatingDate']);
+            $yourScore = $this->getYourScore();
+            $yourDate = $this->getYourRatingDate();
+            
+            if ($yourScore == $existingScore && $yourDate == $existingDate) {
+                $duplicate = true;
+            }
+        }
+        
+        // Don't archive a duplicate
+        if ($duplicate)
+        {
+            return true;
+        }
+        
+        $values = self::setColumnsAndValues($this, $username, $filmId);
+        $archive = "INSERT rating_archive (".$values['columns'].") VALUES (".$values['values'].")";
+        logDebug($archive, __CLASS__."::".__FUNCTION__." ".__LINE__);
+        
+        return $db->query($archive);
     }
 
     /**

@@ -30,6 +30,7 @@ function rateFilm(filmId, uniqueName, score, titleNum) {
                 renderStatus('Rating Saved');
             }
             renderStars(film);
+            renderRatingDate(film);
         }
     }
     var params = "";
@@ -172,6 +173,32 @@ function renderStreams(film, displaySearch) {
             searchSourceEl.appendChild(streamEl);
         }
     }
+}
+
+function renderRatingDate(film) {
+    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+    var uniqueName = rsSource.uniqueName;
+    var yourRatingDate = rsSource.rating.yourRatingDate;
+    
+    var ratingDateEl = document.getElementById("rating-date-" + uniqueName);
+    if (!ratingDateEl) {
+        return;
+    }
+    
+    ratingDateEl.innerHTML = getRatingDateText(yourRatingDate);
+}
+
+function getRatingDateText(yourRatingDate) {
+    var dateStr = "";
+    if (yourRatingDate && yourRatingDate != "undefined") {
+        var reDate = new RegExp("([0-9]+)-([0-9]+)-([0-9]+)");
+        var ratingYear = reDate.exec(yourRatingDate)[1];
+        var month = reDate.exec(yourRatingDate)[2];
+        var day = reDate.exec(yourRatingDate)[3];
+        dateStr = "You rated this " + month + "/" + day + "/" + ratingYear;
+    }
+    
+    return dateStr;
 }
 
 function toggleFilmlist(listname, filmId, activeBtnId) {
