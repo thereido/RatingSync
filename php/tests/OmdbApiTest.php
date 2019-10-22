@@ -5,7 +5,7 @@
 namespace RatingSync;
 
 require_once "../src/OmdbApi.php";
-require_once "10DatabaseTest.php";
+require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
 const TESTFILM_PRIMARY_TITLE = "Frozen";
@@ -15,26 +15,26 @@ const TESTFILM_PRIMARY_USER_SCORE = 7.5;
 const TESTFILM_PRIMARY_CRITIC_SCORE = 7.4;
 const TESTFILM_PRIMARY_IMAGE = "MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE";
 const TESTFILM_PRIMARY_DIRECTORS = array("Chris Buck", "Jennifer Lee");
-const TESTFILM_PRIMARY_GENRES = array("Animation", "Adventure", "Comedy");
+const TESTFILM_PRIMARY_GENRES = array("Animation", "Adventure", "Comedy", "Family", "Fantasy", "Musical");
 
 const TESTSERIES_TITLE = "Game of Thrones";
 const TESTSERIES_YEAR = 2011;
 const TESTSERIES_IMDBID = "tt0944947";
 const TESTSERIES_USER_SCORE = 9.5;
 const TESTSERIES_CRITIC_SCORE = null;
-const TESTSERIES_IMAGE = "MV5BMjE3NTQ1NDg1Ml5BMl5BanBnXkFtZTgwNzY2NDA0MjI";
+const TESTSERIES_IMAGE = "MV5BMjA5NzA5NjMwNl5BMl5BanBnXkFtZTgwNjg2OTk2NzM";
 const TESTSERIES_DIRECTORS = array();
-const TESTSERIES_GENRES = array("Action", "Adventure", "Drama");
+const TESTSERIES_GENRES = array("Action", "Adventure", "Drama", "Fantasy", "Romance");
 
 const TESTEPISODE_TITLE = "Game of Thrones";
 const TESTEPISODE_EPISODETITLE = "Garden of Bones";
 const TESTEPISODE_YEAR = 2012;
 const TESTEPISODE_IMDBID = "tt2069319";
-const TESTEPISODE_USER_SCORE = 8.9;
+const TESTEPISODE_USER_SCORE = 8.8;
 const TESTEPISODE_CRITIC_SCORE = null;
 const TESTEPISODE_IMAGE = "MV5BMTczMjc5MTY0NF5BMl5BanBnXkFtZTcwMDY5NDgzNw";
 const TESTEPISODE_DIRECTORS = array("David Petrarca");
-const TESTEPISODE_GENRES = array("Action", "Adventure", "Drama");
+const TESTEPISODE_GENRES = array("Action", "Adventure", "Drama", "Fantasy", "Romance");
 
 // Class to expose protected members and functions
 class OmdbApiExt extends \RatingSync\OmdbApi {
@@ -46,7 +46,7 @@ class OmdbApiExt extends \RatingSync\OmdbApi {
 
 class OmdbApiTest extends RatingSyncTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setup();
         //$this->verbose = true;
@@ -59,6 +59,8 @@ class OmdbApiTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new OmdbApi();
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
     
     /**
@@ -181,10 +183,11 @@ class OmdbApiTest extends RatingSyncTestCase
      *   - Exception
      *
      * @covers \RatingSync\OmdbApi::getFilmUrl
-     * @expectedException \InvalidArgumentException
      */
     public function testGetFilmUrlTitleOnly()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         // Setup
         $site = new OmdbApi();
@@ -203,10 +206,11 @@ class OmdbApiTest extends RatingSyncTestCase
      *   - Exception
      *
      * @covers \RatingSync\OmdbApi::getFilmUrl
-     * @expectedException \InvalidArgumentException
      */
     public function testGetFilmUrlYearOnly()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         // Setup
         $site = new OmdbApi();
@@ -225,10 +229,11 @@ class OmdbApiTest extends RatingSyncTestCase
      *   - Exception
      *
      * @covers \RatingSync\OmdbApi::getFilmUrl
-     * @expectedException \InvalidArgumentException
      */
     public function testGetFilmUrlEpisodeTitleOnly()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         // Setup
         $site = new OmdbApi();
@@ -247,10 +252,11 @@ class OmdbApiTest extends RatingSyncTestCase
      *   - Exception
      *
      * @covers \RatingSync\OmdbApi::getFilmUrl
-     * @expectedException \InvalidArgumentException
      */
     public function testGetFilmUrlTitleAndEpisodeTitleNoYear()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         // Setup
         $site = new OmdbApi();
@@ -577,10 +583,11 @@ class OmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\OmdbApi::getFilmDetailFromWebsite
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testGetFilmDetailFromWebsiteFromNull()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $site = new OmdbApi();
         $site->getFilmDetailFromWebsite(null);
@@ -589,10 +596,11 @@ class OmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\OmdbApi::getFilmDetailFromWebsite
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testGetFilmDetailFromWebsiteFromString()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $site = new OmdbApi();
         $site->getFilmDetailFromWebsite("String_Not_Film_Object");
@@ -601,10 +609,11 @@ class OmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\OmdbApi::getFilmDetailFromWebsite
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testGetFilmDetailFromWebsiteWithoutUniqueName()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $site = new OmdbApi();
         $film = new Film();
@@ -613,10 +622,11 @@ class OmdbApiTest extends RatingSyncTestCase
 
     /**
      * @covers \RatingSync\OmdbApi::getFilmDetailFromWebsite
-     * @expectedException \Exception
      */
     public function testGetFilmDetailFromWebsiteNoMatch()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\Exception::class);
 
         $site = new OmdbApiExt();
         $film = new Film();
@@ -1089,10 +1099,11 @@ class OmdbApiTest extends RatingSyncTestCase
 
     /**
      * @covers \RatingSync\OmdbApi::getFilmDetailFromWebsite
-     * @expectedException \InvalidArgumentException
      */
     public function testGetFilmDetailFromWebsiteOverwriteFalseOverEmptyFilm()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $site = new OmdbApiExt();
         $film = new Film();

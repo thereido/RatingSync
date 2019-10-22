@@ -12,11 +12,7 @@ class DatabaseTest extends RatingSyncTestCase
 {
     public static function resetDb()
     {
-        // NOTE:
-        // --login-path must be set in MySQL using this command...
-        // mysql_config_editor set --login-path=local --host=localhost --user=DB_USERNAME --password
-        // For DB_USERNAME use Constants::DB_ADMIN_USER
-        $command = "mysql --login-path=local " . Constants::DB_TEST_DATABASE;
+        $command = "mysql -u " . Constants::DB_ADMIN_USER . " -p". Constants::DB_ADMIN_PWD . " " . Constants::DB_TEST_DATABASE;
         exec("$command < ..\..\sql\db_tables_drop.sql");
         exec("$command < ..\..\sql\db_tables_create.sql");
         exec("$command < ..\..\sql\db_insert_initial.sql");

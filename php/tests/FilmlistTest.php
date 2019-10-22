@@ -8,7 +8,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Filmlist.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Film.php";
 
-require_once "10DatabaseTest.php";
+require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
 const TEST_LIST = Constants::LIST_DEFAULT;
@@ -16,7 +16,7 @@ const TEST_NEW_LIST = "newlist";
 
 class FilmlistTest extends RatingSyncTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setup();
         //$this->verbose = true;
@@ -29,6 +29,8 @@ class FilmlistTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, TEST_LIST);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -57,10 +59,11 @@ class FilmlistTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Filmlist::setListName
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetListNameNull()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, TEST_LIST);
         
@@ -71,10 +74,11 @@ class FilmlistTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Filmlist::setListName
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetListNameEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, TEST_LIST);
 
@@ -108,10 +112,11 @@ class FilmlistTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Filmlist::setUsername
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetUsernameNull()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, TEST_LIST);
         
@@ -122,10 +127,11 @@ class FilmlistTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Filmlist::setUsername
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetUsernameEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, TEST_LIST);
 
@@ -136,10 +142,11 @@ class FilmlistTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Filmlist::addItem
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testAddItemWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, TEST_LIST);
         $list->addItem(null);
@@ -148,10 +155,11 @@ class FilmlistTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Filmlist::addItem
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testAddItemWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, TEST_LIST);
         $list->addItem("");
@@ -166,6 +174,8 @@ class FilmlistTest extends RatingSyncTestCase
 
         $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, TEST_LIST);
         $list->addItem(100);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -178,6 +188,8 @@ class FilmlistTest extends RatingSyncTestCase
         $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, TEST_LIST);
         $list->addItem(100);
         $list->addItem(200);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -190,6 +202,8 @@ class FilmlistTest extends RatingSyncTestCase
         $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, TEST_LIST);
         $list->addItem(100);
         $list->addItem(100);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -203,6 +217,8 @@ class FilmlistTest extends RatingSyncTestCase
         $list->addItem(100);
         $list->addItem(200);
         $list->addItem(200);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }    
 
     /**
@@ -594,11 +610,12 @@ class FilmlistTest extends RatingSyncTestCase
      * @depends testObjectCanBeConstructed
      * @depends testSetup
      * @depends testCreateToDb
-     * @expectedException \InvalidArgumentException
      */
     public function testCreateToDbExistingListname()
     {$this->start(__CLASS__, __FUNCTION__);
         $db = getDatabase();
+
+        $this->expectException(\InvalidArgumentException::class);
 
         // Set up
         $username = Constants::TEST_RATINGSYNC_USERNAME;

@@ -208,8 +208,7 @@ CREATE TABLE IF NOT EXISTS filmlist
         FOREIGN KEY (film_id)
             REFERENCES film(id)
     );
-ALTER TABLE filmlist ADD COLUMN create_ts TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:01' AFTER position;
-ALTER TABLE filmlist ALTER COLUMN create_ts DROP DEFAULT;
+ALTER TABLE filmlist ADD COLUMN create_ts TIMESTAMP NOT NULL DEFAULT current_timestamp() AFTER position;
   
 CREATE TABLE IF NOT EXISTS user_filmlist
     (
@@ -227,5 +226,4 @@ CREATE TABLE IF NOT EXISTS user_filmlist
         FOREIGN KEY (user_name)
             REFERENCES user(username)
     );
-ALTER TABLE user_filmlist ADD COLUMN create_ts TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:01' AFTER parent_listname;
-ALTER TABLE user_filmlist ALTER COLUMN create_ts DROP DEFAULT;
+ALTER TABLE user_filmlist ADD COLUMN create_ts TIMESTAMP NOT NULL DEFAULT current_timestamp() AFTER parent_listname;

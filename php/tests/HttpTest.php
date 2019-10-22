@@ -11,7 +11,7 @@ require_once "RatingSyncTestCase.php";
 
 class HttpTest extends RatingSyncTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setup();
         //$this->verbose = true;
@@ -24,6 +24,8 @@ class HttpTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $http = new Http(Constants::SOURCE_RATINGSYNC);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -33,14 +35,17 @@ class HttpTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         new Http(Constants::SOURCE_RATINGSYNC, "");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
      * @covers            \RatingSync\Http::__construct
-     * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromInvalidSiteName()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         new Http("invalid_site_name");
     }
@@ -48,10 +53,11 @@ class HttpTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\Http::getPage
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testCannotGetPageWithNullPage()
     {$this->start(__CLASS__, __FUNCTION__);
+        
+        $this->expectException(\InvalidArgumentException::class);
 
         $http = new Http(Constants::SOURCE_RATINGSYNC);
         $http->getPage(null);
@@ -60,10 +66,11 @@ class HttpTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\Http::getPage
      * @depends testObjectCanBeConstructed
-     * @expectedException \RatingSync\HttpNotFoundException
      */
     public function testCannotGetPageWithNotFound()
     {$this->start(__CLASS__, __FUNCTION__);
+        
+        $this->expectException(\RatingSync\HttpNotFoundException::class);
 
         $http = new Http(Constants::SOURCE_RATINGSYNC);
         $http->getPage("/findthis");
@@ -72,10 +79,11 @@ class HttpTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\Http::getPage
      * @depends testObjectCanBeConstructed
-     * @expectedException \RatingSync\HttpErrorException
      */
     public function testGetPageHttpError()
     {$this->start(__CLASS__, __FUNCTION__);
+        
+        $this->expectException(\RatingSync\HttpErrorException::class);
 
         $http = new Http(Constants::SOURCE_IMDB);
         $http->getPage('Bad URL');

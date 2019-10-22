@@ -8,11 +8,11 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "ajax" . DIRECTORY_SEPARATOR . "api.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Film.php";
 
-require_once "10DatabaseTest.php";
+require_once "DatabaseTest.php";
 
 class ApiTest extends RatingSyncTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setup();
         //$this->verbose = true;
@@ -89,8 +89,14 @@ class ApiTest extends RatingSyncTestCase
         // Verify
         $this->assertFalse(empty($responseJson));
         $obj = json_decode($responseJson);
+        
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
+    /**
+     * @covers \RatingSync\api_getFilm
+     * @depends testSetup
+     */
     public function testApi_getFilm()
     {$this->start(__CLASS__, __FUNCTION__);
     

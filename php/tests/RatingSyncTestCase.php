@@ -4,12 +4,14 @@
  */
 namespace RatingSync;
 
-class RatingSyncTestCase extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class RatingSyncTestCase extends TestCase
 {
     public $verbose;
     public $timer;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->verbose = true;
         $this->timer = new \DateTime();
@@ -23,7 +25,7 @@ class RatingSyncTestCase extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         $format = " %s secs";
         $interval = $this->timer->diff(date_create());
@@ -34,6 +36,8 @@ class RatingSyncTestCase extends \PHPUnit_Framework_TestCase
 
     public function testBaseClass()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 }
 
