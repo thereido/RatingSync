@@ -9,12 +9,12 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 
 require_once "SiteRatingsChild.php";
 require_once "ImdbTest.php";
-require_once "10DatabaseTest.php";
+require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
 class RatingTest extends RatingSyncTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setup();
         //$this->verbose = true;
@@ -22,20 +22,22 @@ class RatingTest extends RatingSyncTestCase
 
     /**
      * @covers            \RatingSync\Rating::__construct
-     * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromNull()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         new Rating(null);
     }
 
     /**
      * @covers            \RatingSync\Rating::__construct
-     * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         new Rating("Netflux");
     }
@@ -47,6 +49,8 @@ class RatingTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $rating = new Rating("Jinni");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -89,10 +93,11 @@ class RatingTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Rating::setYourScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testYourScoreCannotBeSetWithNonNumericalString()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore("Not an int");
@@ -101,10 +106,11 @@ class RatingTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Rating::setYourScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testYourScoreCannotBeSetWithNegative()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(-1);
@@ -113,10 +119,11 @@ class RatingTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Rating::setYourScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testYourScoreCannotBeSetWithHigherThan10()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourScore(11);
@@ -175,10 +182,11 @@ class RatingTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Rating::setYourRatingDate
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testYourRatingDateCannotBeSetWithString()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setYourRatingDate("10/12/2012");
@@ -240,10 +248,11 @@ class RatingTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Rating::setSuggestedScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testSuggestedScoreCannotBeSetWithNonNumericalString()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore("Not an int");
@@ -252,10 +261,11 @@ class RatingTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Rating::setSuggestedScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testSuggestedScoreCannotBeSetWithNegative()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(-1);
@@ -264,10 +274,11 @@ class RatingTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Rating::setSuggestedScore
      * @depends testObjectCanBeConstructedFromStringValue
-     * @expectedException \InvalidArgumentException
      */
     public function testSuggestedScoreCannotBeSetWithHigherThan10()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $r = new Rating(\RatingSync\Constants::SOURCE_IMDB);
         $r->setSuggestedScore(11);
@@ -366,6 +377,8 @@ class RatingTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         DatabaseTest::resetDb();
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -380,6 +393,8 @@ class RatingTest extends RatingSyncTestCase
         $site = new SiteRatingsChild($username_site);
         $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
         $films = $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename, $username_rs);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -525,10 +540,11 @@ class RatingTest extends RatingSyncTestCase
     
     /**
      * @covers  \RatingSync\Rating::saveToDb
-     * @expectedException \InvalidArgumentException
      */
     public function testSaveToDbEmptyUsername()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         // Get the new Film ID
         $db = getDatabase();
@@ -548,10 +564,11 @@ class RatingTest extends RatingSyncTestCase
     
     /**
      * @covers  \RatingSync\Rating::saveToDb
-     * @expectedException \InvalidArgumentException
      */
     public function testSaveToDbEmptyFilmId()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
         
         // Test
         $username = Constants::TEST_RATINGSYNC_USERNAME;
@@ -885,8 +902,9 @@ class RatingTest extends RatingSyncTestCase
      * - Leave all other data empty
      *
      * Expect
-     *   - Verify rating and archive tables both have the same data
-     *   - Verify the data is from existing 
+     *   - Verify rating and archive tables both have the same data (except rating date)
+     *   - Verify the data is from existing (except rating date)
+     *   - Verify yourRatingDate from the db is today and from the archive it is the original date
      *
      * @covers  \RatingSync\Rating::saveToDb
      * @depends testSaveToDbRatingExists
@@ -898,6 +916,8 @@ class RatingTest extends RatingSyncTestCase
         $sourceName = Constants::SOURCE_IMDB;
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $rating = new Rating($sourceName);
+        $todayDate = new \DateTime();
+        $originalRatingDate = "2015-12-06";
         $rating->setYourRatingDate(new \DateTime());
 
         // Get the new Film ID
@@ -919,17 +939,17 @@ class RatingTest extends RatingSyncTestCase
         $dbRating = new Rating($rating->getSource());
         $dbRating->initFromDbRow($result->fetch_assoc());
         $this->assertEquals(6, $dbRating->getYourScore(), 'Your score');
-        $this->assertEquals("2015-12-06", date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
+        $this->assertEquals(date_format($todayDate, 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals(6, $dbRating->getSuggestedScore(), 'Suggested score');
         
         $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
-                   " AND yourRatingDate='".date_format($rating->getYourRatingDate(), 'Y-m-d')."'";
+                   " AND yourRatingDate='$originalRatingDate'";
         $result = $db->query($query);
         $this->assertEquals(1, $result->num_rows);
         $dbArchiveRating = new Rating($rating->getSource());
         $dbArchiveRating->initFromDbRow($result->fetch_assoc());
         $this->assertEquals($dbRating->getYourScore(), $dbArchiveRating->getYourScore(), 'Your score (archived)');
-        $this->assertEquals(date_format($dbRating->getYourRatingDate(), 'Y-m-d'), date_format($dbArchiveRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
+        $this->assertEquals($originalRatingDate, date_format($dbArchiveRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals($dbRating->getSuggestedScore(), $dbArchiveRating->getSuggestedScore(), 'Suggested score (archived)');
     }
     
@@ -1067,6 +1087,7 @@ class RatingTest extends RatingSyncTestCase
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         $rating->setYourScore(5);
+        $originalRatingDate = "2015-12-05";
         $rating->setYourRatingDate(new \DateTime('2015-12-08'));
         $rating->setSuggestedScore(8);
 
@@ -1089,26 +1110,27 @@ class RatingTest extends RatingSyncTestCase
         $dbRating = new Rating($rating->getSource());
         $dbRating->initFromDbRow($result->fetch_assoc());
         $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), 'Your score');
-        $this->assertEquals("2015-12-05", date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
+        $this->assertEquals("2015-12-08", date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), 'Suggested score');
         
         $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
-                   " AND yourRatingDate='".date_format($rating->getYourRatingDate(), 'Y-m-d')."' ORDER BY ts LIMIT 1";
+                   " AND yourRatingDate='$originalRatingDate' ORDER BY ts LIMIT 1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->num_rows);
         $dbArchiveRating = new Rating($rating->getSource());
         $dbArchiveRating->initFromDbRow($result->fetch_assoc());
         $this->assertEquals(5, $dbArchiveRating->getYourScore(), 'Your score');
-        $this->assertEquals("2015-12-05", date_format($dbArchiveRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
-        $this->assertEquals(5, $dbArchiveRating->getSuggestedScore(), 'Your score');
+        $this->assertEquals($originalRatingDate, date_format($dbArchiveRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
+        $this->assertEquals(5, $dbArchiveRating->getSuggestedScore(), 'Suggested score');
     }
 
     /**
      * @covers  \RatingSync\Rating::saveToRs
-     * @expectedException \InvalidArgumentException
      */
     public function testSaveToRsSetNulls()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         $rating->saveToRs(null, null);
@@ -1116,10 +1138,11 @@ class RatingTest extends RatingSyncTestCase
 
     /**
      * @covers  \RatingSync\Rating::saveToRs
-     * @expectedException \InvalidArgumentException
      */
     public function testSaveToRsSetNullUsername()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         $filmId = 1;
@@ -1128,10 +1151,11 @@ class RatingTest extends RatingSyncTestCase
 
     /**
      * @covers  \RatingSync\Rating::saveToRs
-     * @expectedException \InvalidArgumentException
      */
     public function testSaveToRsSetNullFilmId()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         $username = Constants::TEST_RATINGSYNC_USERNAME;
@@ -1158,10 +1182,11 @@ class RatingTest extends RatingSyncTestCase
      * @covers  \RatingSync\Rating::saveToDb
      * @depends testObjectCanBeConstructedFromStringValue
      * @depends testSetupRatings
-     * @expectedException \Exception
      */
     public function testSaveToRsFilmNotFound()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\Exception::class);
 
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         $username = Constants::TEST_RATINGSYNC_USERNAME;
@@ -1219,6 +1244,8 @@ class RatingTest extends RatingSyncTestCase
         $rating->setYourScore(1);
         $film->setRating($rating, Constants::SOURCE_IMDB);
         $film->saveToDb($username);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -1445,6 +1472,8 @@ class RatingTest extends RatingSyncTestCase
     public function testSaveToRsFilmSourceExists()
     {$this->start(__CLASS__, __FUNCTION__);
         // Nothing to do because it's tested by testSaveToRsNewRsRatingFromAnotherSource
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -1506,7 +1535,7 @@ class RatingTest extends RatingSyncTestCase
         $this->assertEquals(1, $result->num_rows);
         $row = $result->fetch_assoc();
         $this->assertEquals(3, $row['yourScore'], 'Your score');
-        $this->assertEquals("2016-01-15", $row['yourRatingDate'], "Your rating date");
+        $this->assertEquals("2016-01-16", $row['yourRatingDate'], "Your rating date");
     }
 
     /**
@@ -1527,7 +1556,7 @@ class RatingTest extends RatingSyncTestCase
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         $rating->setYourScore(4);
-        $rating->setYourRatingDate(new \DateTime('2016-01-15'));
+        $rating->setYourRatingDate(new \DateTime('2016-01-17'));
         $rating->setSuggestedScore(8);
 
         // Update the same RS rating
@@ -1537,8 +1566,8 @@ class RatingTest extends RatingSyncTestCase
         $result = $db->query($query);
         $this->assertEquals(1, $result->num_rows);
         $row = $result->fetch_assoc();
-        $this->assertEquals(3, $row['yourScore'], 'Your score');
-        $this->assertEquals("2016-01-15", $row['yourRatingDate'], "Your rating date");
+        $this->assertEquals(4, $row['yourScore'], 'Your score');
+        $this->assertEquals("2016-01-17", $row['yourRatingDate'], "Your rating date");
         $this->assertEmpty($row['suggestedScore'], 'Suggested score');
     }
 
@@ -1569,8 +1598,8 @@ class RatingTest extends RatingSyncTestCase
         $result = $db->query($query);
         $this->assertEquals(1, $result->num_rows);
         $row = $result->fetch_assoc();
-        $this->assertEquals(3, $row['yourScore'], 'Your score');
-        $this->assertEquals("2016-01-15", $row['yourRatingDate'], "Your rating date");
+        $this->assertEquals(4, $row['yourScore'], 'Your score');
+        $this->assertEquals("2016-01-17", $row['yourRatingDate'], "Your rating date");
     }
 
 }

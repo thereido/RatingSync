@@ -21,7 +21,7 @@ Requirements
 - PHP 5.6
 - MySQL 5.6
 - cURL
-- PHPUnit 4.8
+- PHPUnit 8.4
 - OMDbAPI key http://omdbapi.com/apikey.aspx
 
 Setup

@@ -11,12 +11,12 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 require_once "SiteChild.php";
 require_once "ImdbTest.php";
 require_once "RatingSyncSiteTest.php";
-require_once "10DatabaseTest.php";
+require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
 class MainTest extends RatingSyncTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setup();
         //$this->verbose = true;
@@ -128,11 +128,11 @@ class MainTest extends RatingSyncTestCase
         $this->assertEquals(1988, $film->getYear(), "Year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
         $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match('@(MV5BMTY1ODA3NjU0NV5BMl5BanBnXkFtZTcwMDU1NTQyMQ)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
+        $this->assertEquals(1, preg_match('@(MV5BY2ZmZWMwMDQtMzQxNS00ZGQ2LThmOWMtMjI4ZTdjMzg3NGFjXkEyXkFqcGdeQXVyMTczNjQwOTY)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
         $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
         $this->assertEquals(5.8, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
         $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(array("Comedy", "Crime", "Drama"), $film->getGenres(), 'Genres');
+        $this->assertEquals(array("Comedy", "Crime", "Drama", "Romance"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals("tt0094819", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
         $this->assertNull($rating->getYourScore(), 'Your Score');
@@ -149,11 +149,11 @@ class MainTest extends RatingSyncTestCase
         $this->assertEquals(1988, $film->getYear(), "Year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
         $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match('@(MV5BMTY1ODA3NjU0NV5BMl5BanBnXkFtZTcwMDU1NTQyMQ)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
+        $this->assertEquals(1, preg_match('@(MV5BY2ZmZWMwMDQtMzQxNS00ZGQ2LThmOWMtMjI4ZTdjMzg3NGFjXkEyXkFqcGdeQXVyMTczNjQwOTY)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
         $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
         $this->assertEquals(6, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
         $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(array("Comedy", "Crime", "Drama"), $film->getGenres(), 'Genres');
+        $this->assertEquals(array("Comedy", "Crime", "Drama", "Romance"), $film->getGenres(), 'Genres');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals("tt0094819", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
         $this->assertNull($rating->getYourScore(), 'Your Score');
@@ -173,6 +173,8 @@ class MainTest extends RatingSyncTestCase
     public function testSearchEmptyUsername()
     {$this->start(__CLASS__, __FUNCTION__);
         // Covered by testSearch
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
     
     /**
@@ -201,6 +203,8 @@ class MainTest extends RatingSyncTestCase
     public function testSearchDbMatchEmptyUsername()
     {$this->start(__CLASS__, __FUNCTION__);
         // covered by testSearchDbMatch
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
     
     /**
@@ -251,6 +255,8 @@ class MainTest extends RatingSyncTestCase
     public function testSearchDbNoMatchSiteMatch()
     {$this->start(__CLASS__, __FUNCTION__);
         // covered by testSearch
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
     
     /**

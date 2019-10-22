@@ -15,7 +15,7 @@ require_once "XfinityTest.php";
 
 class FilmTest extends RatingSyncTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setup();
         //$this->verbose = true;
@@ -28,6 +28,8 @@ class FilmTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $film = new Film();
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -115,10 +117,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setCriticScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testCriticScoreCannotBeSetWithNonNumericalString()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setCriticScore("Not an int", Constants::SOURCE_IMDB);
@@ -127,10 +130,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setCriticScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testCriticScoreCannotBeSetWithNegative()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setCriticScore(-1, Constants::SOURCE_IMDB);
@@ -139,10 +143,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setCriticScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testCriticScoreCannotBeSetWithHigherThan10()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setCriticScore(11, Constants::SOURCE_IMDB);
@@ -227,10 +232,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setUserScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testUserScoreCannotBeSetWithNonNumericalString()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setUserScore("Not an int", Constants::SOURCE_IMDB);
@@ -239,10 +245,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setUserScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testUserScoreCannotBeSetWithNegative()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setUserScore(-1, Constants::SOURCE_IMDB);
@@ -251,10 +258,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setUserScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testUserScoreCannotBeSetWithHigherThan10()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setUserScore(11, Constants::SOURCE_IMDB);
@@ -313,11 +321,12 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setRating
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
+        $this->expectException(\InvalidArgumentException::class);
+
         $film = new Film();
         $film->setRating(null, "Bad_Source");
     }
@@ -325,11 +334,12 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setRating
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithNullRatingNullSource()
     {$this->start(__CLASS__, __FUNCTION__);
 
+        $this->expectException(\InvalidArgumentException::class);
+
         $film = new Film();
         $film->setRating(null, "Bad_Source");
     }
@@ -337,10 +347,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setRating
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithString()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setRating("Bad_Arg", Constants::SOURCE_IMDB);
@@ -349,10 +360,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setRating
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithNumber()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setRating(7, Constants::SOURCE_IMDB);
@@ -367,6 +379,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setRating(null, Constants::SOURCE_IMDB);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -378,6 +392,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setRating("", Constants::SOURCE_IMDB);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -390,6 +406,8 @@ class FilmTest extends RatingSyncTestCase
         $film = new Film();
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating, Constants::SOURCE_IMDB);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -402,15 +420,18 @@ class FilmTest extends RatingSyncTestCase
         $film = new Film();
         $rating = new Rating(Constants::SOURCE_IMDB);
         $film->setRating($rating);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
      * @covers  \RatingSync\Film::setRating
      * @depends testObjectCanBeConstructed
-     * @expectedException \Exception
      */
     public function testSetRatingWithIncompatibleSource()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\Exception::class);
 
         $film = new Film();
         $rating = new Rating(Constants::SOURCE_IMDB);
@@ -501,10 +522,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::getRating
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testGetRatingWithInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->getRating("Bad_Source");
@@ -513,10 +535,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setYourScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetYourScoreWithInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setYourScore("your_score", "Bad_Source");
@@ -525,10 +548,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setYourScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetYourScoreWithBadArg()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setYourScore("Bad_Score", Constants::SOURCE_IMDB);
@@ -543,15 +567,18 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setYourScore(null, Constants::SOURCE_IMDB);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
      * @covers  \RatingSync\Film::setYourScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetYourScoreWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setYourScore("", Constants::SOURCE_IMDB);
@@ -566,6 +593,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setYourScore(7, Constants::SOURCE_IMDB);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -609,10 +638,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::getYourScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testGetYourScoreWithInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->getYourScore("Bad_Source");
@@ -627,6 +657,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setTitle(null);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -638,6 +670,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setTitle("");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -649,6 +683,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setTitle("New_Title");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -705,10 +741,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setYear
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetYearWithBadArgFloat()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setYear(1999.5);
@@ -717,10 +754,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setYear
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetYearWithBadArgStringCastToInt()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setYear("1999.5");
@@ -735,6 +773,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setYear(null);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -746,6 +786,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setYear("");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -757,6 +799,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setYear(1942);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -768,6 +812,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setYear("1942");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -838,10 +884,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::setContentType
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetContentTypeWithBadArg()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setContentType("Bad_ContentType");
@@ -856,6 +903,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setContentType(null);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -867,6 +916,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setContentType("");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -878,6 +929,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setContentType(Film::CONTENT_FILM);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -940,6 +993,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setImage(null);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -951,6 +1006,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setImage("");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -962,6 +1019,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setImage("http://example.com/example.jpg");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -1024,6 +1083,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setImage(null, Constants::SOURCE_IMDB);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -1035,6 +1096,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setImage("", Constants::SOURCE_IMDB);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -1046,15 +1109,18 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->setImage("http://example.com/example.jpg", Constants::SOURCE_IMDB);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
      * @covers  \RatingSync\Film::setImage
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetImageAndInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->setImage("http://example.com/example.jpg", "BAD SOURCE");
@@ -1078,10 +1144,11 @@ class FilmTest extends RatingSyncTestCase
      * @covers  \RatingSync\Film::setImage
      * @covers  \RatingSync\Film::getImage
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testGetImageAndInvalidSource()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->getImage("BAD SOURCE");
@@ -1127,10 +1194,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::addGenre
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testAddGenreWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->addGenre(null);
@@ -1139,10 +1207,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::addGenre
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testAddGenreWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->addGenre("");
@@ -1157,6 +1226,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->addGenre("Comedy");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -1169,6 +1240,8 @@ class FilmTest extends RatingSyncTestCase
         $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -1181,6 +1254,8 @@ class FilmTest extends RatingSyncTestCase
         $film = new Film();
         $film->addGenre("Comedy");
         $film->addGenre("Comedy");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -1194,6 +1269,8 @@ class FilmTest extends RatingSyncTestCase
         $film->addGenre("Comedy");
         $film->addGenre("Horror");
         $film->addGenre("Comedy");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }    
 
     /**
@@ -1375,10 +1452,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::addDirector
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testAddDirectorWithNull()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->addDirector(null);
@@ -1387,10 +1465,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::addDirector
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testAddDirectorWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->addDirector("");
@@ -1405,6 +1484,8 @@ class FilmTest extends RatingSyncTestCase
 
         $film = new Film();
         $film->addDirector("Georges Méliès");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -1417,6 +1498,8 @@ class FilmTest extends RatingSyncTestCase
         $film = new Film();
         $film->addDirector("Georges Méliès");
         $film->addDirector("Jennifer Lee");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -1429,6 +1512,8 @@ class FilmTest extends RatingSyncTestCase
         $film = new Film();
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Jennifer Lee");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -1442,6 +1527,8 @@ class FilmTest extends RatingSyncTestCase
         $film->addDirector("Jennifer Lee");
         $film->addDirector("Christopher Nolan");
         $film->addDirector("Jennifer Lee");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }    
 
     /**
@@ -1648,10 +1735,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::addXmlChild
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testAddXmlChildFromNullParam()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->addXmlChild(null);
@@ -1660,10 +1748,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::addXmlChild
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testAddXmlChildFromString()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = new Film();
         $film->addXmlChild("Bad_Arg_As_A_String");
@@ -1747,6 +1836,7 @@ class FilmTest extends RatingSyncTestCase
         $xmlStr .=     "<source name=\"Jinni\">";
         $xmlStr .=         "<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>";
         $xmlStr .=         "<uniqueName>frozen-2013</uniqueName>";
+        $xmlStr .=         "<streamDate>1000-01-01</streamDate>";
         $xmlStr .=         "<criticScore>8</criticScore>";
         $xmlStr .=         "<userScore>10</userScore>";
         $xmlStr .=         "<rating>";
@@ -1815,6 +1905,7 @@ class FilmTest extends RatingSyncTestCase
         $xmlStr .=     "<source name=\"Jinni\">";
         $xmlStr .=         "<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>";
         $xmlStr .=         "<uniqueName>frozen-2013</uniqueName>";
+        $xmlStr .=         "<streamDate>1000-01-01</streamDate>";
         $xmlStr .=         "<criticScore>8</criticScore>";
         $xmlStr .=         "<userScore>10</userScore>";
         $xmlStr .=         "<rating>";
@@ -1826,6 +1917,7 @@ class FilmTest extends RatingSyncTestCase
         $xmlStr .=     "<source name=\"IMDb\">";
         $xmlStr .=         "<image/>";
         $xmlStr .=         "<uniqueName>tt2294629</uniqueName>";
+        $xmlStr .=         "<streamDate>1000-01-01</streamDate>";
         $xmlStr .=         "<criticScore>8</criticScore>";
         $xmlStr .=         "<userScore>7</userScore>";
         $xmlStr .=         "<rating>";
@@ -1899,40 +1991,44 @@ class FilmTest extends RatingSyncTestCase
 
     /**
      * @covers  \RatingSync\Film::createFromXml
-     * @expectedException \InvalidArgumentException
      */
     public function testCreateFromXmlArgsNull()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         Film::createFromXml(null, null);
     }
 
     /**
      * @covers  \RatingSync\Film::createFromXml
-     * @expectedException \InvalidArgumentException
      */
     public function testCreateFromXmlArgsFilmSxeNull()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         Film::createFromXml(null);
     }
 
     /**
      * @covers  \RatingSync\Film::createFromXml
-     * @expectedException \InvalidArgumentException
      */
     public function testCreateFromXmlArgsFilmSxeWrongType()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         Film::createFromXml("Bad_Type");
     }
 
     /**
      * @covers  \RatingSync\Film::createFromXml
-     * @expectedException \Exception
      */
     public function testCreateFromXmlArgsNoTitle()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\Exception::class);
 
         Film::createFromXml(new \SimpleXMLElement("<film><year>1900</year></film>"));
     }
@@ -1944,6 +2040,8 @@ class FilmTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         Film::createFromXml(new \SimpleXMLElement("<film><title>film_title</title></film>"));
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -2165,10 +2263,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::getFilmFromDb
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testGetFilmFromDbNullFilmId()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = Film::getFilmFromDb(null);
     }
@@ -2176,10 +2275,11 @@ class FilmTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Film::getFilmFromDb
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testGetFilmFromDbEmptyFilmId()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $film = Film::getFilmFromDb("");
     }
@@ -2188,6 +2288,8 @@ class FilmTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         DatabaseTest::resetDb();
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -2202,6 +2304,8 @@ class FilmTest extends RatingSyncTestCase
 
         $site = new RatingSyncSite($username_site);
         $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename, $username_rs);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -2213,6 +2317,8 @@ class FilmTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $film = Film::getFilmFromDb(1, Constants::TEST_RATINGSYNC_USERNAME);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -2313,10 +2419,11 @@ class FilmTest extends RatingSyncTestCase
     
     /**
      * @covers \RatingSync\Film::saveToDb
-     * @expectedException \InvalidArgumentException
      */
     public function testSaveToDbEmptyTitle()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         // Test
         $film = new Film();

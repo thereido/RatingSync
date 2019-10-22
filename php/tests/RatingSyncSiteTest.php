@@ -10,12 +10,12 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 require_once "SiteRatingsChild.php";
 require_once "ImdbTest.php";
 require_once "XfinityTest.php";
-require_once "10DatabaseTest.php";
+require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
 class RatingSyncSiteTest extends RatingSyncTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setup();
         //$this->verbose = true;
@@ -23,20 +23,22 @@ class RatingSyncSiteTest extends RatingSyncTestCase
 
     /**
      * @covers            \RatingSync\RatingSyncSite::__construct
-     * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromNull()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         new RatingSyncSite(null);
     }
 
     /**
      * @covers            \RatingSync\RatingSyncSite::__construct
-     * @expectedException \InvalidArgumentException
      */
     public function testCannotBeConstructedFromEmptyUsername()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         new RatingSyncSite("");
     }
@@ -48,12 +50,16 @@ class RatingSyncSiteTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new RatingSyncSite(Constants::TEST_RATINGSYNC_USERNAME);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     public function testResetDb()
     {$this->start(__CLASS__, __FUNCTION__);
 
         DatabaseTest::resetDb();
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     public static function setupRatings()
@@ -250,6 +256,8 @@ class RatingSyncSiteTest extends RatingSyncTestCase
                 $this->assertEquals("2015-01-06", date_format($rating->getYourRatingDate(), 'Y-m-d'), "Rating date");
             }
         }
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**

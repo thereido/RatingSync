@@ -13,12 +13,12 @@ require_once "ImdbTest.php";
 require_once "NetflixTest.php";
 require_once "AmazonTest.php";
 require_once "XfinityTest.php";
-require_once "10DatabaseTest.php";
+require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
 class SourceTest extends RatingSyncTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setup();
         //$this->verbose = true;
@@ -31,6 +31,8 @@ class SourceTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $source = new Source(Constants::SOURCE_JINNI);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -147,10 +149,11 @@ class SourceTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Source::setCriticScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testCriticScoreCannotBeSetWithNonNumericalString()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_RATINGSYNC);
         $source->setCriticScore("Not an int");
@@ -159,10 +162,11 @@ class SourceTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Source::setCriticScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testCriticScoreCannotBeSetWithNegative()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_RATINGSYNC);
         $source->setCriticScore(-1);
@@ -171,10 +175,11 @@ class SourceTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Source::setCriticScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testCriticScoreCannotBeSetWithHigherThan10()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_RATINGSYNC);
         $source->setCriticScore(11);
@@ -259,10 +264,11 @@ class SourceTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Source::setUserScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testUserScoreCannotBeSetWithNonNumericalString()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_RATINGSYNC);
         $source->setUserScore("Not an int");
@@ -271,10 +277,11 @@ class SourceTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Source::setUserScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testUserScoreCannotBeSetWithNegative()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_RATINGSYNC);
         $source->setUserScore(-1);
@@ -283,10 +290,11 @@ class SourceTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Source::setUserScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testUserScoreCannotBeSetWithHigherThan10()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_RATINGSYNC);
         $source->setUserScore(11);
@@ -345,10 +353,11 @@ class SourceTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Source::setRating
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithString()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setRating("Bad_Arg");
@@ -357,10 +366,11 @@ class SourceTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Source::setRating
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithNumber()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setRating(7);
@@ -375,6 +385,8 @@ class SourceTest extends RatingSyncTestCase
 
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setRating(null);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -386,15 +398,18 @@ class SourceTest extends RatingSyncTestCase
 
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setRating("");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
      * @covers  \RatingSync\Source::setRating
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetRatingWithMismatchedSource()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_JINNI);
         $rating = new Rating(Constants::SOURCE_IMDB);
@@ -411,6 +426,8 @@ class SourceTest extends RatingSyncTestCase
         $source = new Source(Constants::SOURCE_JINNI);
         $rating = new Rating($source->getName());
         $source->setRating($rating);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -475,10 +492,11 @@ class SourceTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Source::setYourScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetYourScoreWithBadArg()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setYourScore("Bad_Score");
@@ -493,15 +511,18 @@ class SourceTest extends RatingSyncTestCase
 
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setYourScore(null);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
      * @covers  \RatingSync\Source::setYourScore
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSetYourScoreWithEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setYourScore("");
@@ -516,6 +537,8 @@ class SourceTest extends RatingSyncTestCase
 
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setYourScore(7);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -565,6 +588,8 @@ class SourceTest extends RatingSyncTestCase
 
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setImage(null);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -576,6 +601,8 @@ class SourceTest extends RatingSyncTestCase
 
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setImage("");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -587,6 +614,8 @@ class SourceTest extends RatingSyncTestCase
 
         $source = new Source(Constants::SOURCE_JINNI);
         $source->setImage("http://example.com/example.jpg");
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -644,15 +673,18 @@ class SourceTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         DatabaseTest::resetDb();
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
      * @covers  \RatingSync\Source::saveFilmSourceToDb
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testAddNewFilmSourceSetNull()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_IMDB);
         $source->saveFilmSourceToDb(null);
@@ -661,10 +693,11 @@ class SourceTest extends RatingSyncTestCase
     /**
      * @covers  \RatingSync\Source::saveFilmSourceToDb
      * @depends testObjectCanBeConstructed
-     * @expectedException \InvalidArgumentException
      */
     public function testSaveNewFilmSourceSetEmpty()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
 
         $source = new Source(Constants::SOURCE_IMDB);
         $source->saveFilmSourceToDb("");
@@ -674,10 +707,11 @@ class SourceTest extends RatingSyncTestCase
      * @covers  \RatingSync\Source::saveFilmSourceToDb
      * @depends testObjectCanBeConstructed
      * @depends testResetDb
-     * @expectedException \Exception
      */
     public function testSaveNewFilmSourceFilmNotFound()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\Exception::class);
 
         DatabaseTest::resetDb();
         $source = new Source(Constants::SOURCE_IMDB);
@@ -696,6 +730,8 @@ class SourceTest extends RatingSyncTestCase
         $site = new SiteRatingsChild($username_site);
         $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
         $films = $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename, $username_rs);
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 
     /**
@@ -888,6 +924,8 @@ class SourceTest extends RatingSyncTestCase
         $this->assertStringStartsWith("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT_TV."/".TEST_XFINITY_UNIQUENAME_TV."/full-episodes#filter=online", $tvSeriesForXfinity->getSource(Constants::SOURCE_XFINITY)->getStreamUrl(), "tvSeriesForXfinity stream");
         $this->assertEquals("http://xfinitytv.comcast.net/watch/".TEST_XFINITY_UNIQUEALT_TV."/".TEST_XFINITY_UNIQUENAME_TV."/full-episodes#filter=online&episode=".TEST_XFINITY_UNIQUEEPISODE_TV, $tvEpisodeForXfinity->getSource(Constants::SOURCE_XFINITY)->getStreamUrl(), "tvEpisodeForXfinity stream");
         */
+
+        $this->assertTrue(true); // Making sure we made it this far
     }
 }
 
