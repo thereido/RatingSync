@@ -3,7 +3,7 @@
 /PHPPage.php
 /php/cache/*.*
 /php/output/*.*
-/php/tests/unit_tests.cmd
+/php/tests/punit.bat
 /php/tests/Temp*
 /php/tests/cache/*
 /php/tests/testfile/*Copy.xml
@@ -16,3 +16,4 @@
 /HTMLPage.html
 /.vscode/*
 /.project
+php/sandbox.php
