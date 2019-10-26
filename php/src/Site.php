@@ -297,7 +297,7 @@ abstract class Site
                     $page = $this->http->getPage($this->getFilmDetailPageUrl($film));
                     $this->cacheFilmDetailPage($page, $film);
                 } catch (\Exception $e) {
-                    logDebug($e, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                    logDebug($e, __CLASS__."::".__FUNCTION__.":".__LINE__);
                     throw $e;
                 }
             }
@@ -318,7 +318,7 @@ abstract class Site
         try {
             $this->getFilmDetailFromWebsite($film);
         } catch (\Exception $e) {
-            logDebug("Exception " . $e->getCode() . " " . $e->getMessage(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+            logDebug("Exception " . $e->getCode() . " " . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
             $film = null;
         }
         
