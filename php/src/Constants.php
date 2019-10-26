@@ -15,6 +15,7 @@ class Constants
     const SOURCE_JINNI                  = "Jinni";
     const SOURCE_IMDB                   = "IMDb";
     const SOURCE_OMDBAPI                = "OMDb";
+    const SOURCE_TMDBAPI                = "TMDb";
     const SOURCE_NETFLIX                = "Netflix";
     const SOURCE_RT                     = "RottenTomatoes";
     const SOURCE_XFINITY                = "xfinity";
@@ -44,6 +45,7 @@ class Constants
     const DB_MODE                       = DomainConstants::DB_MODE;
     const RS_HOST                       = DomainConstants::RS_HOST;
     const OMDB_API_KEY                  = DomainConstants::OMDB_API_KEY;
+    const TMDB_API_KEY                  = DomainConstants::TMDB_API_KEY;
     const SITE_NAME                     = DomainConstants::SITE_NAME;
     const FAVICON_URL                   = DomainConstants::FAVICON_URL;
 

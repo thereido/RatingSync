@@ -49,6 +49,7 @@ class Source
         $validSources = array(Constants::SOURCE_JINNI,
                                 Constants::SOURCE_IMDB,
                                 Constants::SOURCE_OMDBAPI,
+                                Constants::SOURCE_TMDBAPI,
                                 Constants::SOURCE_RATINGSYNC,
                                 Constants::SOURCE_NETFLIX,
                                 Constants::SOURCE_RT,
