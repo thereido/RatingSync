@@ -15,6 +15,19 @@ class Film {
     const CONTENT_TV_SERIES = 'TvSeries';
     const CONTENT_TV_SEASON = 'TvSeason';
     const CONTENT_TV_EPISODE = 'TvEpisode';
+
+    // Data from a data source (OMDb, TMDb...)
+    const ATTR_IMDB_ID = "imdbId";
+    const ATTR_PARENT_ID = "parentId";
+    const ATTR_TITLE = "title";
+    const ATTR_YEAR = "year";
+    const ATTR_CONTENT_TYPE = "contentType";
+    const ATTR_SEASON_COUNT = "seasonCount";
+    const ATTR_SEASON_NUM = "season";
+    const ATTR_EPISODE_NUM = "episodeNumber";
+    const ATTR_EPISODE_TITLE = "episodeTitle";
+    const ATTR_GENRES = "genres";
+    const ATTR_DIRECTORS = "directors";
     
     protected $id;
     protected $parentId;
@@ -1146,16 +1159,16 @@ class Film {
         return $film;
     }
 
-    public static function getFilmFromDbByImdb($imdbUniqueName, $username = null)
+    public static function getFilmFromDbByUniqueName($uniqueName, $sourceName, $username = null)
     {
-        if (empty($imdbUniqueName)) {
-            throw new \InvalidArgumentException("imdbUniqueName arg must not be empty");
+        if (empty($uniqueName)) {
+            throw new \InvalidArgumentException("uniqueName arg must not be empty");
         }
         $db = getDatabase();
         
         $query  = "SELECT film_id FROM film_source";
-        $query .= " WHERE source_name='" . Constants::SOURCE_IMDB . "'";
-        $query .= "   AND uniqueName='" . $imdbUniqueName . "'";
+        $query .= " WHERE source_name='$sourceName'";
+        $query .= "   AND uniqueName='$uniqueName'";
         $result = $db->query($query);
         if ($result->num_rows != 1) {
             return null;

@@ -292,13 +292,13 @@ function getFilmApi($username, $filmId, $imdbUniqueName, $getFromRsDbOnly)
     if (!empty($filmId)) {
         $film = Film::getFilmFromDb($filmId, $username);
     } elseif (!empty($imdbUniqueName)) {
-        $film = Film::getFilmFromDbByImdb($imdbUniqueName, $username);
+        $film = Film::getFilmFromDbByUniqueName($imdbUniqueName, Constants::SOURCE_IMDB, $username);
         if (empty($film) && !$getFromRsDbOnly) {
             $searchTerms = array();
             $searchTerms["uniqueName"] = $imdbUniqueName;
             $searchTerms["sourceName"] = "IMDb";
             $searchResponseJson = search($searchTerms, $username);
-            $film = Film::getFilmFromDbByImdb($imdbUniqueName, $username);
+            $film = Film::getFilmFromDbByUniqueName($imdbUniqueName, Constants::SOURCE_IMDB, $username);
         }
     }
 

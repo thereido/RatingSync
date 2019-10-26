@@ -13,6 +13,11 @@ require_once "Constants.php";
  */
 class Source
 {
+    // Attr names in JSON from a source
+    const ATTR_UNIQUE_NAME = "uniqueName";
+    const ATTR_IMAGE = "source_image";
+    const ATTR_CRITIC_SCORE = "criticScore";
+    const ATTR_USER_SCORE = "userScore";
     
     protected $name;
     protected $image;
