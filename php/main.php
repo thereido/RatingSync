@@ -195,6 +195,7 @@ function search($searchTerms, $username = null)
     if (empty($uniqueName) && (empty($title) || empty($year))) {
         return null;
     }
+//*RT* Look for changes needed for TMDb
     
     $newFilm = false;
     $searchDbResult = Film::searchDb($searchTerms, $username);

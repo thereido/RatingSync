@@ -30,6 +30,10 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
     const REQUEST_SEARCH_MOVIE = "search_movie";
     const REQUEST_SEARCH_SERIES = "search_tv";
     const REQUEST_SEARCH_MULTI = "search_multi";
+    const REQUEST_CREDITS = "credits";
+    const ATTR_CREDITS_CREDITS = "credits_credits";
+    const ATTR_CREDITS_CAST = "credits_cast";
+    const ATTR_CREDITS_CREW = "credits_crew";
 
     public function __construct()
     {
@@ -95,10 +99,73 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         return $url;
     }
 
+    protected function buildUrlSeasonDetail($uniqueName, $seasonNum)
+    {
+        if ( empty($uniqueName) ) {
+            throw new \InvalidArgumentException(__CLASS__."::".__FUNCTION__.' $uniqueName must not be empty');
+        } elseif ( empty($seasonNum) ) {
+            throw new \InvalidArgumentException(__CLASS__."::".__FUNCTION__.' $seasonNum must not be empty');
+        }
+
+        $url = static::BASE_API_URL;
+        $url .= "/tv/" . $this->getSourceIdFromUniqueName($uniqueName);
+        $url .= "/season/$seasonNum";
+        $url .= "?api_key=" . Constants::TMDB_API_KEY;
+
+        return $url;
+    }
+
+    protected function validateResponseSeasonDetail($json)
+    {
+        $errorMsg = $this->getErrorMessageFromResponse($json);
+
+        if (empty($errorMsg) && !array_key_exists("id", $json)) {
+            $errorMsg = "Response appears to be invalid because there is no 'id' in the response.";
+        }
+
+        if (empty($errorMsg)) {
+            return "Success";
+        } else {
+            return $errorMsg;
+        }
+    }
+
+    protected function validateResponseCredits($json)
+    {
+        $errorMsg = $this->getErrorMessageFromResponse($json);
+
+        if (empty($errorMsg) && !array_key_exists("id", $json)) {
+            $errorMsg = "Response appears to be invalid because there is no 'id' in the response.";
+        }
+
+        if (empty($errorMsg)) {
+            return "Success";
+        } else {
+            return $errorMsg;
+        }
+    }
+
+    protected function getErrorMessageFromResponse($json)
+    {
+        $errorMsg = null;
+        if (empty($json) && !is_array($json)) {
+            $errorMsg = "Response from json_decode() failed";
+        } elseif (array_key_exists("status_code", $json)) {
+            $statusCode = $json["status_code"];
+            $statusMsg = $json["status_message"];
+            $errorMsg = "Status from the API... Status code: $statusCode, Status message: $statusMsg";
+        }
+
+        return $errorMsg;
+    }
+
     /**
      * Search the api with the attr available in this $film. If there is a
      * single result, return the uniqueName. Supports Movie and TV Series. Does
      * NOT support TV Episode.
+     * 
+     * NOTICE: If $film contentType is empty, it will be set when results are
+     *         found.
      * 
      * Attr combinations supported for Movie & TV Series
      *   - IMDb ID
@@ -135,14 +202,15 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         if (!empty($imdbId)) {
             $url = "/find/$imdbId" . "?external_source=imdb_id";
             $url .= "&api_key=" . $this->apiKey;
-            $json = $this->apiRequest($url);
-            $response = json_decode($json, true);
+            $response = $this->apiRequest($url);
+            $json = json_decode($response, true);
 
             $contentTypeFound = null;
-            $result = $this->getFindResultFromResponse($response, $contentTypeFound);
+            $result = $this->getFindResultFromResponse($json, $contentTypeFound);
             if (!empty($result)) {
                 if (empty($contentType)) {
                     $contentType = $contentTypeFound;
+                    $film->setContentType($contentType);
                 }
 
                 // Don't use the result unless it matches the contentType expected
@@ -150,13 +218,6 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
                     $uniqueName = $this->getUniqueNameFromSourceId($result["id"], $contentType);
                 }
             }
-        }
-
-        // We have title and year, but no contentType
-        // Do a multi search by title and year
-        //   NOT SUPPORTED (multi search not supported)
-        if (empty($uniqueName) && empty($contentType) && !empty($title) && !empty($year)) {
-            throw new \Exception(__CLASS__."::".__FUNCTION__." with a null \$film->contentType is not supported");
         }
 
         // We have contentType, title and year
@@ -182,14 +243,21 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
                 $url .= "?query=" . htmlspecialchars($title);
                 $url .= "&".$yearParamName."=" . htmlspecialchars($year);
                 $url .= "&api_key=" . $this->apiKey;
-                $json = $this->apiRequest($url);
-                $response = json_decode($json, true);
+                $response = $this->apiRequest($url);
+                $json = json_decode($response, true);
 
-                $result = $this->getSearchResultFromResponse($response, $title, $year, $contentType);
+                $result = $this->getSearchResultFromResponse($json, $title, $year, $contentType);
                 if (!empty($result)) {
                     $uniqueName = $this->getUniqueNameFromSourceId($result["id"], $contentType);
                 }
             }
+        }
+
+        // We have title and year, but no contentType
+        // Do a multi search by title and year
+        //   NOT SUPPORTED (multi search not supported)
+        if (empty($uniqueName) && empty($contentType) && !empty($title) && !empty($year)) {
+            throw new \Exception(__CLASS__."::".__FUNCTION__." with a null \$film->contentType is not supported");
         }
 
         return $uniqueName;
@@ -199,7 +267,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
      * Get detail from the TMDb API and populate the $film param.
      * 
      * Responses from the TMDb API for movie, tv and episode. These api
-     * responses are not complete, just the fields we use.
+     * responses are not complete, just the fields we currently use.
      * 
      * Movie - https://api.themoviedb.org/3/movie/76341?api_key={api_key}
      * {
@@ -216,64 +284,108 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
      *   "title": "Fight Club",
      *   "vote_average": 7.8,
      * }
+     * 
+     * TV Series - https://api.themoviedb.org/3/tv/1399?api_key={api_key}
+     * {
+     *   "first_air_date":	"2011-04-17",
+     *   "genres": [
+     *     {
+     *       "id": 18,
+     *       "name": "Drama"
+     *     }
+     *   ],
+     *   "id":	1399,
+     *   "last_air_date":	"2019-05-19"
+     *   "name":	"Game of Thrones",
+     *   "number_of_seasons":	8,
+     *   "original_name":	"Game of Thrones",
+     *   "poster_path":	"/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg",
+     *   "status":	"Ended",
+     *   "vote_average":	8.1
+     * }
+     * 
+     * TV Episode - https://api.themoviedb.org/3/tv/1399/season/2/episode/4?api_key={api_key}
+     * {
+     *   "air_date":	"2012-04-22",
+     *   "episode_number":	4,
+     *   "name":	"Garden of Bones",
+     *   "id":	63069,
+     *   "season_number":	2,
+     *   "still_path":	"/4j2j97GFao2NX4uAtMbr0Qhx2K2.jpg",
+     *   "vote_average":	8.216
+     * }
      */
-    public function populateFilmDetail($filmJson, $film, $overwrite)
+    public function populateFilmDetail($json, $film, $overwrite = true)
     {
-//*RT* Not implemented yet. This is straight from OMDbApi.
-/*RT*/logDebug("Begin populateFilmDetail()");
         if (is_null($film) || !($film instanceof Film) ) {
-            throw new \InvalidArgumentException('arg1 must be a Film object');
+            throw new \InvalidArgumentException("\$film param must be a Film object");
+        } elseif (empty($film->getContentType())) {
+            throw new \InvalidArgumentException("contentType must not be empty in the \$film param");
+        } elseif ($film->getContentType() == Film::CONTENT_TV_EPISODE) {
+            if (empty($film->getParentId())) {
+                throw new \InvalidArgumentException("parentId must not be empty in the \$film param when \$film is a TV episode");
+            }
+        } elseif (!is_array($json)) {
+            throw new \InvalidArgumentException("\$json param ($json) must be an array");
         }
 
-        // Get values from the API result
-        $uniqueName = array_value_by_key("id", $filmJson, "N/A");
-        $imdbId = array_value_by_key("imdb_id", $filmJson, "N/A");
-        $parentId = null;
-        $title = array_value_by_key("title", $filmJson, "N/A");
-        $episodeTitle = null;
-        $year = null;
-        $releaseDate = array_value_by_key("release_date", $filmJson, "N/A");
-        if (!empty($releaseDate)) { $year = substr($releaseDate, 0, 4); }
-        $firstAirDate = array_value_by_key("first_air_date", $filmJson, "N/A");
-        $image = array_value_by_key("poster_path", $filmJson, "N/A");
-        $userScore = array_value_by_key("vote_average", $filmJson, "N/A");
-        $seasonCount = array_value_by_key("totalSeasons", $filmJson, "N/A");
-        $season = array_value_by_key("Season", $filmJson, "N/A");
-        $episodeNum = array_value_by_key("Episode", $filmJson, "N/A");
-        $genres = array_value_by_key("Genre", $filmJson);
-        $directors = array_value_by_key("Director", $filmJson);
-        $seriesID = array_value_by_key("seriesID", $filmJson, "N/A");
+        $contentType = $film->getContentType();
 
-        if (empty($year) && !empty($firstAirDate)) {
-            $year = substr($firstAirDate, 0, 4);
-        }
-
-        $contentType = Film::CONTENT_FILM;
-        $type = array_value_by_key("Type", $filmJson);
-        if ("series" == $type) { $contentType = Film::CONTENT_TV_SERIES; }
-        if ("episode" == $type) { $contentType = Film::CONTENT_TV_EPISODE; }
-
-        if ($contentType == Film::CONTENT_TV_EPISODE) {
-            // In RatingSync title is the series title and episodeTitle is separate
-            // In TMDbAPI title is the episode title
-            $episodeTitle = $title;
-            $title = null;
-
-            // Get the series' title
-            $searchTerms = array("uniqueName" => $seriesID, "sourceName" => Constants::SOURCE_TMDBAPI);
-            $seriesSearchResult = search($searchTerms);
-            if (!empty($seriesSearchResult) && !empty($seriesSearchResult["match"])) {
-                $seriesFilm = $seriesSearchResult["match"];
-                $parentId = $seriesFilm->getId();
-                $title = $seriesFilm->getTitle();
+        // This function is used by different kinds of request, which affects
+        // the format of the responses. Before calling this function someone
+        // adds an attr to the response to show which request this response 
+        // goes with.
+        $requestName = array_value_by_key(self::ATTR_API_REQUEST_NAME, $json);
+        if ($requestName == self::REQUEST_DETAIL) {
+            if ($contentType == Film::CONTENT_FILM) {
+                $requestName = self::REQUEST_DETAIL_MOVIE;
+            }
+            elseif ($contentType == Film::CONTENT_TV_SERIES) {
+                $requestName = self::REQUEST_DETAIL_SERIES;
+            }
+            elseif ($contentType == Film::CONTENT_TV_EPISODE) {
+                $requestName = self::REQUEST_DETAIL_EPISODE;
             }
         }
 
-        $metacriticScore = array_value_by_key("Metascore", $filmJson, "N/A");
-        if (empty($metacriticScore) || !is_numeric($metacriticScore)) {
-            $metacriticScore = null;
-        } else {
-            $metacriticScore = $metacriticScore*10/100;
+        // Get values from the API result
+                        // Film object attrs
+        $title =        $this->jsonValue($json, Film::ATTR_TITLE, $requestName);
+        $year =         $this->jsonValue($json, Film::ATTR_YEAR, $requestName);
+        $parentId =     $film->getParentId();
+        $seasonCount =  $this->jsonValue($json, Film::ATTR_SEASON_COUNT, $requestName);
+        $season =       $this->jsonValue($json, Film::ATTR_SEASON_NUM, $requestName);
+        $episodeNum =   $this->jsonValue($json, Film::ATTR_EPISODE_NUM, $requestName);
+        $episodeTitle = $this->jsonValue($json, Film::ATTR_EPISODE_TITLE, $requestName);
+        $genres =       $this->jsonValue($json, Film::ATTR_GENRES, $requestName);
+        $directors =    $this->jsonValue($json, Film::ATTR_DIRECTORS, $requestName);
+                        // Source object attrs
+        $sourceId =     $this->jsonValue($json, Source::ATTR_UNIQUE_NAME, $requestName);
+        $uniqueName =   $this->getUniqueNameFromSourceId($sourceId, $contentType);
+        $criticScore =  $this->jsonValue($json, Source::ATTR_CRITIC_SCORE, $requestName); // Not available
+        $userScore =    $this->jsonValue($json, Source::ATTR_USER_SCORE, $requestName);
+        $image =        $this->jsonValue($json, Source::ATTR_IMAGE, $requestName);
+                        // IMDb attrs
+        $imdbId =       $this->jsonValue($json, Film::ATTR_IMDB_ID, $requestName);
+        $imdbUserScore = null;
+        if (!empty($imdbId)) {
+            $imdbUserScore = $userScore;
+        }
+
+        // Some content types need special steps to get certain attrs
+        if ($contentType == Film::CONTENT_FILM || $contentType == Film::CONTENT_TV_SERIES) {
+            // Get directors
+            $creditsJson = $this->getCreditsFromApi($film);
+            $directors = $this->jsonValue($creditsJson, Film::ATTR_DIRECTORS, self::REQUEST_CREDITS);
+        }
+        elseif ($contentType == Film::CONTENT_TV_EPISODE) {
+            // For a episode, "title" is the series' title. Episode title has
+            // it's own attr (episodeTitle). The request does not give us the
+            // series' title, so get it from the db
+            $seriesFilm = Film::getFilmParentFromDb($film);
+            if (!empty($seriesFilm)) {
+                $title = $seriesFilm->getTitle();
+            }
         }
 
         // Get the existing values
@@ -293,7 +405,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         $existingDirectorCount = count($film->getDirectors());
 
         // Init/Replace the values when appropiate
-        if ($overwrite || is_null($existingUniqueName)) { $film->setImage($uniqueName, $this->sourceName); }
+        if ($overwrite || is_null($existingUniqueName)) { $film->setUniqueName($uniqueName, $this->sourceName); }
         if ($overwrite || is_null($existingParentId)) { $film->setParentId($parentId); }
         if ($overwrite || is_null($existingTitle)) { $film->setTitle($title); }
         if ($overwrite || is_null($existingEpisodeTitle)) { $film->setEpisodeTitle($episodeTitle); }
@@ -304,245 +416,37 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         if ($overwrite || is_null($existingSeason)) { $film->setSeason($season); }
         if ($overwrite || is_null($existingEpisodeNum)) { $film->setEpisodeNumber($episodeNum); }
         if ($overwrite || is_null($existingUserScore)) { $film->setUserScore($userScore, $this->sourceName); }
-        if ($overwrite || is_null($existingCriticScore)) { $film->setCriticScore($metacriticScore, $this->sourceName); }
 
         if ($overwrite || $existingGenreCount == 0) {
             $film->removeAllGenres();
-            if ("N/A" != $genres) {
-                $genreTok = strtok($genres, ",");
-                while ($genreTok !== false) {
-                    $film->addGenre(trim($genreTok));
-                    $genreTok = strtok(",");
+            if (is_array($genres)) {
+                foreach ($genres as $genre) {
+                    $film->addGenre($genre);
                 }
             }
         }
 
-        $existingDirectorCount = count($film->getDirectors());
         if ($overwrite || $existingDirectorCount == 0) {
             $film->removeAllDirectors();
-            if ("N/A" != $directors) {
-                $directorTok = strtok($directors, ",");
-                while ($directorTok !== false) {
-                    $film->addDirector(trim($directorTok));
-                    $directorTok = strtok(",");
+            if (is_array($directors)) {
+                foreach ($directors as $director) {
+                    $film->addDirector($director);
                 }
             }
         }
 
         // Copy data from TMDb to IMDb
         $existingIMDbUniqueName = $film->getUniqueName(Constants::SOURCE_IMDB);
-        $existingIMDbImage = $film->getImage(Constants::SOURCE_IMDB);
         $existingIMDbUserScore = $film->getUserScore(Constants::SOURCE_IMDB);
-        $existingIMDbCriticScore = $film->getCriticScore(Constants::SOURCE_IMDB);
-        if ($overwrite || is_null($existingIMDbUniqueName)) { $film->setUniqueName($uniqueName, Constants::SOURCE_IMDB); }
-        if ($overwrite || is_null($existingIMDbImage)) { $film->setImage($image, Constants::SOURCE_IMDB); }
-        if ($overwrite || is_null($existingIMDbUserScore)) { $film->setUserScore($userScore, Constants::SOURCE_IMDB); }
-        if ($overwrite || is_null($existingIMDbCriticScore)) { $film->setCriticScore($metacriticScore, Constants::SOURCE_IMDB); }
+        if ($overwrite || is_null($existingIMDbUniqueName)) { $film->setUniqueName($imdbId, Constants::SOURCE_IMDB); }
+        if ($overwrite || is_null($existingIMDbUserScore)) { $film->setUserScore($imdbUserScore, Constants::SOURCE_IMDB); }
     }
 
     protected function printResultToLog($filmJson) {
         $title = array_value_by_key("Title", $filmJson);
         $year = array_value_by_key("Year", $filmJson);
-        $uniqueName = array_value_by_key("imdbID", $filmJson);
-        $seriesID = array_value_by_key("seriesID", $filmJson);
         $msg = "TMDb API result: $title ($year)";
-        $msg .= " imdbID/seriesID $uniqueName/$seriesID";
         logDebug($msg, __CLASS__."::".__FUNCTION__." ".__LINE__);
-    }
-
-    /**
-     * Return URL within a website for searching films. The URL does not
-     * include the base URL.  
-     *
-     * @param array $args See the child class version of args
-     *
-     * @return string URL of a rating page
-     */
-    public function getSearchUrl($args)
-    {
-//*RT* Not implemented yet. This is straight from OMDbApi.
-//*RT* Is it needed?
-        if (empty($args) || !is_array($args) || empty($args["query"]))
-        {
-            throw new \InvalidArgumentException('$args must be an array with key "query" (non-empty)');
-        }
-        
-        $searchUrl = "&s=" . urlencode($args["query"]);
-
-        return $searchUrl;
-    }
-
-    /**
-     * Return URL for a search for one result.  
-     *
-     * @param RatingSync/Film $film Has the info for searching
-     *
-     * @return string URL of a rating page
-     */
-    public function buildUrlSearchForSingleFilm($film)
-    {
-//*RT* Not implemented yet. This is straight from OMDbApi.
-//*RT* Is it needed?
-        $uniqueName = $film->getUniqueName($this->sourceName);
-        $title = $film->getTitle();
-        $episodeTitle = $film->getEpisodeTitle();
-        $year = $film->getYear();
-        $contentType = $film->getContentType();
-
-        if (empty($uniqueName)) {
-            $uniqueNameIMDb = $film->getUniqueName(Constants::SOURCE_IMDB);
-            if (!empty($uniqueNameIMDb)) {
-                $uniqueName = $uniqueNameIMDb;
-            }
-        }
-        
-        if (empty($uniqueName) && (empty($title) || empty($year)) && (empty($episodeTitle) || empty($year)))
-        {
-            throw new \InvalidArgumentException('film param must have a uniqueName or a year and either title or episodeTitle.');
-        }
-        
-        $filmUrl = "";
-        if (!empty($uniqueName)) {
-            // "Search" by IMDb ID
-            $filmUrl .= "&i=$uniqueName";
-        }
-        elseif (!empty($year) && (!empty($title) || !empty($episodeTitle))) {
-            // Year
-            $filmUrl .= "&y=$year";
-
-            // Title
-            $titleToUse = $title;
-            if (empty($titleToUse)) {
-                $titleToUse = $episodeTitle;
-            }
-            elseif ($contentType == Film::CONTENT_TV_EPISODE && !empty($episodeTitle)) {
-                $titleToUse = $episodeTitle;
-            }
-            $filmUrl .= "&t=" . urlencode($titleToUse);
-                
-            // Content Type
-            if ($contentType == Film::CONTENT_TV_EPISODE) {
-                $filmUrl .= "&type=episode";
-            } elseif ($contentType == Film::CONTENT_TV_SERIES) {
-                $filmUrl .= "&type=series";
-            } elseif ($contentType == Film::CONTENT_FILM) {
-                $filmUrl .= "&type=movie";
-            }
-        }
-
-        return $filmUrl;
-    }
-    
-    public function getSeason($seriesFilmId, $seasonNum, $refreshCache = 60)
-    {
-//*RT* Not implemented yet. This is straight from OMDbApi.
-//*RT* Is it needed?
-        if (is_null($seriesFilmId) || !is_numeric($seriesFilmId) ) {
-            throw new \InvalidArgumentException('arg1 must be numeric');
-        } else if (is_null($seasonNum) || !is_numeric($seasonNum) ) {
-            throw new \InvalidArgumentException('arg2 must be numeric');
-        }
-
-        $resultAsArray = null;
-
-        $film = Film::getFilmFromDb($seriesFilmId);
-        if (empty($film)) {
-            return false;
-        }
-        $uniqueName = $film->getUniqueName($this->sourceName);
-
-        $seasonPage = $this->getSeasonPageFromCache($seriesFilmId, $seasonNum, $refreshCache);
-        if (empty($seasonPage) && !empty($uniqueName)) {
-            try {
-                $seasonUrl = "&i=" . $uniqueName . "&Season=" . $seasonNum;
-                $seasonPage = $this->http->getPage($seasonUrl);
-                $resultAsArray =  json_decode($seasonPage, true);
-        
-                if (!empty($resultAsArray) && $resultAsArray["Response"] != "False") {
-                    $this->cacheSeasonPage($seasonPage, $seriesFilmId, $seasonNum);
-                }
-            } catch (\Exception $e) {
-                logDebug($e, __FUNCTION__." ".__LINE__);
-                throw $e;
-            }
-        } else {
-            $resultAsArray =  json_decode($seasonPage, true);
-        }
-
-        if (empty($resultAsArray) || !is_array($resultAsArray) || $resultAsArray["Response"] == "False") {
-            $errorMsg = "TMDb API request failed. Title=".$film->getTitle();
-            $errorMsg .= ", Season=" . $seasonNum;
-            $errorMsg .= ", UniqueName=" . $uniqueName;
-            logDebug($errorMsg, __CLASS__."::".__FUNCTION__." ".__LINE__, true, $resultAsArray);
-            throw new \Exception('TMDbApi season failed');
-        }
-
-        return $resultAsArray;
-    }
-
-    /**
-     * Return a cached film page if the cached file is fresh enough. The $refreshCache param
-     * shows if it is fresh enough. If the file is out of date return null.
-     *
-     * @param \RatingSync\Film $film         Film needed detail for
-     * @param int              $seasonNum    Season looking for within the film (series)
-     * @param int|0            $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
-     *
-     * @return string File as a string. Null if the use cache is not used.
-     */
-    public function getSeasonPageFromCache($seriesFilmId, $seasonNum, $refreshCache = Constants::USE_CACHE_NEVER)
-    {
-//*RT* Not implemented yet. This is straight from OMDbApi.
-//*RT* Is it needed?
-        if (Constants::USE_CACHE_NEVER == $refreshCache) {
-            return null;
-        }
-        
-        $filename = Constants::cacheFilePath() . $this->sourceName;
-        $filename .= "_series_" . $seriesFilmId;
-        $filename .= "_season_" . $seasonNum;
-        $filename .= ".html";
-
-        if (!file_exists($filename) || (filesize($filename) == 0)) {
-            return null;
-        }
-
-        $fileDateString = filemtime($filename);
-        if (!$fileDateString) {
-            return null;
-        }
-
-        $filestamp = date("U", $fileDateString);
-        $refresh = true;
-        if (Constants::USE_CACHE_ALWAYS == $refreshCache || ($filestamp >= (time() - ($refreshCache * 60)))) {
-            $refresh = false;
-        }
-        
-        if (!$refresh) {
-            return file_get_contents($filename);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Cache a season result in json in a local file
-     *
-     * @param string    $page           File as a string
-     * @param int       $seriesFilmId   DB film_id of the series
-     * @param int       $seasonNum      Season number
-     */
-    public function cacheSeasonPage($page, $seriesFilmId, $seasonNum)
-    {
-//*RT* Not implemented yet. This is straight from OMDbApi.
-//*RT* Is it needed?
-        $filename = Constants::cacheFilePath() . $this->sourceName;
-        $filename .= "_series_" . $seriesFilmId;
-        $filename .= "_season_" . $seasonNum;
-        $filename .= ".html";
-        $fp = fopen($filename, "w");
-        fwrite($fp, $page);
-        fclose($fp);
     }
 
     /**
@@ -733,6 +637,53 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
 
         return $parentUniqueName;
     }
+    
+    /**
+     * Return JSON from a request to the API to get credits for a movie. This
+     * only supports movies (no TV series or episodes).
+     */
+    public function getCreditsFromApi($film)
+    {
+        if (! $film instanceof Film ) {
+            throw new \InvalidArgumentException(__CLASS__."::".__FUNCTION__." must be given a Film object");
+        } elseif ( empty($film->getContentType()) || !in_array($film->getContentType(), array(Film::CONTENT_FILM, Film::CONTENT_TV_SERIES)) ) {
+            throw new \InvalidArgumentException(__CLASS__."::".__FUNCTION__." \$film must be a movie or tv series (contentType=".$film->getContentType().")");
+        } elseif ( empty($film->getUniqueName($this->sourceName)) ) {
+            throw new \InvalidArgumentException(__CLASS__."::".__FUNCTION__." \$film must have a uniqueName (".$film->getUniqueName($this->sourceName).") for ".$this->sourceName);
+        }
+        
+        $uniqueName = $film->getUniqueName($this->sourceName);
+        $contentType = $film->getContentType();
+        $validationMsg = "";
+        $url = "/";
+        if ($contentType == Film::CONTENT_FILM) {
+            $url .= "movie/";
+        } elseif ($contentType == Film::CONTENT_TV_SERIES) {
+            $url .= "tv/";
+        }
+        $url .= $this->getSourceIdFromUniqueName($uniqueName);
+        $url .= "/credits";
+        $url .= "?api_key=" . Constants::TMDB_API_KEY;
+
+        try {
+
+            $response = $this->apiRequest($url);
+            $json = json_decode($response, true);
+            $validationMsg = $this->validateResponseCredits($json);
+        
+            if (empty($json) || !is_array($json) || $validationMsg != "Success") {
+                throw new \Exception($validationMsg);
+            }
+
+        } catch (\Exception $e) {
+            $errorMsg = "TMDb API 'Credits' request failed. $url";
+            $errorMsg .= "\n$e";
+            logDebug($errorMsg, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            throw $e;
+        }
+
+        return $json;
+    }
 
     protected function jsonIndex($attrName, $requestName)
     {
@@ -754,6 +705,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             $tmdbIndexes[Source::ATTR_IMAGE] = "poster_path";
             $tmdbIndexes[Source::ATTR_CRITIC_SCORE] = null;
             $tmdbIndexes[Source::ATTR_USER_SCORE] = "vote_average";
+            $tmdbIndexes[self::ATTR_CREDITS_CREW] = null;
         }
         elseif ($requestName == static::REQUEST_DETAIL_SERIES) {
             $tmdbIndexes[Film::ATTR_IMDB_ID] = "imdb_id";
@@ -771,6 +723,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             $tmdbIndexes[Source::ATTR_IMAGE] = "poster_path";
             $tmdbIndexes[Source::ATTR_CRITIC_SCORE] = null;
             $tmdbIndexes[Source::ATTR_USER_SCORE] = "vote_average";
+            $tmdbIndexes[self::ATTR_CREDITS_CREW] = null;
 
         }
         elseif ($requestName == static::REQUEST_DETAIL_EPISODE) {
@@ -789,6 +742,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             $tmdbIndexes[Source::ATTR_IMAGE] = "still_path";
             $tmdbIndexes[Source::ATTR_CRITIC_SCORE] = null;
             $tmdbIndexes[Source::ATTR_USER_SCORE] = "vote_average";
+            $tmdbIndexes[self::ATTR_CREDITS_CREW] = "crew";
         }
         elseif ($requestName == static::REQUEST_FIND) {
 
@@ -802,6 +756,14 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         elseif ($requestName == static::REQUEST_SEARCH_MULTI) {
 
         }
+        elseif ($requestName == static::REQUEST_CREDITS) {
+            $tmdbIndexes[Film::ATTR_DIRECTORS] = null;
+            $tmdbIndexes[self::ATTR_CREDITS_CREDITS] = "credits";
+            $tmdbIndexes[self::ATTR_CREDITS_CAST] = "cast";
+            $tmdbIndexes[self::ATTR_CREDITS_CREW] = "crew";
+        }
+
+        $tmdbIndexes[self::ATTR_API_REQUEST_NAME] = self::ATTR_API_REQUEST_NAME;
 
         return array_value_by_key($attrName, $tmdbIndexes);
     }
@@ -810,7 +772,20 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
     {
         $value = null;
 
-        if ($attrName == Film::ATTR_GENRES) {
+        if ($attrName == Film::ATTR_YEAR) {
+            $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_MOVIE);
+            if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_SERIES); }
+            if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_EPISODE); }
+            if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_FIND); }
+            if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_SEARCH_MOVIE); }
+            if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_SEARCH_SERIES); }
+            if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_SEARCH_MULTI); }
+
+            if (!empty($dateStr)) {
+                $value = substr($dateStr, 0, 4);
+            }
+        }
+        elseif ($attrName == Film::ATTR_GENRES) {
             $genres = null;
             $tmdbGenres = parent::jsonValue($json, $attrName, $requestName);
             if (is_array($tmdbGenres)) {
@@ -821,6 +796,23 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             }
 
             $value = $genres;
+        }
+        elseif ($attrName == Film::ATTR_DIRECTORS) {
+            $directors = null;
+            $crew = parent::jsonValue($json, self::ATTR_CREDITS_CREW, $requestName);
+
+            if (!empty($crew)) {
+                foreach ($crew as $crewMember) {
+                    if ($crewMember["job"] == "Director") {
+                        if (is_null($directors)) {
+                            $directors = array();
+                        }
+                        $directors[] = $crewMember["name"];
+                    }
+                }
+            }
+
+            $value = $directors;
         }
         else {
             $value = parent::jsonValue($json, $attrName, $requestName);

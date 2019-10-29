@@ -148,6 +148,10 @@ abstract class ApiClient
 
     public function jsonValue($json, $attrName, $requestName)
     {
+        if (!is_array($json)) {
+            return null;
+        }
+
         $value = null;
         $index = $this->jsonIndex($attrName, $requestName);
         if (!empty($index)) {
