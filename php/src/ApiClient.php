@@ -24,14 +24,14 @@ abstract class ApiClient
      *
      * @return string File as a string. Null if the use cache is not used.
      */
-    public function readFromCache($filename, $refreshCache = Constants::USE_CACHE_NEVER, $prependCachePath = true)
+    public function readFromCache($filename, $refreshCache = Constants::USE_CACHE_ALWAYS, $prependCachePath = true)
     {
         if (Constants::USE_CACHE_NEVER == $refreshCache) {
             return null;
         }
 
         if ($prependCachePath) {
-            $filename .= Constants::cacheFilePath() . $filename;
+            $filename = Constants::cacheFilePath() . $filename;
         }
         
         if (!file_exists($filename) || (filesize($filename) == 0)) {

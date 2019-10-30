@@ -10,7 +10,7 @@ interface iMediaDbApiClient
 {
     public function getFilmBySearch($searchTerms);
     public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = 60);
-    public function getFilmDetailFromApi($film, $overwrite = true, $refreshCache = Constants::USE_CACHE_NEVER);
+    public function getFilmDetailFromApi($film, $overwrite = true, $refreshCache = 60);
 }
 
 /**
@@ -25,6 +25,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
     protected $sourceName;
     protected $apiKey;
     protected $cacheFileExtension = "json";
+    protected $defaultRefreshCache = 60; // minutes
 
     // Abstract function inherited by ApiClient
     abstract protected function jsonIndex($attrName, $requestName);
@@ -75,14 +76,18 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
      *
      * @return string File as a string. Null if the use cache is not used.
      */
-    public function getFilmDetailFromCache($film, $refreshCache = Constants::USE_CACHE_NEVER)
+    public function getFilmDetailFromCache($film, $refreshCache = null)
     {
+        if (is_null($refreshCache)) {
+            $refreshCache = $this->defaultRefreshCache;
+        }
+
         if (Constants::USE_CACHE_NEVER == $refreshCache) {
             return null;
         }
 
         $filename = $this->getFilmDetailCacheFilename($film);
-        return $this->readFromCache($filename);
+        return $this->readFromCache($filename, $refreshCache);
     }
 
     /**
@@ -101,10 +106,10 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
     {
         $filename = $this->sourceName . "_film_";
         $filename .= $film->getUniqueName($this->sourceName);
-        if (!empty($film->getSeason($this->sourceName))) {
+        if (!empty($film->getSeason())) {
             $filename .= "_" . $film->getSeason($this->sourceName);
         }
-        if (!empty($film->getEpisodeNumber($this->sourceName))) {
+        if (!empty($film->getEpisodeNumber())) {
             $filename .= "_" . $film->getEpisodeNumber($this->sourceName);
         }
         $filename .= "." . $this->cacheFileExtension;
@@ -115,8 +120,12 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
     /*
      * @param int|0 $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
      */
-    public function getFilmDetailFromApi($film, $overwrite = true, $refreshCache = Constants::USE_CACHE_NEVER)
+    public function getFilmDetailFromApi($film, $overwrite = true, $refreshCache = null)
     {
+        if (is_null($refreshCache)) {
+            $refreshCache = $this->defaultRefreshCache;
+        }
+        
         $filmJson = $this->getJsonFromApiForFilmDetail($film, $overwrite, $refreshCache);
         $this->populateFilmDetail($filmJson, $film, $overwrite);
     }
@@ -124,12 +133,16 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
     /*
      * @param int|0 $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
      */
-    public function getJsonFromApiForFilmDetail($film, $overwrite = true, $refreshCache = Constants::USE_CACHE_NEVER)
+    public function getJsonFromApiForFilmDetail($film, $overwrite = true, $refreshCache = null)
     {
         if (is_null($film) || !($film instanceof Film) ) {
             throw new \InvalidArgumentException('arg1 must be a Film object');
         }
 
+        if (is_null($refreshCache)) {
+            $refreshCache = $this->defaultRefreshCache;
+        }
+        
         $filmJson = null;
         
         // Use it from cache if it is fresh
@@ -158,6 +171,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
                     }
                     if ( !empty($filmJson) &&  !empty($filmJson["id"])) {
                         $filmJson[self::ATTR_API_REQUEST_NAME] = self::REQUEST_DETAIL;
+                        $response = json_encode($filmJson);
                         $this->cacheFilmDetail($response, $film);
                     }
                 } catch (\Exception $e) {
@@ -222,7 +236,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         return $film;
     }
     
-    public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = 60)
+    public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = null)
     {
         if (is_null($seriesFilmId) || !is_numeric($seriesFilmId) ) {
             throw new \InvalidArgumentException("\$seriesFilmId ($seriesFilmId) must be numeric");
@@ -230,6 +244,10 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
             throw new \InvalidArgumentException("\$seasonNum ($seasonNum) must be numeric");
         }
 
+        if (is_null($refreshCache)) {
+            $refreshCache = $this->defaultRefreshCache;
+        }
+        
         $seasonJson = null;
         $validationMsg = null;
 
@@ -239,8 +257,8 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         }
         $uniqueName = $film->getUniqueName($this->sourceName);
 
-        $seasonPage = $this->getSeasonPageFromCache($seriesFilmId, $seasonNum, $refreshCache);
-        if (empty($seasonPage) && !empty($uniqueName)) {
+        $response = $this->getSeasonFromCache($seriesFilmId, $seasonNum, $refreshCache);
+        if (empty($response) && !empty($uniqueName)) {
             try {
                 $url = $this->buildUrlSeasonDetail($uniqueName, $seasonNum);
                 $response = $this->apiRequest($url, null, false, false);
@@ -248,7 +266,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
                 $validationMsg = $this->validateResponseSeasonDetail($seasonJson);
         
                 if ($validationMsg == "Success") {
-                    $this->cacheSeasonPage($response, $seriesFilmId, $seasonNum);
+                    $this->cacheSeason($response, $seriesFilmId, $seasonNum);
                 }
                 else {
                     $errorMsg = "TMDb API 'Season Detail' request failed.";
@@ -267,7 +285,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
             $seasonJson =  json_decode($response, true);
         }
 
-        return $resultAsArray;
+        return $seasonJson;
     }
 
     /**
@@ -280,57 +298,41 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
      *
      * @return string File as a string. Null if the use cache is not used.
      */
-    public function getSeasonPageFromCache($seriesFilmId, $seasonNum, $refreshCache = Constants::USE_CACHE_NEVER)
+    public function getSeasonFromCache($seriesFilmId, $seasonNum, $refreshCache = null)
     {
-//*RT* Not implemented yet. This is straight from OMDbApi.
+        if (is_null($refreshCache)) {
+            $refreshCache = $this->defaultRefreshCache;
+        }
+        
         if (Constants::USE_CACHE_NEVER == $refreshCache) {
             return null;
         }
-        
-        $filename = Constants::cacheFilePath() . $this->sourceName;
-        $filename .= "_series_" . $seriesFilmId;
-        $filename .= "_season_" . $seasonNum;
-        $filename .= ".html";
 
-        if (!file_exists($filename) || (filesize($filename) == 0)) {
-            return null;
-        }
-
-        $fileDateString = filemtime($filename);
-        if (!$fileDateString) {
-            return null;
-        }
-
-        $filestamp = date("U", $fileDateString);
-        $refresh = true;
-        if (Constants::USE_CACHE_ALWAYS == $refreshCache || ($filestamp >= (time() - ($refreshCache * 60)))) {
-            $refresh = false;
-        }
-        
-        if (!$refresh) {
-            return file_get_contents($filename);
-        } else {
-            return null;
-        }
+        $filename = $this->getSeasonCacheFilename($seriesFilmId, $seasonNum);
+        return $this->readFromCache($filename, $refreshCache);
     }
 
     /**
      * Cache a season result in json in a local file
      *
-     * @param string    $page           File as a string
+     * @param string    $apiResult      File as a string
      * @param int       $seriesFilmId   DB film_id of the series
      * @param int       $seasonNum      Season number
      */
-    public function cacheSeasonPage($page, $seriesFilmId, $seasonNum)
+    public function cacheSeason($apiResult, $seriesFilmId, $seasonNum)
     {
-//*RT* Not implemented yet. This is straight from OMDbApi.
-        $filename = Constants::cacheFilePath() . $this->sourceName;
+        $filename = $this->getSeasonCacheFilename($seriesFilmId, $seasonNum);
+        $this->writeToCache($apiResult, $filename);
+    }
+
+    protected function getSeasonCacheFilename($seriesFilmId, $seasonNum)
+    {
+        $filename = $this->sourceName;
         $filename .= "_series_" . $seriesFilmId;
         $filename .= "_season_" . $seasonNum;
-        $filename .= ".html";
-        $fp = fopen($filename, "w");
-        fwrite($fp, $page);
-        fclose($fp);
+        $filename .= "." . $this->cacheFileExtension;
+
+        return $filename;
     }
 }
 
