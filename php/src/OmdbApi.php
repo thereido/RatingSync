@@ -129,7 +129,7 @@ class OmdbApi extends \RatingSync\Site
         $existingDirectorCount = count($film->getDirectors());
 
         // Init/Replace the values when appropiate
-        if ($overwrite || is_null($existingUniqueName)) { $film->setImage($uniqueName, $this->sourceName); }
+        if ($overwrite || is_null($existingUniqueName)) { $film->setUniqueName($uniqueName, $this->sourceName); }
         if ($overwrite || is_null($existingParentId)) { $film->setParentId($parentId); }
         if ($overwrite || is_null($existingTitle)) { $film->setTitle($title); }
         if ($overwrite || is_null($existingEpisodeTitle)) { $film->setEpisodeTitle($episodeTitle); }
