@@ -23,9 +23,10 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
                               ,Film::CONTENT_SHORTFILM => "sf"
                               ,Film::CONTENT_TV_MOVIE => "tm"
                              );
-    const REQUEST_DETAIL_MOVIE = "movie";
-    const REQUEST_DETAIL_SERIES = "tv_series";
-    const REQUEST_DETAIL_EPISODE = "tv_episode";
+    const REQUEST_DETAIL_MOVIE = "detail_movie";
+    const REQUEST_DETAIL_SERIES = "detail_tv_series";
+    const REQUEST_DETAIL_EPISODE = "detail_tv_episode";
+    const REQUEST_DETAIL_SEASON = "detail_tv_season";
     const REQUEST_FIND = "find";
     const REQUEST_SEARCH_MOVIE = "search_movie";
     const REQUEST_SEARCH_SERIES = "search_tv";
@@ -763,6 +764,30 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             $tmdbIndexes[Source::ATTR_USER_SCORE] = "vote_average";
             $tmdbIndexes[self::ATTR_CREDITS_CREW] = "crew";
         }
+        elseif ($requestName == static::REQUEST_DETAIL_SEASON) {
+            $tmdbIndexes[Film::ATTR_IMDB_ID] = null;
+            $tmdbIndexes[Film::ATTR_PARENT_ID] = null;
+            $tmdbIndexes[Film::ATTR_TITLE] = "name"; // Season
+            $tmdbIndexes[Film::ATTR_TITLE ."_". Film::CONTENT_TV_EPISODE] = "name"; // Episodes
+            $tmdbIndexes[Film::ATTR_YEAR] = "air_date"; // Season
+            $tmdbIndexes[Film::ATTR_YEAR ."_". Film::CONTENT_TV_EPISODE] = "air_date"; // Epsiodes
+            $tmdbIndexes[Film::ATTR_CONTENT_TYPE] = null;
+            $tmdbIndexes[Film::ATTR_SEASON_COUNT] = null;
+            $tmdbIndexes[Film::ATTR_SEASON_NUM] = "season_number"; // Season
+            $tmdbIndexes[Film::ATTR_SEASON_NUM ."_". Film::CONTENT_TV_EPISODE] = "season_number"; // Episodes
+            $tmdbIndexes[Film::ATTR_EPISODE_NUM] = "episode_number";
+            $tmdbIndexes[Film::ATTR_EPISODE_TITLE] = "name";
+            $tmdbIndexes[Film::ATTR_GENRES] = null;
+            $tmdbIndexes[Film::ATTR_DIRECTORS] = null;
+            $tmdbIndexes[Source::ATTR_UNIQUE_NAME] = "id"; // Season
+            $tmdbIndexes[Source::ATTR_UNIQUE_NAME ."_". Film::CONTENT_TV_EPISODE] = "id"; // Episodes
+            $tmdbIndexes[Source::ATTR_IMAGE] = "poster_path"; // Season
+            $tmdbIndexes[Source::ATTR_IMAGE ."_". Film::CONTENT_TV_EPISODE] = "still_path"; // Episodes
+            $tmdbIndexes[Source::ATTR_CRITIC_SCORE] = null;
+            $tmdbIndexes[Source::ATTR_USER_SCORE] = null; // Season
+            $tmdbIndexes[Source::ATTR_USER_SCORE ."_". Film::CONTENT_TV_EPISODE] = "vote_average"; // Episodes
+            $tmdbIndexes[self::ATTR_CREDITS_CREW ."_". Film::CONTENT_TV_EPISODE] = "crew"; // Episodes
+        }
         elseif ($requestName == static::REQUEST_FIND) {
 
         }
@@ -799,7 +824,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
     {
         $value = null;
 
-        if ($attrName == Film::ATTR_YEAR) {
+        if ($attrName == Film::ATTR_YEAR || $attrName == Film::ATTR_YEAR ."_". Film::CONTENT_TV_EPISODE) {
             $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_MOVIE);
             if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_SERIES); }
             if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_EPISODE); }
@@ -807,6 +832,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_SEARCH_MOVIE); }
             if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_SEARCH_SERIES); }
             if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_SEARCH_MULTI); }
+            if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_SEASON); }
 
             if (!empty($dateStr)) {
                 $value = substr($dateStr, 0, 4);
@@ -825,16 +851,15 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             $value = $genres;
         }
         elseif ($attrName == Film::ATTR_DIRECTORS) {
-            $directors = null;
+            $directors = array();
             $crew = parent::jsonValue($json, self::ATTR_CREDITS_CREW, $requestName);
 
-            if (!empty($crew)) {
+            if (is_array($crew)) {
                 foreach ($crew as $crewMember) {
-                    if ($crewMember["job"] == "Director") {
-                        if (is_null($directors)) {
-                            $directors = array();
-                        }
-                        $directors[] = $crewMember["name"];
+                    $job = array_value_by_key("job", $crewMember);
+                    if ($job == "Director") {
+                        $name = array_value_by_key("name", $crewMember);
+                        $directors[] = $name;
                     }
                 }
             }

@@ -15,6 +15,9 @@ class TmdbApiExt extends \RatingSync\TmdbApi {
     function _getSearchResultFromResponse($response, $title, $year, $searchType) { return $this->getSearchResultFromResponse($response, $title, $year, $searchType); }
     function _getUniqueNameFromSourceId($sourceId, $contentType) { return $this->getUniqueNameFromSourceId($sourceId, $contentType); }
     function _validateResponseCredits($json) { return $this->validateResponseCredits($json); }
+    function _getSourceIdFromUniqueName($uniqueName) { return $this->getSourceIdFromUniqueName($uniqueName); }
+    function _getFilmDetailCacheFilename($film) { return $this->getFilmDetailCacheFilename($film); }
+    function _getSeasonCacheFilename($seriesFilmId, $seasonNum) { return $this->getSeasonCacheFilename($seriesFilmId, $seasonNum); }
 }
 
 class TmdbApiTest extends RatingSyncTestCase
@@ -391,10 +394,6 @@ class TmdbApiTest extends RatingSyncTestCase
     public function testSearchForUniqueNameMovieWithoutContentType()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        // This might be supported in the future. If that happens this
-        // line about the exception can be removed.
-        $this->expectException(\Exception::class);
-
         // Setup
         $api = new TmdbApi();
         $film = new Film();
@@ -436,10 +435,6 @@ class TmdbApiTest extends RatingSyncTestCase
     public function testSearchForUniqueNameTvSeriesWithoutContentType()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        // This might be supported in the future. If that happens this
-        // line about the exception can be removed.
-        $this->expectException(\Exception::class);
-
         // Setup
         $api = new TmdbApi();
         $film = new Film();
@@ -450,7 +445,7 @@ class TmdbApiTest extends RatingSyncTestCase
         $uniqueName = $api->searchForUniqueName($film);
 
         // Verify
-        $this->assertEquals(self::TESTFILM_PRIMARY_TMDBID, $uniqueName);
+        $this->assertEquals(self::TESTSERIES_TMDBID, $uniqueName);
     }
     
     /**
@@ -786,7 +781,7 @@ class TmdbApiTest extends RatingSyncTestCase
         $this->assertEquals(self::TESTFILM_PRIMARY_YEAR, $year, "Year");
         $this->assertEquals(self::TESTFILM_PRIMARY_IMAGE, $image, "Image");
         $this->assertEquals(self::TESTFILM_PRIMARY_GENRES, $genres, "Genres");
-        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $userScore, "User score");
+        $this->assertEquals(round(self::TESTFILM_PRIMARY_USER_SCORE), round($userScore), "User score");
         $this->assertEquals(TmdbApi::REQUEST_DETAIL, $requestName, "Request name");
 
                 // TV Series
@@ -812,7 +807,7 @@ class TmdbApiTest extends RatingSyncTestCase
         $this->assertEquals(self::TESTSERIES_IMAGE, $image, "Image");
         $this->assertEquals(self::TESTSERIES_SEASON_COUNT, $seasonCount, "Season count");
         $this->assertEquals(self::TESTSERIES_GENRES, $genres, "Genres");
-        $this->assertEquals(self::TESTSERIES_USER_SCORE, $userScore, "User score");
+        $this->assertEquals(round(self::TESTSERIES_USER_SCORE), round($userScore), "User score");
         $this->assertEquals(TmdbApi::REQUEST_DETAIL, $requestName, "Request name");
     }
     
@@ -854,7 +849,7 @@ class TmdbApiTest extends RatingSyncTestCase
         $this->assertEquals(self::TESTEPISODE_SEASON_NUM, $seasonNum, "Season number");
         $this->assertEquals(self::TESTEPISODE_EPISODE_NUM, $episodeNum, "Episode number");
         $this->assertEquals(self::TESTEPISODE_DIRECTORS, $directors, "Directors");
-        $this->assertEquals(self::TESTEPISODE_USER_SCORE, $userScore, "Season number");
+        $this->assertEquals(round(self::TESTEPISODE_USER_SCORE), round($userScore), "User score");
         $this->assertEquals(TmdbApi::REQUEST_DETAIL, $requestName, "Request name");
     }
     
@@ -1010,32 +1005,32 @@ class TmdbApiTest extends RatingSyncTestCase
         $sourceName = $api->_getSourceName();
         $overwrite = true;
 
-                // Movie
-        // Setup
+        // Movie
+                // Setup
         $film = new Film();
         $film->setContentType(Film::CONTENT_FILM);
         $film->setUniqueName(self::TESTFILM_PRIMARY_TMDBID, $sourceName);
-        $json = $api->getJsonFromApiForFilmDetail($film, true, Constants::USE_CACHE_ALWAYS);
+        $json = $api->getJsonFromApiForFilmDetail($film, true, Constants::USE_CACHE_NEVER);
 
-        // Test
+                // Test
         $api->populateFilmDetail($json, $film, $overwrite);
 
-        // Verify
-            // Film data
+                // Verify
+                    // Film data
         $this->assertEquals(self::TESTFILM_PRIMARY_TITLE, $film->getTitle(), "title");
         $this->assertEquals(self::TESTFILM_PRIMARY_YEAR, $film->getYear(), "year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
         $this->assertEmpty($film->getImage(), 'Film image should be empty');
         $this->assertEquals(self::TESTFILM_PRIMARY_GENRES, $film->getGenres(), "genres");
         $this->assertEquals(self::TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), "directors");    
-            // TMDb API source-specific
+                    // TMDb API source-specific
         $this->assertEquals(self::TESTFILM_PRIMARY_IMAGE, $film->getImage($sourceName), "source image");
         $this->assertEquals(self::TESTFILM_PRIMARY_TMDBID, $film->getUniqueName($sourceName), "uniqueName");
         $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($sourceName), "user score");    
-            // IMDb source-specific
+                    // IMDb source-specific
         $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), "IMDb ID");
-        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), "IMDb user score");    
-            // Not available in the detail request
+        $this->assertEquals(round(self::TESTFILM_PRIMARY_USER_SCORE), round($film->getUserScore(Constants::SOURCE_IMDB)), "IMDb user score");    
+                    // Not available in the detail request
         $rating = $film->getRating($sourceName);
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date');
@@ -1044,29 +1039,29 @@ class TmdbApiTest extends RatingSyncTestCase
         $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), "IMDb critic score");
         $this->assertNull($film->getImage(Constants::SOURCE_IMDB), "IMDb image");
 
-                // TV Series
-        // Setup
+        // TV Series
+                // Setup
         $film = new Film();
         $film->setContentType(Film::CONTENT_TV_SERIES);
         $film->setUniqueName(self::TESTSERIES_TMDBID, $sourceName);
-        $json = $api->getJsonFromApiForFilmDetail($film, true, Constants::USE_CACHE_ALWAYS);
+        $json = $api->getJsonFromApiForFilmDetail($film, true, Constants::USE_CACHE_NEVER);
 
-        // Test
+                // Test
         $api->populateFilmDetail($json, $film, $overwrite);
 
-        // Verify
-            // Film data
+                // Verify
+                    // Film data
         $this->assertEquals(self::TESTSERIES_TITLE, $film->getTitle(), "title");
         $this->assertEquals(self::TESTSERIES_YEAR, $film->getYear(), "year");
         $this->assertEquals(Film::CONTENT_TV_SERIES, $film->getContentType(), 'Content Type');
         $this->assertEmpty($film->getImage(), 'Film image should be empty');
         $this->assertEquals(self::TESTSERIES_GENRES, $film->getGenres(), "genres");
         $this->assertEquals(self::TESTSERIES_DIRECTORS, $film->getDirectors(), "directors");    
-            // TMDb API source-specific
+                    // TMDb API source-specific
         $this->assertEquals(self::TESTSERIES_IMAGE, $film->getImage($sourceName), "source image");
         $this->assertEquals(self::TESTSERIES_TMDBID, $film->getUniqueName($sourceName), "uniqueName");
-        $this->assertEquals(self::TESTSERIES_USER_SCORE, $film->getUserScore($sourceName), "user score");   
-            // Not available in the detail request
+        $this->assertEquals(round(self::TESTSERIES_USER_SCORE), round($film->getUserScore($sourceName)), "user score");   
+                    // Not available in the detail request
         $rating = $film->getRating($sourceName);
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date');
@@ -1077,8 +1072,8 @@ class TmdbApiTest extends RatingSyncTestCase
         $this->assertNull($film->getUserScore(Constants::SOURCE_IMDB), "IMDb user score");
         $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), "IMDb critic score");
 
-                // TV Episode
-        // Setup
+        // TV Episode
+                // Setup
         $film = new Film();
         $film->setContentType(Film::CONTENT_TV_EPISODE);
         $film->setUniqueName(self::TESTEPISODE_TMDBID, $sourceName);
@@ -1086,24 +1081,24 @@ class TmdbApiTest extends RatingSyncTestCase
         $film->setEpisodeNumber(self::TESTEPISODE_EPISODE_NUM);
         $parent = Film::getFilmFromDbByUniqueName(self::TESTSERIES_TMDBID, $sourceName);
         $film->setParentId($parent->getId());
-        $json = $api->getJsonFromApiForFilmDetail($film, true, Constants::USE_CACHE_ALWAYS);
+        $json = $api->getJsonFromApiForFilmDetail($film, true, Constants::USE_CACHE_NEVER);
 
-        // Test
+                // Test
         $api->populateFilmDetail($json, $film, $overwrite);
 
-        // Verify
-            // Film data
+                // Verify
+                    // Film data
         $this->assertEquals(self::TESTEPISODE_TITLE, $film->getTitle(), "title");
         $this->assertEquals(self::TESTEPISODE_EPISODETITLE, $film->getEpisodeTitle(), 'Episode Title');
         $this->assertEquals(self::TESTEPISODE_YEAR, $film->getYear(), "year");
         $this->assertEquals(Film::CONTENT_TV_EPISODE, $film->getContentType(), 'Content Type');
         $this->assertEmpty($film->getImage(), 'Film image should be empty');
         $this->assertEquals(self::TESTEPISODE_DIRECTORS, $film->getDirectors(), "directors");    
-            // TMDb API source-specific
+                    // TMDb API source-specific
         $this->assertEquals(self::TESTEPISODE_IMAGE, $film->getImage($sourceName), "source image");
         $this->assertEquals(self::TESTEPISODE_TMDBID, $film->getUniqueName($sourceName), "uniqueName");
-        $this->assertEquals(self::TESTEPISODE_USER_SCORE, $film->getUserScore($sourceName), "user score");   
-            // Not available in the detail request
+        $this->assertEquals(round(self::TESTEPISODE_USER_SCORE), round($film->getUserScore($sourceName)), "user score");   
+                    // Not available in the detail request
         $rating = $film->getRating($sourceName);
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date');
@@ -1303,11 +1298,529 @@ class TmdbApiTest extends RatingSyncTestCase
         $this->assertEquals(Film::CONTENT_TV_SERIES, $film->getContentType(), "contentType");
     }
 
-    //*RT* Test getSeasonFromApi()
+    /**
+     * @covers \RatingSync\TmdbApi::cacheFilmDetail
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCacheFilmDetail()
+    {$this->start(__CLASS__, __FUNCTION__);
 
-    //*RT* Test getSeasonPageFromCache()
+        // Setup
+        $api = new TmdbApiExt();
+        $sourceName = $api->_getSourceName();
+        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_filmdetail.json";
 
-    //*RT* Test cacheSeasonPage()
+        // Movie
+                // Setup
+        $uniqueName = "mvTestUniqueName";
+        $film = new Film();
+        $film->setContentType(Film::CONTENT_FILM);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $filmDetailStr);
+        fclose($fp);
+        
+                // Test
+        $api->cacheFilmDetail($filmDetailStr, $film);
+
+                // Verify
+        $testFilename = Constants::cacheFilePath() . $sourceName . "_film_" . $film->getUniqueName($sourceName) . "." . TmdbApi::API_RESPONSE_FORMAT;
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        unlink($verifyFilename);
+        unlink($testFilename);
+
+        // TV Series
+                // Setup
+        $uniqueName = "tsTestUniqueName";
+        $film = new Film();
+        $film->setContentType(Film::CONTENT_TV_SERIES);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $filmDetailStr);
+        fclose($fp);
+        
+                // Test
+        $api->cacheFilmDetail($filmDetailStr, $film);
+
+                // Verify
+        $testFilename = Constants::cacheFilePath() . $sourceName . "_film_" . $film->getUniqueName($sourceName) . "." . TmdbApi::API_RESPONSE_FORMAT;
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        unlink($verifyFilename);
+        unlink($testFilename);
+
+        // TV Episode
+                // Setup
+        $uniqueName = "teTestUniqueName";
+        $film = new Film();
+        $film->setContentType(Film::CONTENT_TV_EPISODE);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $film->setSeason(2);
+        $film->setEpisodeNumber(4);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $filmDetailStr);
+        fclose($fp);
+        
+                // Test
+        $api->cacheFilmDetail($filmDetailStr, $film);
+
+                // Verify
+        $testFilename = Constants::cacheFilePath() . $sourceName . "_film_" . $film->getUniqueName($sourceName);
+        $testFilename .= "_" . $film->getSeason() . "_" . $film->getEpisodeNumber() . "." . TmdbApi::API_RESPONSE_FORMAT;
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        unlink($verifyFilename);
+        unlink($testFilename);
+
+        // TV Episode without Season
+                // Setup
+        $uniqueName = "teTestUniqueName";
+        $film = new Film();
+        $film->setContentType(Film::CONTENT_TV_EPISODE);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $film->setEpisodeNumber(4);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $filmDetailStr);
+        fclose($fp);
+        
+                // Test
+        $api->cacheFilmDetail($filmDetailStr, $film);
+
+                // Verify
+        $testFilename = Constants::cacheFilePath() . $sourceName . "_film_" . $film->getUniqueName($sourceName);
+        $testFilename .= "_" . $film->getEpisodeNumber() . "." . TmdbApi::API_RESPONSE_FORMAT;
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        unlink($verifyFilename);
+        unlink($testFilename);
+
+        // TV Episode without Episode number
+                // Setup
+        $uniqueName = "teTestUniqueName";
+        $film = new Film();
+        $film->setContentType(Film::CONTENT_TV_EPISODE);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $film->setSeason(2);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $filmDetailStr);
+        fclose($fp);
+        
+                // Test
+        $api->cacheFilmDetail($filmDetailStr, $film);
+
+                // Verify
+        $testFilename = Constants::cacheFilePath() . $sourceName . "_film_" . $film->getUniqueName($sourceName);
+        $testFilename .= "_" . $film->getSeason() . "." . TmdbApi::API_RESPONSE_FORMAT;
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        unlink($verifyFilename);
+        unlink($testFilename);
+
+        // TV Episode without season or epsiode number
+                // Setup
+        $uniqueName = "teTestUniqueName";
+        $film = new Film();
+        $film->setContentType(Film::CONTENT_TV_EPISODE);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $filmDetailStr);
+        fclose($fp);
+        
+                // Test
+        $api->cacheFilmDetail($filmDetailStr, $film);
+
+                // Verify
+        $testFilename = Constants::cacheFilePath() . $sourceName . "_film_" . $film->getUniqueName($sourceName);
+        $testFilename .= "." . TmdbApi::API_RESPONSE_FORMAT;
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        unlink($verifyFilename);
+        unlink($testFilename);
+    }
+
+    /**
+     * @covers \RatingSync\TmdbApi::getFilmDetailFromCache
+     * @depends testCacheFilmDetail
+     */
+    public function testGetFilmDetailFromCache()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $api = new TmdbApiExt();
+        $sourceName = $api->_getSourceName();
+
+        // Movie
+                // Setup
+        $uniqueName = "mvTestUniqueName";
+        $contentType = Film::CONTENT_FILM;
+        $film = new Film();
+        $film->setContentType($contentType);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        $api->cacheFilmDetail($filmDetailStr, $film);
+        
+                // Test
+        $contents = $api->getFilmDetailFromCache($film);
+
+                // Verify
+        $this->assertFalse(empty($contents), "Contents should not be empty");
+        $this->assertEquals($filmDetailStr, $contents, "Contents should match the test cache file");
+        $testFilename = Constants::cacheFilePath() . $api->_getFilmDetailCacheFilename($film);
+        unlink($testFilename);
+
+        // TV Series
+                // Setup
+        $uniqueName = "tsTestUniqueName";
+        $contentType = Film::CONTENT_TV_SERIES;
+        $film = new Film();
+        $film->setContentType($contentType);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        $api->cacheFilmDetail($filmDetailStr, $film);
+        
+                // Test
+        $contents = $api->getFilmDetailFromCache($film);
+
+                // Verify
+        $this->assertFalse(empty($contents), "Contents should not be empty");
+        $this->assertEquals($filmDetailStr, $contents, "Contents should match the test cache file");
+        $testFilename = Constants::cacheFilePath() . $api->_getFilmDetailCacheFilename($film);
+        unlink($testFilename);
+
+        // TV Episode
+                // Setup
+        $uniqueName = "teTestUniqueName";
+        $contentType = Film::CONTENT_TV_EPISODE;
+        $film = new Film();
+        $film->setContentType($contentType);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        $api->cacheFilmDetail($filmDetailStr, $film);
+        
+                // Test
+        $contents = $api->getFilmDetailFromCache($film);
+
+                // Verify
+        $this->assertFalse(empty($contents), "Contents should not be empty");
+        $this->assertEquals($filmDetailStr, $contents, "Contents should match the test cache file");
+        $testFilename = Constants::cacheFilePath() . $api->_getFilmDetailCacheFilename($film);
+        unlink($testFilename);
+
+        // TV Episode without Season
+                // Setup
+        $uniqueName = "teTestUniqueName";
+        $contentType = Film::CONTENT_TV_EPISODE;
+        $film = new Film();
+        $film->setContentType($contentType);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        $api->cacheFilmDetail($filmDetailStr, $film);
+        
+                // Test
+        $contents = $api->getFilmDetailFromCache($film);
+
+                // Verify
+        $this->assertFalse(empty($contents), "Contents should not be empty");
+        $this->assertEquals($filmDetailStr, $contents, "Contents should match the test cache file");
+        $testFilename = Constants::cacheFilePath() . $api->_getFilmDetailCacheFilename($film);
+        unlink($testFilename);
+
+        // TV Episode without Episode number
+                // Setup
+        $uniqueName = "teTestUniqueName";
+        $contentType = Film::CONTENT_TV_EPISODE;
+        $film = new Film();
+        $film->setContentType($contentType);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        $api->cacheFilmDetail($filmDetailStr, $film);
+        
+                // Test
+        $contents = $api->getFilmDetailFromCache($film);
+
+                // Verify
+        $this->assertFalse(empty($contents), "Contents should not be empty");
+        $this->assertEquals($filmDetailStr, $contents, "Contents should match the test cache file");
+        $testFilename = Constants::cacheFilePath() . $api->_getFilmDetailCacheFilename($film);
+        unlink($testFilename);
+
+        // TV Episode without season or epsiode number
+                // Setup
+        $uniqueName = "teTestUniqueName";
+        $contentType = Film::CONTENT_TV_EPISODE;
+        $film = new Film();
+        $film->setContentType($contentType);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        $api->cacheFilmDetail($filmDetailStr, $film);
+        
+                // Test
+        $contents = $api->getFilmDetailFromCache($film);
+
+                // Verify
+        $this->assertFalse(empty($contents), "Contents should not be empty");
+        $this->assertEquals($filmDetailStr, $contents, "Contents should match the test cache file");
+        $testFilename = Constants::cacheFilePath() . $api->_getFilmDetailCacheFilename($film);
+        unlink($testFilename);
+    }
+
+    /**
+     * @covers \RatingSync\TmdbApi::getFilmDetailFromCache
+     * @depends testCacheFilmDetail
+     * @depends testGetFilmDetailFromCache
+     */
+    public function testGetFilmDetailFromCacheNeverCache()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $api = new TmdbApiExt();
+        $sourceName = $api->_getSourceName();
+        $uniqueName = "mvTestUniqueName";
+        $contentType = Film::CONTENT_FILM;
+        $film = new Film();
+        $film->setContentType($contentType);
+        $film->setUniqueName($uniqueName, $sourceName);
+        $filmDetailStr = '{"id": "'.$api->_getSourceIdFromUniqueName($uniqueName).'"}';
+        $api->cacheFilmDetail($filmDetailStr, $film);
+        
+        // Test
+        $contents = $api->getFilmDetailFromCache($film, Constants::USE_CACHE_NEVER);
+
+        // Verify
+        $this->assertEmpty($contents, "Contents should be empty");
+        $testFilename = Constants::cacheFilePath() . $api->_getFilmDetailCacheFilename($film);
+        if (!file_exists($testFilename)) {
+            unlink($testFilename);
+        }
+    }
+
+    /**
+     * @covers \RatingSync\TmdbApi::cacheSeason
+     * @depends testObjectCanBeConstructed
+     */
+    public function testCacheSeason()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $api = new TmdbApiExt();
+        $sourceName = $api->_getSourceName();
+        $seriesFilmId = 100;
+        $seasonNum = 2;
+        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_season.json";
+        $seasonStr = '{"id": '.$seriesFilmId.'}';
+        
+        $fp = fopen($verifyFilename, "w");
+        fwrite($fp, $seasonStr);
+        fclose($fp);
+        
+        // Test
+        $api->cacheSeason($seasonStr, $seriesFilmId, $seasonNum);
+
+        // Verify
+        $testFilename = Constants::cacheFilePath() . $sourceName . "_series_" . $seriesFilmId . "_season_" . $seasonNum . "." . TmdbApi::API_RESPONSE_FORMAT;
+        $this->assertFileExists($testFilename, 'Cache file exists');
+        $this->assertFileEquals($verifyFilename, $testFilename, 'cache file vs verify file');
+        unlink($verifyFilename);
+        unlink($testFilename);
+    }
+
+    /**
+     * @covers \RatingSync\TmdbApi::getSeasonFromCache
+     * @depends testCacheSeason
+     */
+    public function testGetSeasonFromCache()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $api = new TmdbApiExt();
+        $uniqueName = "mvTestUniqueName";
+        $seriesFilmId = 100;
+        $seasonNum = 2;
+        $seasonStr = '{"id": '.$seriesFilmId.'}';
+        $api->cacheSeason($seasonStr, $seriesFilmId, $seasonNum);
+        
+        // Test
+        $contents = $api->getSeasonFromCache($seriesFilmId, $seasonNum, Constants::USE_CACHE_ALWAYS);
+
+        // Verify
+        $this->assertFalse(empty($contents), "Contents should not be empty");
+        $this->assertEquals($seasonStr, $contents, "Contents should match the test cache file");
+        $testFilename = Constants::cacheFilePath() . $api->_getSeasonCacheFilename($seriesFilmId, $seasonNum);
+        unlink($testFilename);
+    }
+
+    /**
+     * @covers \RatingSync\TmdbApi::getSeasonFromCache
+     * @depends testCacheSeason
+     * @depends testGetSeasonFromCache
+     */
+    public function testGetSeasonFromCacheNeverCache()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $api = new TmdbApiExt();
+        $uniqueName = "mvTestUniqueName";
+        $seriesFilmId = 100;
+        $seasonNum = 2;
+        $seasonStr = '{"id": '.$seriesFilmId.'}';
+        $api->cacheSeason($seasonStr, $seriesFilmId, $seasonNum);
+        
+        // Test
+        $contents = $api->getSeasonFromCache($seriesFilmId, $seasonNum, Constants::USE_CACHE_NEVER);
+
+        // Verify
+        $this->assertEmpty($contents, "Contents should be empty");
+        $testFilename = Constants::cacheFilePath() . $api->_getSeasonCacheFilename($seriesFilmId, $seasonNum);
+        if (!file_exists($testFilename)) {
+            unlink($testFilename);
+        }
+    }
+
+    /**
+     * @covers \RatingSync\TmdbApi::getSeasonFromApi
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetSeasonFromApiNullSeriesId()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        // Setup
+        $api = new TmdbApiExt();
+        $seriesFilmId = null;
+        $seasonNum = self::TESTEPISODE_SEASON_NUM;
+
+        // Test
+        $api->getSeasonFromApi($seriesFilmId, $seasonNum);
+    }
+
+    /**
+     * @covers \RatingSync\TmdbApi::getSeasonFromApi
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetSeasonFromApiStringSeriesId()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        // Setup
+        $api = new TmdbApiExt();
+        $seriesFilmId = "One";
+        $seasonNum = self::TESTEPISODE_SEASON_NUM;
+
+        // Test
+        $api->getSeasonFromApi($seriesFilmId, $seasonNum);
+    }
+
+    /**
+     * @covers \RatingSync\TmdbApi::getSeasonFromApi
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetSeasonFromApiNullSeasonNum()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        // Setup
+        $api = new TmdbApiExt();
+        $sourceName = $api->_getSourceName();
+        $film = new Film();
+        $series = Film::getFilmFromDbByUniqueName(self::TESTSERIES_TMDBID, $sourceName);
+        $seriesFilmId = $series->getId();
+        $seasonNum = null;
+
+        // Test
+        $api->getSeasonFromApi($seriesFilmId, $seasonNum);
+    }
+
+    /**
+     * @covers \RatingSync\TmdbApi::getSeasonFromApi
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetSeasonFromApiStringSeasonNum()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        // Setup
+        $api = new TmdbApiExt();
+        $sourceName = $api->_getSourceName();
+        $film = new Film();
+        $series = Film::getFilmFromDbByUniqueName(self::TESTSERIES_TMDBID, $sourceName);
+        $seriesFilmId = $series->getId();
+        $seasonNumStr = "One";
+
+        // Test
+        $api->getSeasonFromApi($seriesFilmId, $seasonNumStr);
+    }
+
+    /**
+     * @covers \RatingSync\TmdbApi::getSeasonFromApi
+     * @depends testObjectCanBeConstructed
+     */
+    public function testGetSeasonFromApi()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $api = new TmdbApiExt();
+        $sourceName = $api->_getSourceName();
+        $film = new Film();
+        $series = Film::getFilmFromDbByUniqueName(self::TESTSERIES_TMDBID, $sourceName);
+        $seriesFilmId = $series->getId();
+        $seasonNum = self::TESTEPISODE_SEASON_NUM;
+
+        // Test
+        $json = $api->getSeasonFromApi($seriesFilmId, $seasonNum, Constants::USE_CACHE_NEVER);
+
+        // Verify
+        $this->assertFalse(is_null($json), "Result should not be null");
+                // Season attrs
+        $seasonTitle = $api->jsonValue($json, Film::ATTR_TITLE, TmdbApi::REQUEST_DETAIL_SEASON);
+        $seasonYear = $api->jsonValue($json, Film::ATTR_YEAR, TmdbApi::REQUEST_DETAIL_SEASON);
+        $seasonNum = $api->jsonValue($json, Film::ATTR_SEASON_NUM, TmdbApi::REQUEST_DETAIL_SEASON);
+        $seasonUniqueName = $api->jsonValue($json, Source::ATTR_UNIQUE_NAME, TmdbApi::REQUEST_DETAIL_SEASON);
+        $seasonImage = $api->jsonValue($json, Source::ATTR_IMAGE, TmdbApi::REQUEST_DETAIL_SEASON);
+                // Episode attrs (episode 1)
+        $episodesJson = array_value_by_key("episodes", $json);
+        $episodeJson = $episodesJson[self::TESTEPISODE_EPISODE_NUM - 1];
+        $episodeTitle = $api->jsonValue($episodeJson, Film::ATTR_TITLE ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
+        $episodeYear = $api->jsonValue($episodeJson, Film::ATTR_YEAR ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
+        $episodeSeasonNum = $api->jsonValue($episodeJson, Film::ATTR_SEASON_NUM ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
+        $episodeNum = $api->jsonValue($episodeJson, Film::ATTR_EPISODE_NUM, TmdbApi::REQUEST_DETAIL_SEASON);
+        $episodeSourceId = $api->jsonValue($episodeJson, Source::ATTR_UNIQUE_NAME ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
+        $episodeUniqueName = $api->_getUniqueNameFromSourceId($episodeSourceId, Film::CONTENT_TV_EPISODE);
+        $episodeImage = $api->jsonValue($episodeJson, Source::ATTR_IMAGE ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
+        $episodeUserScore = $api->jsonValue($episodeJson, Source::ATTR_USER_SCORE ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
+        //$episodeCrewJson = $api->jsonValue($episodeJson, TmdbApi::ATTR_CREDITS_CREW ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
+        $episodeDirectors = $api->jsonValue($episodeJson, Film::ATTR_DIRECTORS, TmdbApi::REQUEST_CREDITS);
+                // Assert attrs
+        //$this->assertEquals(, $seasonTitle, "seasonTitle");
+        $this->assertEquals(self::TESTEPISODE_YEAR, $seasonYear, "seasonYear");
+        $this->assertEquals(self::TESTEPISODE_SEASON_NUM, $seasonNum, "seasonNum");
+        //$this->assertEquals(, $seasonUniqueName, "seasonUniqueName");
+        //$this->assertEquals(, $seasonImage, "seasonImage");
+        $this->assertEquals(self::TESTEPISODE_EPISODETITLE, $episodeTitle, "episodeTitle");
+        $this->assertEquals(self::TESTEPISODE_YEAR, $episodeYear, "episodeYear");
+        $this->assertEquals(self::TESTEPISODE_SEASON_NUM, $episodeSeasonNum, "episodeSeasonNum");
+        $this->assertEquals(self::TESTEPISODE_TMDBID, $episodeUniqueName, "episodeUniqueName");
+        $this->assertEquals(self::TESTEPISODE_EPISODE_NUM, $episodeNum, "episodeNum");
+        $this->assertEquals(self::TESTEPISODE_IMAGE, $episodeImage, "episodeImage");
+        $this->assertEquals(round(self::TESTEPISODE_USER_SCORE), round($episodeUserScore), "episodeUserScore");
+        $this->assertEquals(self::TESTEPISODE_DIRECTORS, $episodeDirectors, "episodeDirectors");
+    }
 }
 
 ?>
