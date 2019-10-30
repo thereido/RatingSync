@@ -34,6 +34,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
     const ATTR_CREDITS_CREDITS = "credits_credits";
     const ATTR_CREDITS_CAST = "credits_cast";
     const ATTR_CREDITS_CREW = "credits_crew";
+    const ATTR_CONTENT_TYPE = "search_content_type";
 
     public function __construct()
     {
@@ -172,10 +173,6 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
      *   - TMDb ID
      *   - Title, Year, contentType
      *   - Title, Year
-     * 
-     * Attr combinations supported for TV Episode
-     *   - IMDb ID
-     *   - TMDb ID
      *
      * @param \RatingSync\Film $film
      *
@@ -225,14 +222,17 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         if (empty($uniqueName) && !empty($contentType) && !empty($title) && !empty($year)) {
             $searchUrlType = null;
             $yearParamName = null;
+            $requestName = null;
             $contentTypeSupported = false;
             if ($contentType == Film::CONTENT_FILM) {
                 $searchUrlType = "movie";
                 $yearParamName = "year";
+                $requestName = static::REQUEST_SEARCH_MOVIE;
                 $contentTypeSupported = true;
             } else if ($contentType == Film::CONTENT_TV_SERIES) {
                 $searchUrlType = "tv";
                 $yearParamName = "first_air_date_year";
+                $requestName = static::REQUEST_SEARCH_SERIES;
                 $contentTypeSupported = true;
             } else {
                 // Only movies and tv shows are supported (no episodes or seasons)
@@ -246,18 +246,34 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
                 $response = $this->apiRequest($url);
                 $json = json_decode($response, true);
 
-                $result = $this->getSearchResultFromResponse($json, $title, $year, $contentType);
-                if (!empty($result)) {
-                    $uniqueName = $this->getUniqueNameFromSourceId($result["id"], $contentType);
+                $jsonResult = $this->getSearchResultFromResponse($json, $title, $year, $requestName);
+                if (!empty($jsonResult)) {
+                    $uniqueName = $this->getUniqueNameFromSourceId($jsonResult["id"], $contentType);
                 }
             }
         }
 
         // We have title and year, but no contentType
         // Do a multi search by title and year
-        //   NOT SUPPORTED (multi search not supported)
         if (empty($uniqueName) && empty($contentType) && !empty($title) && !empty($year)) {
-            throw new \Exception(__CLASS__."::".__FUNCTION__." with a null \$film->contentType is not supported");
+            $url = "/search/multi";
+            $url .= "?query=" . htmlspecialchars($title);
+            $url .= "&api_key=" . $this->apiKey;
+            $response = $this->apiRequest($url);
+            $json = json_decode($response, true);
+
+            $jsonResult = $this->getSearchResultFromResponse($json, $title, $year, self::REQUEST_SEARCH_MULTI);
+            if (!empty($jsonResult)) {
+                $sourceContentType = $this->jsonValue($jsonResult, self::ATTR_CONTENT_TYPE, self::REQUEST_SEARCH_MULTI);
+                if ($sourceContentType == "movie") {
+                    $contentType = Film::CONTENT_FILM;
+                } elseif ($sourceContentType == "tv") {
+                    $contentType = Film::CONTENT_TV_SERIES;
+                }
+
+                $uniqueName = $this->getUniqueNameFromSourceId($jsonResult["id"], $contentType);
+                $film->setContentType($contentType);
+            }
         }
 
         return $uniqueName;
@@ -533,29 +549,32 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
      * 
      * @return array Result matching the title and year. Null if no result was found.
      */
-    protected function getSearchResultFromResponse($response, $title, $year, $searchType)
+    protected function getSearchResultFromResponse($response, $title, $year, $requestName)
     {
         $matchingResult = null;
 
         $results = array();
         if ($response["total_results"] > 0) {
             $results = $response["results"];
-        }
-        
-        $titleIndexes = array();
-        $titleIndexes[Film::CONTENT_FILM] = "title";
-        $titleIndexes[Film::CONTENT_TV_SERIES] = "name";
-        $titleIndexes["multi"] = "title";
-
-        $yearIndexes = array();
-        $yearIndexes[Film::CONTENT_FILM] = "release_date";
-        $yearIndexes[Film::CONTENT_TV_SERIES] = "first_air_date";
-        $yearIndexes["multi"] = "release_date";
-        
+        }        
 
         foreach ($results as $result) {
-            $resultTitle = array_value_by_key($titleIndexes[$searchType], $result);
-            $resultYear = array_value_by_key($yearIndexes[$searchType], $result);
+            $attrNameTitle = Film::ATTR_TITLE;
+            $attrNameYear = Film::ATTR_YEAR;
+            if ($requestName == static::REQUEST_SEARCH_MULTI) {
+                $resultMediaType = $this->jsonValue($result, self::ATTR_CONTENT_TYPE, $requestName);
+                if ($resultMediaType == "movie") {
+                    $attrNameTitle = $attrNameTitle . "_" . Film::CONTENT_FILM;
+                    $attrNameYear = $attrNameYear . "_" . Film::CONTENT_FILM;
+                } elseif ($resultMediaType == "tv") {
+                    $attrNameTitle = $attrNameTitle . "_" . Film::CONTENT_TV_SERIES;
+                    $attrNameYear = $attrNameYear . "_" . Film::CONTENT_TV_SERIES;
+                }
+            }
+
+            $resultTitle = $this->jsonValue($result, $attrNameTitle, $requestName);
+            $resultYear = $this->jsonValue($result, $attrNameYear, $requestName);
+
             if (!empty($resultYear)) {
                 $resultYear = substr($resultYear, 0, 4);
             }
@@ -748,13 +767,21 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
 
         }
         elseif ($requestName == static::REQUEST_SEARCH_MOVIE) {
-
+            $tmdbIndexes[self::ATTR_CONTENT_TYPE] = "media_type";
+            $tmdbIndexes[Film::ATTR_TITLE] = "title";
+            $tmdbIndexes[Film::ATTR_YEAR] = "release_date";
         }
         elseif ($requestName == static::REQUEST_SEARCH_SERIES) {
-
+            $tmdbIndexes[self::ATTR_CONTENT_TYPE] = "media_type";
+            $tmdbIndexes[Film::ATTR_TITLE] = "name";
+            $tmdbIndexes[Film::ATTR_YEAR] = "first_air_date";
         }
         elseif ($requestName == static::REQUEST_SEARCH_MULTI) {
-
+            $tmdbIndexes[self::ATTR_CONTENT_TYPE] = "media_type";
+            $tmdbIndexes[Film::ATTR_TITLE . "_" . Film::CONTENT_FILM] = "title";
+            $tmdbIndexes[Film::ATTR_TITLE . "_" . Film::CONTENT_TV_SERIES] = "name";
+            $tmdbIndexes[Film::ATTR_YEAR . "_" . Film::CONTENT_FILM] = "release_date";
+            $tmdbIndexes[Film::ATTR_YEAR . "_" . Film::CONTENT_TV_SERIES] = "first_air_date";
         }
         elseif ($requestName == static::REQUEST_CREDITS) {
             $tmdbIndexes[Film::ATTR_DIRECTORS] = null;

@@ -315,7 +315,7 @@ class TmdbApiTest extends RatingSyncTestCase
         $response = array("total_results" => 4, "results" => $results);
 
             // Test
-        $resultReturned = $api->_getSearchResultFromResponse($response, $title, $year, $searchType);
+        $resultReturned = $api->_getSearchResultFromResponse($response, $title, $year, TmdbApi::REQUEST_SEARCH_MOVIE);
 
             // Verify
         $this->assertEquals($matchingResult, $resultReturned, "Movie search");
@@ -338,7 +338,7 @@ class TmdbApiTest extends RatingSyncTestCase
         $response = array("total_results" => 4, "results" => $results);
 
             // Test
-        $resultReturned = $api->_getSearchResultFromResponse($response, $title, $year, $searchType);
+        $resultReturned = $api->_getSearchResultFromResponse($response, $title, $year, TmdbApi::REQUEST_SEARCH_SERIES);
 
             // Verify
         $this->assertEquals($matchingResult, $resultReturned, "TV Series search");
@@ -482,10 +482,6 @@ class TmdbApiTest extends RatingSyncTestCase
      */
     public function testSearchForUniqueNameTvEpisodeWithoutContentType()
     {$this->start(__CLASS__, __FUNCTION__);
-
-        // This might be supported in the future. If that happens this
-        // line about the exception can be removed.
-        $this->expectException(\Exception::class);
 
         // Setup
         $api = new TmdbApi();
@@ -1220,65 +1216,91 @@ class TmdbApiTest extends RatingSyncTestCase
         $api = new TmdbApiExt();
         $sourceName = $api->_getSourceName();
 
-                // Movie by uniqueName, contentType
-        // Setup
+        // Movie by uniqueName, contentType
+                // Setup
         $searchTerms = array();
         $searchTerms["uniqueName"] = self::TESTFILM_PRIMARY_TMDBID;
         $searchTerms["contentType"] = Film::CONTENT_FILM;
 
-        // Test
+                // Test
         $film = $api->getFilmBySearch($searchTerms);
 
-        // Verify
+                // Verify
         $this->assertFalse(empty($film), "Film should not be empty");
         $this->assertEquals(self::TESTFILM_PRIMARY_TITLE, $film->getTitle(), "title");
         $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), "IMDb ID");
 
-                // Movie by title, year, contentType
-        // Setup
+        // Movie by title, year, contentType
+                // Setup
         $searchTerms = array();
         $searchTerms["title"] = self::TESTFILM_PRIMARY_TITLE;
         $searchTerms["year"] = self::TESTFILM_PRIMARY_YEAR;
         $searchTerms["contentType"] = Film::CONTENT_FILM;
 
-        // Test
+                // Test
         $film = $api->getFilmBySearch($searchTerms);
 
-        // Verify
+                // Verify
         $this->assertFalse(empty($film), "Film should not be empty");
         $this->assertEquals(self::TESTFILM_PRIMARY_TMDBID, $film->getUniqueName($sourceName), "TMDb ID");
         $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), "IMDb ID");
 
-        /*RT*
-                // Movie by title, year
-        // Setup
+        // Movie by title, year
+                // Setup
         $searchTerms = array();
         $searchTerms["title"] = self::TESTFILM_PRIMARY_TITLE;
         $searchTerms["year"] = self::TESTFILM_PRIMARY_YEAR;
 
-        // Test
+                // Test
         $film = $api->getFilmBySearch($searchTerms);
 
-        // Verify
+                // Verify
         $this->assertFalse(empty($film), "Film should not be empty");
         $this->assertEquals(self::TESTFILM_PRIMARY_TMDBID, $film->getUniqueName($sourceName), "TMDb ID");
         $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), "IMDb ID");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "contentType");
-        *RT*/
 
-                // Series by uniqueName, contentType
-        // Setup
+        // Series by uniqueName, contentType
+                // Setup
         $searchTerms = array();
         $searchTerms["uniqueName"] = self::TESTSERIES_TMDBID;
         $searchTerms["contentType"] = Film::CONTENT_TV_SERIES;
 
-        // Test
+                // Test
         $film = $api->getFilmBySearch($searchTerms);
 
-        // Verify
+                // Verify
         $this->assertFalse(empty($film), "Film should not be empty");
         $this->assertEquals(self::TESTSERIES_TITLE, $film->getTitle(), "title");
         $this->assertEquals(self::TESTSERIES_YEAR, $film->getYear(), "year");
+
+        // Series by title, year, contentType
+                // Setup
+        $searchTerms = array();
+        $searchTerms["title"] = self::TESTSERIES_TITLE;
+        $searchTerms["year"] = self::TESTSERIES_YEAR;
+        $searchTerms["contentType"] = Film::CONTENT_TV_SERIES;
+
+                // Test
+        $film = $api->getFilmBySearch($searchTerms);
+
+                // Verify
+        $this->assertFalse(empty($film), "Film should not be empty");
+        $this->assertEquals(self::TESTSERIES_TMDBID, $film->getUniqueName($sourceName), "TMDb ID");
+
+        // Series by title, year
+                // Setup
+        $searchTerms = array();
+        $searchTerms["title"] = self::TESTSERIES_TITLE;
+        $searchTerms["year"] = self::TESTSERIES_YEAR;
+
+                // Test
+        $film = $api->getFilmBySearch($searchTerms);
+
+                // Verify
+        $this->assertFalse(empty($film), "Film should not be empty");
+        $this->assertEquals(self::TESTSERIES_TMDBID, $film->getUniqueName($sourceName), "TMDb ID");
+        $this->assertEquals(Film::CONTENT_TV_SERIES, $film->getContentType(), "contentType");
     }
 
     //*RT* Test getSeasonFromApi()
