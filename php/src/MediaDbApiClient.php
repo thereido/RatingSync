@@ -5,12 +5,16 @@
 namespace RatingSync;
 
 require_once "ApiClient.php";
+require_once "Season.php";
 
 interface iMediaDbApiClient
 {
     public function getFilmBySearch($searchTerms);
     public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = 60);
     public function getFilmDetailFromApi($film, $overwrite = true, $refreshCache = 60);
+    public function getImagePath();
+    public function getSourceName();
+    public function getUniqueNameFromSourceId($sourceId, $contentType = null);
 }
 
 /**
@@ -21,6 +25,10 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
 {
     const ATTR_API_REQUEST_NAME = "api_request";
     const REQUEST_DETAIL = "detail";
+    const REQUEST_DETAIL_MOVIE = "detail_movie";
+    const REQUEST_DETAIL_SERIES = "detail_tv_series";
+    const REQUEST_DETAIL_EPISODE = "detail_tv_episode";
+    const REQUEST_DETAIL_SEASON = "detail_tv_season";
 
     protected $sourceName;
     protected $apiKey;
@@ -63,8 +71,14 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
     abstract protected function validateResponseSeasonDetail($seasonJson);
 
     abstract protected function populateFilmDetail($response, $film, $overwrite = true);
+    abstract protected function populateSeason($seasonJson, $seriesId);
     abstract protected function searchForUniqueName($film);
-    abstract protected function printResultToLog($filmJson);
+    abstract protected function printResultToLog($filmJson, $requestName, $contentType);
+
+    public function getSourceName()
+    {
+        return $this->sourceName;
+    }
 
     /**
      * Return a cached api response if the cached file is fresh enough. The
@@ -194,7 +208,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
             logDebug($errorMsg, __CLASS__."::".__FUNCTION__." ".__LINE__, true, $filmJson);
             throw new \Exception($this->sourceName . ' film detail request failed');
         }
-        $this->printResultToLog($filmJson);
+        $this->printResultToLog($filmJson, self::REQUEST_DETAIL, $film->getContentType());
 
         return $filmJson;
     }
@@ -205,6 +219,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
             throw new \InvalidArgumentException('Function '.__CLASS__.__FUNCTION__.' must have a searchTerms array');
         }
         
+        $parentId = array_value_by_key("parentId", $searchTerms);
         $uniqueName = array_value_by_key("uniqueName", $searchTerms);
         $title = array_value_by_key("title", $searchTerms);
         $year = array_value_by_key("year", $searchTerms);
@@ -218,7 +233,14 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         }
 
         $film = new Film();
-        $film->setUniqueName($uniqueName, $this->sourceName);
+        $imdbId = null;
+        $film->setParentId($parentId);
+        if ($this->isThisIdFromImdb($uniqueName)) {
+            $imdbId = $uniqueName;
+            $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+        } else {
+            $film->setUniqueName($uniqueName, $this->sourceName);
+        }
         $film->setTitle($title);
         $film->setYear($year);
         $film->setContentType($contentType);
@@ -231,6 +253,11 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         } catch (\Exception $e) {
             logDebug("Exception " . $e->getCode() . " " . $e->getMessage(), __CLASS__."::".__FUNCTION__." ".__LINE__);
             $film = null;
+        }
+
+        // getFilmDetailFromApi over writes the IMDb source
+        if (!empty($imdbId)) {
+            $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
         }
         
         return $film;
@@ -285,7 +312,9 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
             $seasonJson =  json_decode($response, true);
         }
 
-        return $seasonJson;
+        $season = $this->populateSeason($seasonJson, $seriesFilmId);
+
+        return $season;
     }
 
     /**
@@ -333,6 +362,47 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         $filename .= "." . $this->cacheFileExtension;
 
         return $filename;
+    }
+
+    public function getFilmFromDb($sourceId, $contentType = null, $username = null)
+    {
+        $sourceName = $this->sourceName;
+        if ($this->isThisIdFromImdb($sourceId)) {
+            $sourceName = Constants::SOURCE_IMDB;
+        }
+
+        $uniqueName = $sourceId;
+        $film = Film::getFilmFromDbByUniqueName($uniqueName, $sourceName, $username);
+
+        return $film;
+    }
+
+    protected function isThisIdFromImdb($sourceId)
+    {
+        $isThisIdFromImdb = false;
+        if (preg_match('/(^tt\d{7}\d*$)/i', $sourceId, $matches)) {
+            $isThisIdFromImdb = true;
+        }
+
+        return $isThisIdFromImdb;
+    }
+
+    public function getImagePath()
+    {
+        return "";
+    }
+
+    /**
+     * SourceId from some sources (like TMDb) are not uniqueName. They are
+     * unique within a content type, but for example, a TV series might use
+     * the same sourceId as Movie. Each API client offers this function to
+     * give the uniqueName based the sourceId and contentType.
+     * 
+     * @return string A prefix based on the contentType + the sourceId
+     */
+    public function getUniqueNameFromSourceId($sourceId, $contentType = null)
+    {
+        return $sourceId;
     }
 }
 

@@ -69,6 +69,7 @@ $pageFooter = getPageFooter();
     var RS_URL_BASE = "<?php echo Constants::RS_HOST; ?>";
     var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
     var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
+    var DATA_API_DEFAULT = "<?php echo Constants::DATA_API_DEFAULT; ?>";
     var username = "<?php getUsername(); ?>";
     var oldSearchQuery = "";
     var pageParamSearchDomain = "<?php echo $searchDomain; ?>";

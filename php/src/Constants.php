@@ -32,6 +32,7 @@ class Constants
     const USE_CACHE_NEVER               = 0;
     const TEST_RATINGSYNC_USERNAME      = "testratingsync";
     const DATE_MIN_STR                  = "1000-01-01";
+    const DATA_API_DEFAULT              = Constants::SOURCE_TMDBAPI;
 
     /* Constants moved to DomainConstants class
      * php.ini include_path must have the path to DomainConstants.php

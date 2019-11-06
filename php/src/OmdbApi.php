@@ -49,6 +49,11 @@ class OmdbApi extends \RatingSync\Site
         
         return true;
     }
+
+    public function getFilmDetailFromApi($film, $overwrite = true, $refreshCache = Constants::USE_CACHE_NEVER)
+    {
+        return getFilmDetailFromWebsite($film, $overwrite, $refreshCache);
+    }
     
     public function getFilmDetailFromWebsite($film, $overwrite = true, $refreshCache = Constants::USE_CACHE_NEVER)
     {
@@ -96,7 +101,9 @@ class OmdbApi extends \RatingSync\Site
             $title = null;
 
             // Get the series' title
-            $searchTerms = array("uniqueName" => $seriesID, "sourceName" => Constants::SOURCE_OMDBAPI);
+            $searchTerms = array("uniqueName" => $seriesID);
+            $searchTerms["contentType"] = Film::CONTENT_TV_SERIES;
+            $searchTerms["sourceName"] = Constants::SOURCE_OMDBAPI;
             $seriesSearchResult = search($searchTerms);
             if (!empty($seriesSearchResult) && !empty($seriesSearchResult["match"])) {
                 $seriesFilm = $seriesSearchResult["match"];
@@ -301,6 +308,11 @@ class OmdbApi extends \RatingSync\Site
         return $filmUrl;
     }
     
+    public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = 60)
+    {
+        return $this->getSeason($seriesFilmId, $seasonNum, $refreshCache);
+    }
+    
     public function getSeason($seriesFilmId, $seasonNum, $refreshCache = 60)
     {
         if (is_null($seriesFilmId) || !is_numeric($seriesFilmId) ) {
@@ -405,5 +417,19 @@ class OmdbApi extends \RatingSync\Site
         $fp = fopen($filename, "w");
         fwrite($fp, $page);
         fclose($fp);
+    }
+
+    public function getFilmFromDb($sourceId, $contentType = null, $username = null)
+    {
+        $sourceName = $this->sourceName;
+        if (preg_match('/(^tt\d{7}\d*$)/i', $sourceId, $matches)) {
+            $imdbId = $matches[1];
+            $sourceName = Constants::SOURCE_IMDB;
+        }
+
+        $uniqueName = $sourceId;
+        $film = Film::getFilmFromDbByUniqueName($uniqueName, $sourceName, $username);
+
+        return $film;
     }
 }

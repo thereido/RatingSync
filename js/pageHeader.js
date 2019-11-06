@@ -14,6 +14,8 @@ function onKeyUpHeaderSearch(event) {
         var newSelectedEl;
 	    var selectedUniqueNameEl = document.getElementById("selected-suggestion-uniquename");
 	    selectedUniqueNameEl.value = "";
+	    var selectedContentTypeEl = document.getElementById("selected-suggestion-contenttype");
+	    selectedContentTypeEl.value = "";
         var suggestionBoxEl = document.getElementById("header-search-suggestion");
         var selectedEls = suggestionBoxEl.getElementsByClassName("suggestion-selected");
         if (selectedEls.length == 1) {
@@ -47,6 +49,7 @@ function onKeyUpHeaderSearch(event) {
         if (newSelectedEl) {
             var selectedItemEl = newSelectedEl.getElementsByClassName("search-suggestion-item")[0];
 	        selectedUniqueNameEl.value = selectedItemEl.getAttribute("data-imdb-uniquename");
+	        selectedContentTypeEl.value = selectedItemEl.getAttribute("data-contenttype");
         }
     } else if (key == 'Escape') {
         document.getElementById("header-search-suggestion").hidden = true;
@@ -61,6 +64,7 @@ function updateHeaderSearch(changedSearchDomain) {
 
     if (query.length == 0) {
 	    document.getElementById("selected-suggestion-uniquename").value = "";
+	    document.getElementById("selected-suggestion-contenttype").value = "";
         suggestionEl.innerHTML = "";
         suggestionEl.hidden = true;
     } else if (query.length > 2 && (query != oldHeaderSearchQuery || changedSearchDomain)) {
@@ -70,6 +74,7 @@ function updateHeaderSearch(changedSearchDomain) {
         }
 
 	    document.getElementById("selected-suggestion-uniquename").value = "";
+	    document.getElementById("selected-suggestion-contenttype").value = "";
 	    var xmlhttp = new XMLHttpRequest();
         var callbackHandler = function () { searchSuggestionCallback(query, xmlhttp); };
         searchFilms(query, xmlhttp, callbackHandler);

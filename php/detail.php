@@ -9,11 +9,20 @@ require_once "src/Filmlist.php";
 
 $username = getUsername();
 $filmId = array_value_by_key("i", $_GET);
-$imdbUniqueName = array_value_by_key("imdb", $_GET);
-$seasonNum = array_value_by_key("season", $_GET);
-if (empty($imdbUniqueName) && array_key_exists("selsug-un", $_GET)) {
-    $imdbUniqueName = $_GET['selsug-un'];
+$imdbId = array_value_by_key("imdb", $_GET);
+$sourceId = array_value_by_key("sid", $_GET);
+$contentType = array_value_by_key("ct", $_GET);
+$uniqueName = null;
+if (!empty($sourceId) && !empty($contentType)) {
+    $uniqueName = getMediaDbApiClient()->getUniqueNameFromSourceId($sourceId, $contentType);
 }
+if (empty($uniqueName) && array_key_exists("selsug-un", $_GET)) {
+    $uniqueName = $_GET['selsug-un'];
+}
+$parentId = array_value_by_key("pid", $_GET);
+$seasonNum = array_value_by_key("season", $_GET);
+$episodeNum = array_value_by_key("en", $_GET);
+
 $pageHeader = getPageHeader();
 $pageFooter = getPageFooter();
 ?>
@@ -63,9 +72,10 @@ $pageFooter = getPageFooter();
     var RS_URL_BASE = "<?php echo Constants::RS_HOST; ?>";
     var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
     var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
+    var DATA_API_DEFAULT = "<?php echo Constants::DATA_API_DEFAULT; ?>";
     var username = "<?php getUsername(); ?>";
     var seasonNumParam = "<?php echo $seasonNum; ?>";
-    getFilmForDetailPage("<?php echo $filmId; ?>", "<?php echo $imdbUniqueName; ?>");
+    getFilmForDetailPage("<?php echo $filmId; ?>", "<?php echo $uniqueName; ?>", "<?php echo $imdbId; ?>", "<?php echo $contentType; ?>", "<?php echo $parentId; ?>", "<?php echo $seasonNum; ?>", "<?php echo $episodeNum; ?>");
 </script>
 
 </body>

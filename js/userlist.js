@@ -37,6 +37,8 @@ function renderUserlistFilms() {
         var filmId = film.filmId;
         var title = film.title;
         var titleNoQuotes = title.replace(/\"/g, '\\\"').replace(/\'/g, "\\\'");
+        var contentTypeParam = "";
+        if (film.contentType != "undefined") { contentTypeParam = "&ct=" + film.contentType; }
         var rsSource = film.sources.find(function (findSource) { return findSource.name == "RatingSync"; });
         var image = RS_URL_BASE + rsSource.image;
         var uniqueName = rsSource.uniqueName;
@@ -46,7 +48,7 @@ function renderUserlistFilms() {
         html = html + "  <div class='col-xs-6 col-sm-4 col-md-3 col-lg-2' id='" + uniqueName + "'>\n";
         html = html + "    <div class='userlist-film' " + onMouseEnter + " " + onMouseLeave + ">\n";
         html = html + "      <poster id='poster-" + uniqueName + "' data-filmId='" + filmId + "'>\n";
-        html = html + "        <a href='/php/detail.php?i=" + filmId + "'>\n";
+        html = html + "        <a href='/php/detail.php?i=" + filmId + contentTypeParam + "'>\n";
         html = html + "          <img src='" + image + "' alt='" + titleNoQuotes + "' />\n";
         html = html + "        </a>\n";
         html = html + "        <div id='film-dropdown-" + filmId + "' class='film-dropdown-content film-dropdown-col-" + column + "'></div>\n";

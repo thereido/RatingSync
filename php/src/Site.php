@@ -657,4 +657,19 @@ abstract class Site
     { 
         return $contentType;
     }
+
+    public function getSourceName()
+    {
+        return $this->sourceName;
+    }
+
+    public function getImagePath()
+    {
+        return "";
+    }
+    
+    public function getUniqueNameFromSourceId($sourceId, $contentType = null)
+    {
+        return $sourceId;
+    }
 }

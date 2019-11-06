@@ -1026,6 +1026,7 @@ class Film {
             if (empty($filmImage)) {
                 // Download an image from another source
                 $filmImage = $this->downloadImage();
+                $this->setImage($filmImage);
             }
             $sourceRs->setImage($filmImage);
             $success = $sourceRs->saveFilmSourceToDb($filmId);
@@ -1203,20 +1204,24 @@ class Film {
 
     public function downloadImage()
     {
-        $omdbApi = new OmdbApi("empty_userame");
-        try {
-            $omdbApi->getFilmDetailFromWebsite($this, false, Constants::USE_CACHE_ALWAYS);
-            $image = $this->getImage(Constants::SOURCE_OMDBAPI);
-        } catch (\Exception $e) {
-            // Do nothing, $image will be empty
+        $api = getMediaDbApiClient(Constants::DATA_API_DEFAULT);
+        $image = $this->getImage($api->getSourceName());
+        if (empty($image)) {
+            try {
+                $api->getFilmDetailFromApi($this, false, Constants::USE_CACHE_ALWAYS);
+                $image = $this->getImage($api->getSourceName());
+            } catch (\Exception $e) {
+                // Do nothing, $image will be empty
+            }
         }
 
         // Download the image
         if (!empty($image)) {
             $uniqueName = $this->getUniqueName(Constants::SOURCE_RATINGSYNC);
             $filename = "$uniqueName.jpg";
+            $apiImagePath = $api->getImagePath();
             try {
-                file_put_contents(Constants::imagePath() . $filename, file_get_contents($image));
+                file_put_contents(Constants::imagePath() . $filename, file_get_contents($apiImagePath . $image));
             } catch (\Exception $e) {
                 logDebug("Exception downloading an image for $filename.\n" . $e, __CLASS__."::".__FUNCTION__." ".__LINE__);
             }

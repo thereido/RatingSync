@@ -8,34 +8,6 @@ require_once "../src/OmdbApi.php";
 require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
-const TESTFILM_PRIMARY_TITLE = "Frozen";
-const TESTFILM_PRIMARY_YEAR = 2013;
-const TESTFILM_PRIMARY_IMDBID = "tt2294629";
-const TESTFILM_PRIMARY_USER_SCORE = 7.5;
-const TESTFILM_PRIMARY_CRITIC_SCORE = 7.4;
-const TESTFILM_PRIMARY_IMAGE = "MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE";
-const TESTFILM_PRIMARY_DIRECTORS = array("Chris Buck", "Jennifer Lee");
-const TESTFILM_PRIMARY_GENRES = array("Animation", "Adventure", "Comedy", "Family", "Fantasy", "Musical");
-
-const TESTSERIES_TITLE = "Game of Thrones";
-const TESTSERIES_YEAR = 2011;
-const TESTSERIES_IMDBID = "tt0944947";
-const TESTSERIES_USER_SCORE = 9.5;
-const TESTSERIES_CRITIC_SCORE = null;
-const TESTSERIES_IMAGE = "MV5BMjA5NzA5NjMwNl5BMl5BanBnXkFtZTgwNjg2OTk2NzM";
-const TESTSERIES_DIRECTORS = array();
-const TESTSERIES_GENRES = array("Action", "Adventure", "Drama", "Fantasy", "Romance");
-
-const TESTEPISODE_TITLE = "Game of Thrones";
-const TESTEPISODE_EPISODETITLE = "Garden of Bones";
-const TESTEPISODE_YEAR = 2012;
-const TESTEPISODE_IMDBID = "tt2069319";
-const TESTEPISODE_USER_SCORE = 8.8;
-const TESTEPISODE_CRITIC_SCORE = null;
-const TESTEPISODE_IMAGE = "MV5BMTczMjc5MTY0NF5BMl5BanBnXkFtZTcwMDY5NDgzNw";
-const TESTEPISODE_DIRECTORS = array("David Petrarca");
-const TESTEPISODE_GENRES = array("Action", "Adventure", "Drama", "Fantasy", "Romance");
-
 // Class to expose protected members and functions
 class OmdbApiExt extends \RatingSync\OmdbApi {
     function _getHttp() { return $this->http; }
@@ -46,6 +18,77 @@ class OmdbApiExt extends \RatingSync\OmdbApi {
 
 class OmdbApiTest extends RatingSyncTestCase
 {
+    const TESTFILM_PRIMARY_TITLE = "Frozen";
+    const TESTFILM_PRIMARY_YEAR = 2013;
+    const TESTFILM_PRIMARY_IMDBID = "tt2294629";
+    const TESTFILM_PRIMARY_USER_SCORE = 7.5;
+    const TESTFILM_PRIMARY_CRITIC_SCORE = 7.4;
+    const TESTFILM_PRIMARY_IMAGE = "MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE";
+    const TESTFILM_PRIMARY_DIRECTORS = array("Chris Buck", "Jennifer Lee");
+    const TESTFILM_PRIMARY_GENRES = array("Animation", "Adventure", "Family");
+    
+    const TESTSERIES_TITLE = "Game of Thrones";
+    const TESTSERIES_YEAR = 2011;
+    const TESTSERIES_IMDBID = "tt0944947";
+    const TESTSERIES_USER_SCORE = 9.5;
+    const TESTSERIES_CRITIC_SCORE = null;
+    const TESTSERIES_IMAGE = "MV5BMjA5NzA5NjMwNl5BMl5BanBnXkFtZTgwNjg2OTk2NzM";
+    const TESTSERIES_DIRECTORS = array();
+    const TESTSERIES_GENRES = array("Action", "Adventure", "Drama", "Fantasy", "Romance");
+    
+    const TESTEPISODE_TITLE = "Game of Thrones";
+    const TESTEPISODE_EPISODETITLE = "Garden of Bones";
+    const TESTEPISODE_YEAR = 2012;
+    const TESTEPISODE_IMDBID = "tt2069319";
+    const TESTEPISODE_USER_SCORE = 8.8;
+    const TESTEPISODE_CRITIC_SCORE = null;
+    const TESTEPISODE_IMAGE = "MV5BMTczMjc5MTY0NF5BMl5BanBnXkFtZTcwMDY5NDgzNw";
+    const TESTEPISODE_DIRECTORS = array("David Petrarca");
+    const TESTEPISODE_GENRES = array("Action", "Adventure", "Drama", "Fantasy", "Romance");
+
+    public static function getConstants()
+    {
+        $constants = array();
+        $constants["sourceName"]            = Constants::SOURCE_OMDBAPI;
+
+        $constants["filmUniqueName"]        = self::TESTFILM_PRIMARY_IMDBID;
+        $constants["filmTitle"]             = self::TESTFILM_PRIMARY_TITLE;
+        $constants["filmYear"]              = self::TESTFILM_PRIMARY_YEAR;
+        $constants["filmGenres"]            = self::TESTFILM_PRIMARY_GENRES;
+        $constants["filmDirectors"]         = self::TESTFILM_PRIMARY_DIRECTORS;
+        $constants["filmImage"]             = self::TESTFILM_PRIMARY_IMAGE;
+        $constants["filmUserScore"]         = self::TESTFILM_PRIMARY_USER_SCORE;
+        $constants["filmCriticScore"]       = self::TESTFILM_PRIMARY_CRITIC_SCORE;
+
+        $constants["seriesUniqueName"]      = self::TESTSERIES_IMDBID;
+        $constants["seriesTitle"]           = self::TESTSERIES_TITLE;
+        $constants["seriesYear"]            = self::TESTSERIES_YEAR;
+        $constants["seriesGenres"]          = self::TESTSERIES_GENRES;
+        $constants["seriesDirectors"]       = self::TESTSERIES_DIRECTORS;
+        $constants["seriesImage"]           = self::TESTSERIES_IMAGE;
+        $constants["seriesUserScore"]       = self::TESTSERIES_USER_SCORE;
+        $constants["seriesCriticScore"]     = self::TESTSERIES_CRITIC_SCORE;
+
+        $constants["episodeUniqueName"]     = self::TESTEPISODE_IMDBID;
+        $constants["episodeTitle"]          = self::TESTEPISODE_TITLE;
+        $constants["episodeEpisodeTitle"]   = self::TESTEPISODE_EPISODETITLE;
+        $constants["episodeYear"]           = self::TESTEPISODE_YEAR;
+        $constants["episodeGenres"]         = self::TESTEPISODE_GENRES;
+        $constants["episodeDirectors"]      = self::TESTEPISODE_DIRECTORS;
+        $constants["episodeImage"]          = self::TESTEPISODE_IMAGE;
+        $constants["episodeUserScore"]      = self::TESTEPISODE_USER_SCORE;
+        $constants["episodeCriticScore"]    = self::TESTEPISODE_CRITIC_SCORE;
+
+        sort($constants["filmDirectors"]);
+        sort($constants["filmGenres"]);
+        sort($constants["seriesDirectors"]);
+        sort($constants["seriesGenres"]);
+        sort($constants["episodeDirectors"]);
+        sort($constants["episodeGenres"]);
+
+        return $constants;
+    }
+
     protected function setUp(): void
     {
         parent::setup();
@@ -73,13 +116,13 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApiExt();
         $film = new Film();
-        $film->setUniqueName(TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
+        $film->setUniqueName(self::TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
 
         // Test
         $url = $site->_getFilmDetailPageUrl($film);
 
         // Verify
-        $this->assertEquals("&i=".TESTFILM_PRIMARY_IMDBID, $url);
+        $this->assertEquals("&i=".self::TESTFILM_PRIMARY_IMDBID, $url);
     }
     
     /**
@@ -91,13 +134,13 @@ class OmdbApiTest extends RatingSyncTestCase
 
         // Setup
         $site = new OmdbApi();
-        $args = array("query" => TESTFILM_PRIMARY_TITLE);
+        $args = array("query" => self::TESTFILM_PRIMARY_TITLE);
 
         // Test
         $url = $site->getSearchUrl($args);
 
         // Verify
-        $this->assertEquals("&s=".TESTFILM_PRIMARY_TITLE, $url);
+        $this->assertEquals("&s=".self::TESTFILM_PRIMARY_TITLE, $url);
     }
     
     /**
@@ -140,14 +183,14 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setTitle(TESTFILM_PRIMARY_TITLE);
-        $film->setYear(TESTFILM_PRIMARY_YEAR);
+        $film->setTitle(self::TESTFILM_PRIMARY_TITLE);
+        $film->setYear(self::TESTFILM_PRIMARY_YEAR);
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&y=".TESTFILM_PRIMARY_YEAR."&t=".urlencode(TESTFILM_PRIMARY_TITLE), $url);
+        $this->assertEquals("&y=".self::TESTFILM_PRIMARY_YEAR."&t=".urlencode(self::TESTFILM_PRIMARY_TITLE), $url);
     }
 
     /**
@@ -166,13 +209,13 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApiExt();
         $film = new Film();
-        $film->setUniqueName(TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
+        $film->setUniqueName(self::TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&i=".TESTFILM_PRIMARY_IMDBID, $url);
+        $this->assertEquals("&i=".self::TESTFILM_PRIMARY_IMDBID, $url);
     }
 
     /**
@@ -192,7 +235,7 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setTitle(TESTFILM_PRIMARY_TITLE);
+        $film->setTitle(self::TESTFILM_PRIMARY_TITLE);
 
         // Test
         $url = $site->getFilmUrl($film);
@@ -215,7 +258,7 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setYear(TESTFILM_PRIMARY_YEAR);
+        $film->setYear(self::TESTFILM_PRIMARY_YEAR);
 
         // Test
         $url = $site->getFilmUrl($film);
@@ -238,7 +281,7 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setEpisodeTitle(TESTEPISODE_TITLE);
+        $film->setEpisodeTitle(self::TESTEPISODE_TITLE);
 
         // Test
         $url = $site->getFilmUrl($film);
@@ -261,8 +304,8 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setTitle(TESTFILM_PRIMARY_TITLE);
-        $film->setEpisodeTitle(TESTEPISODE_TITLE);
+        $film->setTitle(self::TESTFILM_PRIMARY_TITLE);
+        $film->setEpisodeTitle(self::TESTEPISODE_TITLE);
 
         // Test
         $url = $site->getFilmUrl($film);
@@ -284,14 +327,14 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setTitle(TESTFILM_PRIMARY_TITLE);
-        $film->setYear(TESTFILM_PRIMARY_YEAR);
+        $film->setTitle(self::TESTFILM_PRIMARY_TITLE);
+        $film->setYear(self::TESTFILM_PRIMARY_YEAR);
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&y=".TESTFILM_PRIMARY_YEAR."&t=".urlencode(TESTFILM_PRIMARY_TITLE), $url);
+        $this->assertEquals("&y=".self::TESTFILM_PRIMARY_YEAR."&t=".urlencode(self::TESTFILM_PRIMARY_TITLE), $url);
     }
 
     /**
@@ -310,14 +353,14 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setEpisodeTitle(TESTEPISODE_TITLE);
-        $film->setYear(TESTEPISODE_YEAR);
+        $film->setEpisodeTitle(self::TESTEPISODE_TITLE);
+        $film->setYear(self::TESTEPISODE_YEAR);
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&y=".TESTEPISODE_YEAR."&t=".urlencode(TESTEPISODE_TITLE), $url);
+        $this->assertEquals("&y=".self::TESTEPISODE_YEAR."&t=".urlencode(self::TESTEPISODE_TITLE), $url);
     }
 
     /**
@@ -337,15 +380,15 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setTitle(TESTFILM_PRIMARY_TITLE);
-        $film->setEpisodeTitle(TESTEPISODE_TITLE);
-        $film->setYear(TESTEPISODE_YEAR);
+        $film->setTitle(self::TESTFILM_PRIMARY_TITLE);
+        $film->setEpisodeTitle(self::TESTEPISODE_TITLE);
+        $film->setYear(self::TESTEPISODE_YEAR);
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&y=".TESTEPISODE_YEAR."&t=".urlencode(TESTFILM_PRIMARY_TITLE), $url);
+        $this->assertEquals("&y=".self::TESTEPISODE_YEAR."&t=".urlencode(self::TESTFILM_PRIMARY_TITLE), $url);
     }
 
     /**
@@ -365,15 +408,15 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApiExt();
         $film = new Film();
-        $film->setUniqueName(TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
-        $film->setTitle(TESTFILM_PRIMARY_TITLE);
-        $film->setYear(TESTEPISODE_YEAR);
+        $film->setUniqueName(self::TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
+        $film->setTitle(self::TESTFILM_PRIMARY_TITLE);
+        $film->setYear(self::TESTEPISODE_YEAR);
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&i=".TESTFILM_PRIMARY_IMDBID, $url);
+        $this->assertEquals("&i=".self::TESTFILM_PRIMARY_IMDBID, $url);
     }
 
     /**
@@ -394,15 +437,15 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setTitle(TESTFILM_PRIMARY_TITLE);
-        $film->setYear(TESTFILM_PRIMARY_YEAR);
+        $film->setTitle(self::TESTFILM_PRIMARY_TITLE);
+        $film->setYear(self::TESTFILM_PRIMARY_YEAR);
         $film->setContentType(Film::CONTENT_FILM);
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&y=".TESTFILM_PRIMARY_YEAR."&t=".urlencode(TESTFILM_PRIMARY_TITLE)."&type=movie", $url);
+        $this->assertEquals("&y=".self::TESTFILM_PRIMARY_YEAR."&t=".urlencode(self::TESTFILM_PRIMARY_TITLE)."&type=movie", $url);
     }
 
     /**
@@ -423,15 +466,15 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setTitle(TESTEPISODE_TITLE);
-        $film->setYear(TESTEPISODE_YEAR);
+        $film->setTitle(self::TESTEPISODE_TITLE);
+        $film->setYear(self::TESTEPISODE_YEAR);
         $film->setContentType(Film::CONTENT_TV_EPISODE);
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&y=".TESTEPISODE_YEAR."&t=".urlencode(TESTEPISODE_TITLE)."&type=episode", $url);
+        $this->assertEquals("&y=".self::TESTEPISODE_YEAR."&t=".urlencode(self::TESTEPISODE_TITLE)."&type=episode", $url);
     }
 
     /**
@@ -452,15 +495,15 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setTitle(TESTSERIES_TITLE);
-        $film->setYear(TESTSERIES_YEAR);
+        $film->setTitle(self::TESTSERIES_TITLE);
+        $film->setYear(self::TESTSERIES_YEAR);
         $film->setContentType(Film::CONTENT_TV_SERIES);
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&y=".TESTSERIES_YEAR."&t=".urlencode(TESTSERIES_TITLE)."&type=series", $url);
+        $this->assertEquals("&y=".self::TESTSERIES_YEAR."&t=".urlencode(self::TESTSERIES_TITLE)."&type=series", $url);
     }
 
     /**
@@ -481,15 +524,15 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setTitle(TESTFILM_PRIMARY_TITLE);
-        $film->setYear(TESTFILM_PRIMARY_YEAR);
+        $film->setTitle(self::TESTFILM_PRIMARY_TITLE);
+        $film->setYear(self::TESTFILM_PRIMARY_YEAR);
         $film->setContentType(Film::CONTENT_SHORTFILM);
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&y=".TESTFILM_PRIMARY_YEAR."&t=".urlencode(TESTFILM_PRIMARY_TITLE), $url);
+        $this->assertEquals("&y=".self::TESTFILM_PRIMARY_YEAR."&t=".urlencode(self::TESTFILM_PRIMARY_TITLE), $url);
     }
 
     /**
@@ -510,15 +553,15 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setTitle(TESTFILM_PRIMARY_TITLE);
-        $film->setYear(TESTFILM_PRIMARY_YEAR);
+        $film->setTitle(self::TESTFILM_PRIMARY_TITLE);
+        $film->setYear(self::TESTFILM_PRIMARY_YEAR);
         $film->setContentType(Film::CONTENT_TV_SEASON);
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&y=".TESTFILM_PRIMARY_YEAR."&t=".urlencode(TESTFILM_PRIMARY_TITLE), $url);
+        $this->assertEquals("&y=".self::TESTFILM_PRIMARY_YEAR."&t=".urlencode(self::TESTFILM_PRIMARY_TITLE), $url);
     }
 
     /**
@@ -539,14 +582,14 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApi();
         $film = new Film();
-        $film->setTitle(TESTFILM_PRIMARY_TITLE);
-        $film->setYear(TESTFILM_PRIMARY_YEAR);
+        $film->setTitle(self::TESTFILM_PRIMARY_TITLE);
+        $film->setYear(self::TESTFILM_PRIMARY_YEAR);
 
         // Test
         $url = $site->getFilmUrl($film);
 
         // Verify
-        $this->assertEquals("&y=".TESTFILM_PRIMARY_YEAR."&t=".urlencode(TESTFILM_PRIMARY_TITLE), $url);
+        $this->assertEquals("&y=".self::TESTFILM_PRIMARY_YEAR."&t=".urlencode(self::TESTFILM_PRIMARY_TITLE), $url);
     }
 
     /**
@@ -565,8 +608,8 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApiExt();
         $film = new Film();
-        $film->setTitle(TESTFILM_PRIMARY_TITLE);
-        $film->setYear(TESTFILM_PRIMARY_YEAR);
+        $film->setTitle(self::TESTFILM_PRIMARY_TITLE);
+        $film->setYear(self::TESTFILM_PRIMARY_YEAR);
 
         // Test
         $success = $site->searchWebsiteForUniqueFilm($film);
@@ -577,7 +620,7 @@ class OmdbApiTest extends RatingSyncTestCase
 
         // Verify
         $this->assertTrue($success);
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $uniqueName);
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $uniqueName);
     }
 
     /**
@@ -654,29 +697,29 @@ class OmdbApiTest extends RatingSyncTestCase
         $film = new Film();
 
         // Test
-        $film->setUniqueName(TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
+        $film->setUniqueName(self::TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
 
         // Verify
             // Film data
-        $this->assertEquals(TESTFILM_PRIMARY_TITLE, $film->getTitle(), 'Title');
-        $this->assertEquals(TESTFILM_PRIMARY_YEAR, $film->getYear(), 'Year');
+        $this->assertEquals(self::TESTFILM_PRIMARY_TITLE, $film->getTitle(), 'Title');
+        $this->assertEquals(self::TESTFILM_PRIMARY_YEAR, $film->getYear(), 'Year');
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
         $this->assertEmpty($film->getImage(), 'Film image should be empty');
-        $this->assertEquals(TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(TESTFILM_PRIMARY_GENRES, $film->getGenres(), 'Genres');
+        $this->assertEquals(self::TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
+        $this->assertEquals(self::TESTFILM_PRIMARY_GENRES, array_intersect(self::TESTFILM_PRIMARY_GENRES, $film->getGenres()), 'Genres');
 
             // OMDbAPI source-specific
-        $this->assertEquals(1, preg_match('@('.TESTFILM_PRIMARY_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
-        $this->assertEquals(TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
-        $this->assertEquals(TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTFILM_PRIMARY_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
+        $this->assertEquals(self::TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
 
             // IMDb source-specific
-        $this->assertEquals(1, preg_match('@('.TESTFILM_PRIMARY_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
-        $this->assertEquals(TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
-        $this->assertEquals(TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTFILM_PRIMARY_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
+        $this->assertEquals(self::TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
 
             // Not available in the detail page
         $rating = $film->getRating($site->_getSourceName());
@@ -701,29 +744,29 @@ class OmdbApiTest extends RatingSyncTestCase
         $site = new OmdbApiExt();
 
         $film = new Film();
-        $film->setUniqueName(TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
+        $film->setUniqueName(self::TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
 
         // Same results as testGetFilmDetailFromWebsite
             // Film data
-        $this->assertEquals(TESTFILM_PRIMARY_TITLE, $film->getTitle(), 'Title');
-        $this->assertEquals(TESTFILM_PRIMARY_YEAR, $film->getYear(), 'Year');
+        $this->assertEquals(self::TESTFILM_PRIMARY_TITLE, $film->getTitle(), 'Title');
+        $this->assertEquals(self::TESTFILM_PRIMARY_YEAR, $film->getYear(), 'Year');
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
         $this->assertEmpty($film->getImage(), 'Film image should be empty');
-        $this->assertEquals(TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(TESTFILM_PRIMARY_GENRES, $film->getGenres(), 'Genres');
+        $this->assertEquals(self::TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
+        $this->assertEquals(self::TESTFILM_PRIMARY_GENRES, array_intersect(self::TESTFILM_PRIMARY_GENRES, $film->getGenres()), 'Genres');
 
             // OMDbAPI source-specific
-        $this->assertEquals(1, preg_match('@('.TESTFILM_PRIMARY_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
-        $this->assertEquals(TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
-        $this->assertEquals(TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTFILM_PRIMARY_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
+        $this->assertEquals(self::TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
 
             // IMDb source-specific
-        $this->assertEquals(1, preg_match('@('.TESTFILM_PRIMARY_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
-        $this->assertEquals(TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
-        $this->assertEquals(TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTFILM_PRIMARY_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
+        $this->assertEquals(self::TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
 
             // Not available in the detail page
         $rating = $film->getRating($site->_getSourceName());
@@ -799,35 +842,35 @@ class OmdbApiTest extends RatingSyncTestCase
         $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
 
         // Test
-        $film->setUniqueName(TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
+        $film->setUniqueName(self::TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
 
         // Verify
             // new data
-        $this->assertEquals(TESTFILM_PRIMARY_TITLE, $film->getTitle(), 'Title');
-        $this->assertEquals(TESTFILM_PRIMARY_YEAR, $film->getYear(), 'Year');
+        $this->assertEquals(self::TESTFILM_PRIMARY_TITLE, $film->getTitle(), 'Title');
+        $this->assertEquals(self::TESTFILM_PRIMARY_YEAR, $film->getYear(), 'Year');
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
-        $this->assertEquals(TESTFILM_PRIMARY_GENRES, $film->getGenres(), 'Genres');
-        $this->assertEquals(TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
+        $this->assertEquals(self::TESTFILM_PRIMARY_GENRES, array_intersect(self::TESTFILM_PRIMARY_GENRES, $film->getGenres()), 'Genres');
+        $this->assertEquals(self::TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
         $this->assertEquals("Original_Image", $film->getImage(), 'Film image');
 
             // new data (OMDbAPI)
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
         $rating = $film->getRating($site->_getSourceName());
-        $this->assertEquals(TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
-        $this->assertEquals(TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
-        $this->assertEquals(1, preg_match('@('.TESTFILM_PRIMARY_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
+        $this->assertEquals(self::TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTFILM_PRIMARY_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
             // The film detail page does not have these fields.  Don't overwrite them.
         $this->assertEquals(3, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/3/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
         $this->assertEquals(4, $rating->getSuggestedScore(), 'Suggested score');
 
             // new data (IMDb)
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals(TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
-        $this->assertEquals(TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
-        $this->assertEquals(1, preg_match('@('.TESTFILM_PRIMARY_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
+        $this->assertEquals(self::TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTFILM_PRIMARY_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
             // The film detail page does not have these fields.  Don't overwrite them.
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
@@ -906,7 +949,7 @@ class OmdbApiTest extends RatingSyncTestCase
         $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
 
         // Get detail not overwriting
-        $film->setUniqueName(TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
+        $film->setUniqueName(self::TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, false);
 
         // Verify - Same original data
@@ -918,7 +961,7 @@ class OmdbApiTest extends RatingSyncTestCase
         $this->assertEquals(array("Original_Genre1", "Original_Genre2"), $film->getGenres(), 'Genres');
 
         // Verify - Same original data (OMDbAPI)
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
         $this->assertEquals(5, $film->getCriticScore($site->_getSourceName()), 'Critic score');
         $this->assertEquals(6, $film->getUserScore($site->_getSourceName()), 'User score');
         $rating = $film->getRating($site->_getSourceName());
@@ -969,24 +1012,24 @@ class OmdbApiTest extends RatingSyncTestCase
 
         // Same results as testGetFilmDetailFromWebsite or testGetFilmDetailFromWebsiteOverwriteTrueOverEmpty
             // Film data
-        $this->assertEquals(TESTFILM_PRIMARY_TITLE, $film->getTitle(), 'Title');
-        $this->assertEquals(TESTFILM_PRIMARY_YEAR, $film->getYear(), 'Year');
+        $this->assertEquals(self::TESTFILM_PRIMARY_TITLE, $film->getTitle(), 'Title');
+        $this->assertEquals(self::TESTFILM_PRIMARY_YEAR, $film->getYear(), 'Year');
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
         $this->assertEmpty($film->getImage(), 'Film image should be empty');
-        $this->assertEquals(TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(TESTFILM_PRIMARY_GENRES, $film->getGenres(), 'Genres');
+        $this->assertEquals(self::TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
+        $this->assertEquals(self::TESTFILM_PRIMARY_GENRES, array_intersect(self::TESTFILM_PRIMARY_GENRES, $film->getGenres()), 'Genres');
 
             // OMDbAPI source-specific
-        $this->assertEquals(1, preg_match('@('.TESTFILM_PRIMARY_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
-        $this->assertEquals(TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
-        $this->assertEquals(TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTFILM_PRIMARY_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
+        $this->assertEquals(self::TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
 
             // IMDb source-specific
-        $this->assertEquals(1, preg_match('@('.TESTFILM_PRIMARY_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
-        $this->assertEquals(TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
-        $this->assertEquals(TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTFILM_PRIMARY_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
+        $this->assertEquals(self::TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
 
             // Not available in the detail page
         $rating = $film->getRating($site->_getSourceName());
@@ -1053,35 +1096,35 @@ class OmdbApiTest extends RatingSyncTestCase
         $film->setRating($ratingJinniOrig, Constants::SOURCE_JINNI);
 
         // Test
-        $film->setUniqueName(TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
+        $film->setUniqueName(self::TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film);
 
         // Verify
             // new data
-        $this->assertEquals(TESTFILM_PRIMARY_TITLE, $film->getTitle(), 'Title');
-        $this->assertEquals(TESTFILM_PRIMARY_YEAR, $film->getYear(), 'Year');
+        $this->assertEquals(self::TESTFILM_PRIMARY_TITLE, $film->getTitle(), 'Title');
+        $this->assertEquals(self::TESTFILM_PRIMARY_YEAR, $film->getYear(), 'Year');
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
-        $this->assertEquals(TESTFILM_PRIMARY_GENRES, $film->getGenres(), 'Genres');
-        $this->assertEquals(TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
+        $this->assertEquals(self::TESTFILM_PRIMARY_GENRES, array_intersect(self::TESTFILM_PRIMARY_GENRES, $film->getGenres()), 'Genres');
+        $this->assertEquals(self::TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
         $this->assertEquals("Original_Image", $film->getImage(), 'Image link');
 
             // new data (OMDbAPI)
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
         $rating = $film->getRating($site->_getSourceName());
-        $this->assertEquals(TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
-        $this->assertEquals(TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
-        $this->assertEquals(1, preg_match('@('.TESTFILM_PRIMARY_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
+        $this->assertEquals(self::TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTFILM_PRIMARY_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
             // The film detail page does not have these fields.  Don't overwrite them.
         $this->assertEquals(3, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/3/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
         $this->assertEquals(4, $rating->getSuggestedScore(), 'Suggested score');
 
             // new data (IMDb)
-        $this->assertEquals(TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
+        $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals(TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
-        $this->assertEquals(TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
-        $this->assertEquals(1, preg_match('@('.TESTFILM_PRIMARY_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
+        $this->assertEquals(self::TESTFILM_PRIMARY_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTFILM_PRIMARY_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
             // The film detail page does not have these fields.  Don't overwrite them.
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("1/2/2000", $rating->getYourRatingDate()->format("n/j/Y"), 'Rating date');
@@ -1125,13 +1168,13 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApiExt();
         $film = new Film();
-        $film->setUniqueName(TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
+        $film->setUniqueName(self::TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
 
         // Test
         $site->getFilmDetailFromWebsite($film);
 
         // Verify
-        $this->assertEquals(TESTFILM_PRIMARY_GENRES, $film->getGenres(), 'Genres');
+        $this->assertEquals(self::TESTFILM_PRIMARY_GENRES, array_intersect(self::TESTFILM_PRIMARY_GENRES, $film->getGenres()), 'Genres');
     }
 
     /**
@@ -1149,13 +1192,13 @@ class OmdbApiTest extends RatingSyncTestCase
         // Setup
         $site = new OmdbApiExt();
         $film = new Film();
-        $film->setUniqueName(TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
+        $film->setUniqueName(self::TESTFILM_PRIMARY_IMDBID, $site->_getSourceName());
 
         // Test
         $site->getFilmDetailFromWebsite($film);
 
         // Verify
-        $this->assertEquals(TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
+        $this->assertEquals(self::TESTFILM_PRIMARY_DIRECTORS, $film->getDirectors(), 'Director(s)');
     }
 
     /**
@@ -1178,28 +1221,28 @@ class OmdbApiTest extends RatingSyncTestCase
         $film = new Film();
 
         // Test
-        $film->setUniqueName(TESTEPISODE_IMDBID, $site->_getSourceName());
+        $film->setUniqueName(self::TESTEPISODE_IMDBID, $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
 
         // Verify
             // Film data
-        $this->assertEquals(TESTEPISODE_TITLE, $film->getTitle(), 'Title');
-        $this->assertEquals(TESTEPISODE_EPISODETITLE, $film->getEpisodeTitle(), 'Episode Title');
-        $this->assertEquals(TESTEPISODE_YEAR, $film->getYear(), 'Year');
+        $this->assertEquals(self::TESTEPISODE_TITLE, $film->getTitle(), 'Title');
+        $this->assertEquals(self::TESTEPISODE_EPISODETITLE, $film->getEpisodeTitle(), 'Episode Title');
+        $this->assertEquals(self::TESTEPISODE_YEAR, $film->getYear(), 'Year');
         $this->assertEquals(Film::CONTENT_TV_EPISODE, $film->getContentType(), 'Content Type');
         $this->assertEmpty($film->getImage(), 'Film image should be empty');
-        $this->assertEquals(TESTEPISODE_DIRECTORS, $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(TESTEPISODE_GENRES, $film->getGenres(), 'Genres');
+        $this->assertEquals(self::TESTEPISODE_DIRECTORS, $film->getDirectors(), 'Director(s)');
+        $this->assertEquals(self::TESTEPISODE_GENRES, $film->getGenres(), 'Genres');
 
             // OMDbAPI source-specific
-        $this->assertEquals(1, preg_match('@('.TESTEPISODE_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
-        $this->assertEquals(TESTEPISODE_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
-        $this->assertEquals(TESTEPISODE_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTEPISODE_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
+        $this->assertEquals(self::TESTEPISODE_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
+        $this->assertEquals(self::TESTEPISODE_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
 
             // IMDb source-specific
-        $this->assertEquals(1, preg_match('@('.TESTEPISODE_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
-        $this->assertEquals(TESTEPISODE_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
-        $this->assertEquals(TESTEPISODE_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTEPISODE_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
+        $this->assertEquals(self::TESTEPISODE_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
+        $this->assertEquals(self::TESTEPISODE_USER_SCORE, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
     }
 
     /**
@@ -1221,29 +1264,29 @@ class OmdbApiTest extends RatingSyncTestCase
         $film = new Film();
 
         // Test
-        $film->setUniqueName(TESTSERIES_IMDBID, $site->_getSourceName());
+        $film->setUniqueName(self::TESTSERIES_IMDBID, $site->_getSourceName());
         $site->getFilmDetailFromWebsite($film, true);
 
         // Verify
             // Film data
-        $this->assertEquals(TESTSERIES_TITLE, $film->getTitle(), 'Title');
-        $this->assertEquals(TESTSERIES_YEAR, $film->getYear(), 'Year');
+        $this->assertEquals(self::TESTSERIES_TITLE, $film->getTitle(), 'Title');
+        $this->assertEquals(self::TESTSERIES_YEAR, $film->getYear(), 'Year');
         $this->assertEquals(Film::CONTENT_TV_SERIES, $film->getContentType(), 'Content Type');
         $this->assertEmpty($film->getImage(), 'Film image should be empty');
-        $this->assertEquals(TESTSERIES_DIRECTORS, $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(TESTSERIES_GENRES, $film->getGenres(), 'Genres');
+        $this->assertEquals(self::TESTSERIES_DIRECTORS, $film->getDirectors(), 'Director(s)');
+        $this->assertEquals(self::TESTSERIES_GENRES, $film->getGenres(), 'Genres');
 
             // OMDbAPI source-specific
-        $this->assertEquals(1, preg_match('@('.TESTSERIES_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
-        $this->assertEquals(TESTSERIES_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
-        $this->assertEquals(TESTSERIES_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
-        $this->assertEquals(TESTSERIES_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTSERIES_IMAGE.')@', $film->getImage($site->_getSourceName()), $matches), 'Source image');
+        $this->assertEquals(self::TESTSERIES_IMDBID, $film->getUniqueName($site->_getSourceName()), 'Unique Name');
+        $this->assertEquals(self::TESTSERIES_CRITIC_SCORE, $film->getCriticScore($site->_getSourceName()), 'Critic score');
+        $this->assertEquals(self::TESTSERIES_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
 
             // IMDb source-specific
-        $this->assertEquals(1, preg_match('@('.TESTSERIES_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
-        $this->assertEquals(TESTSERIES_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
-        $this->assertEquals(TESTSERIES_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
-        $this->assertEquals(TESTSERIES_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
+        $this->assertEquals(1, preg_match('@('.self::TESTSERIES_IMAGE.')@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Source image');
+        $this->assertEquals(self::TESTSERIES_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), 'Unique Name');
+        $this->assertEquals(self::TESTSERIES_CRITIC_SCORE, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
+        $this->assertEquals(self::TESTSERIES_USER_SCORE, $film->getUserScore($site->_getSourceName()), 'User score');
     }
 }
 

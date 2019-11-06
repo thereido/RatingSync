@@ -23,10 +23,6 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
                               ,Film::CONTENT_SHORTFILM => "sf"
                               ,Film::CONTENT_TV_MOVIE => "tm"
                              );
-    const REQUEST_DETAIL_MOVIE = "detail_movie";
-    const REQUEST_DETAIL_SERIES = "detail_tv_series";
-    const REQUEST_DETAIL_EPISODE = "detail_tv_episode";
-    const REQUEST_DETAIL_SEASON = "detail_tv_season";
     const REQUEST_FIND = "find";
     const REQUEST_SEARCH_MOVIE = "search_movie";
     const REQUEST_SEARCH_SERIES = "search_tv";
@@ -353,17 +349,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         // adds an attr to the response to show which request this response 
         // goes with.
         $requestName = array_value_by_key(self::ATTR_API_REQUEST_NAME, $json);
-        if ($requestName == self::REQUEST_DETAIL) {
-            if ($contentType == Film::CONTENT_FILM) {
-                $requestName = self::REQUEST_DETAIL_MOVIE;
-            }
-            elseif ($contentType == Film::CONTENT_TV_SERIES) {
-                $requestName = self::REQUEST_DETAIL_SERIES;
-            }
-            elseif ($contentType == Film::CONTENT_TV_EPISODE) {
-                $requestName = self::REQUEST_DETAIL_EPISODE;
-            }
-        }
+        $requestName = $this->getRequestName($requestName, $contentType);
 
         // Get values from the API result
                         // Film object attrs
@@ -411,7 +397,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         $existingTitle = $film->getTitle();
         $existingEpisodeTitle = $film->getEpisodeTitle();
         $existingYear = $film->getYear();
-        $existingTMDbImage = $film->getImage($this->sourceName);
+        $existingImageSource = $film->getImage($this->sourceName);
         $existingContentType = $film->getContentType();
         $existingSeasonCount = $film->getSeasonCount();
         $existingSeason = $film->getSeason();
@@ -427,7 +413,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         if ($overwrite || is_null($existingTitle)) { $film->setTitle($title); }
         if ($overwrite || is_null($existingEpisodeTitle)) { $film->setEpisodeTitle($episodeTitle); }
         if ($overwrite || is_null($existingYear)) { $film->setYear($year); }
-        if ($overwrite || is_null($existingTMDbImage)) { $film->setImage($image, $this->sourceName); }
+        if ($overwrite || is_null($existingImageSource)) { $film->setImage($image, $this->sourceName); }
         if ($overwrite || is_null($existingContentType)) { $film->setContentType($contentType); }
         if ($overwrite || is_null($existingSeasonCount)) { $film->setSeasonCount($seasonCount); }
         if ($overwrite || is_null($existingSeason)) { $film->setSeason($season); }
@@ -458,12 +444,109 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         if ($overwrite || is_null($existingIMDbUniqueName)) { $film->setUniqueName($imdbId, Constants::SOURCE_IMDB); }
         if ($overwrite || is_null($existingIMDbUserScore)) { $film->setUserScore($imdbUserScore, Constants::SOURCE_IMDB); }
     }
+    
+    /**
+     * Get season data from the TMDb API and populate a new Season object.
+     * The api response is not complete, just the fields we currently use.
+     * 
+     * Movie - https://api.themoviedb.org/3/tv/1399/season/1?api_key={api_key}
+     * {
+     *   "air_date": "2011-04-17",
+     *   "episodes": [
+     *     {
+     *       "air_date": "2011-04-17",
+     *       "episode_number": 1,
+     *       "name": "Winter Is Coming",
+     *       "id": 63056,
+     *       "season_number": 1,
+     *       "still_path": "/wrGWeW4WKxnaeA8sxJb2T9O6ryo.jpg",
+     *       "vote_average": 7.11904761904762
+     *     }
+     *   ],
+     *   "name": "Season 1",
+     *   "id": 3624,
+     *   "poster_path": "/olJ6ivXxCMq3cfujo1IRw30OrsQ.jpg",
+     *   "season_number": 1
+     * }
+     */
+    public function populateSeason($json, $seriesFilmId)
+    {
+        if (!is_array($json)) {
+            throw new \InvalidArgumentException("\$json param ($json) must be an array");
+        } elseif (!is_numeric($seriesFilmId)) {
+            throw new \InvalidArgumentException(__FUNCTION__.'() seriesFilmId must be a number');
+        }
 
-    protected function printResultToLog($filmJson) {
-        $title = array_value_by_key("Title", $filmJson);
-        $year = array_value_by_key("Year", $filmJson);
-        $msg = "TMDb API result: $title ($year)";
+        $requestName = self::REQUEST_DETAIL_SEASON;
+
+        // Get values from the API result
+        $name =         $this->jsonValue($json, Season::ATTR_NAME, $requestName);
+        $year =         $this->jsonValue($json, Season::ATTR_YEAR, $requestName);
+        $number =       $this->jsonValue($json, Season::ATTR_NUM, $requestName);
+        $image =        $this->jsonValue($json, Season::ATTR_IMAGE, $requestName);
+        $episodes =     $this->jsonValue($json, Season::ATTR_EPISODES, $requestName);
+
+        // Set season attrs
+        $season = new Season();
+        $season->setName($name);
+        $season->setYear($year);
+        $season->setNumber($number);
+        $season->setImage($image);
+        
+        // Populate episodes
+        $season->removeAllEpisodes();
+        foreach ($episodes as $episodeData) {
+            $tmdbId = $this->jsonValue($episodeData, Season::ATTR_EPISODE_ID, $requestName);
+            $episodeTitle = $this->jsonValue($episodeData, Season::ATTR_EPISODE_TITLE, $requestName);
+            $episodeYear = (int)$this->jsonValue($episodeData, Season::ATTR_EPISODE_YEAR, $requestName);
+            $episodeNum = (int)$this->jsonValue($episodeData, Season::ATTR_EPISODE_NUM, $requestName);
+            $seasonNum = (int)$number;
+            $episodeImage = $this->jsonValue($episodeData, Season::ATTR_EPISODE_IMAGE, $requestName);
+            $episodeUserScore = (float)$this->jsonValue($episodeData, Season::ATTR_EPISODE_USERSCORE, $requestName);
+            if (!empty($episodeUserScore)) {
+                $episodeUserScore = round($episodeUserScore, 1);
+            }
+
+            $season->addEpisode($episodeNum);
+            $season->setEpisodeSeriesFilmId($seriesFilmId, $episodeNum);
+            $season->setEpisodeSourceId($tmdbId, $episodeNum);
+            $season->setEpisodeTitle($episodeTitle, $episodeNum);
+            $season->setEpisodeYear($episodeYear, $episodeNum);
+            $season->setEpisodeSeasonNumber($seasonNum, $episodeNum);
+            $season->setEpisodeImage($episodeImage, $episodeNum);
+            $season->setEpisodeUserScore($episodeUserScore, $episodeNum);
+        }
+
+        return $season;
+    }
+
+    protected function printResultToLog($filmJson, $requestName, $contentType) {
+        $requestName = $this->getRequestName($requestName, $contentType);
+        $titleAttr = Film::ATTR_TITLE;
+        if ($contentType == Film::CONTENT_TV_EPISODE) {
+            $titleAttr = Film::ATTR_EPISODE_TITLE;
+        }
+        $title = $this->jsonValue($filmJson, $titleAttr, $requestName);
+        $year = $this->jsonValue($filmJson, Film::ATTR_YEAR, $requestName);
+        $msg = $this->sourceName . " API result: $title ($year)";
         logDebug($msg, __CLASS__."::".__FUNCTION__." ".__LINE__);
+    }
+
+    protected function getRequestName($requestName, $contentType)
+    {
+        if (!empty($contentType) && $requestName == self::REQUEST_DETAIL) {
+            if ($contentType == Film::CONTENT_FILM) {
+                $requestName = self::REQUEST_DETAIL_MOVIE;
+            }
+            elseif ($contentType == Film::CONTENT_TV_SERIES) {
+                $requestName = self::REQUEST_DETAIL_SERIES;
+            }
+            elseif ($contentType == Film::CONTENT_TV_EPISODE) {
+                $requestName = self::REQUEST_DETAIL_EPISODE;
+            }
+        }
+
+        return $requestName;
     }
 
     /**
@@ -598,7 +681,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
      * 
      * @return string A prefix based on the contentType + the sourceId
      */
-    protected function getUniqueNameFromSourceId($sourceId, $contentType)
+    public function getUniqueNameFromSourceId($sourceId, $contentType = null)
     {
         if (empty($contentType)) {
             throw new \InvalidArgumentException(__CLASS__."::".__FUNCTION__." param contentType must not be null");
@@ -765,28 +848,18 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             $tmdbIndexes[self::ATTR_CREDITS_CREW] = "crew";
         }
         elseif ($requestName == static::REQUEST_DETAIL_SEASON) {
-            $tmdbIndexes[Film::ATTR_IMDB_ID] = null;
-            $tmdbIndexes[Film::ATTR_PARENT_ID] = null;
-            $tmdbIndexes[Film::ATTR_TITLE] = "name"; // Season
-            $tmdbIndexes[Film::ATTR_TITLE ."_". Film::CONTENT_TV_EPISODE] = "name"; // Episodes
-            $tmdbIndexes[Film::ATTR_YEAR] = "air_date"; // Season
-            $tmdbIndexes[Film::ATTR_YEAR ."_". Film::CONTENT_TV_EPISODE] = "air_date"; // Epsiodes
-            $tmdbIndexes[Film::ATTR_CONTENT_TYPE] = null;
-            $tmdbIndexes[Film::ATTR_SEASON_COUNT] = null;
-            $tmdbIndexes[Film::ATTR_SEASON_NUM] = "season_number"; // Season
-            $tmdbIndexes[Film::ATTR_SEASON_NUM ."_". Film::CONTENT_TV_EPISODE] = "season_number"; // Episodes
-            $tmdbIndexes[Film::ATTR_EPISODE_NUM] = "episode_number";
-            $tmdbIndexes[Film::ATTR_EPISODE_TITLE] = "name";
-            $tmdbIndexes[Film::ATTR_GENRES] = null;
-            $tmdbIndexes[Film::ATTR_DIRECTORS] = null;
-            $tmdbIndexes[Source::ATTR_UNIQUE_NAME] = "id"; // Season
-            $tmdbIndexes[Source::ATTR_UNIQUE_NAME ."_". Film::CONTENT_TV_EPISODE] = "id"; // Episodes
-            $tmdbIndexes[Source::ATTR_IMAGE] = "poster_path"; // Season
-            $tmdbIndexes[Source::ATTR_IMAGE ."_". Film::CONTENT_TV_EPISODE] = "still_path"; // Episodes
-            $tmdbIndexes[Source::ATTR_CRITIC_SCORE] = null;
-            $tmdbIndexes[Source::ATTR_USER_SCORE] = null; // Season
-            $tmdbIndexes[Source::ATTR_USER_SCORE ."_". Film::CONTENT_TV_EPISODE] = "vote_average"; // Episodes
-            $tmdbIndexes[self::ATTR_CREDITS_CREW ."_". Film::CONTENT_TV_EPISODE] = "crew"; // Episodes
+            $tmdbIndexes[Season::ATTR_UNIQUE_NAME] = "id";
+            $tmdbIndexes[Season::ATTR_NAME] = "name";
+            $tmdbIndexes[Season::ATTR_YEAR] = "air_date";
+            $tmdbIndexes[Season::ATTR_NUM] = "season_number";
+            $tmdbIndexes[Season::ATTR_IMAGE] = "poster_path";
+            $tmdbIndexes[Season::ATTR_EPISODES] = "episodes";
+            $tmdbIndexes[Season::ATTR_EPISODE_ID] = "id";
+            $tmdbIndexes[Season::ATTR_EPISODE_TITLE] = "name";
+            $tmdbIndexes[Season::ATTR_EPISODE_YEAR] = "air_date";
+            $tmdbIndexes[Season::ATTR_EPISODE_NUM] = "episode_number";
+            $tmdbIndexes[Season::ATTR_EPISODE_IMAGE] = "still_path";
+            $tmdbIndexes[Season::ATTR_EPISODE_USERSCORE] = "vote_average";
         }
         elseif ($requestName == static::REQUEST_FIND) {
 
@@ -824,7 +897,10 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
     {
         $value = null;
 
-        if ($attrName == Film::ATTR_YEAR || $attrName == Film::ATTR_YEAR ."_". Film::CONTENT_TV_EPISODE) {
+        if ($attrName == Film::ATTR_YEAR
+            || $attrName == Film::ATTR_YEAR ."_". Film::CONTENT_FILM
+            || $attrName == Season::ATTR_YEAR)
+        {
             $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_MOVIE);
             if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_SERIES); }
             if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_EPISODE); }
@@ -871,6 +947,11 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         }
 
         return $value;
+    }
+
+    public function getImagePath()
+    {
+        return "https://image.tmdb.org/t/p/w500";
     }
 }
 

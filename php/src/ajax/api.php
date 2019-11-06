@@ -266,9 +266,14 @@ function api_getStream($username)
 function api_getFilm($username, $get)
 {
     $filmId = array_value_by_key("id", $get);
-    $imdbUniqueName = array_value_by_key("imdb", $get);
+    $parentId = array_value_by_key("pid", $get);
+    $imdbId = array_value_by_key("imdb", $get);
+    $uniqueName = array_value_by_key("un", $get);
+    $contentType = array_value_by_key("ct", $get);
+    $seasonNum = array_value_by_key("s", $get);
+    $episodeNum = array_value_by_key("e", $get);
     $getFromRsDbOnly = array_value_by_key("rsonly", $get);
-    logDebug("Params id=$filmId, imdb=$imdbUniqueName, rsonly=$getFromRsDbOnly", __FUNCTION__." ".__LINE__);
+    logDebug("Params id=$filmId, pid=$parentId, imdbId=$imdbId, un=$uniqueName, ct=$contentType, s=$seasonNum, e=$episodeNum, rsonly=$getFromRsDbOnly", __FUNCTION__." ".__LINE__);
     
     if ($getFromRsDbOnly === "0") {
         $getFromRsDbOnly = false;
@@ -277,7 +282,7 @@ function api_getFilm($username, $get)
     }
     
     $response = '{"Success":"false"}';
-    $film = getFilmApi($username, $filmId, $imdbUniqueName, $getFromRsDbOnly);
+    $film = getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType, $seasonNum, $episodeNum, $parentId);
     
     if (!empty($film)) {
         $response = $film->json_encode();
@@ -286,19 +291,38 @@ function api_getFilm($username, $get)
     return $response;
 }
 
-function getFilmApi($username, $filmId, $imdbUniqueName, $getFromRsDbOnly)
+function getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType = null, $seasonNum = null, $episodeNum = null, $parentId = null)
 {
     $film = null;
     if (!empty($filmId)) {
+
         $film = Film::getFilmFromDb($filmId, $username);
-    } elseif (!empty($imdbUniqueName)) {
-        $film = Film::getFilmFromDbByUniqueName($imdbUniqueName, Constants::SOURCE_IMDB, $username);
+
+    }
+    elseif (!empty($uniqueName) || !empty($imdbId)) {
+
+        $sourceName = Constants::DATA_API_DEFAULT;
+        if (empty($uniqueName) && !empty($imdbId)) {
+            $uniqueName = $imdbId;
+            $sourceName = Constants::SOURCE_IMDB;
+        }
+
+        $api = getMediaDbApiClient();
+        $film = $api->getFilmFromDb($uniqueName, $contentType, $username);
+
         if (empty($film) && !$getFromRsDbOnly) {
             $searchTerms = array();
-            $searchTerms["uniqueName"] = $imdbUniqueName;
-            $searchTerms["sourceName"] = "IMDb";
+            $searchTerms["imdbId"] = $imdbId;
+            $searchTerms["uniqueName"] = $uniqueName;
+            $searchTerms["sourceName"] = $sourceName;
+            $searchTerms["contentType"] = $contentType;
+            $searchTerms["season"] = $seasonNum;
+            $searchTerms["episodeNumber"] = $episodeNum;
+            $searchTerms["parentId"] = $parentId;
+            
+            // A search adds the film to the DB. Get the new film from the DB.
             $searchResponseJson = search($searchTerms, $username);
-            $film = Film::getFilmFromDbByUniqueName($imdbUniqueName, Constants::SOURCE_IMDB, $username);
+            $film = $api->getFilmFromDb($uniqueName, $contentType, $username);
         }
     }
 
@@ -538,18 +562,29 @@ function api_searchFilms($username)
 function api_getFilms($username, $params)
 {
     $filmIdsParam = array_value_by_key("id", $params);
-    $imdbIdsParam = array_value_by_key("imdb", $params);
-    logDebug("Params id=$filmIdsParam, imdb=$imdbIdsParam", __FUNCTION__." ".__LINE__);
+    $sourceIdContentTypesParam = array_value_by_key("sidcts", $params);
+    $imdbIdContentTypesParam = array_value_by_key("imdbcts", $params);
+    logDebug("Params id=$filmIdsParam, sidcts=$sourceIdContentTypesParam, imdbcts=$imdbIdContentTypesParam", __FUNCTION__." ".__LINE__);
+
+    $idContentTypeParam = "";
+    $idType = "IMDb IDs"; // 'IMDb IDs' or 'Source IDs'
+    if (!empty($sourceIdContentTypesParam)) {
+        $idContentTypeParam = $sourceIdContentTypesParam;
+        $idType = "Source IDs";
+    } elseif (!empty($imdbIdContentTypesParam)) {
+        $idContentTypeParam = $imdbIdContentTypesParam;
+        $idType = "IMDb IDs";
+    }
 
     $filmIds = explode(" ", $filmIdsParam);
-    $imdbIds = explode(" ", $imdbIdsParam);
+    $idContentTypeCombos = explode(" ", $idContentTypeParam);
     $getFromRsDbOnly = true;
 
     $films = array();
     foreach ($filmIds as $filmId) {
         $film = null;
         try {
-            $film = getFilmApi($username, $filmId, null, $getFromRsDbOnly);
+            $film = getFilmApi($username, $filmId, null, null, $getFromRsDbOnly);
         } catch (\Exception $e) {
             $errorMsg = "Error api.php::getFilmApi(\$username, $filmId, null, $getFromRsDbOnly) Called from api_getFilms()" . 
                         "\nException (" . $e->getCode() . ") " . $e->getMessage();
@@ -559,10 +594,27 @@ function api_getFilms($username, $params)
             $films[] = $film;
         }
     }
-    foreach ($imdbIds as $imdbUniqueName) {
+    foreach ($idContentTypeCombos as $idAndContentType) {
         $film = null;
+        $id = null;
+        $contentType = null;
+
+        // idAndContentType delimiter is "_", id_contentType
+        $pieces = explode("_", $idAndContentType);
+        if (count($pieces) > 1) {
+            $id = $pieces[0];
+            if (count($pieces) > 1) {
+                $contentType = $pieces[1];
+            }
+        }
+
         try {
-            $film = getFilmApi($username, null, $imdbUniqueName, $getFromRsDbOnly);
+            if ($idType == "IMDb IDs") {
+                $film = getFilmApi($username, null, $id, null, $getFromRsDbOnly, $contentType);
+            } elseif ($idType == "Source IDs") {
+                $uniqueName = getMediaDbApiClient()->getUniqueNameFromSourceId($id, $contentType);
+                $film = getFilmApi($username, null, null, $uniqueName, $getFromRsDbOnly, $contentType);
+            }
         } catch (\Exception $e) {
             $errorMsg = "Error api.php::getFilmApi(\$username, $filmId, null, $getFromRsDbOnly) Called from api_getFilms()" . 
                         "\nException (" . $e->getCode() . ") " . $e->getMessage();
@@ -605,14 +657,24 @@ function api_getSeason($username)
     $seasonNum = array_value_by_key("s", $_GET);
     logDebug("Params id=$filmId, s=$seasonNum", __FUNCTION__." ".__LINE__);
 
-    $omdbApi = new OmdbApi("empty_userame");
-    $seasonArray = $omdbApi->getSeason($filmId, $seasonNum);
-    $response = json_encode($seasonArray);
-    if (!$response) {
-        $response = json_encode(array("Response" => "False"));
+    $dataApi = getMediaDbApiClient();
+    $season = null;
+    try {
+        $season = $dataApi->getSeasonFromApi($filmId, $seasonNum);
+    }
+    catch (\Exception $e) {
+        $errorMsg = "Error getSeasonFromApi(filmId=$filmId, seasonNum=$seasonNum)" . 
+                    "\nException " . $e->getCode() . " " . $e->getMessage() .
+                    "\n$e";
+        logDebug($errorMsg, __FUNCTION__." ".__LINE__);
+    }
+    
+    $response = json_encode(array("Response" => "False"));
+    if (!empty($season)) {
+        $response = $season->json_encode(true);
     }
 
-    return json_encode($seasonArray);
+    return $response;
 }
 
 ?>

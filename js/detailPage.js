@@ -1,8 +1,13 @@
 
-function getFilmForDetailPage(filmId, imdbUniqueName) {
+function getFilmForDetailPage(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum) {
     var params = "?action=getFilm";
     params = params + "&id=" + filmId;
-    params = params + "&imdb=" + imdbUniqueName;
+    if (imdbId && imdbId != "undefined") { params = params + "&imdb=" + imdbId; }
+    if (uniqueName && uniqueName != "undefined") { params = params + "&un=" + uniqueName; }
+    params = params + "&ct=" + contentType;
+    if (parentId && parentId != "undefined") { params = params + "&pid=" + parentId; }
+    if (seasonNum && seasonNum != "undefined") { params = params + "&s=" + seasonNum; }
+    if (episodeNum && episodeNum != "undefined") { params = params + "&e=" + episodeNum; }
     params = params + "&rsonly=0";
 	var xmlhttp = new XMLHttpRequest();
     var callbackHandler = function () { detailPageCallback(xmlhttp); };
@@ -34,7 +39,7 @@ function detailPageCallback(xmlhttp) {
 
                     // Made the series title be a link
                     var titleEl = document.getElementsByClassName("film-title")[0];
-                    titleEl.innerHTML = "<a href='/php/detail.php?i=" + film.parentId + "'>" + titleEl.innerHTML + "</a>";
+                    titleEl.innerHTML = "<a href='/php/detail.php?i=" + film.parentId + "&ct=" + CONTENT_TV_SERIES + "'>" + titleEl.innerHTML + "</a>";
                 }
                 
                 getSeriesForDetailPage(film);
@@ -53,6 +58,7 @@ function getSeriesForDetailPage() {
     } else if (episodeFilm) {
         var params = "?action=getFilm";
         params = params + "&id=" + episodeFilm.parentId;
+        params = params + "&ct=" + CONTENT_TV_SERIES;
         params = params + "&rsonly=1";
         var xmlhttp = new XMLHttpRequest();
         var callbackHandler = function () { detailPageSeriesCallback(xmlhttp); };
@@ -123,22 +129,28 @@ function detailPageEpisodesCallback(xmlhttp) {
 function renderEpisodes(result) {
     var episodesEl = document.getElementById("episodes");
     episodesEl.innerHTML = "";
-    var episodes = result.Episodes;
+    var episodes = result.episodes;
+
     for (var i = 0; i < episodes.length; i++) {
         var episode = episodes[i];
         
         rowEl = document.createElement("div");
         rowEl.setAttribute("class", "row");
         episodeEl = document.createElement("detail-episode");
-        episodeEl.setAttribute("id", "episode-" + episode.Episode); // episode number
+        episodeEl.setAttribute("id", "episode-" + episode.number); // episode number
 
         numberEl = document.createElement("span");
-        numberEl.innerHTML = episode.Episode + ". ";
+        numberEl.innerHTML = episode.number + ". ";
 
         linkEl = document.createElement("a");
-        linkEl.setAttribute("href", "/php/detail.php?imdb=" + episode.imdbID);
-        linkEl.setAttribute("data-imdb", episode.imdbID);
-        linkEl.innerHTML = episode.Title;
+        var params = "?sid=" + episode.sourceId;
+        params = params + "&ct=" + CONTENT_TV_EPISODE;
+        params = params + "&pid=" + episode.seriesFilmId;
+        params = params + "&season=" + episode.seasonNum;
+        params = params + "&en=" + episode.number;
+        linkEl.setAttribute("href", "/php/detail.php" + params);
+        linkEl.setAttribute("data-imdb", episode.sourceId);
+        linkEl.innerHTML = episode.title;
         
         episodesEl.appendChild(rowEl);
         rowEl.appendChild(episodeEl);
@@ -148,15 +160,15 @@ function renderEpisodes(result) {
 }
 
 function getEpisodeRatings(seasonJson) {
-    var episodes = seasonJson.Episodes;
+    var episodes = seasonJson.episodes;
     if (!episodes || episodes.length == 0) {
         return;
     }
     var delim = "";
     var params = "?action=getFilms";
-    params += "&imdb=";
+    params += "&sidcts="; // sourceId/contentType combos
     for (var i = 0; i < episodes.length; i++) {
-        params += delim + episodes[i].imdbID;
+        params += delim + episodes[i].sourceId + "_" + CONTENT_TV_EPISODE;
         delim = "+";
     }
 	var xmlhttp = new XMLHttpRequest();

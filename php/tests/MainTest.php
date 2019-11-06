@@ -13,19 +13,99 @@ require_once "ImdbTest.php";
 require_once "RatingSyncSiteTest.php";
 require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
+require_once "OmdbApiTest.php";
+require_once "TmdbApiTest.php";
 
 class MainTest extends RatingSyncTestCase
 {
+    protected $constants = array();
+
     protected function setUp(): void
     {
         parent::setup();
         //$this->verbose = true;
     }
+
+    public function setupConstants()
+    {
+        //$this->constants = OmdbApiTest::getConstants();
+        $this->constants = TmdbApiTest::getConstants();
+    }
+    
+    public static function setupRatings()
+    {
+        $db = getDatabase();
+        $success = true;
+
+        // Reset DB
+        DatabaseTest::resetDb();
+
+        // Import films for test data
+        $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
+        $site = new SiteRatingsChild(TEST_IMDB_USERNAME);
+        $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
+        $films = $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename, $username_rs);
+
+        // Insert a RS user to the DB
+        $username_rs = "rs_user1";
+        $query = "INSERT INTO user (username, password) VALUES ('$username_rs', 'password')";
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
+        $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_IMDB."', 'imdb_user1', 'pwd')";
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
+        $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_JINNI."', 'jinni_user1', 'pwd')";
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
+        $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_RATINGSYNC."', '$username_rs', 'password')";
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
+        
+        // Save ratings for 3 films for the new user
+        $filmId = 1; $filmId2 = 2; $filmId4 = 4;
+        $result = $db->query("SELECT * FROM rating WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."' AND source_name='".Constants::SOURCE_IMDB."'");
+        $rating = new Rating(Constants::SOURCE_IMDB);
+        $rating->initFromDbRow($result->fetch_assoc());
+        $rating->saveToRs($username_rs, $filmId);
+        $rating->saveToRs($username_rs, $filmId2);
+        $rating->setYourRatingDate(new \DateTime());
+        $rating->saveToRs($username_rs, $filmId4);
+
+        $query = "UPDATE rating SET source_name='".Constants::SOURCE_IMDB."' WHERE film_id=$filmId4 AND user_name='$username_rs'";
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
+
+        $filmId = 1;
+        $query = "UPDATE rating SET yourRatingDate='2015-1-1' WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."' AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
+
+        $filmId = 3;
+        $query = "UPDATE rating SET source_name='".Constants::SOURCE_IMDB."' WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."'";
+        if (! $db->query($query) ) {
+            echo $query."  SQL Error: ".$db->error;
+            $success = false;
+        }
+
+        return $success;
+    }
     
     public function testSetup()
     {$this->start(__CLASS__, __FUNCTION__);
     
-        $this->assertTrue(RatingSyncSiteTest::setupRatings(), "RatingSyncSiteTest::setupRatings() failed");
+        $this->assertTrue(self::setupRatings(), "setupRatings() failed");
     }
     
     /**
@@ -34,27 +114,39 @@ class MainTest extends RatingSyncTestCase
      */
     public function testSearchDbExists()
     {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
         $db = getDatabase();
+        $this->setupConstants();
+        $sourceName = $this->constants["sourceName"];
+        $uniqueName = $this->constants["filmUniqueName"];
 
         // Test
-        $searchTerms = array("uniqueName" => "tt2294629", "sourceName" => Constants::SOURCE_IMDB);
-        $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match']; // Frozen (2013)
+        $searchTerms = array("uniqueName" => $uniqueName, "sourceName" => $sourceName);
+        $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match'];
         $filmId = $film->getId();
 
         // Verify database - film
+        $title = $this->constants["filmTitle"];
+        $year = $this->constants["filmYear"];
+        $directors = $this->constants["filmDirectors"];
+        $genres = $this->constants["filmGenres"];
         $film = Film::GetFilmFromDb($filmId, Constants::TEST_RATINGSYNC_USERNAME);
-        $this->assertEquals("Frozen", $film->getTitle(), "Title");
-        $this->assertEquals(2013, $film->getYear(), "Year");
+        $filmImage = "http://example.com/frozen_film_image.jpeg";
+        $dbDirectors = $film->getDirectors(); sort($dbDirectors);
+        $dbGenres = $film->getGenres(); sort($dbGenres);
+        $this->assertEquals($title, $film->getTitle(), "Title");
+        $this->assertEquals($year, $film->getYear(), "Year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
-        $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(), 'Image link (film)');
-        $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(array("Adventure", "Animation", "Comedy", "Family", "Fantasy", "Musical"), $film->getGenres(), 'Genres');
+        $this->assertEquals($filmImage, $film->getImage(), 'Image link (film)');
+        $this->assertEquals($directors, $dbDirectors, 'Director(s)');
+        $this->assertEquals($genres, $dbGenres, 'Genres');
 
         // Verify database - IMDb
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
-        $this->assertEquals(1, preg_match('@(https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
-        $this->assertEquals(7, $film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
-        $this->assertEquals(8, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
+        $this->assertEquals('https://m.media-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_SX300.jpg', $film->getImage(Constants::SOURCE_IMDB), 'Image link (IMDb)');
+        $this->assertEquals(7, round($film->getCriticScore(Constants::SOURCE_IMDB)), 'Critic score');
+        $this->assertEquals(8, round($film->getUserScore(Constants::SOURCE_IMDB)), 'User score');
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score not available from searchImdb');
         $this->assertEmpty($rating->getYourRatingDate(), 'Rating date not available from searchImdb');
@@ -62,9 +154,9 @@ class MainTest extends RatingSyncTestCase
 
         // Verify database - RS
         $this->assertEquals("rs$filmId", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "RS uniqueName");
-        $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "RS image");
-        $this->assertEquals(4, $film->getCriticScore(Constants::SOURCE_RATINGSYNC), 'Critic score');
-        $this->assertEquals(5, $film->getUserScore(Constants::SOURCE_RATINGSYNC), 'User score');
+        $this->assertEquals($filmImage, $film->getImage(Constants::SOURCE_RATINGSYNC), "RS image");
+        $this->assertEquals(4, round($film->getCriticScore(Constants::SOURCE_RATINGSYNC)), 'Critic score');
+        $this->assertEquals(5, round($film->getUserScore(Constants::SOURCE_RATINGSYNC)), 'User score');
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals(2, $rating->getYourScore(), 'Your Score');
         $this->assertEquals("2015-01-01", date_format($rating->getYourRatingDate(), "Y-m-d"), "YourRatingDate");
@@ -101,6 +193,14 @@ class MainTest extends RatingSyncTestCase
         $film = search("", Constants::TEST_RATINGSYNC_USERNAME)['match'];
         $this->assertEmpty($film, "Empty query should return nothing");
     }
+
+    public function testResetDb()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        DatabaseTest::resetDb();
+
+        $this->assertTrue(true); // Making sure we made it this far
+    }
     
     /**
      * - Film does not exist in the db
@@ -111,59 +211,205 @@ class MainTest extends RatingSyncTestCase
      *   - same as testSearchImdb
      *
      * @covers \RatingSync\search
+     * @depends testResetDb
      */
     public function testSearch()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Set up
-        DatabaseTest::resetDb();
+        $this->setupConstants();
+        $sourceName = $this->constants["sourceName"];
 
-        // Test
-        $searchTerms = array("uniqueName" => "tt0094819", "sourceName" => Constants::SOURCE_IMDB);
-        $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match']; // Buster (1988)
+        // Movie
+                // Setup
+        $contentType = Film::CONTENT_FILM;
+        $uniqueName = $this->constants["filmUniqueName"];
+        $searchTerms = array("uniqueName" => $uniqueName);
+        $searchTerms["sourceName"] = $sourceName;
+        $searchTerms["contentType"] = $contentType;
+
+                // Test
+        $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match']; // Frozen (2013)
         $filmId = $film->getId();
 
-        // Verify film object
-        $this->assertEquals("Buster", $film->getTitle(), "Title");
-        $this->assertEquals(1988, $film->getYear(), "Year");
-        $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
-        $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match('@(MV5BY2ZmZWMwMDQtMzQxNS00ZGQ2LThmOWMtMjI4ZTdjMzg3NGFjXkEyXkFqcGdeQXVyMTczNjQwOTY)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
-        $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
-        $this->assertEquals(5.8, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
-        $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(array("Comedy", "Crime", "Drama", "Romance"), $film->getGenres(), 'Genres');
-        $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals("tt0094819", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
+                // Verify
+                    // film object
+        $title = $this->constants["filmTitle"];
+        $year = $this->constants["filmYear"];
+        $sourceImage = $this->constants["filmImage"];
+        $userScore = $this->constants["filmUserScore"];
+        $criticScore = $this->constants["filmCriticScore"];
+        $directors = $this->constants["filmDirectors"];
+        $genres = $this->constants["filmGenres"];
+        $filmImage = "/image/rs$filmId.jpg";
+        $directorsFromSearch = $film->getDirectors(); sort($directorsFromSearch);
+        $genresFromSearch = $film->getGenres(); sort($genresFromSearch);
+        $this->assertEquals($title, $film->getTitle(), "Title");
+        $this->assertEquals($year, $film->getYear(), "Year");
+        $this->assertEquals($contentType, $film->getContentType(), 'Content Type');
+        $this->assertEquals($filmImage, $film->getImage(), 'Image link (film)');
+        $this->assertEquals(1, preg_match("@($sourceImage)@", $film->getImage($sourceName), $matches), "Image link ($sourceName)");
+        $this->assertEquals(round($criticScore), round($film->getCriticScore($sourceName)), 'Critic score');
+        $this->assertEquals(round($userScore), round($film->getUserScore($sourceName)), 'User score');
+        $this->assertEquals($directors, $directorsFromSearch, 'Director(s)');
+        $this->assertEquals($genres, array_intersect($genres, $genresFromSearch), 'Genres');
+        $rating = $film->getRating($sourceName);
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), 'UniqueName from source');
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
-
-        // Verify database
-
+                    // Verify the db film the same way as the object before
         $film = null;
         $film = Film::getFilmFromDb($filmId, Constants::TEST_RATINGSYNC_USERNAME);
-
-        // Verify the db film the same way as the object before
-        $this->assertEquals("Buster", $film->getTitle(), "Title");
-        $this->assertEquals(1988, $film->getYear(), "Year");
-        $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), 'Content Type');
-        $this->assertEquals("/image/rs$filmId.jpg", $film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match('@(MV5BY2ZmZWMwMDQtMzQxNS00ZGQ2LThmOWMtMjI4ZTdjMzg3NGFjXkEyXkFqcGdeQXVyMTczNjQwOTY)@', $film->getImage(Constants::SOURCE_IMDB), $matches), 'Image link (IMDb)');
-        $this->assertNull($film->getCriticScore(Constants::SOURCE_IMDB), 'Critic score');
-        $this->assertEquals(6, $film->getUserScore(Constants::SOURCE_IMDB), 'User score');
-        $this->assertEquals(array("David Green"), $film->getDirectors(), 'Director(s)');
-        $this->assertEquals(array("Comedy", "Crime", "Drama", "Romance"), $film->getGenres(), 'Genres');
-        $rating = $film->getRating(Constants::SOURCE_IMDB);
-        $this->assertEquals("tt0094819", $film->getUniqueName(Constants::SOURCE_IMDB), 'UniqueName from source');
+        $dbDirectors = $film->getDirectors(); sort($dbDirectors);
+        $dbGenres = $film->getGenres(); sort($dbGenres);
+        $this->assertEquals($title, $film->getTitle(), "Title");
+        $this->assertEquals($year, $film->getYear(), "Year");
+        $this->assertEquals($contentType, $film->getContentType(), 'Content Type');
+        $this->assertEquals($filmImage, $film->getImage(), 'Image link (film)');
+        $this->assertEquals(1, preg_match("@($sourceImage)@", $film->getImage($sourceName), $matches), "Image link ($sourceName)");
+        $this->assertEquals(round($criticScore), round($film->getCriticScore($sourceName)), 'Critic score');
+        $this->assertEquals(round($userScore), round($film->getUserScore($sourceName)), 'User score');
+        $this->assertEquals($directors, $dbDirectors, 'Director(s)');
+        $this->assertEquals($genres, array_intersect($genres, $dbGenres), 'Genres');
+        $rating = $film->getRating($sourceName);
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), 'UniqueName from source');
         $this->assertNull($rating->getYourScore(), 'Your Score');
         $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
-
-        // RS source created
+                    // RS source created
         $source = $film->getSource(Constants::SOURCE_RATINGSYNC);
         $this->assertEquals("rs$filmId", $source->getUniqueName(), "RS uniqueName");
-        $this->assertEquals("/image/rs$filmId.jpg", $source->getImage(), "RS uniqueName");
+        $this->assertEquals("/image/rs$filmId.jpg", $source->getImage(), "RS image");
+
+        // TV Series
+                // Setup
+        $contentType = Film::CONTENT_TV_SERIES;
+        $uniqueName = $this->constants["seriesUniqueName"];
+        $searchTerms = array("uniqueName" => $uniqueName);
+        $searchTerms["sourceName"] = $sourceName;
+        $searchTerms["contentType"] = $contentType;
+
+                // Test
+        $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match']; // Game of Thrones
+        $filmId = $film->getId();
+
+                // Verify
+                    // film object
+        $title = $this->constants["seriesTitle"];
+        $year = $this->constants["seriesYear"];
+        $sourceImage = $this->constants["seriesImage"];
+        $userScore = $this->constants["seriesUserScore"];
+        $criticScore = $this->constants["seriesCriticScore"];
+        $directors = $this->constants["seriesDirectors"];
+        $genres = $this->constants["seriesGenres"];
+        $filmImage = "/image/rs$filmId.jpg";
+        $directorsFromSearch = $film->getDirectors(); sort($directorsFromSearch);
+        $genresFromSearch = $film->getGenres(); sort($genresFromSearch);
+        $this->assertEquals($title, $film->getTitle(), "Title");
+        $this->assertEquals($year, $film->getYear(), "Year");
+        $this->assertEquals($contentType, $film->getContentType(), 'Content Type');
+        $this->assertEquals($filmImage, $film->getImage(), 'Image link (film)');
+        $this->assertEquals(1, preg_match("@($sourceImage)@", $film->getImage($sourceName), $matches), "Image link ($sourceName)");
+        $this->assertEquals(round($criticScore), round($film->getCriticScore($sourceName)), 'Critic score');
+        $this->assertEquals(round($userScore), round($film->getUserScore($sourceName)), 'User score');
+        $this->assertEquals($directors, $directorsFromSearch, 'Director(s)');
+        $this->assertEquals($genres, array_intersect($genres, $genresFromSearch), 'Genres');
+        $rating = $film->getRating($sourceName);
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), 'UniqueName from source');
+        $this->assertNull($rating->getYourScore(), 'Your Score');
+        $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
+        $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
+                    // Verify the db film the same way as the object before
+        $film = null;
+        $film = Film::getFilmFromDb($filmId, Constants::TEST_RATINGSYNC_USERNAME);
+        $dbDirectors = $film->getDirectors(); sort($dbDirectors);
+        $dbGenres = $film->getGenres(); sort($dbGenres);
+        $this->assertEquals($title, $film->getTitle(), "Title");
+        $this->assertEquals($year, $film->getYear(), "Year");
+        $this->assertEquals($contentType, $film->getContentType(), 'Content Type');
+        $this->assertEquals($filmImage, $film->getImage(), 'Image link (film)');
+        $this->assertEquals(1, preg_match("@($sourceImage)@", $film->getImage($sourceName), $matches), "Image link ($sourceName)");
+        $this->assertEquals(round($criticScore), round($film->getCriticScore($sourceName)), 'Critic score');
+        $this->assertEquals(round($userScore), round($film->getUserScore($sourceName)), 'User score');
+        $this->assertEquals($directors, $dbDirectors, 'Director(s)');
+        $this->assertEquals($genres, array_intersect($genres, $dbGenres), 'Genres');
+        $rating = $film->getRating($sourceName);
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), 'UniqueName from source');
+        $this->assertNull($rating->getYourScore(), 'Your Score');
+        $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
+        $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
+                    // RS source created
+        $source = $film->getSource(Constants::SOURCE_RATINGSYNC);
+        $this->assertEquals("rs$filmId", $source->getUniqueName(), "RS uniqueName");
+        $this->assertEquals("/image/rs$filmId.jpg", $source->getImage(), "RS image");
+
+        // TV Episode
+                // Setup
+        $contentType = Film::CONTENT_TV_EPISODE;
+        $uniqueName = $this->constants["episodeUniqueName"];
+        $searchTerms = array("uniqueName" => $uniqueName);
+        $searchTerms["sourceName"] = $sourceName;
+        $searchTerms["contentType"] = $contentType;
+
+                // Test
+        $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match']; // Game of Thrones
+        $filmId = $film->getId();
+
+                // Verify
+                    // film object
+        $title = $this->constants["episodeTitle"];
+        $episodeTitle = $this->constants["episodeEpisodeTitle"];
+        $year = $this->constants["episodeYear"];
+        $sourceImage = $this->constants["episodeImage"];
+        $userScore = $this->constants["episodeUserScore"];
+        $criticScore = $this->constants["episodeCriticScore"];
+        $directors = $this->constants["episodeDirectors"];
+        $genres = $this->constants["episodeGenres"];
+        $filmImage = "/image/rs$filmId.jpg";
+        $seasonNum = $this->constants["episodeSeasonNum"];
+        $episodeNum = $this->constants["episodeEpisodeNum"];
+        $directorsFromSearch = $film->getDirectors(); sort($directorsFromSearch);
+        $genresFromSearch = $film->getGenres(); sort($genresFromSearch);
+        $this->assertEquals($title, $film->getTitle(), "Title");
+        $this->assertEquals($year, $film->getYear(), "Year");
+        $this->assertEquals($contentType, $film->getContentType(), 'Content Type');
+        $this->assertEquals($filmImage, $film->getImage(), 'Image link (film)');
+        $this->assertEquals(1, preg_match("@($sourceImage)@", $film->getImage($sourceName), $matches), "Image link ($sourceName)");
+        $this->assertEquals(round($criticScore), round($film->getCriticScore($sourceName)), 'Critic score');
+        $this->assertEquals(round($userScore), round($film->getUserScore($sourceName)), 'User score');
+        $this->assertEquals($directors, $directorsFromSearch, 'Director(s)');
+        $this->assertEquals($genres, array_intersect($genres, $genresFromSearch), 'Genres');
+        $rating = $film->getRating($sourceName);
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), 'UniqueName from source');
+        $this->assertNull($rating->getYourScore(), 'Your Score');
+        $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
+        $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
+        $this->assertEquals($seasonNum, $seasonNum, "Season number");
+        $this->assertEquals($episodeNum, $episodeNum, "Episode number");
+                    // Verify the db film the same way as the object before
+        $film = null;
+        $film = Film::getFilmFromDb($filmId, Constants::TEST_RATINGSYNC_USERNAME);
+        $dbDirectors = $film->getDirectors(); sort($dbDirectors);
+        $dbGenres = $film->getGenres(); sort($dbGenres);
+        $this->assertEquals($title, $film->getTitle(), "Title");
+        $this->assertEquals($year, $film->getYear(), "Year");
+        $this->assertEquals($contentType, $film->getContentType(), 'Content Type');
+        $this->assertEquals($filmImage, $film->getImage(), 'Image link (film)');
+        $this->assertEquals(1, preg_match("@($sourceImage)@", $film->getImage($sourceName), $matches), "Image link ($sourceName)");
+        $this->assertEquals(round($criticScore), round($film->getCriticScore($sourceName)), 'Critic score');
+        $this->assertEquals(round($userScore), round($film->getUserScore($sourceName)), 'User score');
+        $this->assertEquals($directors, $dbDirectors, 'Director(s)');
+        $this->assertEquals($genres, array_intersect($genres, $dbGenres), 'Genres');
+        $rating = $film->getRating($sourceName);
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), 'UniqueName from source');
+        $this->assertNull($rating->getYourScore(), 'Your Score');
+        $this->assertNull($rating->getYourRatingDate(), 'Rating date not available from film detail page');
+        $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
+                    // RS source created
+        $source = $film->getSource(Constants::SOURCE_RATINGSYNC);
+        $this->assertEquals("rs$filmId", $source->getUniqueName(), "RS uniqueName");
+        $this->assertEquals("/image/rs$filmId.jpg", $source->getImage(), "RS image");
     }
     
     /**
@@ -186,6 +432,8 @@ class MainTest extends RatingSyncTestCase
 
         // Set up
         // Use the film in db from testSearch
+        $this->setupConstants();
+        $title = $this->constants["filmTitle"];
 
         // Test
         $searchTerms = array("uniqueName" => "rs1", "sourceName" => Constants::SOURCE_RATINGSYNC);
@@ -193,7 +441,7 @@ class MainTest extends RatingSyncTestCase
 
         // Verify
         $this->assertFalse(empty($film), "Film search result should not be empty");
-        $this->assertEquals("Buster", $film->getTitle(), "Title");
+        $this->assertEquals($title, $film->getTitle(), "Title");
     }
     
     /**
@@ -216,13 +464,15 @@ class MainTest extends RatingSyncTestCase
 
         // Set up
         // Use the film in db from testSearch
+        $this->setupConstants();
+        $title = $this->constants["filmTitle"];
 
         // Test
         $searchTerms = array("uniqueName" => "rs1");
         $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match'];
 
         // Verify
-        $this->assertEquals("Buster", $film->getTitle(), "Title");
+        $this->assertEquals($title, $film->getTitle(), "Title");
         $this->assertEmpty($film->getYourScore(Constants::SOURCE_RATINGSYNC), "Should be no RS rating");
     }
     
@@ -234,6 +484,8 @@ class MainTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Set up
+        $this->setupConstants();
+        $title = $this->constants["filmTitle"];
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $searchTerms = array("uniqueName" => "rs1");
         $setupFilm = search($searchTerms, $username)['match']; // Buster (1988)
@@ -244,7 +496,7 @@ class MainTest extends RatingSyncTestCase
         $film = search($searchTerms, $username)['match'];
 
         // Verify
-        $this->assertEquals("Buster", $film->getTitle(), "Title");
+        $this->assertEquals($title, $film->getTitle(), "Title");
         $this->assertEquals($setupFilm->getYourScore(Constants::SOURCE_RATINGSYNC), $film->getYourScore(Constants::SOURCE_RATINGSYNC), "RS rating");
     }
     

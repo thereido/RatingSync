@@ -28,7 +28,7 @@ class TmdbApiTest extends RatingSyncTestCase
     const TESTFILM_PRIMARY_TMDBID = "mv109445"; // mv + TESTFILM_PRIMARY_TMDBID_SOURCEID
     const TESTFILM_PRIMARY_TMDBID_SOURCEID = "109445";
     const TESTFILM_PRIMARY_USER_SCORE = 7.3;
-    const TESTFILM_PRIMARY_CRITIC_SCORE = 7.4;
+    const TESTFILM_PRIMARY_CRITIC_SCORE = null;
     const TESTFILM_PRIMARY_IMAGE = "/eFnGmj63QPUpK7QUWSOUhypIQOT.jpg";
     const TESTFILM_PRIMARY_DIRECTORS = array("Chris Buck", "Jennifer Lee");
     const TESTFILM_PRIMARY_GENRES = array("Animation", "Adventure", "Family");
@@ -45,7 +45,7 @@ class TmdbApiTest extends RatingSyncTestCase
     const TESTSERIES_GENRES = array("Sci-Fi & Fantasy", "Drama", "Action & Adventure");
     const TESTSERIES_SEASON_COUNT = 8;
     
-    const TESTEPISODE_TITLE = "Game of Thrones";
+    const TESTEPISODE_TITLE = self::TESTSERIES_TITLE;
     const TESTEPISODE_EPISODETITLE = "Garden of Bones";
     const TESTEPISODE_YEAR = 2012;
     const TESTEPISODE_IMDBID = "tt2069319";
@@ -58,6 +58,51 @@ class TmdbApiTest extends RatingSyncTestCase
     const TESTEPISODE_GENRES = array("Action", "Adventure", "Drama");
     const TESTEPISODE_SEASON_NUM = 2;
     const TESTEPISODE_EPISODE_NUM = 4;
+
+    public static function getConstants()
+    {
+        $constants = array();
+        $constants["sourceName"]            = Constants::SOURCE_TMDBAPI;
+
+        $constants["filmUniqueName"]        = self::TESTFILM_PRIMARY_TMDBID;
+        $constants["filmTitle"]             = self::TESTFILM_PRIMARY_TITLE;
+        $constants["filmYear"]              = self::TESTFILM_PRIMARY_YEAR;
+        $constants["filmGenres"]            = self::TESTFILM_PRIMARY_GENRES;
+        $constants["filmDirectors"]         = self::TESTFILM_PRIMARY_DIRECTORS;
+        $constants["filmImage"]             = self::TESTFILM_PRIMARY_IMAGE;
+        $constants["filmUserScore"]         = self::TESTFILM_PRIMARY_USER_SCORE;
+        $constants["filmCriticScore"]       = self::TESTFILM_PRIMARY_CRITIC_SCORE;
+
+        $constants["seriesUniqueName"]      = self::TESTSERIES_TMDBID;
+        $constants["seriesTitle"]           = self::TESTSERIES_TITLE;
+        $constants["seriesYear"]            = self::TESTSERIES_YEAR;
+        $constants["seriesGenres"]          = self::TESTSERIES_GENRES;
+        $constants["seriesDirectors"]       = self::TESTSERIES_DIRECTORS;
+        $constants["seriesImage"]           = self::TESTSERIES_IMAGE;
+        $constants["seriesUserScore"]       = self::TESTSERIES_USER_SCORE;
+        $constants["seriesCriticScore"]     = self::TESTSERIES_CRITIC_SCORE;
+
+        $constants["episodeUniqueName"]     = self::TESTEPISODE_TMDBID;
+        $constants["episodeTitle"]          = self::TESTEPISODE_TITLE;
+        $constants["episodeEpisodeTitle"]   = self::TESTEPISODE_EPISODETITLE;
+        $constants["episodeYear"]           = self::TESTEPISODE_YEAR;
+        $constants["episodeGenres"]         = self::TESTEPISODE_GENRES;
+        $constants["episodeDirectors"]      = self::TESTEPISODE_DIRECTORS;
+        $constants["episodeImage"]          = self::TESTEPISODE_IMAGE;
+        $constants["episodeUserScore"]      = self::TESTEPISODE_USER_SCORE;
+        $constants["episodeCriticScore"]    = self::TESTEPISODE_CRITIC_SCORE;
+        $constants["episodeSeasonNum"]      = self::TESTEPISODE_SEASON_NUM;
+        $constants["episodeEpisodeNum"]     = self::TESTEPISODE_EPISODE_NUM;
+
+        sort($constants["filmDirectors"]);
+        sort($constants["filmGenres"]);
+        sort($constants["seriesDirectors"]);
+        sort($constants["seriesGenres"]);
+        sort($constants["episodeDirectors"]);
+        sort($constants["episodeGenres"]);
+
+        return $constants;
+    }
 
     protected function setUp(): void
     {

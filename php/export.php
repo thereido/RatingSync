@@ -106,6 +106,7 @@ function test_input($data)
 
 <script>
     var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
+    var DATA_API_DEFAULT = "<?php echo Constants::DATA_API_DEFAULT; ?>";
 </script>
 
 </body>

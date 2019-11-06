@@ -60,6 +60,7 @@ var contextData;
 var currentPageNum = <?php echo $pageNum; ?>;;
 var defaultPageSize = 96;
 var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
+var DATA_API_DEFAULT = "<?php echo Constants::DATA_API_DEFAULT; ?>";
 var prevFilmlistFilterParams = getFilmlistFilterParams();
 getRsRatings(defaultPageSize, <?php echo $pageNum; ?>);
 </script>
