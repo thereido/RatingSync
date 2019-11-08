@@ -238,30 +238,39 @@ class Season {
     public function setEpisodeSourceId($sourceId, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
-            throw new \InvalidArgumentException('setEpisodeSeriesFilmId() episodeNumber param must be a number');
+            throw new \InvalidArgumentException('setEpisodeSourceId() episodeNumber param must be a number');
         }
 
         $this->addEpisode($episodeNumber);
         $this->episodes[$episodeNumber]["sourceId"] = $sourceId;
     }
 
-    public function setEpisodeUniqueName($sourceId, $episodeNumber)
+    public function setEpisodeUniqueName($uniqueName, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
-            throw new \InvalidArgumentException('setEpisodeSeriesFilmId() episodeNumber param must be a number');
+            throw new \InvalidArgumentException('setEpisodeUniqueName() episodeNumber param must be a number');
         }
-
-        $api = getMediaDbApiClient();
-        $uniqueName = $api->getUniqueNameFromSourceId($sourceId, Film::CONTENT_TV_EPISODE);
 
         $this->addEpisode($episodeNumber);
         $this->episodes[$episodeNumber]["uniqueName"] = $uniqueName;
     }
 
+    public function setEpisodeUniqueNameBySourceId($sourceId, $episodeNumber)
+    {
+        if (!is_numeric($episodeNumber)) {
+            throw new \InvalidArgumentException('setEpisodeUniqueNameBySourceId() episodeNumber param must be a number');
+        }
+
+        $api = getMediaDbApiClient();
+        $uniqueName = $api->getUniqueNameFromSourceId($sourceId, Film::CONTENT_TV_EPISODE);
+
+        $this->setEpisodeUniqueName($uniqueName, $episodeNumber);
+    }
+
     public function setEpisodeTitle($title, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
-            throw new \InvalidArgumentException('setEpisodeSeriesFilmId() episodeNumber param must be a number');
+            throw new \InvalidArgumentException('setEpisodeTitle() episodeNumber param must be a number');
         }
 
         $this->addEpisode($episodeNumber);
@@ -271,7 +280,7 @@ class Season {
     public function setEpisodeYear($year, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
-            throw new \InvalidArgumentException('setEpisodeSeriesFilmId() episodeNumber param must be a number');
+            throw new \InvalidArgumentException('setEpisodeYear() episodeNumber param must be a number');
         }
         if ("" == $year) {
             $year = null;
@@ -291,9 +300,9 @@ class Season {
     public function setEpisodeSeasonNumber($seasonNum, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
-            throw new \InvalidArgumentException('setEpisodeSeriesFilmId() episodeNumber param must be a number');
+            throw new \InvalidArgumentException('setEpisodeSeasonNumber() episodeNumber param must be a number');
         } elseif (is_null($seasonNum) || !is_numeric($seasonNum)) {
-            throw new \InvalidArgumentException('setEpisodeSeriesFilmId() seasonNum param must be a number or NULL');
+            throw new \InvalidArgumentException('setEpisodeSeasonNumber() seasonNum param must be a number or NULL');
         }
 
         $this->addEpisode($episodeNumber);
@@ -303,7 +312,7 @@ class Season {
     public function setEpisodeImage($image, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
-            throw new \InvalidArgumentException('setEpisodeSeriesFilmId() episodeNumber param must be a number');
+            throw new \InvalidArgumentException('setEpisodeImage() episodeNumber param must be a number');
         }
 
         $this->addEpisode($episodeNumber);
@@ -313,9 +322,9 @@ class Season {
     public function setEpisodeUserScore($userScore, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
-            throw new \InvalidArgumentException('setEpisodeSeriesFilmId() episodeNumber param must be a number');
+            throw new \InvalidArgumentException('setEpisodeUserScore() episodeNumber param must be a number');
         } elseif (is_null($userScore) || !is_numeric($userScore)) {
-            throw new \InvalidArgumentException('setEpisodeSeriesFilmId() userScore param must be a number or NULL');
+            throw new \InvalidArgumentException('setEpisodeUserScore() userScore param must be a number or NULL');
         }
 
         $this->addEpisode($episodeNumber);

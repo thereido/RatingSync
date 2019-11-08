@@ -21,19 +21,39 @@ function searchFilms(query, xmlhttp, callback) {
 	    xmlhttp.open("GET", RS_URL_API + params, true);
 	    xmlhttp.send();
     } else {
-        // Search from OMDb API
-        var searchParam = "&s=" + encodeURIComponent(query);
-        var imdbIdIndex = query.trim().search(/^tt\d{7}\d*$/i); // "tt" followed by at least 7 digits
-        if (imdbIdIndex > -1) {
-            searchParam = "&i=" + query.trim();
+        // Search from the default data API
+        var searchUrl = "";
+        var searchParams = "";
+        if (DATA_API_DEFAULT == SOURCE_OMDBAPI) {
+
+            searchUrl = URL_SEARCH_OMDB + "&apikey=" + OMDB_API_KEY;
+            searchParams = "&s=" + encodeURIComponent(query);
+            var imdbIdIndex = query.trim().search(/^tt\d{7}\d*$/i); // "tt" followed by at least 7 digits
+            if (imdbIdIndex > -1) {
+                searchParams = "&i=" + query.trim();
+            }
+            searchUrl = searchUrl + searchParams;
+
         }
-        var params = "json=1";
-        params = params + searchParam;
-        params = params + "&apikey=" + OMDB_API_KEY;
+        else if (DATA_API_DEFAULT == SOURCE_TMDBAPI) {
+            
+            var imdbIdIndex = query.trim().search(/^tt\d{7}\d*$/i); // "tt" followed by at least 7 digits
+            if (imdbIdIndex > -1) {
+                // Search using an IMDb ID
+                var imdbId = query.trim();
+                searchUrl = URL_FIND_TMDB + "/" + imdbId + "?external_source=imdb_id";
+            } else {
+                // Mulit Search
+                searchUrl = URL_SEARCH_TMDB + "&query=" + encodeURIComponent(query);
+            }
+
+            searchUrl = searchUrl + "&api_key=" + TMDB_API_KEY;
+
+        }
+        
         var callbackHandler = function () { searchFilmsCallback(query, xmlhttp, callback); };
         xmlhttp.onreadystatechange = callbackHandler;
-//*RT* Use default data api instead of hardcoding to OMDb
-	    xmlhttp.open("GET", "https://private.omdbapi.com/?" + params, true);
+	    xmlhttp.open("GET", searchUrl, true);
         xmlhttp.send();
     }
 }
@@ -50,39 +70,30 @@ function searchPageCallback(query, xmlhttp) {
 	var searchResultEl = document.getElementById("search-result-tbody");
     var limit = 10;
 
-	// Is the result from OMDB search, OMDB item, or RatingSync
-    var dataFromOmdb = false;
-	if (result.Search || result.Title) {
-        dataFromOmdb = true;
-        if (result.Title) {
-            films = [result];
-        } else {
-	        films = result.Search;
-        }
-	} else {
-	    films = result.films;
-	}
+    if (result.films) {
+        films = result.films;
+        fromOtherSource = false;
+    } else {
+        films = convertSourceDataListToRs(result, DATA_API_DEFAULT, limit);
+	    fromOtherSource = true;
+    }
+
     contextData.films = films;
 
 	searchResultEl.innerHTML = "";
-	var suggestionCount = 0;
+    var suggestionCount = 0;
 	while (suggestionCount < 10 && films && films.length > suggestionCount) {
 	    var film = films[suggestionCount];
 
-        // Get IMDb uniqueName
-	    var imdbUniqueName = "";
-        if (dataFromOmdb) {
-            imdbUniqueName = film.imdbID;
-        } else {
-            imdbUniqueName = getUniqueName(film, "IMDb");
-        }
+        var uniqueName = getUniqueName(film, DATA_API_DEFAULT);
 
         var rowEl = document.createElement("DIV");
         rowEl.setAttribute("class", "row");
-        rowEl.setAttribute("id", "search-" + imdbUniqueName);
+        rowEl.setAttribute("id", "search-" + uniqueName);
         searchResultEl.appendChild(rowEl);
-        if (dataFromOmdb) {
-            renderOmdbFilm(film, rowEl);
+        if (fromOtherSource) {
+            var filmEl = renderSearchResultFilm(film, rowEl);
+            getRatingSync(film, filmEl, true);
         } else {
             var filmEl = renderSearchResultFilm(film, rowEl);
             renderRsFilmDetails(film, filmEl);
@@ -97,14 +108,13 @@ function searchSuggestionCallback(query, xmlhttp) {
 	var films = result.films;
 	var suggestionBoxEl = document.getElementById("header-search-suggestion");
 	var limit = 5;
-	var fromOtherSource = false;
-	var imdbIdAndContentTypes = [];
+	var fromOtherSource = true;
+	var uniqueNameAndContentTypes = [];
 
-//*RT* result.Search and Title are specific to OMDb
-    if ((result.Search && result.Search.length > 0) || result.Title) {
-        // This is a result from OMDB. Convert to RatingSync style
-//*RT*	    films = convertSourceDataListToRs(result, DATA_API_DEFAULT, limit);
-/*RT*/	    films = convertSourceDataListToRs(result, "OMDb", limit);
+    if (result.films) {
+        fromOtherSource = false;
+    } else {
+	    films = convertSourceDataListToRs(result, DATA_API_DEFAULT, limit);
 	    fromOtherSource = true;
     }
 
@@ -128,13 +138,13 @@ function searchSuggestionCallback(query, xmlhttp) {
 	var suggestionCount = 0;
 	while (suggestionCount < limit && films && films.length > suggestionCount) {
 	    var film = films[suggestionCount];
-        var imdbUniqueName = getUniqueName(film, "IMDb");
-        if (imdbUniqueName != "") {
-            var imdbIdAndContentType = imdbUniqueName;
+        var uniqueName = getUniqueName(film, DATA_API_DEFAULT);
+        if (uniqueName != "") {
+            var uniqueNameAndContentType = uniqueName;
             if (film.contentType) {
-                imdbIdAndContentType = imdbIdAndContentType + "_" + film.contentType;
+                uniqueNameAndContentType += "_" + film.contentType;
             }
-            imdbIdAndContentTypes.push(imdbIdAndContentType);
+            uniqueNameAndContentTypes.push(uniqueNameAndContentType);
         }
 
         var suggestionEl = document.createElement("a");
@@ -146,10 +156,10 @@ function searchSuggestionCallback(query, xmlhttp) {
     
     if (fromOtherSource) {
         var params = "?action=getFilms";
-        params = params + "&imdbcts="; // imdbId/contentType combos
+        params = params + "&uncts="; // sourceId/contentType combos
         var delim = "";
-	    for (i = 0; i < imdbIdAndContentTypes.length; i++) {
-	        params = params + delim + imdbIdAndContentTypes[i];
+	    for (i = 0; i < uniqueNameAndContentTypes.length; i++) {
+	        params = params + delim + uniqueNameAndContentTypes[i];
 	        delim = "+";
 	    }
 	    var xmlhttp = new XMLHttpRequest();
@@ -161,7 +171,7 @@ function searchSuggestionCallback(query, xmlhttp) {
 }
 
 function renderSuggestionFilm(film, suggestionEl) {
-    var imdbUniqueName = getUniqueName(film, "IMDb");
+    var uniqueName = getUniqueName(film, DATA_API_DEFAULT);
         
 	var itemEl = document.createElement("div");
 	var posterEl = document.createElement("poster");
@@ -178,22 +188,26 @@ function renderSuggestionFilm(film, suggestionEl) {
 
     // Detail - title line
 	detailEl.setAttribute("class", "suggestion-item-detail");
-	var titleLineEl = document.createElement("div");
-	titleLineEl.innerHTML = film.title + ' (' + film.year + ')';
+    var titleLineEl = document.createElement("div");
+    var contentTypeText = "";
+    if (film.contentType == CONTENT_TV_SERIES) {
+        contentTypeText = " TV";
+    }
+	titleLineEl.innerHTML = film.title + ' (' + film.year + ')' + contentTypeText;
 	detailEl.appendChild(titleLineEl);
 
     // Detail - ratings line
 	var ratingsLineEl = document.createElement("div");
-	ratingsLineEl.setAttribute("id", "suggestion-rating-" + imdbUniqueName);
-	renderSuggestionRatings(film, ratingsLineEl);
+	ratingsLineEl.setAttribute("id", "suggestion-rating-" + uniqueName);
+    renderSuggestionRatings(film, ratingsLineEl);
 	detailEl.appendChild(ratingsLineEl);
 
     // Link & Item
     var contentTypeParam = "";
     if (film.contentType != "undefined") { contentTypeParam = "&ct=" + film.contentType; }
-	suggestionEl.setAttribute("href", "/php/detail.php?imdb=" + imdbUniqueName + contentTypeParam);
+	suggestionEl.setAttribute("href", "/php/detail.php?un=" + uniqueName + contentTypeParam);
 	itemEl.setAttribute("class", "search-suggestion-item");
-	itemEl.setAttribute("data-imdb-uniquename", imdbUniqueName);
+	itemEl.setAttribute("data-uniquename", uniqueName);
 	itemEl.setAttribute("data-contenttype", film.contentType);
 }
 
@@ -220,44 +234,13 @@ function suggestionRatingCallback(xmlhttp) {
 
         for (var i=0; i<films.length; i++) {
             var film = films[i];
-            var imdbUniqueName = getUniqueName(film, "IMDb");
-	        var ratingsLineEl = document.getElementById("suggestion-rating-" + imdbUniqueName);
+            var uniqueName = getUniqueName(film, DATA_API_DEFAULT);
+	        var ratingsLineEl = document.getElementById("suggestion-rating-" + uniqueName);
             if (ratingsLineEl) {
                 renderSuggestionRatings(film, ratingsLineEl);
             }
         }
     }
-}
-
-/**
- * param omdbFilm JSON from OMDB API
- *   Title
- *   Year
- *   imdbID
- *   Type - movie/series
- *   Poster - IMDb URL to image
- */
-function renderOmdbFilm(omdbFilm, element) {
-    var image = "";
-    if (omdbFilm.Poster && omdbFilm.Poster != "N/A") {
-        image = omdbFilm.Poster;
-    }
-
-    // Build a JSON film from the omdbFilm
-    var filmStr =       '{ ';
-    filmStr = filmStr + '"title":"' +omdbFilm.Title+ '"';
-    filmStr = filmStr + ', "year":"' +omdbFilm.Year+ '"';
-    filmStr = filmStr + ', "image":"' +image+ '"';
-    filmStr = filmStr + ', "sources": [';
-    filmStr = filmStr +                 '{ "name":"IMDb", "uniqueName":"' +omdbFilm.imdbID+ '" }';
-    filmStr = filmStr +              ']';
-    filmStr = filmStr + ' }';
-    var film = JSON.parse(filmStr);
-
-    var filmEl = renderSearchResultFilm(film, element);
-
-    // Get RS data for this film if it is in the db
-    getRatingSync(omdbFilm, filmEl, true);
 }
 
 function renderSearchResultFilm(film, element) {
@@ -280,25 +263,26 @@ function renderSearchResultFilm(film, element) {
     return filmEl;
 }
 
-function getRatingSync(omdbFilm, filmEl, detailFromRsOnly) {
-    var imdbUniqueName = omdbFilm.imdbID;
+function getRatingSync(film, filmEl, detailFromRsOnly) {
+    var uniqueName = getUniqueName(film, DATA_API_DEFAULT);
+    var contentType = film.contentType;
     var rsOnly = "1";
     if (!detailFromRsOnly) {
         rsOnly = "0";
     }
 
     var params = "?action=getFilm";
-    params = params + "&imdb=" + imdbUniqueName;
-    // params = params + "&ct=" + contentType;
-    params = params + "&rsonly=" + rsOnly;
+    params += "&un=" + uniqueName;
+    if (contentType && contentType != "undefined") { params += "&ct=" + contentType; }
+    params += "&rsonly=" + rsOnly;
 	var xmlhttp = new XMLHttpRequest();
-    var callbackHandler = function () { getRatingSyncCallback(xmlhttp, filmEl, omdbFilm); };
+    var callbackHandler = function () { getRatingSyncCallback(xmlhttp, filmEl, film); };
     xmlhttp.onreadystatechange = callbackHandler;
 	xmlhttp.open("GET", RS_URL_API + params, true);
 	xmlhttp.send();
 }
 
-function getRatingSyncCallback(xmlhttp, filmEl, omdbFilm) {
+function getRatingSyncCallback(xmlhttp, filmEl, film) {
     if (xmlhttp.readyState == 4) {
         var statusEl = filmEl.getElementsByTagName("status")[0];
         if (statusEl) {
@@ -309,10 +293,10 @@ function getRatingSyncCallback(xmlhttp, filmEl, omdbFilm) {
 	    var result = JSON.parse(xmlhttp.responseText);
         if (result.Success != "false" && result.filmId != "undefined") {
             var film = result;
-            updateContextDataOmdbFilm(film, omdbFilm.imdbID);
+            updateContextDataFilmByUniqueName(film, DATA_API_DEFAULT);
             renderRsFilmDetails(film, filmEl);
         } else {
-            renderNoRsFilmDetails(filmEl, omdbFilm);
+            renderNoRsFilmDetails(filmEl, film);
         }
 	}
 }
@@ -334,16 +318,15 @@ function renderRsFilmDetails(film, filmEl) {
     renderFilmlists(film.filmlists, film.filmId);
 }
 
-function renderNoRsFilmDetails(filmEl, omdbFilm) {
-    var imdbUniqueName = omdbFilm.imdbID;
-    var imdbFilmUrl = IMDB_FILM_BASEURL + imdbUniqueName;
+function renderNoRsFilmDetails(filmEl, film) {
+    var uniqueName = getUniqueName(film, DATA_API_DEFAULT);
 
     var html = '\n';
-    html = html + '<div id="seemore-'+imdbUniqueName+'"><a href="javascript:void(0);">More</a></div>';
+    html = html + '<div id="seemore-'+uniqueName+'"><a href="javascript:void(0);">More</a></div>';
 
     var seeMoreEl = document.createElement("seemore");
     seeMoreEl.innerHTML = html;
-    seeMoreEl.onclick = function() { onClickSeeMore(omdbFilm, filmEl, seeMoreEl); };
+    seeMoreEl.onclick = function() { onClickSeeMore(film, filmEl, seeMoreEl); };
 
     var detailEl = filmEl.getElementsByTagName("detail")[0];
     if (detailEl) {
@@ -353,9 +336,9 @@ function renderNoRsFilmDetails(filmEl, omdbFilm) {
     }
 }
 
-function onClickSeeMore(omdbFilm, filmEl, seeMoreEl) {
+function onClickSeeMore(film, filmEl, seeMoreEl) {
     seeMoreEl.innerHTML = '<img src="/image/processing.gif" alt="Please wait Icon" width="28" height="28">';
-    getRatingSync(omdbFilm, filmEl, false);
+    getRatingSync(film, filmEl, false);
 }
 
 function convertSourceDataListToRs(sourceSearchResult, sourceName, limit) {
@@ -372,7 +355,11 @@ function convertSourceDataListToRs(sourceSearchResult, sourceName, limit) {
         }
     }
     else if (sourceName == SOURCE_TMDBAPI) {
-//*RT* FIXME
+        var results = sourceSearchResult.results;
+        while (films.length < limit && results && results.length > films.length) {
+            var sourceFilm = results[films.length];
+            films[films.length] = convertSourceDataItemToRs(sourceFilm, sourceName);
+        }
     }
 
     return films;
@@ -381,21 +368,67 @@ function convertSourceDataListToRs(sourceSearchResult, sourceName, limit) {
 function convertSourceDataItemToRs(sourceFilm, sourceName) {
     var rsFilm = {};
     if (sourceName == SOURCE_OMDBAPI) {
+
+        // Film attrs all contentTypes use the same name
+        var imdbId = sourceFilm.imdbID;
         rsFilm.image = sourceFilm.Poster;
         rsFilm.title = sourceFilm.Title;
         rsFilm.year = sourceFilm.Year;
+
+        // Film attrs with name specific by contentType
         var contentType = sourceFilm.Type;
         if (contentType == "movie") {
             rsFilm.contentType = CONTENT_FILM;
         } else if (contentType == "series") {
             rsFilm.contentType = CONTENT_TV_SERIES;
         }
-        rsFilm.sources = [{ "name": "IMDb", "image": sourceFilm.Poster,
-                            "uniqueName": sourceFilm.imdbID
-                         }];
+
+        // Source attrs
+        rsFilm.sources = [
+                          { "name": "OMDb",
+                            "image": rsFilm.image,
+                            "uniqueName": imdbId
+                          },
+                          { "name": "IMDb",
+                            "image": rsFilm.image,
+                            "uniqueName": imdbId
+                          }
+                         ];
     }
     else if (sourceName == SOURCE_TMDBAPI) {
-//*RT* FIXME
+
+        // Film attrs all contentTypes use the same name
+        var sourceId = sourceFilm.id;
+        rsFilm.image = sourceFilm.poster_path;
+
+        // Film attrs with name specific by contentType
+        var uniqueName = "";
+        var contentType = sourceFilm.media_type;
+        if (contentType == "movie") {
+            rsFilm.contentType = CONTENT_FILM;
+            uniqueName = "mv" + sourceId;
+            rsFilm.title = sourceFilm.title;
+            rsFilm.year = sourceFilm.release_date;
+        } else if (contentType == "tv") {
+            rsFilm.contentType = CONTENT_TV_SERIES;
+            uniqueName = "tv" + sourceId;
+            rsFilm.title = sourceFilm.name;
+            rsFilm.year = sourceFilm.first_air_date;
+        }
+        
+        // Parse year. Original format is yyyy-mm-dd.
+        if (rsFilm.year) {
+            rsFilm.year = rsFilm.year.substring(0, 4);
+        }
+
+        // Prepend the image base url to the image filename
+        rsFilm.image = IMAGE_PATH_TMDBAPI + "/w92" + rsFilm.image;
+
+        // Source attrs
+        rsFilm.sources = [{ "name": "TMDb",
+                            "image": rsFilm.image,
+                            "uniqueName": uniqueName
+                         }];
     }
 
     return rsFilm;
@@ -403,11 +436,11 @@ function convertSourceDataItemToRs(sourceFilm, sourceName) {
 
 function getUniqueName(film, sourceName)
 {
-	var imdbUniqueName = "";
+	var uniqueName = "";
     var source = film.sources.find( function (findSource) { return findSource.name == sourceName; } );
     if (source && source != "undefined") {
-        imdbUniqueName = source.uniqueName;
+        uniqueName = source.uniqueName;
     }
 
-    return imdbUniqueName;
+    return uniqueName;
 }

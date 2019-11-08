@@ -32,6 +32,12 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
     const ATTR_CREDITS_CAST = "credits_cast";
     const ATTR_CREDITS_CREW = "credits_crew";
     const ATTR_CONTENT_TYPE = "search_content_type";
+    const IMAGE_SIZES = array(self::IMAGE_SIZE_TINY => "w92"
+                              ,self::IMAGE_SIZE_SMALL => "w185"
+                              ,self::IMAGE_SIZE_MEDIUM => "w342"
+                              ,self::IMAGE_SIZE_LARGE => "w500"
+                              ,self::IMAGE_SIZE_XLARGE => "w780"
+                             );
 
     public function __construct()
     {
@@ -39,6 +45,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         $this->cacheFileExtension = static::API_RESPONSE_FORMAT;
         $this->baseUrl = static::BASE_API_URL;
         $this->apiKey = Constants::TMDB_API_KEY;
+        $this->imagePath = Constants::IMAGE_PATH_TMDBAPI;
     }
 
     /**
@@ -510,6 +517,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             $season->addEpisode($episodeNum);
             $season->setEpisodeSeriesFilmId($seriesFilmId, $episodeNum);
             $season->setEpisodeSourceId($tmdbId, $episodeNum);
+            $season->setEpisodeUniqueNameBySourceId($tmdbId, $episodeNum);
             $season->setEpisodeTitle($episodeTitle, $episodeNum);
             $season->setEpisodeYear($episodeYear, $episodeNum);
             $season->setEpisodeSeasonNumber($seasonNum, $episodeNum);
@@ -949,9 +957,25 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         return $value;
     }
 
-    public function getImagePath()
+    /**
+     * URL path to images. Use ApiClient constants for sizes.
+     *     IMAGE_SIZE_TINY
+     *     IMAGE_SIZE_SMALL
+     *     IMAGE_SIZE_MEDIUM
+     *     IMAGE_SIZE_LARGE
+     *     IMAGE_SIZE_XLARGE
+     *     IMAGE_SIZE_DEFAULT (default, which is medium)
+     * 
+     * @param string $size Not used by this class. It is available to child classes overwriting this function.
+     */
+    public function getImagePath($size = self::IMAGE_SIZE_DEFAULT)
     {
-        return "https://image.tmdb.org/t/p/w500";
+        $imageSize = "";
+        if (key_exists($size, self::IMAGE_SIZES)) {
+            $imageSize = "/" . self::IMAGE_SIZES[$size];
+        }
+
+        return $this->imagePath . $imageSize;
     }
 }
 

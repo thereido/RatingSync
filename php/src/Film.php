@@ -1219,7 +1219,7 @@ class Film {
         if (!empty($image)) {
             $uniqueName = $this->getUniqueName(Constants::SOURCE_RATINGSYNC);
             $filename = "$uniqueName.jpg";
-            $apiImagePath = $api->getImagePath();
+            $apiImagePath = $api->getImagePath(MediaDbApiClient::IMAGE_SIZE_LARGE);
             try {
                 file_put_contents(Constants::imagePath() . $filename, file_get_contents($apiImagePath . $image));
             } catch (\Exception $e) {

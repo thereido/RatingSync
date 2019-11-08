@@ -10,3 +10,7 @@ var CONTENT_TV_EPISODE = "TvEpisode";
 var SOURCE_IMDB = "IMDb";
 var SOURCE_OMDBAPI = "OMDb";
 var SOURCE_TMDBAPI = "TMDb";
+
+var URL_SEARCH_OMDB = "https://private.omdbapi.com?json=1";
+var URL_SEARCH_TMDB = "https://api.themoviedb.org/3/search/multi?page=1";
+var URL_FIND_TMDB = "https://api.themoviedb.org/3/find";

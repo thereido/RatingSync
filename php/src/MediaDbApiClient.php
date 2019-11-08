@@ -12,7 +12,6 @@ interface iMediaDbApiClient
     public function getFilmBySearch($searchTerms);
     public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = 60);
     public function getFilmDetailFromApi($film, $overwrite = true, $refreshCache = 60);
-    public function getImagePath();
     public function getSourceName();
     public function getUniqueNameFromSourceId($sourceId, $contentType = null);
 }
@@ -385,11 +384,6 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         }
 
         return $isThisIdFromImdb;
-    }
-
-    public function getImagePath()
-    {
-        return "";
     }
 
     /**

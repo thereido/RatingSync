@@ -104,6 +104,8 @@ if (!empty($username)) {
 
 <script>
     var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
+    var TMDB_API_KEY = "<?php echo Constants::TMDB_API_KEY; ?>";
+    var IMAGE_PATH_TMDBAPI = "<?php echo Constants::IMAGE_PATH_TMDBAPI; ?>";
     var DATA_API_DEFAULT = "<?php echo Constants::DATA_API_DEFAULT; ?>";
 </script>
 

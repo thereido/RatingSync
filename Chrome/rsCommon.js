@@ -26,7 +26,7 @@ function rateFilm(filmId, uniqueName, score, titleNum) {
                 renderStatus('Error saving your rating');
             } else {
                 film = response;
-                updateContextDataFilm(film);
+                updateContextDataFilmByFilmId(film);
                 renderStatus('Rating Saved');
             }
             renderStars(film);
@@ -230,7 +230,7 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
             
             var film = JSON.parse(xmlhttp.responseText);
             renderFilmlists(film.filmlists, film.filmId);
-            updateContextDataFilm(film);
+            updateContextDataFilmByFilmId(film);
 
             if (defaultBtn) defaultBtn.disabled = false;
             if (otherListsBtn) otherListsBtn.disabled = false;
@@ -421,7 +421,7 @@ function getContextDataFilm(filmId) {
     return film;
 }
 
-function updateContextDataFilm(updateFilm) {
+function updateContextDataFilmByFilmId(updateFilm) {
     var filmId = updateFilm.filmId;
     var index = getContextDataFilmIndex(filmId);
 
@@ -430,8 +430,9 @@ function updateContextDataFilm(updateFilm) {
     }
 }
 
-function updateContextDataOmdbFilm(updateFilm, imdbId) {
-    var index = contextData.films.findIndex(function (findFilm) { return findFilm.imdbID == imdbId; });
+function updateContextDataFilmByUniqueName(updateFilm, sourceName) {
+    var uniqueName = getUniqueName(updateFilm, sourceName);
+    var index = contextData.films.findIndex(function (findFilm) { return getUniqueName(findFilm, sourceName) == uniqueName; });
 
     if (-1 != index) {
         contextData.films[index] = updateFilm;

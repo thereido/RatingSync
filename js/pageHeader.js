@@ -48,7 +48,7 @@ function onKeyUpHeaderSearch(event) {
 
         if (newSelectedEl) {
             var selectedItemEl = newSelectedEl.getElementsByClassName("search-suggestion-item")[0];
-	        selectedUniqueNameEl.value = selectedItemEl.getAttribute("data-imdb-uniquename");
+            selectedUniqueNameEl.value = selectedItemEl.getAttribute("data-uniquename");
 	        selectedContentTypeEl.value = selectedItemEl.getAttribute("data-contenttype");
         }
     } else if (key == 'Escape') {
@@ -88,6 +88,7 @@ function onSubmitHeaderSearch() {
     if (selectedUniqueNameEl.value) {
         formEl.action = "/php/detail.php";
     } else {
+        document.getElementById("search-domain-input").value = searchDomain;
         formEl.action = "/php/search.php?sd=" + searchDomain;
     }
 }

@@ -166,9 +166,9 @@ function getEpisodeRatings(seasonJson) {
     }
     var delim = "";
     var params = "?action=getFilms";
-    params += "&sidcts="; // sourceId/contentType combos
+    params += "&uncts="; // uniqueName/contentType combos
     for (var i = 0; i < episodes.length; i++) {
-        params += delim + episodes[i].sourceId + "_" + CONTENT_TV_EPISODE;
+        params += delim + episodes[i].uniqueName + "_" + CONTENT_TV_EPISODE;
         delim = "+";
     }
 	var xmlhttp = new XMLHttpRequest();

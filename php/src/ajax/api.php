@@ -563,21 +563,31 @@ function api_getFilms($username, $params)
 {
     $filmIdsParam = array_value_by_key("id", $params);
     $sourceIdContentTypesParam = array_value_by_key("sidcts", $params);
+    $uniqueNameContentTypesParam = array_value_by_key("uncts", $params);
     $imdbIdContentTypesParam = array_value_by_key("imdbcts", $params);
-    logDebug("Params id=$filmIdsParam, sidcts=$sourceIdContentTypesParam, imdbcts=$imdbIdContentTypesParam", __FUNCTION__." ".__LINE__);
+    logDebug("Params id=$filmIdsParam, sidcts=$sourceIdContentTypesParam, uncts=$uniqueNameContentTypesParam, imdbcts=$imdbIdContentTypesParam", __FUNCTION__." ".__LINE__);
 
     $idContentTypeParam = "";
-    $idType = "IMDb IDs"; // 'IMDb IDs' or 'Source IDs'
+    $idType = "Source IDs"; // 'IMDb IDs', 'Source IDs', or 'uniqueNames'
     if (!empty($sourceIdContentTypesParam)) {
         $idContentTypeParam = $sourceIdContentTypesParam;
         $idType = "Source IDs";
+    } elseif (!empty($uniqueNameContentTypesParam)) {
+        $idContentTypeParam = $uniqueNameContentTypesParam;
+        $idType = "uniqueNames";
     } elseif (!empty($imdbIdContentTypesParam)) {
         $idContentTypeParam = $imdbIdContentTypesParam;
         $idType = "IMDb IDs";
     }
 
-    $filmIds = explode(" ", $filmIdsParam);
-    $idContentTypeCombos = explode(" ", $idContentTypeParam);
+    $filmIds = array();
+    if (!empty($filmIdsParam)) {
+        $filmIds = explode(" ", $filmIdsParam);
+    }
+    $idContentTypeCombos = array();
+    if (!empty($idContentTypeParam)) {
+        $idContentTypeCombos = explode(" ", $idContentTypeParam);
+    }
     $getFromRsDbOnly = true;
 
     $films = array();
@@ -595,31 +605,40 @@ function api_getFilms($username, $params)
         }
     }
     foreach ($idContentTypeCombos as $idAndContentType) {
-        $film = null;
-        $id = null;
-        $contentType = null;
 
         // idAndContentType delimiter is "_", id_contentType
+        $sourceId = null;
+        $contentType = null;
         $pieces = explode("_", $idAndContentType);
         if (count($pieces) > 1) {
-            $id = $pieces[0];
+            $sourceId = $pieces[0];
             if (count($pieces) > 1) {
                 $contentType = $pieces[1];
             }
         }
 
+        // Use sourceId as either imdbId or uniqueName
+        $uniqueName = null;
+        $imdbId = null;
+        if ($idType == "IMDb IDs") {
+            $imdbId = $sourceId;
+        } elseif ($idType == "uniqueNames") {
+            $uniqueName = $sourceId;
+        } elseif ($idType == "Source IDs") {
+            $uniqueName = getMediaDbApiClient()->getUniqueNameFromSourceId($sourceId, $contentType);
+        }
+
+        // Call getFilmApi()
+        $film = null;
         try {
-            if ($idType == "IMDb IDs") {
-                $film = getFilmApi($username, null, $id, null, $getFromRsDbOnly, $contentType);
-            } elseif ($idType == "Source IDs") {
-                $uniqueName = getMediaDbApiClient()->getUniqueNameFromSourceId($id, $contentType);
-                $film = getFilmApi($username, null, null, $uniqueName, $getFromRsDbOnly, $contentType);
-            }
+            $film = getFilmApi($username, null, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType);
         } catch (\Exception $e) {
-            $errorMsg = "Error api.php::getFilmApi(\$username, $filmId, null, $getFromRsDbOnly) Called from api_getFilms()" . 
+            $errorMsg = "Error api.php::getFilmApi($username, null, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType) Called from api_getFilms()" . 
                         "\nException (" . $e->getCode() . ") " . $e->getMessage();
             logDebug($errorMsg, __FUNCTION__." ".__LINE__);
         }
+
+        // Add each film to the films array
         if (! empty($film)) {
             $films[] = $film;
         }

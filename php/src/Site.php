@@ -663,7 +663,7 @@ abstract class Site
         return $this->sourceName;
     }
 
-    public function getImagePath()
+    public function getImagePath($size = null)
     {
         return "";
     }

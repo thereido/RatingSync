@@ -8,8 +8,16 @@ require_once "Constants.php";
 
 abstract class ApiClient
 {
+    const IMAGE_SIZE_TINY = "tiny";
+    const IMAGE_SIZE_SMALL = "small";
+    const IMAGE_SIZE_MEDIUM = "medium";
+    const IMAGE_SIZE_LARGE = "large";
+    const IMAGE_SIZE_XLARGE = "xlarge";
+    const IMAGE_SIZE_DEFAULT = self::IMAGE_SIZE_MEDIUM;
+
     protected $baseUrl = null;
     protected $apiKey = null;
+    protected $imagePath = "";
 
     abstract protected function jsonIndex($attrName, $requestName);
 
@@ -159,6 +167,24 @@ abstract class ApiClient
         }
 
         return $value;
+    }
+
+    /**
+     * URL path to images. Size param is not used by this function, but a child
+     * class might overload the function and use it.
+     * Use ApiClient constants for sizes.
+     *     IMAGE_SIZE_TINY
+     *     IMAGE_SIZE_SMALL
+     *     IMAGE_SIZE_MEDIUM
+     *     IMAGE_SIZE_LARGE
+     *     IMAGE_SIZE_XLARGE
+     *     IMAGE_SIZE_DEFAULT (default, which is medium)
+     * 
+     * @param string $size Not used by this class. It is available to child classes overwriting this function.
+     */
+    public function getImagePath($size = self::IMAGE_SIZE_DEFAULT)
+    {
+        return $this->imagePath;
     }
 
 }
