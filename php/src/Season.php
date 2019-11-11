@@ -84,30 +84,6 @@ class Season {
         return json_encode($arr);
     }
 
-    public function setUniqueName($uniqueName, $source)
-    {
-        if (! Source::validSource($source) ) {
-            throw new \InvalidArgumentException('Source $source invalid setting Unique Name');
-        }
-
-        $this->getSource($source)->setUniqueName($uniqueName);
-    }
-
-    public function getUniqueName($source)
-    {
-        if (! Source::validSource($source) ) {
-            throw new \InvalidArgumentException('Source $source invalid getting Unique Name');
-        }
-
-        $uniqueName = $this->getSource($source)->getUniqueName();
-        if (empty($uniqueName) && $source == Constants::SOURCE_OMDBAPI) {
-            $uniqueName = $this->getUniqueName(Constants::SOURCE_IMDB);
-            $this->setUniqueName($uniqueName, $source);
-        }
-
-        return $uniqueName;
-    }
-
     public function setName($name)
     {
         $this->name = $name;
@@ -223,6 +199,11 @@ class Season {
         }
     }
 
+    public function getEpisodeSeriesFilmId($episodeNumber)
+    {
+        return $this->getEpisodeAttr("seriesFilmId", $episodeNumber);
+    }
+
     public function setEpisodeSeriesFilmId($seriesFilmId, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
@@ -235,6 +216,11 @@ class Season {
         $this->episodes[$episodeNumber]["seriesFilmId"] = $seriesFilmId;
     }
 
+    public function getEpisodeSourceId($episodeNumber)
+    {
+        return $this->getEpisodeAttr("sourceId", $episodeNumber);
+    }
+
     public function setEpisodeSourceId($sourceId, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
@@ -243,6 +229,11 @@ class Season {
 
         $this->addEpisode($episodeNumber);
         $this->episodes[$episodeNumber]["sourceId"] = $sourceId;
+    }
+
+    public function getEpisodeUniqueName($episodeNumber)
+    {
+        return $this->getEpisodeAttr("uniqueName", $episodeNumber);
     }
 
     public function setEpisodeUniqueName($uniqueName, $episodeNumber)
@@ -267,6 +258,11 @@ class Season {
         $this->setEpisodeUniqueName($uniqueName, $episodeNumber);
     }
 
+    public function getEpisodeTitle($episodeNumber)
+    {
+        return $this->getEpisodeAttr("title", $episodeNumber);
+    }
+
     public function setEpisodeTitle($title, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
@@ -275,6 +271,11 @@ class Season {
 
         $this->addEpisode($episodeNumber);
         $this->episodes[$episodeNumber]["title"] = $title;
+    }
+
+    public function getEpisodeYear($episodeNumber)
+    {
+        return $this->getEpisodeAttr("year", $episodeNumber);
     }
 
     public function setEpisodeYear($year, $episodeNumber)
@@ -297,6 +298,11 @@ class Season {
         $this->episodes[$episodeNumber]["year"] = $year;
     }
 
+    public function getEpisodeSeasonNumber($episodeNumber)
+    {
+        return $this->getEpisodeAttr("seasonNum", $episodeNumber);
+    }
+
     public function setEpisodeSeasonNumber($seasonNum, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
@@ -309,6 +315,11 @@ class Season {
         $this->episodes[$episodeNumber]["seasonNum"] = $seasonNum;
     }
 
+    public function getEpisodeImage($episodeNumber)
+    {
+        return $this->getEpisodeAttr("image", $episodeNumber);
+    }
+
     public function setEpisodeImage($image, $episodeNumber)
     {
         if (!is_numeric($episodeNumber)) {
@@ -317,6 +328,11 @@ class Season {
 
         $this->addEpisode($episodeNumber);
         $this->episodes[$episodeNumber]["image"] = $image;
+    }
+
+    public function getEpisodeUserScore($episodeNumber)
+    {
+        return $this->getEpisodeAttr("userScore", $episodeNumber);
     }
 
     public function setEpisodeUserScore($userScore, $episodeNumber)
@@ -329,5 +345,15 @@ class Season {
 
         $this->addEpisode($episodeNumber);
         $this->episodes[$episodeNumber]["userScore"] = $userScore;
+    }
+
+    protected function getEpisodeAttr($attrName, $episodeNumber)
+    {
+        $value = null;
+        if (!empty($episodeNumber) && key_exists($episodeNumber, $this->episodes)) {
+            $value = $this->episodes[$episodeNumber][$attrName];
+        }
+
+        return $value;
     }
 }
