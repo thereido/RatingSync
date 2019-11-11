@@ -2173,13 +2173,14 @@ class FilmTest extends RatingSyncTestCase
 
         // Frozen from All Sources
         $film = Film::createFromXml($xmlFilmArray[9]);
+        $genres = array("Animation", "Adventure", "Family");
         $this->assertEquals("Frozen", $film->getTitle(), "Frozen title");
         $this->assertEquals(2013, $film->getYear(), "Frozen year");
         $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "Frozen ContentType");
-        $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(), "Frozen image");
+        $this->assertEquals("http://example.com/frozen_film_image.jpeg", $film->getImage(), "Frozen image");
         $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Frozen directors");
-        $this->assertEquals(array("Animation", "Adventure", "Comedy", "Fantasy", "Musical", "Family"), $film->getGenres(), "Frozen genres");
-        $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." image");
+        $this->assertEquals($genres, array_intersect($genres, $film->getGenres()), 'Frozen genres');
+        $this->assertEquals("/image/rs1.jpg", $film->getImage(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." image");
         $this->assertEquals("Frozen_rs", $film->getUniqueName(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." Unique Name");
         $this->assertEquals(4, $film->getCriticScore(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." critic score");
         $this->assertEquals(5, $film->getUserScore(Constants::SOURCE_RATINGSYNC), "Frozen ".Constants::SOURCE_RATINGSYNC." user score");
@@ -2195,7 +2196,7 @@ class FilmTest extends RatingSyncTestCase
         $this->assertEquals(8, $rating->getYourScore(), "Frozen ".Constants::SOURCE_JINNI." your score");
         $this->assertEquals("5/4/15", $rating->getYourRatingDate()->format('n/j/y'), "Frozen ".Constants::SOURCE_JINNI." rating date");
         $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_JINNI." suggested score");
-        $this->assertEquals("https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_UX182_CR0,0,182,268_AL_.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
+        $this->assertEquals("https://m.media-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_SX300.jpg", $film->getImage(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." image");
         $this->assertEquals("tt2294629", $film->getUniqueName(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." Unique Name");
         $this->assertEquals(7.4, $film->getCriticScore(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." critic score");
         $this->assertEquals(7.7, $film->getUserScore(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." user score");
@@ -2413,8 +2414,10 @@ class FilmTest extends RatingSyncTestCase
     public function testGetFilmFromDbGenres()
     {$this->start(__CLASS__, __FUNCTION__);
 
+        $genres = array("Adventure", "Animation", "Family");
+
         $film = Film::getFilmFromDb(1, Constants::TEST_RATINGSYNC_USERNAME);
-        $this->assertEquals(array("Adventure", "Animation", "Comedy", "Family", "Fantasy", "Musical"), $film->getGenres(), "Frozen genres");
+        $this->assertEquals($genres, array_intersect($genres, $film->getGenres()), 'Frozen genres');
     }
     
     /**
@@ -2784,11 +2787,16 @@ class FilmTest extends RatingSyncTestCase
 
         $db = getDatabase();
 
+        $year = 2015;
+        if (Constants::DATA_API_DEFAULT == Constants::SOURCE_OMDBAPI) {
+            $year = 2014; // OMDbApi has it as 2014
+        }
+
         // Insert a new film and review with no image
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $film = new Film();
         $film->setTitle("Zombeavers");
-        $film->setYear(2014);
+        $film->setYear(2015);
         $film->setContentType(Film::CONTENT_FILM);
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         $rating->setYourScore(6);

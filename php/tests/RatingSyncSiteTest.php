@@ -106,11 +106,11 @@ class RatingSyncSiteTest extends RatingSyncTestCase
                 $foundFilmId1 = true;
                 $this->assertEquals(2013, $film->getYear(), "Year");
                 $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "ContentType");
-                $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(), "Image");
+                $this->assertEquals("http://example.com/frozen_film_image.jpeg", $film->getImage(), "Image");
                 $this->assertEquals(4, $film->getCriticScore($sourceName), "CriticScore");
                 $this->assertEquals(5, $film->getUserScore($sourceName), "UserScore");
                 $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Directors");
-                $this->assertEquals(array("Adventure", "Animation", "Comedy", "Family", "Fantasy", "Musical"), $film->getGenres(), "Genres");
+                $this->assertEquals(array("Adventure", "Animation", "Family"), $film->getGenres(), "Genres");
                 $rating = $film->getRating($sourceName);
                 $this->assertTrue(!empty($rating), "Rating");
                 $this->assertEquals(2, $rating->getYourScore(), "YourScore");
@@ -195,6 +195,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
     /**
      * @depends testSetupRatings
      */
+    /* Xfinity unavailable for streams
     public function testSetupStreams()
     {$this->start(__CLASS__, __FUNCTION__);
 
@@ -209,6 +210,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $this->assertFalse(is_null($film));
         $this->assertEquals(TEST_XFINITY_TITLE, $film->getTitle());
     }
+    */
 
     /**
      * @covers \RatingSync\RatingSyncSite::getStreamUrl

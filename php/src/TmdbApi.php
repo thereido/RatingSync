@@ -674,6 +674,13 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             if ($title == $resultTitle && $year == $resultYear) {
                 $matchingResult = $result;
                 break;
+            } else {
+                $decentRange = array($year-1, $year, $year+1);
+                if ($title == $resultTitle && in_array($resultYear, $decentRange)) {
+                    $msg = "Searching for '$title ($year)' and found a result that is close";
+                    $msg .= ", but the year is off - $resultYear.";
+                    logDebug($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
+                }
             }
         }
 

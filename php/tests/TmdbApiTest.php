@@ -110,6 +110,12 @@ class TmdbApiTest extends RatingSyncTestCase
         //$this->verbose = true;
     }
 
+    public function testThisIsTheDefaultApi()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $this->assertEquals(Constants::SOURCE_TMDBAPI, Constants::DATA_API_DEFAULT, "OKAY: TMDb is the default API for data, then parts of TMDbApi cannot be tested. Failing this test will skip those tests.");
+    }
+
     /**
      * @covers \RatingSync\TmdbApi::__construct
      */
@@ -210,17 +216,19 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @depends testResetDb
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testSetupTvSeries()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Setup
+        $constants = TmdbApiTest::getConstants();
         $api = new TmdbApiExt();
         $film = new Film();
-        $film->setTitle(self::TESTSERIES_TITLE);
-        $film->setYear(self::TESTSERIES_YEAR);
+        $film->setTitle($constants["seriesTitle"]);
+        $film->setYear($constants["seriesYear"]);
         $film->setContentType(Film::CONTENT_TV_SERIES);
-        $film->setUniqueName(self::TESTSERIES_TMDBID, $api->_getSourceName());
+        $film->setUniqueName($constants["seriesUniqueName"], $api->_getSourceName());
 
         // Test
         $success = $film->saveToDb();
@@ -232,6 +240,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::buildUrlFilmDetail
      * @depends testSetupTvSeries
+     * @depends testThisIsTheDefaultApi
      */
     public function testBuildUrlFilmDetailTvEpisode()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -296,6 +305,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::buildUrlFilmDetail
      * @depends testBuildUrlFilmDetailTvEpisode
+     * @depends testThisIsTheDefaultApi
      */
     public function testBuildUrlFilmDetailTvEpisodeWithoutSeasonNum()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -317,6 +327,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::buildUrlFilmDetail
      * @depends testBuildUrlFilmDetailTvEpisode
+     * @depends testThisIsTheDefaultApi
      */
     public function testBuildUrlFilmDetailTvEpisodeWithoutEpisodeNum()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -395,6 +406,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::searchForUniqueName
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testSearchForUniqueNameWithImdbId()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -414,6 +426,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::searchForUniqueName
      * @depends testGetSearchResultFromResponse
+     * @depends testThisIsTheDefaultApi
      */
     public function testSearchForUniqueNameMovie()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -435,6 +448,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::searchForUniqueName
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testSearchForUniqueNameMovieWithoutContentType()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -455,6 +469,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::searchForUniqueName
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testSearchForUniqueNameTvSeries()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -476,6 +491,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::searchForUniqueName
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testSearchForUniqueNameTvSeriesWithoutContentType()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -496,6 +512,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::searchForUniqueName
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testSearchForUniqueNameTvEpisode()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -519,6 +536,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::searchForUniqueName
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testSearchForUniqueNameTvEpisodeWithoutContentType()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -539,6 +557,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::searchForUniqueName
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testSearchForUniqueNameWithUniqueName()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -662,6 +681,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getCreditsFromApi
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetCreditsFromApiNoFilm()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -678,6 +698,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getCreditsFromApi
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetCreditsFromApiNoContentType()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -697,6 +718,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getCreditsFromApi
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetCreditsFromApiBadContentType()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -716,6 +738,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getCreditsFromApi
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetCreditsFromApiNoUniqueName()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -735,6 +758,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getCreditsFromApi
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetCreditsFromApiBadUniqueName()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -756,6 +780,7 @@ class TmdbApiTest extends RatingSyncTestCase
      * @covers \RatingSync\TmdbApi::getCreditsFromApi
      * @depends testObjectCanBeConstructed
      * @depends testValidateResponseCredits
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetCreditsFromApi()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -796,6 +821,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getJsonFromApiForFilmDetail
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetJsonFromApiForFilmDetail()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -859,6 +885,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getJsonFromApiForFilmDetail
      * @depends testGetJsonFromApiForFilmDetail
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetJsonFromApiForFilmDetailEpisode()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1172,6 +1199,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getFilmBySearch
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetFilmBySearchNullSearchTerms()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1190,6 +1218,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getFilmBySearch
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetFilmBySearchEmptySearchTerms()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1208,6 +1237,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getFilmBySearch
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetFilmBySearchStringSearchTerms()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1226,6 +1256,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getFilmBySearch
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetFilmBySearchEpisodeByUniqueName()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1248,6 +1279,7 @@ class TmdbApiTest extends RatingSyncTestCase
      * @depends testGetFilmDetailFromApi
      * @depends testSearchForUniqueNameMovie
      * @depends testSearchForUniqueNameTvSeries
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetFilmBySearch()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1737,6 +1769,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getSeasonFromApi
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetSeasonFromApiNullSeriesId()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1755,6 +1788,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getSeasonFromApi
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetSeasonFromApiStringSeriesId()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1773,6 +1807,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getSeasonFromApi
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetSeasonFromApiNullSeasonNum()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1794,6 +1829,7 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getSeasonFromApi
      * @depends testObjectCanBeConstructed
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetSeasonFromApiStringSeasonNum()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1815,56 +1851,52 @@ class TmdbApiTest extends RatingSyncTestCase
     /**
      * @covers \RatingSync\TmdbApi::getSeasonFromApi
      * @depends testObjectCanBeConstructed
+     * @depends testSetupTvSeries
+     * @depends testThisIsTheDefaultApi
      */
     public function testGetSeasonFromApi()
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Setup
+        $constants = TmdbApiTest::getConstants();
         $api = new TmdbApiExt();
         $sourceName = $api->_getSourceName();
         $film = new Film();
-        $series = Film::getFilmFromDbByUniqueName(self::TESTSERIES_TMDBID, $sourceName);
+        $series = Film::getFilmFromDbByUniqueName($constants["seriesUniqueName"], $sourceName);
         $seriesFilmId = $series->getId();
-        $seasonNum = self::TESTEPISODE_SEASON_NUM;
+        $seasonNum = $constants["episodeSeasonNum"];
 
         // Test
-        $json = $api->getSeasonFromApi($seriesFilmId, $seasonNum, Constants::USE_CACHE_NEVER);
+        $season = $api->getSeasonFromApi($seriesFilmId, $seasonNum, Constants::USE_CACHE_NEVER);
 
         // Verify
-        $this->assertFalse(is_null($json), "Result should not be null");
+        $this->assertFalse(empty($season), "Season should not be empty");
                 // Season attrs
-        $seasonTitle = $api->jsonValue($json, Film::ATTR_TITLE, TmdbApi::REQUEST_DETAIL_SEASON);
-        $seasonYear = $api->jsonValue($json, Film::ATTR_YEAR, TmdbApi::REQUEST_DETAIL_SEASON);
-        $seasonNum = $api->jsonValue($json, Film::ATTR_SEASON_NUM, TmdbApi::REQUEST_DETAIL_SEASON);
-        $seasonUniqueName = $api->jsonValue($json, Source::ATTR_UNIQUE_NAME, TmdbApi::REQUEST_DETAIL_SEASON);
-        $seasonImage = $api->jsonValue($json, Source::ATTR_IMAGE, TmdbApi::REQUEST_DETAIL_SEASON);
-                // Episode attrs (episode 1)
-        $episodesJson = array_value_by_key("episodes", $json);
-        $episodeJson = $episodesJson[self::TESTEPISODE_EPISODE_NUM - 1];
-        $episodeTitle = $api->jsonValue($episodeJson, Film::ATTR_TITLE ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
-        $episodeYear = $api->jsonValue($episodeJson, Film::ATTR_YEAR ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
-        $episodeSeasonNum = $api->jsonValue($episodeJson, Film::ATTR_SEASON_NUM ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
-        $episodeNum = $api->jsonValue($episodeJson, Film::ATTR_EPISODE_NUM, TmdbApi::REQUEST_DETAIL_SEASON);
-        $episodeSourceId = $api->jsonValue($episodeJson, Source::ATTR_UNIQUE_NAME ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
-        $episodeUniqueName = $api->_getUniqueNameFromSourceId($episodeSourceId, Film::CONTENT_TV_EPISODE);
-        $episodeImage = $api->jsonValue($episodeJson, Source::ATTR_IMAGE ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
-        $episodeUserScore = $api->jsonValue($episodeJson, Source::ATTR_USER_SCORE ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
-        //$episodeCrewJson = $api->jsonValue($episodeJson, TmdbApi::ATTR_CREDITS_CREW ."_". Film::CONTENT_TV_EPISODE, TmdbApi::REQUEST_DETAIL_SEASON);
-        $episodeDirectors = $api->jsonValue($episodeJson, Film::ATTR_DIRECTORS, TmdbApi::REQUEST_CREDITS);
+        $seasonTitle = $season->getName();
+        $seasonYear = $season->getYear();
+        $seasonNum = $season->getNumber();
+        $seasonImage = $season->getImage();
+                // Episode attrs
+        $episodeTitle = $season->getEpisodeTitle($constants["episodeEpisodeNum"]);
+        $episodeYear = $season->getEpisodeYear($constants["episodeEpisodeNum"]);
+        $episodeSeasonNum = $season->getEpisodeSeasonNumber($constants["episodeEpisodeNum"]);
+        $episodeSourceId = $season->getEpisodeSourceId($constants["episodeEpisodeNum"]);
+        $episodeUniqueName = $season->getEpisodeUniqueName($constants["episodeEpisodeNum"]);
+        $episodeImage = $season->getEpisodeImage($constants["episodeEpisodeNum"]);
+        $episodeUserScore = $season->getEpisodeUserScore($constants["episodeEpisodeNum"]);
+        //$episodeDirectors = $season->getEpisodeDirectors($constants["episodeEpisodeNum"]);
                 // Assert attrs
         //$this->assertEquals(, $seasonTitle, "seasonTitle");
-        $this->assertEquals(self::TESTEPISODE_YEAR, $seasonYear, "seasonYear");
-        $this->assertEquals(self::TESTEPISODE_SEASON_NUM, $seasonNum, "seasonNum");
-        //$this->assertEquals(, $seasonUniqueName, "seasonUniqueName");
+        $this->assertEquals($constants["episodeYear"], $seasonYear, "seasonYear");
+        $this->assertEquals($constants["episodeSeasonNum"], $seasonNum, "seasonNum");
         //$this->assertEquals(, $seasonImage, "seasonImage");
-        $this->assertEquals(self::TESTEPISODE_EPISODETITLE, $episodeTitle, "episodeTitle");
-        $this->assertEquals(self::TESTEPISODE_YEAR, $episodeYear, "episodeYear");
-        $this->assertEquals(self::TESTEPISODE_SEASON_NUM, $episodeSeasonNum, "episodeSeasonNum");
-        $this->assertEquals(self::TESTEPISODE_TMDBID, $episodeUniqueName, "episodeUniqueName");
-        $this->assertEquals(self::TESTEPISODE_EPISODE_NUM, $episodeNum, "episodeNum");
-        $this->assertEquals(self::TESTEPISODE_IMAGE, $episodeImage, "episodeImage");
-        $this->assertEquals(round(self::TESTEPISODE_USER_SCORE), round($episodeUserScore), "episodeUserScore");
-        $this->assertEquals(self::TESTEPISODE_DIRECTORS, $episodeDirectors, "episodeDirectors");
+        $this->assertEquals($constants["episodeEpisodeTitle"], $episodeTitle, "episodeTitle");
+        $this->assertEquals($constants["episodeYear"], $episodeYear, "episodeYear");
+        $this->assertEquals($constants["episodeSeasonNum"], $episodeSeasonNum, "episodeSeasonNum");
+        $this->assertEquals($constants["episodeUniqueName"], $episodeUniqueName, "episodeUniqueName");
+        $this->assertEquals($constants["episodeImage"], $episodeImage, "episodeImage");
+        $this->assertEquals(round($constants["episodeUserScore"]), round($episodeUserScore), "episodeUserScore");
+        //$this->assertEquals($constants["episodeDirectors"], $episodeDirectors, "episodeDirectors");
     }
 }
 

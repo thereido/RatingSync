@@ -18,7 +18,6 @@ require_once "TmdbApiTest.php";
 
 class MainTest extends RatingSyncTestCase
 {
-    protected $constants = array();
 
     protected function setUp(): void
     {
@@ -26,10 +25,16 @@ class MainTest extends RatingSyncTestCase
         //$this->verbose = true;
     }
 
-    public function setupConstants()
+    public static function getConstants()
     {
-        //$this->constants = OmdbApiTest::getConstants();
-        $this->constants = TmdbApiTest::getConstants();
+        $constants = array();
+        if (Constants::DATA_API_DEFAULT == Constants::SOURCE_OMDBAPI) {
+            $constants = OmdbApiTest::getConstants();
+        } elseif (Constants::DATA_API_DEFAULT == Constants::SOURCE_TMDBAPI) {
+            $constants = TmdbApiTest::getConstants();
+        }
+
+        return $constants;
     }
     
     public static function setupRatings()
@@ -117,9 +122,9 @@ class MainTest extends RatingSyncTestCase
 
         // Setup
         $db = getDatabase();
-        $this->setupConstants();
-        $sourceName = $this->constants["sourceName"];
-        $uniqueName = $this->constants["filmUniqueName"];
+        $constants = $this->getConstants();
+        $sourceName = $constants["sourceName"];
+        $uniqueName = $constants["filmUniqueName"];
 
         // Test
         $searchTerms = array("uniqueName" => $uniqueName, "sourceName" => $sourceName);
@@ -127,10 +132,10 @@ class MainTest extends RatingSyncTestCase
         $filmId = $film->getId();
 
         // Verify database - film
-        $title = $this->constants["filmTitle"];
-        $year = $this->constants["filmYear"];
-        $directors = $this->constants["filmDirectors"];
-        $genres = $this->constants["filmGenres"];
+        $title = $constants["filmTitle"];
+        $year = $constants["filmYear"];
+        $directors = $constants["filmDirectors"];
+        $genres = $constants["filmGenres"];
         $film = Film::GetFilmFromDb($filmId, Constants::TEST_RATINGSYNC_USERNAME);
         $filmImage = "http://example.com/frozen_film_image.jpeg";
         $dbDirectors = $film->getDirectors(); sort($dbDirectors);
@@ -217,13 +222,13 @@ class MainTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Set up
-        $this->setupConstants();
-        $sourceName = $this->constants["sourceName"];
+        $constants = $this->getConstants();
+        $sourceName = $constants["sourceName"];
 
         // Movie
                 // Setup
         $contentType = Film::CONTENT_FILM;
-        $uniqueName = $this->constants["filmUniqueName"];
+        $uniqueName = $constants["filmUniqueName"];
         $searchTerms = array("uniqueName" => $uniqueName);
         $searchTerms["sourceName"] = $sourceName;
         $searchTerms["contentType"] = $contentType;
@@ -234,13 +239,13 @@ class MainTest extends RatingSyncTestCase
 
                 // Verify
                     // film object
-        $title = $this->constants["filmTitle"];
-        $year = $this->constants["filmYear"];
-        $sourceImage = $this->constants["filmImage"];
-        $userScore = $this->constants["filmUserScore"];
-        $criticScore = $this->constants["filmCriticScore"];
-        $directors = $this->constants["filmDirectors"];
-        $genres = $this->constants["filmGenres"];
+        $title = $constants["filmTitle"];
+        $year = $constants["filmYear"];
+        $sourceImage = $constants["filmImage"];
+        $userScore = $constants["filmUserScore"];
+        $criticScore = $constants["filmCriticScore"];
+        $directors = $constants["filmDirectors"];
+        $genres = $constants["filmGenres"];
         $filmImage = "/image/rs$filmId.jpg";
         $directorsFromSearch = $film->getDirectors(); sort($directorsFromSearch);
         $genresFromSearch = $film->getGenres(); sort($genresFromSearch);
@@ -285,7 +290,7 @@ class MainTest extends RatingSyncTestCase
         // TV Series
                 // Setup
         $contentType = Film::CONTENT_TV_SERIES;
-        $uniqueName = $this->constants["seriesUniqueName"];
+        $uniqueName = $constants["seriesUniqueName"];
         $searchTerms = array("uniqueName" => $uniqueName);
         $searchTerms["sourceName"] = $sourceName;
         $searchTerms["contentType"] = $contentType;
@@ -293,16 +298,17 @@ class MainTest extends RatingSyncTestCase
                 // Test
         $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match']; // Game of Thrones
         $filmId = $film->getId();
+        $seriesFilmId = $filmId;
 
                 // Verify
                     // film object
-        $title = $this->constants["seriesTitle"];
-        $year = $this->constants["seriesYear"];
-        $sourceImage = $this->constants["seriesImage"];
-        $userScore = $this->constants["seriesUserScore"];
-        $criticScore = $this->constants["seriesCriticScore"];
-        $directors = $this->constants["seriesDirectors"];
-        $genres = $this->constants["seriesGenres"];
+        $title = $constants["seriesTitle"];
+        $year = $constants["seriesYear"];
+        $sourceImage = $constants["seriesImage"];
+        $userScore = $constants["seriesUserScore"];
+        $criticScore = $constants["seriesCriticScore"];
+        $directors = $constants["seriesDirectors"];
+        $genres = $constants["seriesGenres"];
         $filmImage = "/image/rs$filmId.jpg";
         $directorsFromSearch = $film->getDirectors(); sort($directorsFromSearch);
         $genresFromSearch = $film->getGenres(); sort($genresFromSearch);
@@ -347,10 +353,13 @@ class MainTest extends RatingSyncTestCase
         // TV Episode
                 // Setup
         $contentType = Film::CONTENT_TV_EPISODE;
-        $uniqueName = $this->constants["episodeUniqueName"];
+        $uniqueName = $constants["episodeUniqueName"];
         $searchTerms = array("uniqueName" => $uniqueName);
         $searchTerms["sourceName"] = $sourceName;
         $searchTerms["contentType"] = $contentType;
+        $searchTerms["parentId"] = $seriesFilmId;
+        $searchTerms["season"] = $constants["episodeSeasonNum"];
+        $searchTerms["episodeNumber"] = $constants["episodeEpisodeNum"];
 
                 // Test
         $film = search($searchTerms, Constants::TEST_RATINGSYNC_USERNAME)['match']; // Game of Thrones
@@ -358,17 +367,21 @@ class MainTest extends RatingSyncTestCase
 
                 // Verify
                     // film object
-        $title = $this->constants["episodeTitle"];
-        $episodeTitle = $this->constants["episodeEpisodeTitle"];
-        $year = $this->constants["episodeYear"];
-        $sourceImage = $this->constants["episodeImage"];
-        $userScore = $this->constants["episodeUserScore"];
-        $criticScore = $this->constants["episodeCriticScore"];
-        $directors = $this->constants["episodeDirectors"];
-        $genres = $this->constants["episodeGenres"];
+        $title = $constants["episodeTitle"];
+        $episodeTitle = $constants["episodeEpisodeTitle"];
+        $year = $constants["episodeYear"];
+        $sourceImage = $constants["episodeImage"];
+        $userScore = $constants["episodeUserScore"];
+        $criticScore = $constants["episodeCriticScore"];
+        $directors = $constants["episodeDirectors"];
+        $genres = $constants["episodeGenres"];
+        if (Constants::DATA_API_DEFAULT == Constants::SOURCE_TMDBAPI) {
+            // TMDb episode detail does not get us genres
+            $genres = array();
+        }
         $filmImage = "/image/rs$filmId.jpg";
-        $seasonNum = $this->constants["episodeSeasonNum"];
-        $episodeNum = $this->constants["episodeEpisodeNum"];
+        $seasonNum = $constants["episodeSeasonNum"];
+        $episodeNum = $constants["episodeEpisodeNum"];
         $directorsFromSearch = $film->getDirectors(); sort($directorsFromSearch);
         $genresFromSearch = $film->getGenres(); sort($genresFromSearch);
         $this->assertEquals($title, $film->getTitle(), "Title");
@@ -432,8 +445,8 @@ class MainTest extends RatingSyncTestCase
 
         // Set up
         // Use the film in db from testSearch
-        $this->setupConstants();
-        $title = $this->constants["filmTitle"];
+        $constants = $this->getConstants();
+        $title = $constants["filmTitle"];
 
         // Test
         $searchTerms = array("uniqueName" => "rs1", "sourceName" => Constants::SOURCE_RATINGSYNC);
@@ -464,8 +477,8 @@ class MainTest extends RatingSyncTestCase
 
         // Set up
         // Use the film in db from testSearch
-        $this->setupConstants();
-        $title = $this->constants["filmTitle"];
+        $constants = $this->getConstants();
+        $title = $constants["filmTitle"];
 
         // Test
         $searchTerms = array("uniqueName" => "rs1");
@@ -484,8 +497,8 @@ class MainTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Set up
-        $this->setupConstants();
-        $title = $this->constants["filmTitle"];
+        $constants = $this->getConstants();
+        $title = $constants["filmTitle"];
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $searchTerms = array("uniqueName" => "rs1");
         $setupFilm = search($searchTerms, $username)['match']; // Buster (1988)

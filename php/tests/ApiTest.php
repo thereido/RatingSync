@@ -187,10 +187,10 @@ class ApiTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Set up
-        $imdbId1 = "tt2294629"; // Frozen 2013
-        $imdbId2 = "tt1375666"; // Inception 2010
+        $imdbId1 = "tt2294629_" . Film::CONTENT_FILM; // Frozen 2013
+        $imdbId2 = "tt1375666_" . Film::CONTENT_FILM; // Inception 2010
         $params = array();
-        $params["imdb"] = "$imdbId1 $imdbId2";
+        $params["imdbcts"] = "$imdbId1 $imdbId2";
 
         // Test
         $responseJson = api_getFilms(Constants::TEST_RATINGSYNC_USERNAME, $params);
@@ -243,8 +243,10 @@ class ApiTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Set up
+        $imdbId1 = "9999991_" . Film::CONTENT_FILM;
+        $imdbId2 = "9999992_" . Film::CONTENT_FILM;
         $params = array();
-        $params["imdb"] = "9999991 9999992";
+        $params["imdbcts"] = "$imdbId1 $imdbId2";
 
         // Test
         $responseJson = api_getFilms(Constants::TEST_RATINGSYNC_USERNAME, $params);
@@ -301,10 +303,11 @@ class ApiTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Set up
-        $imdbId1 = "tt2294629"; // Frozen 2013
-        $imdbId2 = "tt1375666"; // Inception 2010
+        $imdbId1 = "tt2294629_" . Film::CONTENT_FILM; // Frozen 2013
+        $imdbId2 = "tt1375666_" . Film::CONTENT_FILM; // Inception 2010
+        $badImdbId = "9999991_" . Film::CONTENT_FILM;
         $params = array();
-        $params["imdb"] = "$imdbId1 $imdbId2 9999991";
+        $params["imdbcts"] = "$imdbId1 $imdbId2 $badImdbId";
 
         // Test
         $responseJson = api_getFilms(Constants::TEST_RATINGSYNC_USERNAME, $params);
@@ -336,11 +339,11 @@ class ApiTest extends RatingSyncTestCase
 
         // Set up
         $filmId1 = "1"; // Frozen 2013
-        $imdbId2 = "tt1375666"; // Inception 2010
+        $imdbId2 = "tt1375666_" . Film::CONTENT_FILM; // Inception 2010
         $filmId3 = "3"; // Interstellar 2014
         $params = array();
         $params["id"] = "$filmId1 9999991 $filmId3";
-        $params["imdb"] = "$imdbId2";
+        $params["imdbcts"] = "$imdbId2";
 
         // Test
         $responseJson = api_getFilms(Constants::TEST_RATINGSYNC_USERNAME, $params);
