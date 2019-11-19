@@ -1,19 +1,8 @@
 
 function getFilmForDetailPage(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum) {
-    var params = "?action=getFilm";
-    params = params + "&id=" + filmId;
-    if (imdbId && imdbId != "undefined") { params = params + "&imdb=" + imdbId; }
-    if (uniqueName && uniqueName != "undefined") { params = params + "&un=" + uniqueName; }
-    params = params + "&ct=" + contentType;
-    if (parentId && parentId != "undefined") { params = params + "&pid=" + parentId; }
-    if (seasonNum && seasonNum != "undefined") { params = params + "&s=" + seasonNum; }
-    if (episodeNum && episodeNum != "undefined") { params = params + "&e=" + episodeNum; }
-    params = params + "&rsonly=0";
-	var xmlhttp = new XMLHttpRequest();
+    var xmlhttp = new XMLHttpRequest();
     var callbackHandler = function () { detailPageCallback(xmlhttp); };
-    xmlhttp.onreadystatechange = callbackHandler;
-	xmlhttp.open("GET", RS_URL_API + params, true);
-    xmlhttp.send();
+    getFilmFromRs(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum, xmlhttp, callbackHandler);
 }
 
 function detailPageCallback(xmlhttp) {

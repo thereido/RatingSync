@@ -751,6 +751,16 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         $parentFilm = Film::getFilmParentFromDb($film);
         if (!empty($parentFilm)) {
             $parentUniqueName = $parentFilm->getUniqueName($this->sourceName);
+
+            if (empty($parentUniqueName)) {
+                // Parent is in the DB, but does not have a TMDb source.
+                // Get it from the API.
+                $this->getFilmDetailFromApi($parentFilm, true, 60);
+                $parentUniqueName = $parentFilm->getUniqueName($this->getSourceName());
+                if (!empty($parentUniqueName)) {
+                    $parentFilm->saveToDb();
+                }
+            }
         }
 
         return $parentUniqueName;

@@ -9,6 +9,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Film.php";
 
 require_once "DatabaseTest.php";
+require_once "MainTest.php";
 
 class ApiTest extends RatingSyncTestCase
 {
@@ -359,6 +360,356 @@ class ApiTest extends RatingSyncTestCase
         }
         sort($titles, SORT_STRING);
         $this->assertEquals(array("Frozen", "Inception", "Interstellar"), $titles, "Titles in response should match");
+    }
+
+    /**
+     * Movie, Series, and Episode
+     *   - The film should be in the DB with title & year
+     *   - For the episode it should also have a parent id, season number and episode number
+     *   - The film should have an IMDb source
+     *   - The film should not have a Default Data API source (TMDbApi, OmdbApi, etc)
+     *   - Set api_getFilm param un, ct
+     *   - Set api_getFilm param pid, s, e params for an episode
+     *   - Set api_getFilm param rsonly=0 (the film is in the RS DB already)
+     *
+     * Expect
+     *   - The film in the DB has a source for default data API
+     *   - Film object from the DB has the correct default API source uniqueName
+     *
+     * @covers \RatingSync\api_getFilm
+     * @depends testSetup
+     * @depends testApi_getFilm
+     */
+    public function testApi_getFilmForNewSourceByUniqueName()
+    {$this->start(__CLASS__, __FUNCTION__);
+    
+        // Setup
+        DatabaseTest::resetDb();
+        $constants = MainTest::getConstants();
+        $sourceName = $constants["sourceName"];
+        $rsonly = "0";
+
+        // Movie
+            // Setup
+        $imdbId = $constants["filmImdbId"];
+        $title = $constants["filmTitle"];
+        $year = $constants["filmYear"];
+        $uniqueName = $constants["filmUniqueName"];
+
+        $film = new Film();
+        $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $film->setTitle($title);
+        $film->setYear($year);
+        $film->saveToDb();
+        $film = Film::getFilmFromDbByUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $filmId = $film->getId();
+
+        $get = array(); // HTML submit $_GET
+        $get['un'] = $uniqueName;
+        $get['ct'] = Film::CONTENT_FILM;
+        $get['rsonly'] = $rsonly;
+
+            // Test Movie
+        $responseJson = api_getFilm(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+            // Verify Movie
+        $film = Film::getFilmFromDb($filmId);
+        $this->assertFalse(empty($film), "Film from the DB should not be empty");
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), "uniqueName for $sourceName");
+    
+        // Series
+        $imdbId = $constants["seriesImdbId"];
+        $title = $constants["seriesTitle"];
+        $year = $constants["seriesYear"];
+        $uniqueName = $constants["seriesUniqueName"];
+
+        $film = new Film();
+        $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $film->setTitle($title);
+        $film->setYear($year);
+        $film->saveToDb();
+        $film = Film::getFilmFromDbByUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $filmId = $film->getId();
+        $seriesFilmId = $filmId;
+
+        $get = array(); // HTML submit $_GET
+        $get['un'] = $uniqueName;
+        $get['ct'] = Film::CONTENT_TV_SERIES;
+        $get['rsonly'] = $rsonly;
+
+            // Test Series
+        $responseJson = api_getFilm(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+            // Verify Series
+        $film = Film::getFilmFromDb($filmId);
+        $this->assertFalse(empty($film), "Film from the DB should not be empty");
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), "uniqueName for $sourceName");
+    
+        // Episode
+        $imdbId = $constants["episodeImdbId"];
+        $title = $constants["episodeTitle"];
+        $year = $constants["episodeYear"];
+        $seasonNum = $constants["episodeSeasonNum"];
+        $episodeNum = $constants["episodeEpisodeNum"];
+        $uniqueName = $constants["episodeUniqueName"];
+
+        $film = new Film();
+        $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $film->setParentId($seriesFilmId);
+        $film->setTitle($title);
+        $film->setYear($year);
+        $film->setSeason($seasonNum);
+        $film->setEpisodeNumber($episodeNum);
+        $film->saveToDb();
+        $film = Film::getFilmFromDbByUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $filmId = $film->getId();
+
+        $get = array(); // HTML submit $_GET
+        $get['pid'] = $seriesFilmId;
+        $get['un'] = $uniqueName;
+        $get['s'] = $seasonNum;
+        $get['e'] = $episodeNum;
+        $get['ct'] = Film::CONTENT_TV_EPISODE;
+        $get['rsonly'] = $rsonly;
+
+            // Test Series
+        $responseJson = api_getFilm(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+            // Verify Series
+        $film = Film::getFilmFromDb($filmId);
+        $this->assertFalse(empty($film), "Film from the DB should not be empty");
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), "uniqueName for $sourceName");
+    }
+
+    /**
+     * Movie, Series, and Episode
+     *   - The film should be in the DB with title & year
+     *   - For the episode it should also have a parent id, season number and episode number
+     *   - The film should have an IMDb source
+     *   - The film should not have a Default Data API source (TMDbApi, OmdbApi, etc)
+     *   - Set api_getFilm param imdb, ct
+     *   - Set api_getFilm param pid, s, e params for an episode
+     *   - Set api_getFilm param rsonly=0 (the film is in the RS DB already)
+     *
+     * Expect
+     *   - The film in the DB has a source for default data API
+     *   - Film object from the DB has the correct default API source uniqueName
+     *
+     * @covers \RatingSync\api_getFilm
+     * @depends testSetup
+     * @depends testApi_getFilm
+     */
+    public function testApi_getFilmForNewSourceByImdbId()
+    {$this->start(__CLASS__, __FUNCTION__);
+    
+        // Setup
+        DatabaseTest::resetDb();
+        $constants = MainTest::getConstants();
+        $sourceName = $constants["sourceName"];
+        $rsonly = "0";
+
+        // Movie
+            // Setup
+        $imdbId = $constants["filmImdbId"];
+        $title = $constants["filmTitle"];
+        $year = $constants["filmYear"];
+        $uniqueName = $constants["filmUniqueName"];
+
+        $film = new Film();
+        $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $film->setTitle($title);
+        $film->setYear($year);
+        $film->saveToDb();
+        $film = Film::getFilmFromDbByUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $filmId = $film->getId();
+
+        $get = array(); // HTML submit $_GET
+        $get['imdb'] = $imdbId;
+        $get['ct'] = Film::CONTENT_FILM;
+        $get['rsonly'] = $rsonly;
+
+            // Test Movie
+        $responseJson = api_getFilm(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+            // Verify Movie
+        $film = Film::getFilmFromDb($filmId);
+        $this->assertFalse(empty($film), "Film from the DB should not be empty");
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), "uniqueName for $sourceName");
+    
+        // Series
+        $imdbId = $constants["seriesImdbId"];
+        $title = $constants["seriesTitle"];
+        $year = $constants["seriesYear"];
+        $uniqueName = $constants["seriesUniqueName"];
+
+        $film = new Film();
+        $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $film->setTitle($title);
+        $film->setYear($year);
+        $film->saveToDb();
+        $film = Film::getFilmFromDbByUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $filmId = $film->getId();
+        $seriesFilmId = $filmId;
+
+        $get = array(); // HTML submit $_GET
+        $get['imdb'] = $imdbId;
+        $get['ct'] = Film::CONTENT_TV_SERIES;
+        $get['rsonly'] = $rsonly;
+
+            // Test Series
+        $responseJson = api_getFilm(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+            // Verify Series
+        $film = Film::getFilmFromDb($filmId);
+        $this->assertFalse(empty($film), "Film from the DB should not be empty");
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), "uniqueName for $sourceName");
+    
+        // Episode
+        $imdbId = $constants["episodeImdbId"];
+        $title = $constants["episodeTitle"];
+        $year = $constants["episodeYear"];
+        $seasonNum = $constants["episodeSeasonNum"];
+        $episodeNum = $constants["episodeEpisodeNum"];
+        $uniqueName = $constants["episodeUniqueName"];
+
+        $film = new Film();
+        $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $film->setParentId($seriesFilmId);
+        $film->setTitle($title);
+        $film->setYear($year);
+        $film->setSeason($seasonNum);
+        $film->setEpisodeNumber($episodeNum);
+        $film->saveToDb();
+        $film = Film::getFilmFromDbByUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $filmId = $film->getId();
+
+        $get = array(); // HTML submit $_GET
+        $get['pid'] = $seriesFilmId;
+        $get['imdb'] = $imdbId;
+        $get['s'] = $seasonNum;
+        $get['e'] = $episodeNum;
+        $get['ct'] = Film::CONTENT_TV_EPISODE;
+        $get['rsonly'] = $rsonly;
+
+            // Test Series
+        $responseJson = api_getFilm(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+            // Verify Series
+        $film = Film::getFilmFromDb($filmId);
+        $this->assertFalse(empty($film), "Film from the DB should not be empty");
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), "uniqueName for $sourceName");
+    }
+
+    /**
+     * Movie, Series, and Episode
+     *   - The film should be in the DB with title & year
+     *   - For the episode it should also have a parent id, season number and episode number
+     *   - The film should have an IMDb source
+     *   - The film should not have a Default Data API source (TMDbApi, OmdbApi, etc)
+     *   - Set api_getFilm param id
+     *   - Set api_getFilm param rsonly=0 (the film is in the RS DB already)
+     *
+     * Expect
+     *   - The film in the DB has a source for default data API
+     *   - Film object from the DB has the correct default API source uniqueName
+     *
+     * @covers \RatingSync\api_getFilm
+     * @depends testSetup
+     * @depends testApi_getFilm
+     */
+    public function testApi_getFilmForNewSourceByFilmId()
+    {$this->start(__CLASS__, __FUNCTION__);
+    
+        // Setup
+        DatabaseTest::resetDb();
+        $constants = MainTest::getConstants();
+        $sourceName = $constants["sourceName"];
+        $rsonly = "0";
+
+        // Movie
+            // Setup
+        $imdbId = $constants["filmImdbId"];
+        $title = $constants["filmTitle"];
+        $year = $constants["filmYear"];
+        $uniqueName = $constants["filmUniqueName"];
+
+        $film = new Film();
+        $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $film->setTitle($title);
+        $film->setYear($year);
+        $film->saveToDb();
+        $film = Film::getFilmFromDbByUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $filmId = $film->getId();
+
+        $get = array(); // HTML submit $_GET
+        $get['id'] = $filmId;
+        $get['rsonly'] = $rsonly;
+
+            // Test Movie
+        $responseJson = api_getFilm(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+            // Verify Movie
+        $film = Film::getFilmFromDb($filmId);
+        $this->assertFalse(empty($film), "Film from the DB should not be empty");
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), "uniqueName for $sourceName");
+    
+        // Series
+        $imdbId = $constants["seriesImdbId"];
+        $title = $constants["seriesTitle"];
+        $year = $constants["seriesYear"];
+        $uniqueName = $constants["seriesUniqueName"];
+
+        $film = new Film();
+        $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $film->setTitle($title);
+        $film->setYear($year);
+        $film->saveToDb();
+        $film = Film::getFilmFromDbByUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $filmId = $film->getId();
+        $seriesFilmId = $filmId;
+
+        $get = array(); // HTML submit $_GET
+        $get['id'] = $filmId;
+        $get['rsonly'] = $rsonly;
+
+            // Test Series
+        $responseJson = api_getFilm(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+            // Verify Series
+        $film = Film::getFilmFromDb($filmId);
+        $this->assertFalse(empty($film), "Film from the DB should not be empty");
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), "uniqueName for $sourceName");
+    
+        // Episode
+        $imdbId = $constants["episodeImdbId"];
+        $title = $constants["episodeTitle"];
+        $year = $constants["episodeYear"];
+        $seasonNum = $constants["episodeSeasonNum"];
+        $episodeNum = $constants["episodeEpisodeNum"];
+        $uniqueName = $constants["episodeUniqueName"];
+
+        $film = new Film();
+        $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $film->setParentId($seriesFilmId);
+        $film->setTitle($title);
+        $film->setYear($year);
+        $film->setSeason($seasonNum);
+        $film->setEpisodeNumber($episodeNum);
+        $film->saveToDb();
+        $film = Film::getFilmFromDbByUniqueName($imdbId, Constants::SOURCE_IMDB);
+        $filmId = $film->getId();
+
+        $get = array(); // HTML submit $_GET
+        $get['id'] = $filmId;
+        $get['rsonly'] = $rsonly;
+
+            // Test Series
+        $responseJson = api_getFilm(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+            // Verify Series
+        $film = Film::getFilmFromDb($filmId);
+        $this->assertFalse(empty($film), "Film from the DB should not be empty");
+        $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), "uniqueName for $sourceName");
     }
 }
 

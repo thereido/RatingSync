@@ -438,3 +438,75 @@ function updateContextDataFilmByUniqueName(updateFilm, sourceName) {
         contextData.films[index] = updateFilm;
     }
 }
+
+function getFilmFromRs(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum, xmlhttp, callback) {
+    var params = "?action=getFilm";
+    params = params + "&id=" + filmId;
+    if (imdbId && imdbId != "undefined") { params = params + "&imdb=" + imdbId; }
+    if (uniqueName && uniqueName != "undefined") { params = params + "&un=" + uniqueName; }
+    params = params + "&ct=" + contentType;
+    if (parentId && parentId != "undefined") { params = params + "&pid=" + parentId; }
+    if (seasonNum && seasonNum != "undefined") { params = params + "&s=" + seasonNum; }
+    if (episodeNum && episodeNum != "undefined") { params = params + "&e=" + episodeNum; }
+    params = params + "&rsonly=0";
+
+    var callbackHandler = function () { getFilmFromRsCallback(xmlhttp, callback); };
+    xmlhttp.onreadystatechange = callbackHandler;
+    xmlhttp.open("GET", RS_URL_API + params, true);
+    xmlhttp.send();
+}
+
+function getFilmFromRsCallback(xmlhttp, callback) {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        callback(xmlhttp);
+    }
+}
+
+function getFilmForDropdown(film) {
+    var filmId = film.filmId;
+    var uniqueName;
+    var defaultSource = film.sources.find( function (findSource) { return findSource.name == DATA_API_DEFAULT; } );
+    if (defaultSource && defaultSource != "undefined") {
+        uniqueName = defaultSource.uniqueName;
+    }
+    var imdbId;
+    var imdbSource = film.sources.find( function (findSource) { return findSource.name == SOURCE_IMDB; } );
+    if (imdbSource && imdbSource != "undefined") {
+        imdbId = imdbSource.uniqueName;
+    }
+    var contentType = film.contentType;
+    var parentId = film.parentId;
+    var seasonNum = film.seasonNum;
+    var episodeNum = film.episodeNum;
+    var xmlhttp = new XMLHttpRequest();
+    var callbackHandler = function () { filmDropdownCallback(xmlhttp); };
+    getFilmFromRs(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum, xmlhttp, callbackHandler);
+}
+
+function filmDropdownCallback(xmlhttp) {
+	if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        var result = JSON.parse(xmlhttp.responseText);
+        if (result.Success != "false" && result.filmId != "undefined") {
+            var film = result;
+            var filmId = film.filmId;
+            var filmIndex = contextData.films.findIndex( function (findFilm) { return findFilm.filmId == filmId; } );
+            if (filmIndex != -1) {
+                contextData.films[filmIndex] = film;
+            } else {
+                contextData.films.push(film);
+            }
+            var dropdownEl = document.getElementById("film-dropdown-" + film.filmId);
+            renderFilmDetail(film, dropdownEl);
+        }
+	}
+}
+
+function renderFilmDetail(film, dropdownEl) {
+    dropdownEl.innerHTML = "";
+    dropdownEl.appendChild(buildFilmDetailElement(film));
+    dropdownEl.style.display = "block";
+
+    renderStars(film);
+    renderStreams(film, true);
+    renderFilmlists(film.filmlists, film.filmId);
+}

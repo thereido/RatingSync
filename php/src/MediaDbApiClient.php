@@ -175,10 +175,21 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
                 $film->setUniqueName($uniqueName, $this->sourceName);
             }
 
+            // Url for film detail. If the $film doesn't have all the attrs it
+            // needs an exception will be thrown. Just log it and move on.
+            $filmDetailUrl = null;
+            try {
+                $filmDetailUrl = $this->buildUrlFilmDetail($film);
+            }
+            catch (\Exception $e) {
+                $errorMsg = "Exception buildUrlFilmDetail() " . $e->getCode() . " " . $e->getMessage();
+                logDebug($errorMsg, __FUNCTION__." ".__LINE__);
+            }
+
             // If there is uniqueName at this point, go for full detail
-            if (!empty($uniqueName)) {
+            if (!empty($filmDetailUrl)) {
                 try {
-                    $response = $this->apiRequest($this->buildUrlFilmDetail($film), null, false, false);
+                    $response = $this->apiRequest($filmDetailUrl, null, false, false);
                     if ( !empty($response) ) {
                         $filmJson = json_decode($response, true);
                     }

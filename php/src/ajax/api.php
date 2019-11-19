@@ -294,6 +294,8 @@ function api_getFilm($username, $get)
 function getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType = null, $seasonNum = null, $episodeNum = null, $parentId = null)
 {
     $film = null;
+    $api = getMediaDbApiClient(Constants::DATA_API_DEFAULT);
+
     if (!empty($filmId)) {
 
         $film = Film::getFilmFromDb($filmId, $username);
@@ -301,13 +303,12 @@ function getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, 
     }
     elseif (!empty($uniqueName) || !empty($imdbId)) {
 
-        $sourceName = Constants::DATA_API_DEFAULT;
+        $sourceName = $api->getSourceName();
         if (empty($uniqueName) && !empty($imdbId)) {
             $uniqueName = $imdbId;
             $sourceName = Constants::SOURCE_IMDB;
         }
 
-        $api = getMediaDbApiClient();
         $film = $api->getFilmFromDb($uniqueName, $contentType, $username);
 
         if (empty($film) && !$getFromRsDbOnly) {
@@ -326,9 +327,25 @@ function getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, 
         }
     }
 
+    // Make sure the default API has a source and refresh the film
+    // if it the data is stale
     if (!empty($film)) {
-        $changesWereMade = $film->refresh();
-        if ($changesWereMade) {
+        // Source
+        $sourceAdded = false;
+        $uniqueName = $film->getUniqueName($api->getSourceName());
+        if (empty($uniqueName)) {
+            $api->getFilmDetailFromApi($film, true, 60);
+            $uniqueName = $film->getUniqueName($api->getSourceName());
+            if (!empty($uniqueName)) {
+                $sourceAdded = true;
+            }
+        }
+
+        // Refresh
+        $refreshed = $film->refresh();
+
+        // Save to the DB if any changes for made
+        if ($refreshed || $sourceAdded) {
             $film->saveToDb($username);
         }
     }

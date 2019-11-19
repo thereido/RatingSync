@@ -52,6 +52,7 @@ class OmdbApiTest extends RatingSyncTestCase
         $constants["sourceName"]            = Constants::SOURCE_OMDBAPI;
 
         $constants["filmUniqueName"]        = self::TESTFILM_PRIMARY_IMDBID;
+        $constants["filmImdbId"]            = self::TESTFILM_PRIMARY_IMDBID;
         $constants["filmTitle"]             = self::TESTFILM_PRIMARY_TITLE;
         $constants["filmYear"]              = self::TESTFILM_PRIMARY_YEAR;
         $constants["filmGenres"]            = self::TESTFILM_PRIMARY_GENRES;
@@ -61,6 +62,7 @@ class OmdbApiTest extends RatingSyncTestCase
         $constants["filmCriticScore"]       = self::TESTFILM_PRIMARY_CRITIC_SCORE;
 
         $constants["seriesUniqueName"]      = self::TESTSERIES_IMDBID;
+        $constants["seriesImdbId"]          = self::TESTSERIES_IMDBID;
         $constants["seriesTitle"]           = self::TESTSERIES_TITLE;
         $constants["seriesYear"]            = self::TESTSERIES_YEAR;
         $constants["seriesGenres"]          = self::TESTSERIES_GENRES;
@@ -70,6 +72,7 @@ class OmdbApiTest extends RatingSyncTestCase
         $constants["seriesCriticScore"]     = self::TESTSERIES_CRITIC_SCORE;
 
         $constants["episodeUniqueName"]     = self::TESTEPISODE_IMDBID;
+        $constants["episodeImdbId"]         = self::TESTEPISODE_IMDBID;
         $constants["episodeTitle"]          = self::TESTEPISODE_TITLE;
         $constants["episodeEpisodeTitle"]   = self::TESTEPISODE_EPISODETITLE;
         $constants["episodeYear"]           = self::TESTEPISODE_YEAR;
