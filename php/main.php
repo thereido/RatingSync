@@ -138,12 +138,23 @@ function debugMessage($input, $prefix = null, $showTime = true, $printArray = nu
 
 function logDebug($input, $prefix = null, $showTime = true, $printArray = null)
 {
-    $message = debugMessage($input, $prefix, $showTime, $printArray);
+    $message = "";
+    try {
+        $message = debugMessage($input, $prefix, $showTime, $printArray);
+    }
+    catch (\Exception $e) {
+        $message = "Exception in debugMessage() " . $e->getCode() . " " . $e->getMessage();
+    }
 
-    $logfilename =  Constants::outputFilePath() . "logDebug.txt";
-    $fp = fopen($logfilename, "a");
-    fwrite($fp, $message);
-    fclose($fp);
+    try {
+        $logfilename =  Constants::outputFilePath() . "logDebug.txt";
+        $fp = fopen($logfilename, "a");
+        fwrite($fp, $message);
+        fclose($fp);
+    }
+    catch (\Exception $e) {
+        // Ignore
+    }
 }
 
 function printDebug($input, $prefix = null, $showTime = false, $printArray = null)
