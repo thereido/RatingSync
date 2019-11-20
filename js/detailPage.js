@@ -149,17 +149,24 @@ function renderEpisodes(result) {
 }
 
 function getEpisodeRatings(seasonJson) {
+    var seasonNum = seasonJson.number;
     var episodes = seasonJson.episodes;
     if (!episodes || episodes.length == 0) {
         return;
     }
-    var delim = "";
+    var parentId = "";
     var params = "?action=getFilms";
-    params += "&uncts="; // uniqueName/contentType combos
+    params += "&s=" + seasonNum;
+    params += "&e="; // episode numbers for all episodes
+    var delim = "";
     for (var i = 0; i < episodes.length; i++) {
-        params += delim + episodes[i].uniqueName + "_" + CONTENT_TV_EPISODE;
+        params += delim + episodes[i].number;
         delim = "+";
+        if (!parentId || parentId == "" || parentId == "undefined") {
+            parentId = episodes[i].seriesFilmId;
+        }
     }
+    params += "&pid=" + parentId;
 	var xmlhttp = new XMLHttpRequest();
     var callbackHandler = function () { detailPageEpisodeRatingsCallback(xmlhttp); };
     xmlhttp.onreadystatechange = callbackHandler;

@@ -387,6 +387,13 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         return $film;
     }
 
+    public function getEpisodeFromDb($seriesFilmId, $seasonNum, $episodeNum, $username = null)
+    {
+        $film = Film::getFilmFromDbByEpisode($seriesFilmId, $seasonNum, $episodeNum, $username);
+
+        return $film;
+    }
+
     protected function isThisIdFromImdb($sourceId)
     {
         $isThisIdFromImdb = false;

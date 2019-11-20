@@ -1180,6 +1180,27 @@ class Film {
         return self::getFilmFromDb($filmId, $username);
     }
 
+    public static function getFilmFromDbByEpisode($seriesFilmId, $seasonNum, $episodeNum, $username = null)
+    {
+        if (empty($seriesFilmId) || empty($seasonNum) || empty($episodeNum)) {
+            throw new \InvalidArgumentException("seriesFilmId ($seriesFilmId), seasonNum ($seasonNum), and episodeNum ($episodeNum) must all be non-empty");
+        }
+        $db = getDatabase();
+        
+        $query  = "SELECT id FROM film";
+        $query .= " WHERE parent_id=$seriesFilmId";
+        $query .= "   AND season=$seasonNum";
+        $query .= "   AND episodeNumber=$episodeNum";
+        $result = $db->query($query);
+        if ($result->num_rows != 1) {
+            return null;
+        }
+        $row = $result->fetch_assoc();
+        $filmId = $row["id"];
+
+        return self::getFilmFromDb($filmId, $username);
+    }
+
     /**
      * Try to get a image (and save to the db) for films that have no valid image.
      */

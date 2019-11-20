@@ -40,7 +40,11 @@ function renderUserlistFilms() {
         var contentTypeParam = "";
         if (film.contentType != "undefined") { contentTypeParam = "&ct=" + film.contentType; }
         var parentIdParam = "";
-        if (film.parentId != "undefined") { parentIdParam = "&pid=" + film.parentId; }
+        if (film.contentType == CONTENT_TV_EPISODE) {
+            if (film.contentType == CONTENT_TV_EPISODE && film.parentId != "undefined") {
+                parentIdParam = "&pid=" + film.parentId;
+            }
+        }
         var rsSource = film.sources.find(function (findSource) { return findSource.name == "RatingSync"; });
         var image = RS_URL_BASE + rsSource.image;
         var uniqueName = rsSource.uniqueName;

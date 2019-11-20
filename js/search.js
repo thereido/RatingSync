@@ -355,9 +355,28 @@ function convertSourceDataListToRs(sourceSearchResult, sourceName, limit) {
         }
     }
     else if (sourceName == SOURCE_TMDBAPI) {
-        var results = sourceSearchResult.results;
+        var results = "undefined";
+        var contentType = null;
+        var searchResults = sourceSearchResult.results;
+        var movieResults = sourceSearchResult.movie_results;
+        var seriesResults = sourceSearchResult.movie_results;
+        if (searchResults && searchResults != "undefined") {
+            results = searchResults;
+        }
+        else if (movieResults && movieResults != "undefined" && movieResults.length > 0) {
+            results = movieResults;
+            contentType = "movie";
+        }
+        else if (seriesResults && seriesResults != "undefined" && seriesResults.length > 0) {
+            results = seriesResults;
+            contentType = "tv";
+        }
+
         while (films.length < limit && results && results.length > films.length) {
             var sourceFilm = results[films.length];
+            if (contentType && (!sourceFilm.media_type || sourceFilm.media_type == "undefined")) {
+                sourceFilm.media_type = contentType;
+            }
             films[films.length] = convertSourceDataItemToRs(sourceFilm, sourceName);
         }
     }
