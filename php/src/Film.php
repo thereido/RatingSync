@@ -1434,15 +1434,15 @@ class Film {
         }
         
         if ($needToRefresh) {
-            $omdbApi = new OmdbApi("empty_userame");
-            $omdbApi->getFilmDetailFromWebsite($this, true, Constants::USE_CACHE_ALWAYS);
+            $api = getMediaDbApiClient(Constants::DATA_API_DEFAULT);
+            $api->getFilmDetailFromApi($this, true, 60);
 
             // Any changes?
             if (!$currentImageValid) {
                 // Validate the new image before using it
                 $http = new Http(Constants::SOURCE_RATINGSYNC);
                 if (!empty($refreshedImage) && $http->isPageValid($refreshedImage)) {
-                    $this->setImage($refreshedImage, Constants::SOURCE_OMDBAPI);
+                    $this->setImage($refreshedImage, $api->getSourceName());
                     // Download the image
                     if (!empty($refreshedImage)) {
                         $uniqueName = $this->getUniqueName(Constants::SOURCE_RATINGSYNC);
