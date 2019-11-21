@@ -2787,7 +2787,7 @@ class FilmTest extends RatingSyncTestCase
 
         $db = getDatabase();
 
-        $year = 2015;
+        $year = 2014; // TMDb had it as 2015, but now it is 2014
         if (Constants::DATA_API_DEFAULT == Constants::SOURCE_OMDBAPI) {
             $year = 2014; // OMDbApi has it as 2014
         }
@@ -2796,7 +2796,7 @@ class FilmTest extends RatingSyncTestCase
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $film = new Film();
         $film->setTitle("Zombeavers");
-        $film->setYear(2015);
+        $film->setYear($year);
         $film->setContentType(Film::CONTENT_FILM);
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         $rating->setYourScore(6);
