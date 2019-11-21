@@ -4,18 +4,17 @@ var hideable = true;
 // Needs "contextData" JSON in the page
 function showFilmDetail(filmId) {
     var dropdownEl = document.getElementById("film-dropdown-" + filmId);
-    var film = contextData.films.find( function (findFilm) { return findFilm.filmId == filmId; } );
-    renderFilmDetail(film, dropdownEl);
-}
+    var filmIndex = contextData.films.findIndex( function (findFilm) { return findFilm.filmId == filmId; } );
+    if (filmIndex != -1) {
+        var film = contextData.films[filmIndex];
+        renderFilmDetail(film, dropdownEl);
 
-function renderFilmDetail(film, dropdownEl) {
-    dropdownEl.innerHTML = "";
-    dropdownEl.appendChild(buildFilmDetailElement(film));
-    dropdownEl.style.display = "block";
-
-    renderStars(film);
-    renderStreams(film, true);
-    renderFilmlists(film.filmlists, film.filmId);
+        // If the default source has no data for this film get it now
+        var defaultSource = film.sources.find( function (findSource) { return findSource.name == DATA_API_DEFAULT; } );
+        if (!defaultSource || defaultSource == "undefined") {
+            getFilmForDropdown(film);
+        }
+    }
 }
 
 function getRsRatings(pageSize, beginPage) {
@@ -55,6 +54,10 @@ function renderRatings() {
         var filmId = film.filmId;
         var title = film.title;
         var titleNoQuotes = title.replace(/\"/g, '\\\"').replace(/\'/g, "\\\'");
+        var contentTypeParam = "";
+        if (film.contentType != "undefined") { contentTypeParam = "&ct=" + film.contentType; }
+        var parentIdParam = "";
+        if (film.parentId != "undefined") { parentIdParam = "&pid=" + film.parentId; }
         var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
         var image = RS_URL_BASE + rsSource.image;
         var showFilmDetailJS = "showFilmDetail(" + filmId + ")";
@@ -65,7 +68,7 @@ function renderRatings() {
         html = html + "  <div class='col-xs-6 col-sm-4 col-md-3 col-lg-2' id='" + uniqueName + "'>\n";
         html = html + "    <div class='userlist-film' " + onMouseEnter + " " + onMouseLeave + ">\n";
         html = html + "      <poster id='poster-" + uniqueName + "' data-filmId='" + filmId + "'>\n";
-        html = html + "        <a href='/php/detail.php?i=" + filmId + "'>\n";
+        html = html + "        <a href='/php/detail.php?i=" + filmId + parentIdParam + contentTypeParam + "'>\n";
         html = html + "          <img src='" + image + "' alt='" + titleNoQuotes + "' " + onClick + " />\n";
         html = html + "        </a>\n";
         html = html + "        <div id='film-dropdown-" + filmId + "' class='film-dropdown-content film-dropdown-col-" + column + "'></div>\n";

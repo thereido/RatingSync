@@ -36,8 +36,13 @@ function buildFilmDetailElement(film) {
         dateStr = getRatingDateText(yourRatingDate);
     }
 
+    var contentTypeText = "";
+    if (film.contentType && film.contentType == CONTENT_TV_SERIES) {
+        contentTypeText = " TV";
+    }
+
     var html = '\n';
-    html = html + '  <div class="film-line"><span class="film-title">'+title+'</span> ('+year+')</div>\n';
+    html = html + '  <div class="film-line"><span class="film-title">'+title+'</span> ('+year+')'+contentTypeText+'</div>\n';
     html = html + "  <episodeTitle class='tv-episode-title'>" + episodeTitle + "</episodeTitle>\n";
     html = html + "  <div><season class='tv-season'>" + season + "</season><episodeNumber class='tv-episodenum'>" + episodeNumber + "</episodeNumber></div>\n";
     html = html + '  <div id="action-area-'+rsUniqueName+'">\n';

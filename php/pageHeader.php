@@ -87,6 +87,8 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '            <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>'."\n";
     $html .= '            <div id="header-search-suggestion" hidden></div>'."\n";
     $html .= '            <input id="selected-suggestion-uniquename" name="selsug-un" hidden>'."\n";
+    $html .= '            <input id="selected-suggestion-contenttype" name="selsug-ct" hidden>'."\n";
+    $html .= '            <input id="search-domain-input" name="sd" hidden>'."\n";
     $html .= '          </form>'."\n";
     $html .= '        </li>'."\n";
     $html .= '      </ul>'."\n";

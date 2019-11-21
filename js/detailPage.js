@@ -1,14 +1,8 @@
 
-function getFilmForDetailPage(filmId, imdbUniqueName) {
-    var params = "?action=getFilm";
-    params = params + "&id=" + filmId;
-    params = params + "&imdb=" + imdbUniqueName;
-    params = params + "&rsonly=0";
-	var xmlhttp = new XMLHttpRequest();
+function getFilmForDetailPage(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum) {
+    var xmlhttp = new XMLHttpRequest();
     var callbackHandler = function () { detailPageCallback(xmlhttp); };
-    xmlhttp.onreadystatechange = callbackHandler;
-	xmlhttp.open("GET", RS_URL_API + params, true);
-    xmlhttp.send();
+    getFilmFromRs(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum, xmlhttp, callbackHandler);
 }
 
 function detailPageCallback(xmlhttp) {
@@ -34,7 +28,7 @@ function detailPageCallback(xmlhttp) {
 
                     // Made the series title be a link
                     var titleEl = document.getElementsByClassName("film-title")[0];
-                    titleEl.innerHTML = "<a href='/php/detail.php?i=" + film.parentId + "'>" + titleEl.innerHTML + "</a>";
+                    titleEl.innerHTML = "<a href='/php/detail.php?i=" + film.parentId + "&ct=" + CONTENT_TV_SERIES + "'>" + titleEl.innerHTML + "</a>";
                 }
                 
                 getSeriesForDetailPage(film);
@@ -53,6 +47,7 @@ function getSeriesForDetailPage() {
     } else if (episodeFilm) {
         var params = "?action=getFilm";
         params = params + "&id=" + episodeFilm.parentId;
+        params = params + "&ct=" + CONTENT_TV_SERIES;
         params = params + "&rsonly=1";
         var xmlhttp = new XMLHttpRequest();
         var callbackHandler = function () { detailPageSeriesCallback(xmlhttp); };
@@ -123,22 +118,28 @@ function detailPageEpisodesCallback(xmlhttp) {
 function renderEpisodes(result) {
     var episodesEl = document.getElementById("episodes");
     episodesEl.innerHTML = "";
-    var episodes = result.Episodes;
+    var episodes = result.episodes;
+
     for (var i = 0; i < episodes.length; i++) {
         var episode = episodes[i];
         
         rowEl = document.createElement("div");
         rowEl.setAttribute("class", "row");
         episodeEl = document.createElement("detail-episode");
-        episodeEl.setAttribute("id", "episode-" + episode.Episode); // episode number
+        episodeEl.setAttribute("id", "episode-" + episode.number); // episode number
 
         numberEl = document.createElement("span");
-        numberEl.innerHTML = episode.Episode + ". ";
+        numberEl.innerHTML = episode.number + ". ";
 
         linkEl = document.createElement("a");
-        linkEl.setAttribute("href", "/php/detail.php?imdb=" + episode.imdbID);
-        linkEl.setAttribute("data-imdb", episode.imdbID);
-        linkEl.innerHTML = episode.Title;
+        var params = "?sid=" + episode.sourceId;
+        params = params + "&ct=" + CONTENT_TV_EPISODE;
+        params = params + "&pid=" + episode.seriesFilmId;
+        params = params + "&season=" + episode.seasonNum;
+        params = params + "&en=" + episode.number;
+        linkEl.setAttribute("href", "/php/detail.php" + params);
+        linkEl.setAttribute("data-imdb", episode.sourceId);
+        linkEl.innerHTML = episode.title;
         
         episodesEl.appendChild(rowEl);
         rowEl.appendChild(episodeEl);
@@ -148,17 +149,24 @@ function renderEpisodes(result) {
 }
 
 function getEpisodeRatings(seasonJson) {
-    var episodes = seasonJson.Episodes;
+    var seasonNum = seasonJson.number;
+    var episodes = seasonJson.episodes;
     if (!episodes || episodes.length == 0) {
         return;
     }
-    var delim = "";
+    var parentId = "";
     var params = "?action=getFilms";
-    params += "&imdb=";
+    params += "&s=" + seasonNum;
+    params += "&e="; // episode numbers for all episodes
+    var delim = "";
     for (var i = 0; i < episodes.length; i++) {
-        params += delim + episodes[i].imdbID;
+        params += delim + episodes[i].number;
         delim = "+";
+        if (!parentId || parentId == "" || parentId == "undefined") {
+            parentId = episodes[i].seriesFilmId;
+        }
     }
+    params += "&pid=" + parentId;
 	var xmlhttp = new XMLHttpRequest();
     var callbackHandler = function () { detailPageEpisodeRatingsCallback(xmlhttp); };
     xmlhttp.onreadystatechange = callbackHandler;

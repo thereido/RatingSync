@@ -12,12 +12,9 @@
 		<director>Jennifer Lee</director>
 	</directors>
 	<genres>
-		<genre>Adventure</genre>
 		<genre>Animation</genre>
-		<genre>Fantasy</genre>
-		<genre>Musical</genre>
+		<genre>Adventure</genre>
 		<genre>Family</genre>
-		<genre>Comedy</genre>
 	</genres>
 	<source name="Jinni">
 		<image>http://media.jinni.com/movie/frozen-2013/frozen-2013-5.jpeg</image>
@@ -206,7 +203,7 @@
 	<genres>
 		<genre>Animation</genre>
 		<genre>Adventure</genre>
-		<genre>Comedy</genre>
+		<genre>Family</genre>
 	</genres>
 	<source name="IMDb">
 		<image>https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_UX182_CR0,0,182,268_AL_.jpg</image>
@@ -226,7 +223,7 @@
 	<title>Frozen</title>
 	<year>2013</year>
 	<contentType>FeatureFilm</contentType>
-	<image>http://example.com/frozen_rs_image.jpeg</image>
+	<image>http://example.com/frozen_film_image.jpeg</image>
 	<directors>
 		<director>Chris Buck</director>
 		<director>Jennifer Lee</director>
@@ -234,13 +231,10 @@
 	<genres>
 		<genre>Animation</genre>
 		<genre>Adventure</genre>
-		<genre>Comedy</genre>
-		<genre>Fantasy</genre>
-		<genre>Musical</genre>
 		<genre>Family</genre>
 	</genres>
 	<source name="RatingSync">
-		<image>http://example.com/frozen_rs_image.jpeg</image>
+		<image>/image/rs1.jpg</image>
 		<uniqueName>Frozen_rs</uniqueName>
 		<criticScore>4</criticScore>
 		<userScore>5</userScore>
@@ -251,7 +245,7 @@
 		</rating>
 	</source>
 	<source name="IMDb">
-		<image>https://images-na.ssl-images-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_UX182_CR0,0,182,268_AL_.jpg</image>
+		<image>https://m.media-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_SX300.jpg</image>
 		<uniqueName>tt2294629</uniqueName>
 		<criticScore>7.4</criticScore>
 		<userScore>7.7</userScore>
@@ -271,6 +265,24 @@
 			<yourRatingDate>2015-5-4</yourRatingDate>
 			<suggestedScore/>
 		</rating>
+	</source>
+	<source name="OMDb">
+		<image>https://m.media-amazon.com/images/M/MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE@._V1_SX300.jpg</image>
+		<uniqueName>tt2294629</uniqueName>
+		<criticScore>7.4</criticScore>
+		<userScore>7.7</userScore>
+		<rating>
+			<yourScore>2</yourScore>
+			<yourRatingDate/>
+			<suggestedScore/>
+		</rating>
+	</source>
+	<source name="TMDb">
+		<image>https://image.tmdb.org/t/p/w500/eFnGmj63QPUpK7QUWSOUhypIQOT.jpg</image>
+		<uniqueName>mv109445</uniqueName>
+		<criticScore/>
+		<userScore>7.3</userScore>
+		<rating/>
 	</source>
 </film>
 

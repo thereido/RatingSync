@@ -13,6 +13,11 @@ require_once "Constants.php";
  */
 class Source
 {
+    // Attr names in JSON from a source
+    const ATTR_UNIQUE_NAME = "uniqueName";
+    const ATTR_IMAGE = "source_image";
+    const ATTR_CRITIC_SCORE = "criticScore";
+    const ATTR_USER_SCORE = "userScore";
     
     protected $name;
     protected $image;
@@ -49,6 +54,7 @@ class Source
         $validSources = array(Constants::SOURCE_JINNI,
                                 Constants::SOURCE_IMDB,
                                 Constants::SOURCE_OMDBAPI,
+                                Constants::SOURCE_TMDBAPI,
                                 Constants::SOURCE_RATINGSYNC,
                                 Constants::SOURCE_NETFLIX,
                                 Constants::SOURCE_RT,

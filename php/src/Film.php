@@ -15,6 +15,19 @@ class Film {
     const CONTENT_TV_SERIES = 'TvSeries';
     const CONTENT_TV_SEASON = 'TvSeason';
     const CONTENT_TV_EPISODE = 'TvEpisode';
+
+    // Data from a data source (OMDb, TMDb...)
+    const ATTR_IMDB_ID = "imdbId";
+    const ATTR_PARENT_ID = "parentId";
+    const ATTR_TITLE = "title";
+    const ATTR_YEAR = "year";
+    const ATTR_CONTENT_TYPE = "contentType";
+    const ATTR_SEASON_COUNT = "seasonCount";
+    const ATTR_SEASON_NUM = "season";
+    const ATTR_EPISODE_NUM = "episodeNumber";
+    const ATTR_EPISODE_TITLE = "episodeTitle";
+    const ATTR_GENRES = "genres";
+    const ATTR_DIRECTORS = "directors";
     
     protected $id;
     protected $parentId;
@@ -1013,6 +1026,7 @@ class Film {
             if (empty($filmImage)) {
                 // Download an image from another source
                 $filmImage = $this->downloadImage();
+                $this->setImage($filmImage);
             }
             $sourceRs->setImage($filmImage);
             $success = $sourceRs->saveFilmSourceToDb($filmId);
@@ -1146,22 +1160,43 @@ class Film {
         return $film;
     }
 
-    public static function getFilmFromDbByImdb($imdbUniqueName, $username = null)
+    public static function getFilmFromDbByUniqueName($uniqueName, $sourceName, $username = null)
     {
-        if (empty($imdbUniqueName)) {
-            throw new \InvalidArgumentException("imdbUniqueName arg must not be empty");
+        if (empty($uniqueName)) {
+            throw new \InvalidArgumentException("uniqueName arg must not be empty");
         }
         $db = getDatabase();
         
         $query  = "SELECT film_id FROM film_source";
-        $query .= " WHERE source_name='" . Constants::SOURCE_IMDB . "'";
-        $query .= "   AND uniqueName='" . $imdbUniqueName . "'";
+        $query .= " WHERE source_name='$sourceName'";
+        $query .= "   AND uniqueName='$uniqueName'";
         $result = $db->query($query);
         if ($result->num_rows != 1) {
             return null;
         }
         $row = $result->fetch_assoc();
         $filmId = $row["film_id"];
+
+        return self::getFilmFromDb($filmId, $username);
+    }
+
+    public static function getFilmFromDbByEpisode($seriesFilmId, $seasonNum, $episodeNum, $username = null)
+    {
+        if (empty($seriesFilmId) || empty($seasonNum) || empty($episodeNum)) {
+            throw new \InvalidArgumentException("seriesFilmId ($seriesFilmId), seasonNum ($seasonNum), and episodeNum ($episodeNum) must all be non-empty");
+        }
+        $db = getDatabase();
+        
+        $query  = "SELECT id FROM film";
+        $query .= " WHERE parent_id=$seriesFilmId";
+        $query .= "   AND season=$seasonNum";
+        $query .= "   AND episodeNumber=$episodeNum";
+        $result = $db->query($query);
+        if ($result->num_rows != 1) {
+            return null;
+        }
+        $row = $result->fetch_assoc();
+        $filmId = $row["id"];
 
         return self::getFilmFromDb($filmId, $username);
     }
@@ -1190,20 +1225,24 @@ class Film {
 
     public function downloadImage()
     {
-        $omdbApi = new OmdbApi("empty_userame");
-        try {
-            $omdbApi->getFilmDetailFromWebsite($this, false, Constants::USE_CACHE_ALWAYS);
-            $image = $this->getImage(Constants::SOURCE_OMDBAPI);
-        } catch (\Exception $e) {
-            // Do nothing, $image will be empty
+        $api = getMediaDbApiClient(Constants::DATA_API_DEFAULT);
+        $image = $this->getImage($api->getSourceName());
+        if (empty($image)) {
+            try {
+                $api->getFilmDetailFromApi($this, false, Constants::USE_CACHE_ALWAYS);
+                $image = $this->getImage($api->getSourceName());
+            } catch (\Exception $e) {
+                // Do nothing, $image will be empty
+            }
         }
 
         // Download the image
         if (!empty($image)) {
             $uniqueName = $this->getUniqueName(Constants::SOURCE_RATINGSYNC);
             $filename = "$uniqueName.jpg";
+            $apiImagePath = $api->getImagePath(MediaDbApiClient::IMAGE_SIZE_LARGE);
             try {
-                file_put_contents(Constants::imagePath() . $filename, file_get_contents($image));
+                file_put_contents(Constants::imagePath() . $filename, file_get_contents($apiImagePath . $image));
             } catch (\Exception $e) {
                 logDebug("Exception downloading an image for $filename.\n" . $e, __CLASS__."::".__FUNCTION__." ".__LINE__);
             }
@@ -1416,15 +1455,15 @@ class Film {
         }
         
         if ($needToRefresh) {
-            $omdbApi = new OmdbApi("empty_userame");
-            $omdbApi->getFilmDetailFromWebsite($this, true, Constants::USE_CACHE_ALWAYS);
+            $api = getMediaDbApiClient(Constants::DATA_API_DEFAULT);
+            $api->getFilmDetailFromApi($this, true, 60);
 
             // Any changes?
             if (!$currentImageValid) {
                 // Validate the new image before using it
                 $http = new Http(Constants::SOURCE_RATINGSYNC);
                 if (!empty($refreshedImage) && $http->isPageValid($refreshedImage)) {
-                    $this->setImage($refreshedImage, Constants::SOURCE_OMDBAPI);
+                    $this->setImage($refreshedImage, $api->getSourceName());
                     // Download the image
                     if (!empty($refreshedImage)) {
                         $uniqueName = $this->getUniqueName(Constants::SOURCE_RATINGSYNC);

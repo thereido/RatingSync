@@ -12,6 +12,7 @@ require_once "ImdbTest.php";
 require_once "XfinityTest.php";
 require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
+require_once "MainTest.php";
 
 class RatingSyncSiteTest extends RatingSyncTestCase
 {
@@ -62,82 +63,13 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $this->assertTrue(true); // Making sure we made it this far
     }
 
-    public static function setupRatings()
-    {
-        $db = getDatabase();
-        $success = true;
-
-        DatabaseTest::resetDb();
-        $username_imdb = TEST_IMDB_USERNAME;
-        $username_rs = Constants::TEST_RATINGSYNC_USERNAME;
-        $site = new SiteRatingsChild($username_imdb);
-        $filename =  __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "input_ratings_site.xml";
-        $films = $site->importRatings(Constants::IMPORT_FORMAT_XML, $filename, $username_rs);
-
-        $username_imdb = "imdb_user1";
-        $username_jinni = "jinni_user1";
-        $username_rs = "rs_user1";
-
-        $query = "INSERT INTO user (username, password) VALUES ('$username_rs', 'password')";
-        if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
-            $success = false;
-        }
-        $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_IMDB."', 'imdb_user1', 'pwd')";
-        if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
-            $success = false;
-        }
-        $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_JINNI."', 'jinni_user1', 'pwd')";
-        if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
-            $success = false;
-        }
-        $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_RATINGSYNC."', '$username_rs', 'password')";
-        if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
-            $success = false;
-        }
-        
-        $filmId = 1; $filmId2 = 2; $filmId4 = 4;
-        $result = $db->query("SELECT * FROM rating WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."' AND source_name='".Constants::SOURCE_IMDB."'");
-        $rating = new Rating(Constants::SOURCE_IMDB);
-        $rating->initFromDbRow($result->fetch_assoc());
-        $rating->saveToRs($username_rs, $filmId);
-        $rating->saveToRs($username_rs, $filmId2);
-        $rating->setYourRatingDate(new \DateTime());
-        $rating->saveToRs($username_rs, $filmId4);
-
-        $query = "UPDATE rating SET source_name='".Constants::SOURCE_IMDB."' WHERE film_id=$filmId4 AND user_name='$username_rs'";
-        if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
-            $success = false;
-        }
-
-        $filmId = 1;
-        $query = "UPDATE rating SET yourRatingDate='2015-1-1' WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."' AND source_name='".Constants::SOURCE_RATINGSYNC."'";
-        if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
-            $success = false;
-        }
-
-        $filmId = 3;
-        $query = "UPDATE rating SET source_name='".Constants::SOURCE_IMDB."' WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."'";
-        if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
-            $success = false;
-        }
-
-        return $success;
-    }
-
     /**
      * @depends testResetDb
      */
     public function testSetupRatings()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $this->assertTrue(self::setupRatings(), "setupRatings() failed");
+        $this->assertTrue(MainTest::setupRatings(), "MainTest::setupRatings() failed");
     }
 
     /**
@@ -174,11 +106,11 @@ class RatingSyncSiteTest extends RatingSyncTestCase
                 $foundFilmId1 = true;
                 $this->assertEquals(2013, $film->getYear(), "Year");
                 $this->assertEquals(Film::CONTENT_FILM, $film->getContentType(), "ContentType");
-                $this->assertEquals("http://example.com/frozen_rs_image.jpeg", $film->getImage(), "Image");
+                $this->assertEquals("http://example.com/frozen_film_image.jpeg", $film->getImage(), "Image");
                 $this->assertEquals(4, $film->getCriticScore($sourceName), "CriticScore");
                 $this->assertEquals(5, $film->getUserScore($sourceName), "UserScore");
                 $this->assertEquals(array("Chris Buck", "Jennifer Lee"), $film->getDirectors(), "Directors");
-                $this->assertEquals(array("Adventure", "Animation", "Comedy", "Family", "Fantasy", "Musical"), $film->getGenres(), "Genres");
+                $this->assertEquals(array("Adventure", "Animation", "Family"), $film->getGenres(), "Genres");
                 $rating = $film->getRating($sourceName);
                 $this->assertTrue(!empty($rating), "Rating");
                 $this->assertEquals(2, $rating->getYourScore(), "YourScore");
@@ -263,6 +195,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
     /**
      * @depends testSetupRatings
      */
+    /* Xfinity unavailable for streams
     public function testSetupStreams()
     {$this->start(__CLASS__, __FUNCTION__);
 
@@ -277,6 +210,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $this->assertFalse(is_null($film));
         $this->assertEquals(TEST_XFINITY_TITLE, $film->getTitle());
     }
+    */
 
     /**
      * @covers \RatingSync\RatingSyncSite::getStreamUrl

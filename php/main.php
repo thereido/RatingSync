@@ -13,6 +13,7 @@ require_once "src/Constants.php";
 require_once "src/Jinni.php";
 require_once "src/Imdb.php";
 require_once "src/OmdbApi.php";
+require_once "src/TmdbApi.php";
 require_once "src/Xfinity.php";
 require_once "src/RatingSyncSite.php";
 require_once "src/SessionUtility.php";
@@ -137,12 +138,23 @@ function debugMessage($input, $prefix = null, $showTime = true, $printArray = nu
 
 function logDebug($input, $prefix = null, $showTime = true, $printArray = null)
 {
-    $message = debugMessage($input, $prefix, $showTime, $printArray);
+    $message = "";
+    try {
+        $message = debugMessage($input, $prefix, $showTime, $printArray);
+    }
+    catch (\Exception $e) {
+        $message = "Exception in debugMessage() " . $e->getCode() . " " . $e->getMessage();
+    }
 
-    $logfilename =  Constants::outputFilePath() . "logDebug.txt";
-    $fp = fopen($logfilename, "a");
-    fwrite($fp, $message);
-    fclose($fp);
+    try {
+        $logfilename =  Constants::outputFilePath() . "logDebug.txt";
+        $fp = fopen($logfilename, "a");
+        fwrite($fp, $message);
+        fclose($fp);
+    }
+    catch (\Exception $e) {
+        // Ignore
+    }
 }
 
 function printDebug($input, $prefix = null, $showTime = false, $printArray = null)
@@ -179,6 +191,8 @@ function search($searchTerms, $username = null)
     if (empty($username)) {
         $username = getUsername();
     }
+    $parentId = array_value_by_key("parentId", $searchTerms);
+    $imdbId = array_value_by_key("imdbId", $searchTerms);
     $uniqueName = array_value_by_key("uniqueName", $searchTerms);
     $uniqueEpisode = array_value_by_key("uniqueEpisode", $searchTerms);
     $uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
@@ -192,7 +206,14 @@ function search($searchTerms, $username = null)
     $sourceName = array_value_by_key("sourceName", $searchTerms);
 
     // Check searchTerms
-    if (empty($uniqueName) && (empty($title) || empty($year))) {
+    $validSearchTerms = false;
+    if (!empty($uniqueName)) {
+        $validSearchTerms = true;
+    }
+    elseif (!empty($title) && !empty($year)) {
+        $validSearchTerms = true;
+    }
+    if (!$validSearchTerms) {
         return null;
     }
     
@@ -203,10 +224,14 @@ function search($searchTerms, $username = null)
 
     if (empty($film)) {
         // Not in the DB. Search the API to the content source.
-        $sourceApi = new OmdbApi();
+        $sourceApi = getMediaDbApiClient();
+        if (is_null($sourceApi)) {
+            return null;
+        }
         
-        if ($sourceName != Constants::SOURCE_RATINGSYNC && $sourceName != Constants::SOURCE_IMDB && $sourceName != Constants::SOURCE_OMDBAPI) {
-            // Before searching the source API... remove terms specific to another source
+        $nonApiSources = array(); // Not including obselete sources
+        if (in_array($sourceName, $nonApiSources)) {
+            // Before searching the source... remove terms specific to another source
             $searchTerms['uniqueName'] = null;
             $searchTerms['uniqueEpisode'] = null;
             $searchTerms['uniqueAlt'] = null;
@@ -306,6 +331,18 @@ function getPageFooter() {
     $html .= "</footer>";
 
     return $html;
+}
+
+function getMediaDbApiClient($sourceName = Constants::DATA_API_DEFAULT)
+{
+    $api = null;
+    if ($sourceName == Constants::SOURCE_OMDBAPI) {
+        $api = new OmdbApi();
+    } elseif ($sourceName == Constants::SOURCE_TMDBAPI) {
+        $api = new TmdbApi();
+    }
+    
+    return $api;
 }
 
 ?>
