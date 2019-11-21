@@ -355,7 +355,7 @@ function convertSourceDataListToRs(sourceSearchResult, sourceName, limit) {
         }
     }
     else if (sourceName == SOURCE_TMDBAPI) {
-        var results = "undefined";
+        var results = [];
         var contentType = null;
         var searchResults = sourceSearchResult.results;
         var movieResults = sourceSearchResult.movie_results;
