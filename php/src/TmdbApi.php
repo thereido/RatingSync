@@ -244,7 +244,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
 
             if ($contentTypeSupported) {
                 $url = "/search/$searchUrlType";
-                $url .= "?query=" . htmlspecialchars($title);
+                $url .= "?query=" . urlencode($title);
                 $url .= "&".$yearParamName."=" . htmlspecialchars($year);
                 $url .= "&api_key=" . $this->apiKey;
                 $response = $this->apiRequest($url);
@@ -261,7 +261,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         // Do a multi search by title and year
         if (empty($uniqueName) && empty($contentType) && !empty($title) && !empty($year)) {
             $url = "/search/multi";
-            $url .= "?query=" . htmlspecialchars($title);
+            $url .= "?query=" . urlencode($title);
             $url .= "&api_key=" . $this->apiKey;
             $response = $this->apiRequest($url);
             $json = json_decode($response, true);
