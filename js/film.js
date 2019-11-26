@@ -73,6 +73,24 @@ function getFilmId(film) {
     return filmId;
 }
 
+function getFilmParentId(film) {
+    var parentId = "";
+    if (film.parentId) {
+        parentId = film.parentId;
+    }
+
+    return parentId;
+}
+
+function getFilmContentType(film) {
+    var contentType = "";
+    if (film.contentType) {
+        contentType = film.contentType;
+    }
+
+    return contentType;
+}
+
 function getFilmTitle(film) {
     var title = "";
     if (film.title) {

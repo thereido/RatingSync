@@ -82,7 +82,7 @@ function searchPageCallback(query, xmlhttp) {
 
 	searchResultEl.innerHTML = "";
     var suggestionCount = 0;
-	while (suggestionCount < 10 && films && films.length > suggestionCount) {
+	while (suggestionCount < 50 && films && films.length > suggestionCount) {
 	    var film = films[suggestionCount];
 
         var uniqueName = getUniqueName(film, DATA_API_DEFAULT);
@@ -302,8 +302,27 @@ function getRatingSyncCallback(xmlhttp, filmEl, film) {
 }
 
 function renderRsFilmDetails(film, filmEl) {
-    var imageEl = filmEl.getElementsByTagName("poster")[0].getElementsByTagName("img")[0];
+    var posterEl = filmEl.getElementsByTagName("poster")[0];
+    var imageEl = posterEl.getElementsByTagName("img")[0];
+    posterEl.removeChild(posterEl.getElementsByTagName("img")[0]);
     imageEl.setAttribute("src", RS_URL_BASE + film.image);
+
+    var filmId = getFilmId(film);
+    var parentId = getFilmParentId(film);
+    var contentType = getFilmContentType(film);
+    if (filmId != "") {
+        var linkEl = document.createElement("a");
+        var contentTypeParam = "";
+        if (contentType != "undefined") { contentTypeParam = "&ct=" + contentType; }
+        var parentIdParam = "";
+        if (parentId != "") { parentIdParam = "&pid=" + parentId; }
+
+        linkEl.setAttribute("href", "/php/detail.php?i=" + filmId + parentIdParam + contentTypeParam);
+        linkEl.appendChild(imageEl);
+        posterEl.appendChild(linkEl);
+    } else {
+        posterEl.appendChild(imageEl);
+    }
 
     var newDetailEl = buildFilmDetailElement(film);
     var detailEl = filmEl.getElementsByTagName("detail")[0];
