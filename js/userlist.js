@@ -130,7 +130,3 @@ function createFilmlist() {
 
     return false;
 }
-
-function changeContentTypeFilter() {
-    getFilmsForFilmlist(defaultPageSize, 1);
-}

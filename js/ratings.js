@@ -84,7 +84,3 @@ function renderRatings() {
 
     renderPagination();
 }
-
-function changeContentTypeFilter() {
-    getRsRatings(defaultPageSize, currentPageNum);
-}

@@ -360,3 +360,12 @@ function toggleSortDirection() {
     setSortDirection(direction);
     setFilmlistFilter();
 }
+
+function changeContentTypeFilter() {
+    var url = window.location.href;
+    if (-1 < url.indexOf("ratings.php")) {
+        getRsRatings(defaultPageSize, 1);
+    } else {
+        getFilmsForFilmlist(defaultPageSize, 1);
+    }
+}
