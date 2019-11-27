@@ -17,10 +17,14 @@ $pageNum = array_value_by_key("p", $_POST);
 if (empty($pageNum)) {
     $pageNum = 1;
 }
+$sortDirection = array_value_by_key("direction", $_POST);
+if (empty($sortDirection)) {
+    $sortDirection = "desc";
+}
 
 if (!empty($username)) {
     $listnames = Filmlist::getUserListsFromDbByParent($username, false);
-    $filmlistHeader = getHtmlFilmlistsHeader($listnames, null, Constants::RATINGS_PAGE_LABEL);
+    $filmlistHeader = getHtmlFilmlistsHeader($listnames, $sortDirection, null, Constants::RATINGS_PAGE_LABEL);
     $filmlistPagination = getHmtlFilmlistPagination("./ratings.php");
 }
 

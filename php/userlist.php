@@ -17,6 +17,10 @@ if (empty($listname)) {
 $filmId = array_value_by_key("id", $_GET);
 $newList = array_value_by_key("nl", $_GET);
 $pageNum = array_value_by_key("p", $_POST);
+$sortDirection = array_value_by_key("direction", $_POST);
+if (empty($sortDirection)) {
+    $sortDirection = "desc";
+}
 $listnames = null;
 $filmlistHeader = "";
 $filmlistPagination = "";
@@ -50,7 +54,7 @@ if (!empty($username)) {
         $filmlistSelectOptions .= getHtmlFilmlistSelectOptions($listnames);
     }
 
-    $filmlistHeader = getHtmlFilmlistsHeader($listnames, $listname, $filmlistHeaderName, $offerListFilter);
+    $filmlistHeader = getHtmlFilmlistsHeader($listnames, $sortDirection, $listname, $filmlistHeaderName, $offerListFilter);
     $filmlistPagination = getHmtlFilmlistPagination("./userlist.php?l=" . $listname);
 }
 

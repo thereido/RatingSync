@@ -5,7 +5,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." .
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Constants.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Genre.php";
 
-function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListname = "", $offerFilter = true) {
+function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "", $displayListname = "", $offerFilter = true) {
     $username = getUsername();
     if ($displayListname == "") {
         $displayListname = $currentListname;
@@ -90,14 +90,15 @@ function getHtmlFilmlistsHeader($listnames, $currentListname = "", $displayListn
     if ($displayListname == Constants::RATINGS_PAGE_LABEL) {
         $hiddenSort = "hidden";
     }
+    $sortImage = "/image/sort-$sortDirection.png";
     $sortHtml = "";
     $sortHtml .= '<div class="rs-filmlist-sort">'."\n";
     $sortHtml .= '  <select id="sort" onchange="onChangeSort();" '.$hiddenSort.'>'."\n";
     $sortHtml .= '    <option value="pos">Position</option>'."\n";
     $sortHtml .= '    <option value="mod">Added</option>'."\n";
     $sortHtml .= '  </select>'."\n";
-    $sortHtml .= '  <input type="text" id="direction" value="desc" hidden>'."\n";
-    $sortHtml .= '  <a href="javascript::void(0);"><img id="direction-image" alt="Ascending order" src="/image/sort-desc.png" onclick="toggleSortDirection();"></a>'."\n";
+    $sortHtml .= '  <input type="text" id="direction" value="' . $sortDirection . '" hidden>'."\n";
+    $sortHtml .= '  <a href="javascript::void(0);"><img id="direction-image" alt="Ascending order" src="' . $sortImage . '" onclick="toggleSortDirection();"></a>'."\n";
     $sortHtml .= '</div>'."\n";
     
     $html = "\n";
