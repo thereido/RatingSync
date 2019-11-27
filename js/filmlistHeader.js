@@ -7,18 +7,15 @@ function getFilterParams() {
     if (paramArr["sort"] != "") { params = params + "&sort=" + paramArr["sort"]; }
     if (paramArr["direction"] != "") { params = params + "&direction=" + paramArr["direction"]; }
 
-    // Content Filter
-    if (paramArr["feature"] == 0) { params = params + "&feature=0"; }
-    if (paramArr["tvseries"] == 0) { params = params + "&tvseries=0"; }
-    if (paramArr["tvepisodes"] == 0) { params = params + "&tvepisodes=0"; }
-    if (paramArr["shorts"] == 0) { params = params + "&shorts=0"; }
-
     // Filmlist Filter
     if (paramArr["filterlists"] != "") { params = params + "&filterlists=" + paramArr["filterlists"]; }
 
     // Genre Filter
     if (paramArr["filtergenreany"] != "") { params = params + "&filtergenreany=" + paramArr["filtergenreany"]; }
     if (paramArr["filtergenres"] != "") { params = params + "&filtergenres=" + paramArr["filtergenres"]; }
+
+    // Content Type Filter
+    if (paramArr["filtercontenttypes"] != "") { params = params + "&filtercontenttypes=" + paramArr["filtercontenttypes"]; }
     
     return params;
 }
@@ -76,6 +73,9 @@ function getFilterParamArray() {
     // Genre Filter
     params["filtergenreany"] = getGenreFilterMatchAnyParam();
     params["filtergenres"] = getGenreFilterParam();
+
+    // Content Type Filter
+    params["filtercontenttypes"] = getContentTypeFilterParam();
     
     return params;
 }
@@ -94,6 +94,11 @@ function getFilmlistFilterParams() {
     }
 
     params = params + "&filtergenreany=" + getGenreFilterMatchAnyParam();
+
+    var contentTypeFilterParam = getContentTypeFilterParam();
+    if (contentTypeFilterParam != "") {
+        params = params + "&filtercontenttypes=" + contentTypeFilterParam;
+    }
 
     var sortParam = getSortParam();
     if (sortParam != "") {
@@ -159,6 +164,26 @@ function getGenreFilterMatchAnyParam() {
     return genreMatchAny;
 }
 
+function getContentTypeFilterParam() {
+    var filterParams = "";
+    var filterDelimiter = "";
+    var checkboxes = [];
+    var filterEl = document.getElementById("contenttype-filter");
+    if (filterEl) {
+        checkboxes = filterEl.getElementsByTagName("input");
+    }
+
+    for (var i=0; i < checkboxes.length; i++) {
+        if (checkboxes[i].type == "checkbox" && checkboxes[i].checked) {
+            var contentType = checkboxes[i].getAttribute("data-contenttype");
+            filterParams = filterParams + filterDelimiter + contentType;
+            filterDelimiter = "%c";
+        }
+    }
+
+    return filterParams;
+}
+
 function clearFilmlistFilter() {
     var filterEl = document.getElementById("filmlist-filter");
     var checkboxes = filterEl.getElementsByTagName("input");
@@ -177,6 +202,22 @@ function clearFilmlistFilter() {
 
 function clearGenreFilter() {
     var filterEl = document.getElementById("genre-filter");
+    var checkboxes = filterEl.getElementsByTagName("input");
+    var checkmarks = filterEl.getElementsByClassName("glyphicon-check");
+
+    var i;
+    for (i=0; i < checkboxes.length; i++) {
+        if (checkboxes[i].type == "checkbox") {
+            checkboxes[i].checked = false;
+        }
+    }
+    for (i=0; i < checkmarks.length; i++) {
+        checkmarks[i].className = "glyphicon glyphicon-check checkmark-off";
+    }
+}
+
+function clearContentTypeFilter() {
+    var filterEl = document.getElementById("contenttype-filter");
     var checkboxes = filterEl.getElementsByTagName("input");
     var checkmarks = filterEl.getElementsByClassName("glyphicon-check");
 
@@ -287,13 +328,10 @@ function submitPageForm(pageNum) {
     formEl["param-p"].value = pageNum;
     formEl["param-sort"].value = filterParamsArr["sort"];
     formEl["param-direction"].value = filterParamsArr["direction"];
-    formEl["param-feature"].value = filterParamsArr["feature"];
-    formEl["param-tvseries"].value = filterParamsArr["tvseries"];
-    formEl["param-tvepisodes"].value = filterParamsArr["tvepisodes"];
-    formEl["param-shorts"].value = filterParamsArr["shorts"];
     formEl["param-filterlists"].value = filterParamsArr["filterlists"];
     formEl["param-filtergenreany"].value = filterParamsArr["filtergenreany"];
     formEl["param-filtergenres"].value = filterParamsArr["filtergenres"];
+    formEl["param-filtercontenttypes"].value = filterParamsArr["filtercontenttypes"];
 
     document.forms["pageForm"].submit();
 }

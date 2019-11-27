@@ -375,14 +375,11 @@ function api_getRatings($username)
     $beginPage = array_value_by_key("bp", $_GET);
     $sort = array_value_by_key("sort", $_GET);
     $sortDirection = array_value_by_key("direction", $_GET);
-    $feature = array_value_by_key("feature", $_GET);
-    $tvseries = array_value_by_key("tvseries", $_GET);
-    $tvepisodes = array_value_by_key("tvepisodes", $_GET);
-    $shorts = array_value_by_key("shorts", $_GET);
     $filterlists = array_value_by_key("filterlists", $_GET);
     $filtergenres = array_value_by_key("filtergenres", $_GET);
     $filtergenreany = array_value_by_key("filtergenreany", $_GET);
-    logDebug("Params ps=$pageSize, bp=$beginPage, sort=$sort (ignored), sortDirection=$sortDirection, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany", __FUNCTION__." ".__LINE__);
+    $filtercontenttypes = array_value_by_key("filtercontenttypes", $_GET);
+    logDebug("Params ps=$pageSize, bp=$beginPage, sort=$sort (ignored), sortDirection=$sortDirection, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany, filtercontenttypes=$filtercontenttypes", __FUNCTION__." ".__LINE__);
     
     if (empty($pageSize)) {
         $pageSize = null;
@@ -407,20 +404,6 @@ function api_getRatings($username)
         $sortDirection = Filmlist::SORTDIR_DESC;
     }
 
-    $filterArr = array();
-    if ($feature === "0") {
-        $filterArr[Film::CONTENT_FILM] = false;
-    }
-    if ($tvseries === "0") {
-        $filterArr[Film::CONTENT_TV_SERIES] = false;
-    }
-    if ($tvepisodes === "0") {
-        $filterArr[Film::CONTENT_TV_EPISODE] = false;
-    }
-    if ($shorts === "0") {
-        $filterArr[Film::CONTENT_SHORTFILM] = false;
-    }
-
     // Filter by other lists. Return only films in this list that
     // are also in at least one of the lists being used with the filter
     $filterListsArr = null;
@@ -437,13 +420,32 @@ function api_getRatings($username)
     if ($filtergenreany === "0") {
         $filterGenresMatchAny = false;
     }
+    
+    // Filter by contentType. If the param is empty return all types.
+    // If the param non-empty return only types in the list.
+    $filterContentTypesArr = array();
+    if (!empty($filtercontenttypes)) {
+        $filterContentTypesParam = explode("%c", $filtercontenttypes);
+        if (!in_array(Film::CONTENT_FILM, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_FILM] = false;
+        }
+        if (!in_array(Film::CONTENT_TV_SERIES, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_TV_SERIES] = false;
+        }
+        if (!in_array(Film::CONTENT_TV_EPISODE, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_TV_EPISODE] = false;
+        }
+        if (!in_array(Film::CONTENT_SHORTFILM, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_SHORTFILM] = false;
+        }
+    }
 
     $site = new \RatingSync\RatingSyncSite($username);
     $site->setSortDirection($sortDirection);
-    $site->setContentTypeFilter($filterArr);
     $site->setListFilter($filterListsArr);
     $site->setGenreFilter($filterGenresArr);
     $site->setGenreFilterMatchAny($filterGenresMatchAny);
+    $site->setContentTypeFilter($filterContentTypesArr);
     $films = $site->getRatings($pageSize, $beginPage);
     $totalRatings = $site->countRatings();
     
@@ -469,14 +471,11 @@ function api_getFilmsByList($username)
     $beginPage = array_value_by_key("bp", $_GET);
     $sort = array_value_by_key("sort", $_GET);
     $sortDirection = array_value_by_key("direction", $_GET);
-    $feature = array_value_by_key("feature", $_GET);
-    $tvseries = array_value_by_key("tvseries", $_GET);
-    $tvepisodes = array_value_by_key("tvepisodes", $_GET);
-    $shorts = array_value_by_key("shorts", $_GET);
     $filterlists = array_value_by_key("filterlists", $_GET);
     $filtergenres = array_value_by_key("filtergenres", $_GET);
     $filtergenreany = array_value_by_key("filtergenreany", $_GET);
-    logDebug("Params l=$listname, ps=$pageSize, bp=$beginPage, sort=$sort, sortDirection=$sortDirection, feature=$feature, tvseries=$tvseries, tvepisodes=$tvepisodes, shorts=$shorts, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany", __FUNCTION__." ".__LINE__);
+    $filtercontenttypes = array_value_by_key("filtercontenttypes", $_GET);
+    logDebug("Params l=$listname, ps=$pageSize, bp=$beginPage, sort=$sort, sortDirection=$sortDirection, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany, filtercontenttypes=$filtercontenttypes", __FUNCTION__." ".__LINE__);
     
     if (empty($pageSize)) {
         $pageSize = null;
@@ -501,20 +500,6 @@ function api_getFilmsByList($username)
         $sortDirection = Filmlist::SORTDIR_DESC;
     }
 
-    $filterArr = array();
-    if ($feature === "0") {
-        $filterArr[Film::CONTENT_FILM] = false;
-    }
-    if ($tvseries === "0") {
-        $filterArr[Film::CONTENT_TV_SERIES] = false;
-    }
-    if ($tvepisodes === "0") {
-        $filterArr[Film::CONTENT_TV_EPISODE] = false;
-    }
-    if ($shorts === "0") {
-        $filterArr[Film::CONTENT_SHORTFILM] = false;
-    }
-
     // Filter by other lists. Return only films in this list that
     // are also in at least one of the lists being used with the filter
     $filterListsArr = array();
@@ -532,13 +517,32 @@ function api_getFilmsByList($username)
         $filterGenresMatchAny = false;
     }
     
+    // Filter by contentType. If the param is empty return all types.
+    // If the param non-empty return only types in the list.
+    $filterContentTypesArr = array();
+    if (!empty($filtercontenttypes)) {
+        $filterContentTypesParam = explode("%c", $filtercontenttypes);
+        if (!in_array(Film::CONTENT_FILM, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_FILM] = false;
+        }
+        if (!in_array(Film::CONTENT_TV_SERIES, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_TV_SERIES] = false;
+        }
+        if (!in_array(Film::CONTENT_TV_EPISODE, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_TV_EPISODE] = false;
+        }
+        if (!in_array(Film::CONTENT_SHORTFILM, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_SHORTFILM] = false;
+        }
+    }
+    
     $list = new Filmlist($username, $listname);
     $list->setSort($sort);
     $list->setSortDirection($sortDirection);
-    $list->setContentFilter($filterArr);
     $list->setListFilter($filterListsArr);
     $list->setGenreFilter($filterGenresArr);
     $list->setGenreFilterMatchAny($filterGenresMatchAny);
+    $list->setContentFilter($filterContentTypesArr);
     $list->initFromDb();
     $films = $list->getFilms($pageSize, $beginPage);
     $totalCount = $list->count();
