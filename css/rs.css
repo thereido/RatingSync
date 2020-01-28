@@ -87,6 +87,23 @@ detail {
     padding-bottom: 5px;
 }
 
+.thirdparty-bar {
+    position: relative;
+    text-align: left;
+    padding-bottom: 5px;
+}
+
+.thirdparty-bar > a > imdbScore {
+    position: absolute;
+    top: 1px;
+    left: 40px;
+    color: black;
+}
+
+.thirdparty-bar > a:link {
+    text-decoration: none;
+}
+
 .checkmark-off {
     font-weight: bold;
     color: grey;    

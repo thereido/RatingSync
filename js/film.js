@@ -13,19 +13,27 @@ function buildFilmDetailElement(film) {
         episodeNumber = " - Episode " + film.episodeNumber;
     }
 
-    var imdbUniqueName = "";
-    var imdbLabel = "IMDb";
-    var imdbFilmUrl = "";
-    var imdbScore = "";
+    var imdbRatingHtml = "";
     var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
-    if (imdb && imdb != "undefined") {
+    if (imdb && imdb != "undefined" && imdb.uniqueName) {
         imdbUniqueName = imdb.uniqueName;
-        imdbFilmUrl = IMDB_FILM_BASEURL + imdbUniqueName;
-        imdbLabel = "IMDb";
+
+        var imdbScore = "";
         if (imdb.userScore) {
             imdbScore = imdb.userScore;
         }
+
+        var el = '';
+        el = el + '      <a href="'+IMDB_FILM_BASEURL + imdbUniqueName+'" target="_blank">';
+        el = el + '        <img src="'+RS_URL_BASE + "/image/im-rating.png"+'" alt="IMDb Rating" height="20px"/>';
+        el = el + '        <imdbScore id="imdb-score-"'+imdbUniqueName+'>'+imdbScore+'</imdbScore>'
+        el = el + '      </a>'
+
+        imdbRatingHtml = el;
     }
+
+    var justWatchUrl = "https://www.justwatch.com/us/search?release_year_from="+year+"&release_year_until="+year+"&q=" + encodeURIComponent(title);
+    var justWatchImage = RS_URL_BASE + "/image/logo-jw-rect.gif";
 
     var rsUniqueName = "";
     var dateStr = "";
@@ -50,7 +58,10 @@ function buildFilmDetailElement(film) {
     html = html + '      <ratingStars class="rating-stars" id="rating-stars-'+rsUniqueName+'"></ratingStars>\n';
     html = html + '    </div>\n';
     html = html + '    <ratingDate class="rating-date" id="rating-date-'+rsUniqueName+'">'+dateStr+'</ratingDate>\n';
-    html = html + '    <div><a href="'+imdbFilmUrl+'" target="_blank">'+imdbLabel+':</a>&nbsp;<imdbScore id="imdb-score-"'+imdbUniqueName+'>'+imdbScore+'</imdbScore></div>\n';
+    html = html + '    <div class="thirdparty-bar">'
+    html = html +        imdbRatingHtml + '\n';
+    html = html + '      <a href="'+justWatchUrl+'" target="_blank"><img src="'+justWatchImage+'" alt="JustWatch" height="20px"/></a>'
+    html = html + '    </div>\n';
     html = html + '    <status></status>\n';
     html = html + '    <filmlistContainer id="filmlist-container-'+filmId+'" align="left"></filmlistContainer>\n';
     html = html + '    <streams id="streams-'+filmId+'" class="streams"></streams>\n';
