@@ -23,7 +23,7 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
     $listFilterHtml = "";
     if ($currentListname != "Create New List" && count($listnames) > 1) {
         $listFilterHtml .= '<div class="rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
-        $listFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">List Filter</button>'."\n";
+        $listFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Lists</button>'."\n";
         $listFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="filmlist-filter">'."\n";
         $listFilterHtml .= '    <a href="javascript:void(0)" onClick="clearFilmlistFilter();">Clear filter</a>';
         $listFilterHtml .=      getHtmlFilmlistNamesForFilter($listnames, $currentListname);
@@ -42,7 +42,7 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
     $genres = Genre::getGenresFromDb();
     if ($currentListname != "Create New List" && count($genres) > 1) {
         $genreFilterHtml .= '<div class="rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
-        $genreFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Genre Filter</button>'."\n";
+        $genreFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Genres</button>'."\n";
         $genreFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="genre-filter">'."\n";
         $genreFilterHtml .= '    <checklist-line><input type="radio" name="genreMatchAny" id="genre-filter-matchall" '.$filterGenreAnyChecked["all"].'>Must match all</checklist-line>'."\n";
         $genreFilterHtml .= '    <checklist-line><input type="radio" name="genreMatchAny" id="genre-filter-matchany" '.$filterGenreAnyChecked["any"].'>Match any</checklist-line>'."\n";
@@ -56,7 +56,7 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
     $contentFilterHtml = "";
     if ($currentListname != "Create New List") {
         $contentFilterHtml .= '<div class="rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
-        $contentFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Content Filter</button>'."\n";
+        $contentFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Types</button>'."\n";
         $contentFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="contenttype-filter">'."\n";
         $contentFilterHtml .= '    <a href="javascript:void(0)" onClick="clearContentTypeFilter();">Clear filter</a>'."\n";
         $contentFilterHtml .=      getHtmlContentTypeForFilter();
