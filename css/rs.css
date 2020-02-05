@@ -93,11 +93,31 @@ detail {
     padding-bottom: 5px;
 }
 
-.thirdparty-bar > a > imdbScore {
+.thirdparty-bar > .source-logo-1,
+.thirdparty-bar > .source-logo-2 {
+    display: inline-block;
+}
+
+.thirdparty-bar > .source-logo-1 > a > imdbScore,
+.thirdparty-bar > .source-logo-1 > a > tmdbScore {
     position: absolute;
     top: 1px;
     left: 40px;
+}
+
+.thirdparty-bar > .source-logo-2 > a > imdbScore,
+.thirdparty-bar > .source-logo-2 > a > tmdbScore {
+    position: absolute;
+    top: 1px;
+    left: 101px;
+}
+
+imdbScore {
     color: black;
+}
+
+tmdbScore {
+    color: #00d570;
 }
 
 .thirdparty-bar > a:link {

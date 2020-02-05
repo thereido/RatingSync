@@ -84,6 +84,7 @@ class Film {
            <source name="">
                <image/>
                <uniqueName/>
+               <parentUniqueName/>
                <uniqueEpisode/>
                <uniqueAlt/>
                <streamUrl/>
@@ -150,6 +151,9 @@ class Film {
             $sourceXml->addAttribute('name', $source->getName());
             $sourceXml->addChild('image', $source->getImage());
             $sourceXml->addChild('uniqueName', $source->getUniqueName());
+            if (!empty($source->getParentUniqueName())) {
+                $sourceXml->addChild('parentUniqueName', $source->getParentUniqueName());
+            }
             if (!empty($source->getUniqueEpisode())) {
                 $sourceXml->addChild('uniqueEpisode', $source->getUniqueEpisode());
             }
@@ -224,6 +228,7 @@ class Film {
             $arrSource['name'] = $name;
             $arrSource['image'] = $source->getImage();
             $arrSource['uniqueName'] = $source->getUniqueName();
+            $arrSource['parentUniqueName'] = $source->getParentUniqueName();
             $arrSource['uniqueEpisode'] = $source->getUniqueEpisode();
             $arrSource['uniqueAlt'] = $source->getUniqueAlt();
             $arrSource['streamUrl'] = $source->getStreamUrl();
@@ -318,6 +323,7 @@ class Film {
             $source = $film->getSource($sourceNameSxe[0]->__toString());
             $source->setImage(Self::xmlStringByKey('image', $sourceSxe));
             $source->setUniqueName(Self::xmlStringByKey('uniqueName', $sourceSxe));
+            $source->setParentUniqueName(Self::xmlStringByKey('parentUniqueName', $sourceSxe));
             $source->setUniqueEpisode(Self::xmlStringByKey('uniqueEpisode', $sourceSxe));
             $source->setUniqueAlt(Self::xmlStringByKey('uniqueAlt', $sourceSxe));
             $source->setStreamUrl(Self::xmlStringByKey('streamUrl', $sourceSxe));
@@ -408,6 +414,24 @@ class Film {
         }
 
         return $uniqueName;
+    }
+
+    public function setParentUniqueName($parentUniqueName, $source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid setting Parent Unique Name');
+        }
+
+        $this->getSource($source)->setParentUniqueName($parentUniqueName);
+    }
+
+    public function getParentUniqueName($source)
+    {
+        if (! Source::validSource($source) ) {
+            throw new \InvalidArgumentException('Source $source invalid getting Parent Unique Name');
+        }
+
+        return $this->getSource($source)->getParentUniqueName();
     }
 
     public function setUniqueEpisode($uniqueEpisode, $source)
@@ -1109,6 +1133,7 @@ class Film {
             $source = $film->getSource($row['source_name']);
             $source->setImage($row['image']);
             $source->setUniqueName($row['uniqueName']);
+            $source->setParentUniqueName($row['parentUniqueName']);
             $source->setUniqueEpisode($row['uniqueEpisode']);
             $source->setUniqueAlt($row['uniqueAlt']);
             $source->setStreamUrl($row['streamUrl']);

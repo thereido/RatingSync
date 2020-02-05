@@ -383,6 +383,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         }
 
         // Some content types need special steps to get certain attrs
+        $parentUniqueName = null;
         if ($contentType == Film::CONTENT_FILM || $contentType == Film::CONTENT_TV_SERIES) {
             // Get directors
             $creditsJson = $this->getCreditsFromApi($film);
@@ -396,6 +397,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             if (!empty($seriesFilm)) {
                 $title = $seriesFilm->getTitle();
             }
+            $parentUniqueName = $this->getEpisodeParentUniqueName($film);
         }
 
         // Get the existing values
@@ -413,6 +415,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         $existingCriticScore = $film->getCriticScore($this->sourceName);
         $existingGenreCount = count($film->getGenres());
         $existingDirectorCount = count($film->getDirectors());
+        $existingParentUniqueName = $film->getParentUniqueName($this->sourceName);
 
         // Init/Replace the values when appropiate
         if ($overwrite || is_null($existingUniqueName)) { $film->setUniqueName($uniqueName, $this->sourceName); }
@@ -426,6 +429,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         if ($overwrite || is_null($existingSeason)) { $film->setSeason($season); }
         if ($overwrite || is_null($existingEpisodeNum)) { $film->setEpisodeNumber($episodeNum); }
         if ($overwrite || is_null($existingUserScore)) { $film->setUserScore($userScore, $this->sourceName); }
+        if ($overwrite || is_null($existingParentUniqueName)) { $film->setParentUniqueName($parentUniqueName, $this->sourceName); }
 
         if ($overwrite || $existingGenreCount == 0) {
             $film->removeAllGenres();

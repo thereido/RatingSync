@@ -24,12 +24,61 @@ function buildFilmDetailElement(film) {
         }
 
         var el = '';
-        el = el + '      <a href="'+IMDB_FILM_BASEURL + imdbUniqueName+'" target="_blank">';
-        el = el + '        <img src="'+RS_URL_BASE + "/image/im-rating.png"+'" alt="IMDb Rating" height="20px"/>';
-        el = el + '        <imdbScore id="imdb-score-"'+imdbUniqueName+'>'+imdbScore+'</imdbScore>'
-        el = el + '      </a>'
+        el = el + '        <a href="'+IMDB_FILM_BASEURL + imdbUniqueName+'" target="_blank">\n';
+        el = el + '          <img src="'+RS_URL_BASE + "/image/im-rating.png"+'" alt="IMDb Rating" height="20px"/>\n';
+        el = el + '          <imdbScore id="imdb-score-'+imdbUniqueName+'">'+imdbScore+'</imdbScore>\n'
+        el = el + '        </a>\n'
 
         imdbRatingHtml = el;
+    }
+
+    var tmdbRatingHtml = "";
+    var tmdb = film.sources.find( function (findSource) { return findSource.name == "TMDb"; } );
+    if (tmdb && tmdb != "undefined" && tmdb.uniqueName) {
+        tmdbUniqueName = tmdb.uniqueName.substring(2); 
+
+        var tmdbScore = "";
+        if (tmdb.userScore) {
+            tmdbScore = tmdb.userScore;
+        }
+
+        var tmdbUrl = TMDB_FILM_BASEURL;
+        if (film.contentType && film.contentType == CONTENT_TV_SERIES) {
+            tmdbUrl = tmdbUrl + "tv/" + tmdbUniqueName;
+        }
+        else if (film.contentType && film.contentType == CONTENT_TV_EPISODE) {
+            parentUniqueName = "null";
+            if (tmdb.parentUniqueName) {
+                parentUniqueName = tmdb.parentUniqueName.substring(2);
+            }
+            tmdbUrl = tmdbUrl + "tv/" + parentUniqueName + "/season/" + film.season + "/episode/" + film.episodeNumber;
+        }
+        else {
+            tmdbUrl = tmdbUrl + "movie/" + tmdbUniqueName;
+        }
+
+        var el = '';
+        el = el + '        <a href="'+tmdbUrl+'" target="_blank">\n';
+        el = el + '          <img src="'+RS_URL_BASE + "/image/tmdb-rating.png"+'" alt="TMDb Rating" height="20px"/>\n';
+        el = el + '          <tmdbScore id="tmdb-score-'+tmdbUniqueName+'">'+tmdbScore+'</tmdbScore>\n'
+        el = el + '        </a>\n'
+
+        tmdbRatingHtml = el;
+    }
+
+    var thirdPartyBar = "";
+    var sourceLogoClass = "source-logo-1";
+    if (imdbRatingHtml != "") {
+        thirdPartyBar = thirdPartyBar + '<div class="' + sourceLogoClass + '">\n';
+        thirdPartyBar = thirdPartyBar + imdbRatingHtml + "\n";
+        thirdPartyBar = thirdPartyBar + '</div>\n';
+
+        sourceLogoClass = "source-logo-2";
+    }
+    if (tmdbRatingHtml != "") {
+        thirdPartyBar = thirdPartyBar + '<div class="' + sourceLogoClass + '">\n';
+        thirdPartyBar = thirdPartyBar + tmdbRatingHtml + "\n";
+        thirdPartyBar = thirdPartyBar + '</div>\n';
     }
 
     var justWatchUrl = "https://www.justwatch.com/us/search?release_year_from="+year+"&release_year_until="+year+"&q=" + encodeURIComponent(title);
@@ -58,8 +107,8 @@ function buildFilmDetailElement(film) {
     html = html + '      <ratingStars class="rating-stars" id="rating-stars-'+rsUniqueName+'"></ratingStars>\n';
     html = html + '    </div>\n';
     html = html + '    <ratingDate class="rating-date" id="rating-date-'+rsUniqueName+'">'+dateStr+'</ratingDate>\n';
-    html = html + '    <div class="thirdparty-bar">'
-    html = html +        imdbRatingHtml + '\n';
+    html = html + '    <div class="thirdparty-bar">\n';
+    html = html +        thirdPartyBar + '\n';
     html = html + '      <a href="'+justWatchUrl+'" target="_blank"><img src="'+justWatchImage+'" alt="JustWatch" height="20px"/></a>'
     html = html + '    </div>\n';
     html = html + '    <status></status>\n';

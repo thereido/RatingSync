@@ -22,6 +22,7 @@ class Source
     protected $name;
     protected $image;
     protected $uniqueName;
+    protected $parentUniqueName;
     protected $uniqueEpisode;
     protected $uniqueAlt;
     protected $streamUrl;
@@ -112,6 +113,19 @@ class Source
     public function getUniqueName()
     {
         return $this->uniqueName;
+    }
+
+    public function setParentUniqueName($parentUniqueName)
+    {
+        if (0 == strlen($parentUniqueName)) {
+            $parentUniqueName = null;
+        }
+        $this->parentUniqueName = $parentUniqueName;
+    }
+
+    public function getParentUniqueName()
+    {
+        return $this->parentUniqueName;
     }
 
     /**
@@ -312,6 +326,7 @@ class Source
         $sourceName = $this->getName();
         $sourceImage = $this->getImage();
         $sourceUniqueName = $this->getUniqueName();
+        $sourceParentUniqueName = $this->getParentUniqueName();
         $sourceUniqueEpisode = $this->getUniqueEpisode();
         $sourceUniqueAlt = $this->getUniqueAlt();
         $streamUrl = $this->getStreamUrl();
@@ -334,6 +349,12 @@ class Source
             $columns .= ", uniqueName";
             $values .= ", '$sourceUniqueName'";
             $set .= "$setComma uniqueName='$sourceUniqueName'";
+            $setComma = ",";
+        }
+        if (!empty($sourceParentUniqueName)) {
+            $columns .= ", parentUniqueName";
+            $values .= ", '$sourceParentUniqueName'";
+            $set .= "$setComma parentUniqueName='$sourceParentUniqueName'";
             $setComma = ",";
         }
         if (!empty($sourceUniqueEpisode)) {

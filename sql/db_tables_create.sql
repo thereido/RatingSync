@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS film_source
         source_name VARCHAR(50) NOT NULL,
         image VARCHAR(200) NULL DEFAULT NULL,
         uniqueName VARCHAR(100) NULL DEFAULT NULL,
+        parentUniqueName VARCHAR(100) NULL DEFAULT NULL,
         uniqueEpisode VARCHAR(100) NULL DEFAULT NULL,
         uniqueAlt VARCHAR(100) NULL DEFAULT NULL,
         streamUrl VARCHAR(200) NULL DEFAULT NULL,
