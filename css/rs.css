@@ -84,6 +84,7 @@ detail {
     float: left;
     vertical-align: middle;
     padding: 15px;
+    padding-top: 5px;
     padding-bottom: 5px;
 }
 
