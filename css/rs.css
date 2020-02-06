@@ -103,22 +103,16 @@ detail {
 .thirdparty-bar > .source-logo-1 > a > tmdbScore {
     position: absolute;
     top: 1px;
-    left: 40px;
+    left: 12px;
+    color: black;
 }
 
 .thirdparty-bar > .source-logo-2 > a > imdbScore,
 .thirdparty-bar > .source-logo-2 > a > tmdbScore {
     position: absolute;
     top: 1px;
-    left: 101px;
-}
-
-imdbScore {
+    left: 85px;
     color: black;
-}
-
-tmdbScore {
-    color: #00d570;
 }
 
 .thirdparty-bar > a:link {

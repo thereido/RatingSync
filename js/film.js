@@ -25,7 +25,7 @@ function buildFilmDetailElement(film) {
 
         var el = '';
         el = el + '        <a href="'+IMDB_FILM_BASEURL + imdbUniqueName+'" target="_blank">\n';
-        el = el + '          <img src="'+RS_URL_BASE + "/image/im-rating.png"+'" alt="IMDb Rating" height="20px"/>\n';
+        el = el + '          <img src="'+RS_URL_BASE + "/image/logo-rating-imdb.png"+'" alt="IMDb Rating" height="20px"/>\n';
         el = el + '          <imdbScore id="imdb-score-'+imdbUniqueName+'">'+imdbScore+'</imdbScore>\n'
         el = el + '        </a>\n'
 
@@ -59,7 +59,7 @@ function buildFilmDetailElement(film) {
 
         var el = '';
         el = el + '        <a href="'+tmdbUrl+'" target="_blank">\n';
-        el = el + '          <img src="'+RS_URL_BASE + "/image/tmdb-rating.png"+'" alt="TMDb Rating" height="20px"/>\n';
+        el = el + '          <img src="'+RS_URL_BASE + "/image/logo-rating-tmdb.png"+'" alt="TMDb Rating" height="20px"/>\n';
         el = el + '          <tmdbScore id="tmdb-score-'+tmdbUniqueName+'">'+tmdbScore+'</tmdbScore>\n'
         el = el + '        </a>\n'
 
@@ -82,7 +82,7 @@ function buildFilmDetailElement(film) {
     }
 
     var justWatchUrl = "https://www.justwatch.com/us/search?release_year_from="+year+"&release_year_until="+year+"&q=" + encodeURIComponent(title);
-    var justWatchImage = RS_URL_BASE + "/image/logo-jw-rect.gif";
+    var justWatchImage = RS_URL_BASE + "/image/logo-justwatch.png";
 
     var rsUniqueName = "";
     var dateStr = "";
