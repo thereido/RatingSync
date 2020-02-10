@@ -122,29 +122,56 @@ function renderEpisodes(result) {
 
     for (var i = 0; i < episodes.length; i++) {
         var episode = episodes[i];
-        
+
+        // Create elements
+        // episodes -> row -> episode -> link -> number, poster, detail
         rowEl = document.createElement("div");
-        rowEl.setAttribute("class", "row");
         episodeEl = document.createElement("detail-episode");
-        episodeEl.setAttribute("id", "episode-" + episode.number); // episode number
-
-        numberEl = document.createElement("span");
-        numberEl.innerHTML = episode.number + ". ";
-
         linkEl = document.createElement("a");
-        var params = "?sid=" + episode.sourceId;
-        params = params + "&ct=" + CONTENT_TV_EPISODE;
-        params = params + "&pid=" + episode.seriesFilmId;
-        params = params + "&season=" + episode.seasonNum;
-        params = params + "&en=" + episode.number;
-        linkEl.setAttribute("href", "/php/detail.php" + params);
-        linkEl.setAttribute("data-imdb", episode.sourceId);
-        linkEl.innerHTML = episode.title;
+        numberEl = document.createElement("detail-episodeNumber");
+        posterEl = document.createElement("posterEpisode");
+        episodeDetailEl = document.createElement("detail");
         
+        // Append elements into the episodes element
         episodesEl.appendChild(rowEl);
         rowEl.appendChild(episodeEl);
-        episodeEl.appendChild(numberEl);
         episodeEl.appendChild(linkEl);
+        linkEl.appendChild(numberEl);
+        linkEl.appendChild(posterEl);
+        linkEl.appendChild(episodeDetailEl);
+        
+        // Row attrs
+        rowEl.setAttribute("class", "row");
+
+        // Link attrs
+        var episodeUrl = "/php/detail.php";
+        episodeUrl = episodeUrl + "?sid=" + episode.sourceId;
+        episodeUrl = episodeUrl + "&ct=" + CONTENT_TV_EPISODE;
+        episodeUrl = episodeUrl + "&pid=" + episode.seriesFilmId;
+        episodeUrl = episodeUrl + "&season=" + episode.seasonNum;
+        episodeUrl = episodeUrl + "&en=" + episode.number;
+        linkEl.setAttribute("href", episodeUrl);
+        linkEl.setAttribute("data-imdb", episode.sourceId);
+        
+        // Episode attrs
+        episodeEl.setAttribute("id", "episode-" + episode.number); // episode number
+        
+        // Number attrs
+        numberEl.innerHTML = "" + episode.number;
+
+        // Poster attrs
+        var imageEl = document.createElement("img");
+        imageEl.setAttribute("src", IMAGE_PATH_TMDBAPI + "/w92/" +episode.image);
+        posterEl.appendChild(imageEl);
+
+        // Detail attrs
+        // detail -> title, rating
+        episodeTitleEl = document.createElement("div");
+        episodeTitleEl.innerHTML = episode.title;
+        ratingEl = document.createElement("detail-episode-rating");
+        ratingEl.setAttribute("id", "detail-episode-rating-" + episode.number);
+        episodeDetailEl.appendChild(episodeTitleEl);
+        episodeDetailEl.appendChild(ratingEl);
     }
 }
 
@@ -190,11 +217,9 @@ function detailPageEpisodeRatingsCallback(xmlhttp) {
                 }
             }
 
-            var episodeEl = document.getElementById("episode-" + film.episodeNumber);
-            if (episodeEl && yourScore) {
-                var ratingEl = document.createElement("detail-episode-rating");
+            var ratingEl = document.getElementById("detail-episode-rating-" + film.episodeNumber);
+            if (ratingEl && yourScore) {
                 ratingEl.innerHTML = "★" + yourScore;
-                episodeEl.appendChild(ratingEl);
             }
         }
 	}

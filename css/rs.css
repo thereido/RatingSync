@@ -80,12 +80,31 @@ poster > a > img {
     object-position: center;
 }
 
+posterEpisode {
+    float: left;
+    padding: 2px;
+}
+
+posterEpisode > img {
+    min-height: 52px;
+    border-radius: 25%;
+}
+
 detail {
     float: left;
     vertical-align: middle;
     padding: 15px;
     padding-top: 5px;
     padding-bottom: 5px;
+}
+
+detail-episodeNumber {
+    float: left;
+    font-size: 2em;
+    height: 100%;
+    margin-left: 5px;
+    margin-right: 5px;
+    vertical-align: middle;
 }
 
 .thirdparty-bar {
@@ -339,8 +358,19 @@ detail-episodes {
 }
 
 detail-episode {
+    float: left;
+    width: 80%;
     margin-left: 30px;
-    margin-right: 30px;
+    margin-bottom: 7px;
+    border: 1px solid #e3e3e3;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    color: #777;
+}
+
+detail-episode > a,
+detail-episode > a:any-link {
+    text-decoration: none;
+    color: inherit;
 }
 
 detail-episode-rating {
