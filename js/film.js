@@ -103,11 +103,11 @@ function buildFilmDetailElement(film) {
     html = html + "  <episodeTitle class='tv-episode-title'>" + episodeTitle + "</episodeTitle>\n";
     html = html + "  <div><season class='tv-season'>" + season + "</season><episodeNumber class='tv-episodenum'>" + episodeNumber + "</episodeNumber></div>\n";
     html = html + '  <div id="action-area-'+rsUniqueName+'">\n';
-    html = html + '    <div align="left">\n';
+    html = html + '    <div class="mt-n2 mb-n3">\n';
     html = html + '      <ratingStars class="rating-stars" id="rating-stars-'+rsUniqueName+'"></ratingStars>\n';
     html = html + '    </div>\n';
-    html = html + '    <ratingDate class="rating-date" id="rating-date-'+rsUniqueName+'">'+dateStr+'</ratingDate>\n';
-    html = html + '    <div class="thirdparty-bar">\n';
+    html = html + '    <ratingDate class="small" id="rating-date-'+rsUniqueName+'">'+dateStr+'</ratingDate>\n';
+    html = html + '    <div class="thirdparty-bar pb-1">\n';
     html = html +        thirdPartyBar + '\n';
     html = html + '      <a href="'+justWatchUrl+'" target="_blank"><img src="'+justWatchImage+'" alt="JustWatch" height="20px"/></a>'
     html = html + '    </div>\n';

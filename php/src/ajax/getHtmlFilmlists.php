@@ -22,7 +22,7 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
     // List filter
     $listFilterHtml = "";
     if ($currentListname != "Create New List" && count($listnames) > 1) {
-        $listFilterHtml .= '<div class="rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
+        $listFilterHtml .= '<div class="d-inline-flex" onmouseleave="setFilmlistFilter();">'."\n";
         $listFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Lists</button>'."\n";
         $listFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="filmlist-filter">'."\n";
         $listFilterHtml .= '    <a href="javascript:void(0)" onClick="clearFilmlistFilter();">Clear filter</a>';
@@ -41,7 +41,7 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
     $genreFilterHtml = "";
     $genres = Genre::getGenresFromDb();
     if ($currentListname != "Create New List" && count($genres) > 1) {
-        $genreFilterHtml .= '<div class="rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
+        $genreFilterHtml .= '<div class="d-inline-flex" onmouseleave="setFilmlistFilter();">'."\n";
         $genreFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Genres</button>'."\n";
         $genreFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="genre-filter">'."\n";
         $genreFilterHtml .= '    <checklist-line><input type="radio" name="genreMatchAny" id="genre-filter-matchall" '.$filterGenreAnyChecked["all"].'>Must match all</checklist-line>'."\n";
@@ -55,7 +55,7 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
     // Content type filter
     $contentFilterHtml = "";
     if ($currentListname != "Create New List") {
-        $contentFilterHtml .= '<div class="rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
+        $contentFilterHtml .= '<div class="d-inline-flex" onmouseleave="setFilmlistFilter();">'."\n";
         $contentFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Types</button>'."\n";
         $contentFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="contenttype-filter">'."\n";
         $contentFilterHtml .= '    <a href="javascript:void(0)" onClick="clearContentTypeFilter();">Clear filter</a>'."\n";
@@ -71,23 +71,30 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
     }
     $sortImage = "/image/sort-$sortDirection.png";
     $sortHtml = "";
-    $sortHtml .= '<div class="rs-filmlist-sort">'."\n";
-    $sortHtml .= '  <select id="sort" onchange="onChangeSort();" '.$hiddenSort.'>'."\n";
-    $sortHtml .= '    <option value="pos">Position</option>'."\n";
-    $sortHtml .= '    <option value="mod">Added</option>'."\n";
-    $sortHtml .= '  </select>'."\n";
-    $sortHtml .= '  <input type="text" id="direction" value="' . $sortDirection . '" hidden>'."\n";
-    $sortHtml .= '  <a href="javascript:void(0);"><img id="direction-image" alt="Ascending order" src="' . $sortImage . '" onclick="toggleSortDirection();"></a>'."\n";
-    $sortHtml .= '</div>'."\n";
+    $sortHtml .= '<select class="ml-auto"  id="sort" onchange="onChangeSort();" '.$hiddenSort.'>'."\n";
+    $sortHtml .= '  <option value="pos">Position</option>'."\n";
+    $sortHtml .= '  <option value="mod">Added</option>'."\n";
+    $sortHtml .= '</select>'."\n";
+    $sortHtml .= '<input type="text" id="direction" value="' . $sortDirection . '" hidden>'."\n";
+    $sortHtml .= '<a href="javascript:void(0);"><img id="direction-image" height="25px" alt="Ascending order" src="' . $sortImage . '" onclick="toggleSortDirection();"></a>'."\n";
     
     $html = "\n";
-    $html .= "<div class='well well-sm filmlist-header'>\n";
-    $html .=    $parentListsHtml;
-    $html .= "  <h2>$displayListname</h2>\n";
-    $html .=    $listFilterHtml;
-    $html .=    $genreFilterHtml;
-    $html .=    $contentFilterHtml;
-    $html .=    $sortHtml;
+    $html .= '' . "\n";
+    $html .= "<div class='card bg-light mt-3'>\n";
+    $html .= '  <div class="card-body">' . "\n";
+    $html .=      $parentListsHtml;
+    $html .= '    <h2>'.$displayListname.'</h2>' . "\n";
+    $html .= '    <div class="row align-items-center">' . "\n";
+    $html .= '      <div class="col">' . "\n";
+    $html .=          $listFilterHtml;
+    $html .=          $genreFilterHtml;
+    $html .=          $contentFilterHtml;
+    $html .= '      </div>' . "\n";
+    $html .= '      <div class="col-auto">' . "\n";
+    $html .=          $sortHtml;
+    $html .= '      </div>' . "\n";
+    $html .= '    </div>' . "\n";
+    $html .= "  </div>\n";
     $html .= "</div>\n";
 
     return $html;

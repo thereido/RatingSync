@@ -73,10 +73,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title><?php echo Constants::SITE_NAME; ?> Login</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="../../css/bootstrap_rs.min.css" rel="stylesheet" id="bootstrap-css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link href="../../css/rs.css" rel="stylesheet">
     <?php echo includeJavascriptFiles(); ?>
     <script src="../../js/login.js"></script>
@@ -182,8 +182,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
     </style>
-    <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="../../js/bootstrap_rs.min.js"></script>
     <?php echo $headerScript; ?>
 </head>
 

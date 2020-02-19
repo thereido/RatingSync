@@ -4,7 +4,6 @@
 }
 
 .footer {
-    padding-top: 19px;
     color: #777;
     border-top: 1px solid #e5e5e5;
 }
@@ -39,8 +38,10 @@
 .rating-star {
     font-size: 125%;
 }
+
 .rating-date {
-    font-size: 100%;
+    display:inline-block;
+    min-height: 17px;
 }
 
 .rating-background {
@@ -51,7 +52,7 @@
     font-size: 125%;
 }
 .film-line > .film-title {
-    font-size: 125%;
+    font-size: 115%;
     font-weight: bold;
 }
 .film-line > .film-title > a {
@@ -59,7 +60,7 @@
 }
 
 .tv-episode-title {
-    font-size: 110%;
+    font-size: 105%;
     font-weight: bold;
 }
 .tv-season, 
@@ -67,7 +68,6 @@
 }
 
 poster {
-    float: left;
     padding: 5px;
     border-radius: 3px;
 }
@@ -90,14 +90,6 @@ posterEpisode > img {
     border-radius: 25%;
 }
 
-detail {
-    float: left;
-    vertical-align: middle;
-    padding: 15px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-}
-
 detail-episodeNumber {
     float: left;
     font-size: 2em;
@@ -110,7 +102,6 @@ detail-episodeNumber {
 .thirdparty-bar {
     position: relative;
     text-align: left;
-    padding-bottom: 5px;
 }
 
 .thirdparty-bar > .source-logo-1,
@@ -342,11 +333,8 @@ checklist-line input[type="radio"] {
 }
 
 .rs-navbar {
-    margin-bottom: 0px;
-}
-
-.filmlist-header {
-    margin-top: 20px;
+    border-radius: 4px;
+	border: 1px solid #e7e7e7;
 }
 
 detail-film {
@@ -376,6 +364,11 @@ detail-episode > a:any-link {
 detail-episode-rating {
     padding-left: 5px;
     color: orange;
+}
+
+.btn-primary {
+	background-color: #337ab7;
+	border-color: #2e6da4;
 }
 
 @media (min-width:768px) {

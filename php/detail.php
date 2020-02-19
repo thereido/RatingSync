@@ -42,14 +42,10 @@ $pageFooter = getPageFooter();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php echo includeHeadHtmlForAllPages(); ?>
     <title><?php echo Constants::SITE_NAME; ?></title>
-    <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
-    <link href="../css/rs.css" rel="stylesheet">
     <link rel="icon" href="<?php echo Constants::FAVICON_URL; ?>">
     <?php if (empty($username)) { echo '<script type="text/javascript">window.location.href = "/php/Login"</script>'; } ?>
-    <?php echo includeJavascriptFiles(); ?>
     <script src="../js/ratings.js"></script>
     <script src="../js/film.js"></script>
     <script src="../js/detailPage.js"></script>
@@ -62,10 +58,14 @@ $pageFooter = getPageFooter();
     
     <div id="debug" class="container-fluid"></div>
     
-    <detail-film id="detail-film" class="container-fluid">
-        <poster><img></poster>
-        <div id="detail"></div>
-    </detail-film>
+    <div class="row pt-3" id="detail-film">
+        <div class="col-auto">
+            <poster class="d-inline-flex"><img></poster>
+        </div>
+        <div class="col pl-0">
+            <detail id="detail"></detail>
+        </div>
+    </div>
 
     <div id="seasons" class="container-fluid" hidden>
         <div class="form-group">
