@@ -182,7 +182,7 @@ function renderSuggestionFilm(film, suggestionEl) {
 
     // Poster
     var posterImageEl = document.createElement("img");
-	posterImageEl.setAttribute("class", "suggestion-poster");
+	posterImageEl.setAttribute("class", "suggestion-poster rounded");
 	posterImageEl.setAttribute("src", film.image);
 	posterEl.appendChild(posterImageEl);
 

@@ -279,17 +279,21 @@ checklist-line input[type="radio"] {
 
 #header-search-suggestion {
     position: absolute;
+    top: 38px;
+    width: 100%;
     padding: 1px 5px 1px 5px;
     border: 1px;
     border-style: solid;
     border-top: none;
-    border-radius: 0 4px 10px 10px;
+    border-radius: 4px 4px 10px 10px;
+    border-color: #ccc;
     z-index: 10;
     background-color: white;
 }
 
 #header-search-suggestion a {
-    text-decoration-line: none;
+    text-decoration: none;
+    color: #495057;
 }
 
 #header-search-suggestion a.suggestion-selected > div {
@@ -297,13 +301,13 @@ checklist-line input[type="radio"] {
 }
 
 .search-suggestion-item {
-    padding-top: 1px;
-    padding-bottom: 1px;
-    border-bottom: 1px solid #ccc;
-    min-height: 61px;
+    border-top: 1px solid #ccc;
+    padding-top: .15rem;
+    min-height: 64px;
 }
 
 .search-suggestion-item > poster {
+    float: left;
     padding: 0px;
     padding-right: 1px;
 }
@@ -312,6 +316,7 @@ checklist-line input[type="radio"] {
 .search-suggestion-item > poster > a > img {
 	width: 40px;
     height: auto;
+    border: 1px solid #dee2e6;
 }
 
 .search-suggestion-rating-rs {
@@ -320,7 +325,6 @@ checklist-line input[type="radio"] {
 
 .search-suggestion-label {
     text-align: center;
-    border-bottom: 1px solid #ccc;
 }
 
 .rs-filmlist-sort {

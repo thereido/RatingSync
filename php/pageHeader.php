@@ -94,7 +94,7 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '      </li>'."\n";
     $html .= '    </ul>'."\n";
     // Search
-    $html .= '    <form class="form-inline my-2 my-lg-0" action="/php/search.php" onSubmit="onSubmitHeaderSearch();" method="get">'."\n";
+    $html .= '    <form class="form-inline my-2 my-lg-0" id="header-search-form" action="/php/search.php" onSubmit="onSubmitHeaderSearch();" method="get">'."\n";
     $html .= '      <div class="input-group  mr-sm-2">'."\n";
     $html .= '        <div class="input-group-prepend"  id="search-dropdown">'."\n";
     $html .= '          <button type="button" class="input-group-text btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'."\n";
@@ -109,11 +109,11 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '          </ul>'."\n";
     $html .= '        </div>'."\n";
     $html .= '        <input id="header-search-text" name="search" type="search" class="form-control" placeholder="Search" aria-label="Search" onkeyup="onKeyUpHeaderSearch(event);" value="'.$headerSearchText.'">'."\n";
+    $html .= '        <div id="header-search-suggestion" hidden></div>'."\n";
     $html .= '        <div class="input-group-append">'."\n";
     $html .= '          <button type="submit" class="input-group-text btn"><span class="fas fa-search"></span></button>'."\n";
     $html .= '        </div>'."\n";
     $html .= '      </div>'."\n";
-    $html .= '      <div id="header-search-suggestion" hidden></div>'."\n";
     $html .= '      <input id="selected-suggestion-uniquename" name="selsug-un" hidden>'."\n";
     $html .= '      <input id="selected-suggestion-contenttype" name="selsug-ct" hidden>'."\n";
     $html .= '      <input id="search-domain-input" name="sd" hidden>'."\n";
