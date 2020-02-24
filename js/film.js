@@ -107,7 +107,7 @@ function buildFilmDetailElement(film) {
     html = html + '      <ratingStars class="rating-stars" id="rating-stars-'+rsUniqueName+'"></ratingStars>\n';
     html = html + '    </div>\n';
     html = html + '    <ratingDate class="small" id="rating-date-'+rsUniqueName+'">'+dateStr+'</ratingDate>\n';
-    html = html + '    <div class="thirdparty-bar pb-1">\n';
+    html = html + '    <div class="thirdparty-bar pb-1 mt-2">\n';
     html = html +        thirdPartyBar + '\n';
     html = html + '      <a href="'+justWatchUrl+'" target="_blank"><img src="'+justWatchImage+'" alt="JustWatch" height="20px"/></a>'
     html = html + '    </div>\n';

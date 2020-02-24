@@ -340,15 +340,7 @@ checklist-line input[type="radio"] {
 detail-film {
 }
 
-detail-episodes {
-    padding-left: 15px;
-    padding-right: 15px;
-}
-
 detail-episode {
-    float: left;
-    width: 80%;
-    margin-left: 30px;
     margin-bottom: 7px;
     border: 1px solid #e3e3e3;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);

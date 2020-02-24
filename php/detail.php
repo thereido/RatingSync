@@ -56,7 +56,7 @@ $pageFooter = getPageFooter();
 <div class="container">
     <?php echo $pageHeader; ?>
     
-    <div id="debug" class="container-fluid"></div>
+    <div id="debug" class="container"></div>
     
     <div class="row pt-3" id="detail-film">
         <div class="col-auto">
@@ -67,14 +67,14 @@ $pageFooter = getPageFooter();
         </div>
     </div>
 
-    <div id="seasons" class="container-fluid" hidden>
-        <div class="form-group">
-            <label for="seasonSel">Season:</label>
-            <select class="form-control" id="seasonSel" onchange="changeSeasonNum()"></select>
-        </div> 
+    <div class="container pt-2">
+        <div id="seasons" hidden>
+                <label for="seasonSel">Season:</label>
+                <select id="seasonSel" onchange="changeSeasonNum()"></select>
+        </div>
+        
+        <detail-episodes id="episodes"></detail-episodes>
     </div>
-    
-    <detail-episodes id="episodes" class="container-fluid"></detail-episodes>
     
   <?php echo $pageFooter; ?>
 </div>

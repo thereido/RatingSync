@@ -154,6 +154,7 @@ function renderEpisodes(result) {
         linkEl.setAttribute("data-imdb", episode.sourceId);
         
         // Episode attrs
+        episodeEl.setAttribute("class", "col-xl-6 col-lg-8 col-md-10 col-sm-12 px-0 mx-2");
         episodeEl.setAttribute("id", "episode-" + episode.number); // episode number
         
         // Number attrs
