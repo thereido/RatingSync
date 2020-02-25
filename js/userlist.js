@@ -86,6 +86,7 @@ function renderUserlistFilms() {
     renderPagination();
 }
 
+// Needs "contextData" JSON in the page
 function showFilmDropdownForUserlist(filmId) {
     var dropdownEl = document.getElementById("film-dropdown-" + filmId);    
     var filmIndex = contextData.films.findIndex( function (findFilm) { return findFilm.filmId == filmId; } );
