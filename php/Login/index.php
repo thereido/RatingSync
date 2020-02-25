@@ -45,7 +45,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     } else if ($_POST['active-form'] == "verify-form") {
 		/*
-		 * UNCOMMENT when you are ready to register users
+		 * UNCOMMENT for register
+		 * When you are ready to register users look for "UNCOMMENT for register" in this file
 		 * 
         $loginFormDisplay = "none";
         $loginHeaderClass = "";
@@ -238,7 +239,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 										</div>
 									</div>
 								</form>
-								<form id="register-form" hidden method="post" role="form" style="display: <?php echo $regFormDisplay; ?>;" onsubmit="validateRegistrationInput(); return false;">
+								<!-- UNCOMMENT for register
+								<form id="register-form" hidden method="post" role="form" style="display: <?php //UNCOMMENT for register echo $regFormDisplay; ?>;" onsubmit="validateRegistrationInput(); return false;">
                                     <input type="hidden" name="active-form" id="active-form" value="register-form">
                                     <div id="msg-reg-success" class="alert alert-success" hidden></div>
                                     <div id="msg-reg-info" class="alert alert-info" hidden></div>
@@ -262,7 +264,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 										</div>
 									</div>  
 								</form>    
-                                <form id="verify-form" hidden action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" role="form">
+                                <form id="verify-form" hidden action="<?php //UNCOMMENT for register echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" role="form">
                                     <input type="hidden" name="active-form" id="active-form" value="verify-form">
                                     <input type="text" name="username" id="username-verify" hidden>
                                     <input type="text" name="password" id="password-verify" hidden>
@@ -289,6 +291,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                       </div>
                                     </div>
 								</form>
+								//UNCOMMENT for register -->
 							</div>
 						</div>
 					</div>
