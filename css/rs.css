@@ -68,26 +68,37 @@
 }
 
 poster {
-    padding: 5px;
+    margin: 5px;
     border-radius: 3px;
+    min-width: 150px;
+    min-height: 221px;
+    display: inline-flex;
+}
+
+poster > a {
+    margin: auto;
 }
 
 poster > img,
 poster > a > img {
     width: 150px;
-    height: 221px;
     object-fit: cover;
     object-position: center;
+    border-radius: .3rem;
 }
 
-posterEpisode {
+.img-episode {
+    border-radius: 25%;
+    border: 1px solid black;
+}
+
+episodeListPoster {
     float: left;
     padding: 2px;
 }
 
-posterEpisode > img {
+episodeListPoster > img {
     min-height: 52px;
-    border-radius: 25%;
 }
 
 detail-episodeNumber {

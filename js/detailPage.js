@@ -129,7 +129,7 @@ function renderEpisodes(result) {
         episodeEl = document.createElement("detail-episode");
         linkEl = document.createElement("a");
         numberEl = document.createElement("detail-episodeNumber");
-        posterEl = document.createElement("posterEpisode");
+        posterEl = document.createElement("episodeListPoster");
         episodeDetailEl = document.createElement("detail");
         
         // Append elements into the episodes element
@@ -162,6 +162,9 @@ function renderEpisodes(result) {
 
         // Poster attrs
         var imageEl = document.createElement("img");
+        if (episode.image) {
+            imageEl.setAttribute("class", "img-episode");
+        }
         imageEl.setAttribute("src", IMAGE_PATH_TMDBAPI + "/w92/" +episode.image);
         posterEl.appendChild(imageEl);
 

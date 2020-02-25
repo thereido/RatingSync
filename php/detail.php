@@ -60,7 +60,7 @@ $pageFooter = getPageFooter();
     
     <div class="row pt-3" id="detail-film">
         <div class="col-auto">
-            <poster class="d-inline-flex"><img></poster>
+            <poster><img></poster>
         </div>
         <div class="col pl-0">
             <detail id="detail"></detail>

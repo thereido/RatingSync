@@ -35,27 +35,42 @@ function renderUserlistFilms() {
 
         var film = films[filmIndex];
         var filmId = film.filmId;
+        var rsSource = film.sources.find(function (findSource) { return findSource.name == "RatingSync"; });
+        var uniqueName = rsSource.uniqueName;
+
+        // Title
         var title = film.title;
         var titleNoQuotes = title.replace(/\"/g, '\\\"').replace(/\'/g, "\\\'");
+
+        // ContentType
         var contentTypeParam = "";
         if (film.contentType != "undefined") { contentTypeParam = "&ct=" + film.contentType; }
-        var parentIdParam = "";
-        if (film.contentType == CONTENT_TV_EPISODE) {
-            if (film.contentType == CONTENT_TV_EPISODE && film.parentId != "undefined") {
-                parentIdParam = "&pid=" + film.parentId;
+
+        // Image
+        var image = "";
+        var imageClass = "";
+        if (rsSource.image) {
+            var image = RS_URL_BASE + rsSource.image;
+
+            if (film.contentType == CONTENT_TV_EPISODE) {
+                imageClass = ' class="img-episode"';
             }
         }
-        var rsSource = film.sources.find(function (findSource) { return findSource.name == "RatingSync"; });
-        var image = RS_URL_BASE + rsSource.image;
-        var uniqueName = rsSource.uniqueName;
+
+        // Parent
+        var parentIdParam = "";
+        if (film.parentId != "undefined") { parentIdParam = "&pid=" + film.parentId; }
+        
+        // JavaScript
         var showFilmDropdownForUserlistJS = "showFilmDetail(" + filmId + ")";
         var onMouseEnter = "onMouseEnter='detailTimer = setTimeout(function () { showFilmDropdownForUserlist(" + filmId + "); }, 500)'";
         var onMouseLeave = "onMouseLeave='hideFilmDropdownForUserlist(" + filmId + ", detailTimer)'";
+        
         html = html + "  <div class='col-xs-6 col-sm-4 col-md-3 col-lg-2' id='" + uniqueName + "'>\n";
         html = html + "    <div class='userlist-film' " + onMouseEnter + " " + onMouseLeave + ">\n";
         html = html + "      <poster id='poster-" + uniqueName + "' data-filmId='" + filmId + "'>\n";
         html = html + "        <a href='/php/detail.php?i=" + filmId + parentIdParam + contentTypeParam + "'>\n";
-        html = html + "          <img src='" + image + "' alt='" + titleNoQuotes + "' />\n";
+        html = html + "          <img src='" + image + "' alt='" + titleNoQuotes + "' " + imageClass + " />\n";
         html = html + "        </a>\n";
         html = html + "        <div id='film-dropdown-" + filmId + "' class='film-dropdown-content film-dropdown-col-" + column + "'></div>\n";
         html = html + "      </poster>\n";

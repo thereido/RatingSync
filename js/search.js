@@ -305,11 +305,19 @@ function renderRsFilmDetails(film, filmEl) {
     var posterEl = filmEl.getElementsByTagName("poster")[0];
     var imageEl = posterEl.getElementsByTagName("img")[0];
     posterEl.removeChild(posterEl.getElementsByTagName("img")[0]);
-    imageEl.setAttribute("src", RS_URL_BASE + film.image);
 
     var filmId = getFilmId(film);
     var parentId = getFilmParentId(film);
     var contentType = getFilmContentType(film);
+    
+    if (film.image) {
+        imageEl.setAttribute("src", RS_URL_BASE + film.image);
+
+        if (contentType == CONTENT_TV_EPISODE) {
+            imageEl.setAttribute("class", "img-episode");
+        }
+    }
+
     if (filmId != "") {
         var linkEl = document.createElement("a");
         var contentTypeParam = "";

@@ -52,24 +52,44 @@ function renderRatings() {
 
         var film = films[filmIndex];
         var filmId = film.filmId;
+        var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+        var uniqueName = rsSource.uniqueName;
+
+        // Title
         var title = film.title;
         var titleNoQuotes = title.replace(/\"/g, '\\\"').replace(/\'/g, "\\\'");
+
+        // ContentType
         var contentTypeParam = "";
         if (film.contentType != "undefined") { contentTypeParam = "&ct=" + film.contentType; }
+
+        // Image
+        var image = "";
+        var imageClass = "";
+        if (rsSource.image) {
+            var image = RS_URL_BASE + rsSource.image;
+
+            if (film.contentType == CONTENT_TV_EPISODE) {
+                imageClass = ' class="img-episode"';
+            }
+        }
+
+        // Parent
         var parentIdParam = "";
         if (film.parentId != "undefined") { parentIdParam = "&pid=" + film.parentId; }
-        var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
-        var image = RS_URL_BASE + rsSource.image;
+
+        // JavaScript
         var showFilmDetailJS = "showFilmDetail(" + filmId + ")";
-        var uniqueName = rsSource.uniqueName;
         var onClick = "onClick='" + showFilmDetailJS + "'";
         var onMouseEnter = "onMouseEnter='detailTimer = setTimeout(function () { " + showFilmDetailJS + "; }, 500)'";
         var onMouseLeave = "onMouseLeave='hideFilmDropdownForUserlist(" + filmId + ", detailTimer)'";
+
+        // HTML
         html = html + "  <div class='col-xs-6 col-sm-4 col-md-3 col-lg-2' id='" + uniqueName + "'>\n";
         html = html + "    <div class='userlist-film' " + onMouseEnter + " " + onMouseLeave + ">\n";
         html = html + "      <poster id='poster-" + uniqueName + "' data-filmId='" + filmId + "'>\n";
         html = html + "        <a href='/php/detail.php?i=" + filmId + parentIdParam + contentTypeParam + "'>\n";
-        html = html + "          <img src='" + image + "' alt='" + titleNoQuotes + "' " + onClick + " />\n";
+        html = html + "          <img src='" + image + "' alt='" + titleNoQuotes + "' " + imageClass + onClick + " />\n";
         html = html + "        </a>\n";
         html = html + "        <div id='film-dropdown-" + filmId + "' class='film-dropdown-content film-dropdown-col-" + column + "'></div>\n";
         html = html + "      </poster>\n";
