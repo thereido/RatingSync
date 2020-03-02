@@ -48,7 +48,7 @@ $pageFooter = getPageFooter();
   <?php echo $pageHeader; ?>
   <?php echo $filmlistHeader; ?>
 
-    <div id="film-table"></div>
+    <div id="film-table"  class="mt-3"></div>
     
   <?php echo $filmlistPagination; ?>
     

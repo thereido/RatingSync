@@ -121,7 +121,7 @@ $pageFooter = getPageFooter();
     <span id="filmlist-create-result"></span>
   </div>
 
-    <div id="film-table"></div>
+    <div id="film-table" class="mt-3"></div>
 
   <?php echo $filmlistPagination; ?>
 
