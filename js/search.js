@@ -67,8 +67,8 @@ function searchFilmsCallback(query, xmlhttp, callback) {
 function searchPageCallback(query, xmlhttp) {
 	var result = JSON.parse(xmlhttp.responseText);
 	var films = [];
-	var searchResultEl = document.getElementById("search-result-tbody");
-    var limit = 10;
+	var searchResultEl = document.getElementById("search-results");
+    var limit = 25;
 
     if (result.films) {
         films = result.films;
@@ -91,12 +91,11 @@ function searchPageCallback(query, xmlhttp) {
         rowEl.setAttribute("class", "row");
         rowEl.setAttribute("id", "search-" + uniqueName);
         searchResultEl.appendChild(rowEl);
+        renderSearchResultFilm(film, rowEl);
         if (fromOtherSource) {
-            var filmEl = renderSearchResultFilm(film, rowEl);
-            getRatingSync(film, filmEl, true);
+            getRatingSync(film, rowEl, true);
         } else {
-            var filmEl = renderSearchResultFilm(film, rowEl);
-            renderRsFilmDetails(film, filmEl);
+            renderRsFilmDetails(film, rowEl);
         }
 
         suggestionCount = suggestionCount + 1;
@@ -172,41 +171,46 @@ function searchSuggestionCallback(query, xmlhttp) {
 
 function renderSuggestionFilm(film, suggestionEl) {
     var uniqueName = getUniqueName(film, DATA_API_DEFAULT);
-        
+
 	var itemEl = document.createElement("div");
-	var posterEl = document.createElement("poster");
+	var posterColEl = document.createElement("div");
+	var detailColEl = document.createElement("div");
+    var posterImageEl = document.createElement("img");
 	var detailEl = document.createElement("div");
-	itemEl.appendChild(posterEl);
-	itemEl.appendChild(detailEl);
+    var titleLineEl = document.createElement("div");
+    var ratingsLineEl = document.createElement("div");
+    
     suggestionEl.appendChild(itemEl);
+	itemEl.appendChild(posterColEl);
+    itemEl.appendChild(detailColEl);
+    posterColEl.appendChild(posterImageEl);
+    detailColEl.appendChild(detailEl);
+    detailEl.appendChild(titleLineEl);
+    detailEl.appendChild(ratingsLineEl);
 
     // Poster
-    var posterImageEl = document.createElement("img");
+	posterColEl.setAttribute("class", "col col-auto pl-0 pr-1");
 	posterImageEl.setAttribute("class", "suggestion-poster rounded");
 	posterImageEl.setAttribute("src", film.image);
-	posterEl.appendChild(posterImageEl);
 
     // Detail - title line
-	detailEl.setAttribute("class", "suggestion-item-detail");
-    var titleLineEl = document.createElement("div");
+	detailEl.setAttribute("class", "col px-0");
     var contentTypeText = "";
     if (film.contentType == CONTENT_TV_SERIES) {
         contentTypeText = " TV";
     }
 	titleLineEl.innerHTML = film.title + ' (' + film.year + ')' + contentTypeText;
-	detailEl.appendChild(titleLineEl);
 
     // Detail - ratings line
-	var ratingsLineEl = document.createElement("div");
+	ratingsLineEl.setAttribute("class", "suggestion-rating");
 	ratingsLineEl.setAttribute("id", "suggestion-rating-" + uniqueName);
     renderSuggestionRatings(film, ratingsLineEl);
-	detailEl.appendChild(ratingsLineEl);
 
     // Link & Item
     var contentTypeParam = "";
     if (film.contentType != "undefined") { contentTypeParam = "&ct=" + film.contentType; }
 	suggestionEl.setAttribute("href", "/php/detail.php?un=" + uniqueName + contentTypeParam);
-	itemEl.setAttribute("class", "search-suggestion-item");
+	itemEl.setAttribute("class", "row search-suggestion-item");
 	itemEl.setAttribute("data-uniquename", uniqueName);
 	itemEl.setAttribute("data-contenttype", film.contentType);
 }
@@ -219,10 +223,7 @@ function renderSuggestionRatings(film, ratingsLineEl) {
             score = rsSource.rating.yourScore;
         }
         if (score != null) {
-            var rsRatingEl = document.createElement("span");
-            rsRatingEl.setAttribute("class", "search-suggestion-rating-rs");
-            rsRatingEl.innerHTML = '<span class="rating-star">★</span>' + score;
-            ratingsLineEl.appendChild(rsRatingEl);
+            ratingsLineEl.innerHTML = '<span class="rating-star">★</span>' + score;
         }
     }
 }
@@ -243,24 +244,29 @@ function suggestionRatingCallback(xmlhttp) {
     }
 }
 
-function renderSearchResultFilm(film, element) {
-    var filmEl = document.createElement("DIV");
-    filmEl.setAttribute("class", "col-xs-12 col-sm-12 col-md-12 col-lg-12");
-
+function renderSearchResultFilm(film, filmRowEl) {
+    var posterColEl = document.createElement("DIV");
+    var detailColEl = document.createElement("DIV");
     var posterEl = document.createElement("poster");
+    var detailEl = buildFilmDetailElement(film);
+
+    filmRowEl.appendChild(posterColEl);
+    filmRowEl.appendChild(detailColEl);
+    posterColEl.appendChild(posterEl);
+    detailColEl.appendChild(detailEl);
+
+    // Poster column attrs & html
+    posterColEl.setAttribute("class", "col-auto");
     posterEl.innerHTML = '<img src="'+film.image+'" alt="'+film.title+'"/>';
 
-    var detailEl = buildFilmDetailElement(film);
+    // Detail column attrs
+    detailColEl.setAttribute("class", "col pl-0");    
+
+    // Status image for receiving detail data
     var statusEl = detailEl.getElementsByTagName("status")[0];
     if (statusEl) {
         statusEl.innerHTML = '<img src="/image/processing.gif" alt="Please wait Icon" width="28" height="28">';
     }
-
-    filmEl.appendChild(posterEl);
-    filmEl.appendChild(detailEl);
-    element.appendChild(filmEl);
-
-    return filmEl;
 }
 
 function getRatingSync(film, filmEl, detailFromRsOnly) {
@@ -468,7 +474,7 @@ function convertSourceDataItemToRs(sourceFilm, sourceName) {
         }
 
         // Prepend the image base url to the image filename
-        rsFilm.image = IMAGE_PATH_TMDBAPI + "/w92" + rsFilm.image;
+        rsFilm.image = IMAGE_PATH_TMDBAPI + "/w154" + rsFilm.image;
 
         // Source attrs
         rsFilm.sources = [{ "name": "TMDb",

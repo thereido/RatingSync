@@ -46,12 +46,16 @@ $pageFooter = getPageFooter();
 <div class="container">
     <?php echo $pageHeader; ?>
 
-    <div class='well well-sm'>
-        <h2><?php echo $searchPageLabel; ?></h2>
+    <div class='card bg-light mt-3'>
+        <div class="card-body">
+            <h2><?php echo $searchPageLabel; ?></h2>
+        </div>
     </div>
     
     <div id="debug"></div>
 
+    <div id="search-results" class="mt-3">
+    </div>
     <table class="table table-striped">
         <tbody id="search-result-tbody">
         </tbody>

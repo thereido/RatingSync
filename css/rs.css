@@ -321,23 +321,22 @@ checklist-line input[type="radio"] {
     border-top: 1px solid #ccc;
     padding-top: .15rem;
     min-height: 64px;
+    margin: 0px;
 }
 
-.search-suggestion-item > poster {
-    float: left;
-    padding: 0px;
-    padding-right: 1px;
-}
-
-.search-suggestion-item > poster > img,
-.search-suggestion-item > poster > a > img {
-	width: 40px;
+.suggestion-poster {
+    width: 40px;
     height: auto;
     border: 1px solid #dee2e6;
 }
 
-.search-suggestion-rating-rs {
+.suggestion-rating {
     color: orange;
+    line-height: 1.1;
+}
+
+.suggestion-rating > .rating-star {
+    font-size: inherit;
 }
 
 .search-suggestion-label {
