@@ -1,3 +1,46 @@
+var currentScreenSize = screenSize(window.innerWidth);
+
+window.onresize = function(event) {
+    var newSize = screenSize(window.innerWidth);
+    if (this.currentScreenSize != newSize) {
+        this.currentScreenSize = newSize;
+        sizeBreakpointCallback();
+    }
+};
+
+function screenSize(width) {
+    var size = "xs";
+    if (width > 1200) { size = "xl"; }
+    else if (width > 992) { size = "lg"; }
+    else if (width > 768) { size = "md"; }
+    else if (width > 576) { size = "sm"; }
+
+    return size;
+}
+
+function sizeBreakpointCallback() {
+    var rowEl = document.getElementById("userlist-row");
+    var leftEnd = rowEl.getBoundingClientRect().left;
+    var rightEnd = rowEl.getBoundingClientRect().right;
+
+    var filmEls = document.getElementsByTagName("filmItem");
+    for (var i = 0; i < filmEls.length; i++) {
+        var filmEl = filmEls[i];
+        var filmId = filmEl.getAttribute("data-film-id");
+        var dropdownEl = document.getElementById("film-dropdown-" + filmId);
+        var dropdownClass = "detail-left";
+
+        var itemRect = filmEl.getBoundingClientRect();
+        var spaceOnTheLeft = itemRect.right - leftEnd;
+        var spaceOnTheRight = rightEnd - itemRect.left;
+        if (spaceOnTheRight > 480 || spaceOnTheRight > spaceOnTheLeft) {
+            // Dropdown to right
+            dropdownClass = "detail-right";
+        }
+
+        dropdownEl.setAttribute("class", "film-dropdown-content " + dropdownClass);
+    }
+}
 
 function getFilmsForFilmlist(pageSize, beginPage) {
     var params = "?action=getFilmsByList";
@@ -23,16 +66,8 @@ function renderUserlistFilms() {
     var films = contextData.films;
     var row = 0;
     var html = "\n";
+    html = html + "<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 row-cols-xl-6' id='userlist-row'>\n";
     for (var filmIndex = 0; filmIndex < films.length; filmIndex++) {
-        if (filmIndex % 12 == 0) {
-            html = html + "<div class='row'>\n";
-        }
-
-        var column = (filmIndex + 1) % 12;
-        if (column == 0) {
-            column = 12;
-        }
-
         var film = films[filmIndex];
         var filmId = film.filmId;
         var rsSource = film.sources.find(function (findSource) { return findSource.name == "RatingSync"; });
@@ -66,38 +101,47 @@ function renderUserlistFilms() {
         var onMouseEnter = "onMouseEnter='detailTimer = setTimeout(function () { showFilmDropdownForUserlist(" + filmId + "); }, 500)'";
         var onMouseLeave = "onMouseLeave='hideFilmDropdownForUserlist(" + filmId + ", detailTimer)'";
         
-        html = html + "  <div class='col-xs-6 col-sm-4 col-md-3 col-lg-2' id='" + uniqueName + "'>\n";
+        html = html + "  <filmItem class='col' id='" + uniqueName + "' data-film-id='" + filmId + "'>\n";
         html = html + "    <div class='userlist-film' " + onMouseEnter + " " + onMouseLeave + ">\n";
         html = html + "      <poster id='poster-" + uniqueName + "' data-filmId='" + filmId + "'>\n";
         html = html + "        <a href='/php/detail.php?i=" + filmId + parentIdParam + contentTypeParam + "'>\n";
         html = html + "          <img src='" + image + "' alt='" + titleNoQuotes + "' " + imageClass + " />\n";
         html = html + "        </a>\n";
-        html = html + "        <div id='film-dropdown-" + filmId + "' class='film-dropdown-content film-dropdown-col-" + column + "'></div>\n";
+        html = html + "        <div id='film-dropdown-" + filmId + "' class='film-dropdown-content'></div>\n";
         html = html + "      </poster>\n";
         html = html + "    </div>\n";
-        html = html + "  </div>\n";
-
-        if (filmIndex % 12 == 11 || filmIndex == films.length - 1) {
-            html = html + "</div>\n";
-        }
+        html = html + "  </filmItem>\n";
     }
+    html = html + "</div>\n";
     document.getElementById("film-table").innerHTML = html;
+    
+    sizeBreakpointCallback();
 
     renderPagination();
 }
 
 // Needs "contextData" JSON in the page
-function showFilmDropdownForUserlist(filmId) {
-    var dropdownEl = document.getElementById("film-dropdown-" + filmId);    
+function showFilmDropdownForUserlist(filmId) {    
     var filmIndex = contextData.films.findIndex( function (findFilm) { return findFilm.filmId == filmId; } );
     if (filmIndex != -1) {
         var film = contextData.films[filmIndex];
+        var dropdownEl = document.getElementById("film-dropdown-" + filmId);
         renderFilmDetail(film, dropdownEl);
 
         // If the default source has no data for this film get it now
         var defaultSource = film.sources.find( function (findSource) { return findSource.name == DATA_API_DEFAULT; } );
         if (!defaultSource || defaultSource == "undefined") {
             getFilmForDropdown(film);
+        }
+
+        // Resize the poster to match the dropdown. Sometimes the dropdown is taller
+        // than the poster.
+        var posterEl = document.getElementById("poster-rs" + filmId);
+        var posterHeight = posterEl.getBoundingClientRect().height;
+        var dropdownHeight = dropdownEl.getBoundingClientRect().height;
+        if (dropdownHeight - 10 > posterHeight) {
+            var newPosterHeight = dropdownHeight - 10;
+            posterEl.setAttribute("style", "height: " + newPosterHeight + "px");
         }
     }
 }
@@ -106,6 +150,11 @@ function hideFilmDropdownForUserlist(filmId, detailTimer) {
     el = document.getElementById("film-dropdown-" + filmId);
     el.style.display = "none";
     clearTimeout(detailTimer);
+
+    // Poster might have been resized to match the dropdown. Put it back the
+    // default height
+    var posterEl = document.getElementById("poster-rs" + filmId);
+    posterEl.removeAttribute("style");
 }
 
 function createFilmlist() {
