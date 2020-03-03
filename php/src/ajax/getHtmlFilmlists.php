@@ -22,11 +22,12 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
     // List filter
     $listFilterHtml = "";
     if ($currentListname != "Create New List" && count($listnames) > 1) {
-        $listFilterHtml .= '<div class="d-inline-flex" onmouseleave="setFilmlistFilter();">'."\n";
+        $listFilterHtml .= '<div class="d-inline-flex rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
         $listFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Lists</button>'."\n";
         $listFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="filmlist-filter">'."\n";
-        $listFilterHtml .= '    <a href="javascript:void(0)" onClick="clearFilmlistFilter();">Clear filter</a>';
-        $listFilterHtml .=      getHtmlFilmlistNamesForFilter($listnames, $currentListname);
+        $listFilterHtml .= '    <a href="javascript:void(0)" onClick="clearFilmlistFilter();">Clear filter</a>'."\n";
+        $listFilterHtml .= '    <div class="dropdown-divider"></div>'."\n";
+        $listFilterHtml .=      getHtmlFilmlistNamesForFilter($listnames, $currentListname) ."\n";;
         $listFilterHtml .= '  </div>'."\n";
         $listFilterHtml .= '</div>'."\n";
     }
@@ -41,12 +42,13 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
     $genreFilterHtml = "";
     $genres = Genre::getGenresFromDb();
     if ($currentListname != "Create New List" && count($genres) > 1) {
-        $genreFilterHtml .= '<div class="d-inline-flex" onmouseleave="setFilmlistFilter();">'."\n";
+        $genreFilterHtml .= '<div class="d-inline-flex rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
         $genreFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Genres</button>'."\n";
         $genreFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="genre-filter">'."\n";
         $genreFilterHtml .= '    <checklist-line><input type="radio" name="genreMatchAny" id="genre-filter-matchall" '.$filterGenreAnyChecked["all"].'>Must match all</checklist-line>'."\n";
         $genreFilterHtml .= '    <checklist-line><input type="radio" name="genreMatchAny" id="genre-filter-matchany" '.$filterGenreAnyChecked["any"].'>Match any</checklist-line>'."\n";
         $genreFilterHtml .= '    <a href="javascript:void(0)" onClick="clearGenreFilter();">Clear filter</a>'."\n";
+        $genreFilterHtml .= '    <div class="dropdown-divider"></div>'."\n";
         $genreFilterHtml .=      getHtmlGenresForFilter($genres);
         $genreFilterHtml .= '  </div>'."\n";
         $genreFilterHtml .= '</div>'."\n";
@@ -55,10 +57,11 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
     // Content type filter
     $contentFilterHtml = "";
     if ($currentListname != "Create New List") {
-        $contentFilterHtml .= '<div class="d-inline-flex" onmouseleave="setFilmlistFilter();">'."\n";
+        $contentFilterHtml .= '<div class="d-inline-flex rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
         $contentFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Types</button>'."\n";
         $contentFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="contenttype-filter">'."\n";
         $contentFilterHtml .= '    <a href="javascript:void(0)" onClick="clearContentTypeFilter();">Clear filter</a>'."\n";
+        $contentFilterHtml .= '    <div class="dropdown-divider"></div>'."\n";
         $contentFilterHtml .=      getHtmlContentTypeForFilter();
         $contentFilterHtml .= '  </div>'."\n";
         $contentFilterHtml .= '</div>'."\n";
@@ -133,10 +136,10 @@ function getHtmlFilmlistNamesForFilter($listnames, $currentListname, $level = 0)
         $listname = $list["listname"];
         if ($listname != "Watchlist") {
             $checked = "";
-            $class = "glyphicon glyphicon-check checkmark-off";
+            $class = "far fa-check-circle checkmark-off";
             if (in_array($listname, $filterLists)) {
                 $checked = "checked";
-                $class = "glyphicon glyphicon-check checkmark-on";
+                $class = "far fa-check-circle checkmark-on";
             }
             $checkmark = '<span class="'.$class.'" id="filmlist-filter-checkmark-'.$listname.'"></span> ';
             $onClick = "onClick=\"toggleFilmlistFilter('filmlist-filter-$listname', 'filmlist-filter-checkbox-$listname');\"";
@@ -161,10 +164,10 @@ function getHtmlGenresForFilter($genres) {
 
     foreach ($genres as $genre) {
         $checked = "";
-        $class = "glyphicon glyphicon-check checkmark-off";
+        $class = "far fa-check-circle checkmark-off";
         if (in_array($genre, $filterGenres)) {
             $checked = "checked";
-            $class = "glyphicon glyphicon-check checkmark-on";
+            $class = "far fa-check-circle checkmark-on";
         }
         $checkmark = '<span class="'.$class.'" id="genre-filter-checkmark-'.$genre.'"></span> ';
         $onClick = "onClick=\"toggleFilmlistFilter('genre-filter-$genre', 'genre-filter-checkbox-$genre');\"";
@@ -187,10 +190,10 @@ function getHtmlContentTypeForFilter() {
     $contentTypes[Film::CONTENT_SHORTFILM] = "Short Films";
     foreach (array_keys($contentTypes) as $contentType) {
         $checked = "";
-        $class = "glyphicon glyphicon-check checkmark-off";
+        $class = "far fa-check-circle checkmark-off";
         if (in_array($contentType, $filter)) {
             $checked = "checked";
-            $class = "glyphicon glyphicon-check checkmark-on";
+            $class = "far fa-check-circle checkmark-on";
         }
         $checkmark = '<span class="'.$class.'" id="contenttype-filter-checkmark-'.$contentType.'"></span> ';
         $onClick = "onClick=\"toggleFilmlistFilter('contenttype-filter-$contentType', 'contenttype-filter-checkbox-$contentType');\"";

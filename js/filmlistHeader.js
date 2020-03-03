@@ -187,7 +187,7 @@ function getContentTypeFilterParam() {
 function clearFilmlistFilter() {
     var filterEl = document.getElementById("filmlist-filter");
     var checkboxes = filterEl.getElementsByTagName("input");
-    var checkmarks = filterEl.getElementsByClassName("glyphicon-check");
+    var checkmarks = filterEl.getElementsByClassName("fa-check-circle");
 
     var i;
     for (i=0; i < checkboxes.length; i++) {
@@ -196,14 +196,14 @@ function clearFilmlistFilter() {
         }
     }
     for (i=0; i < checkmarks.length; i++) {
-        checkmarks[i].className = "glyphicon glyphicon-check checkmark-off";
+        checkmarks[i].className = "far fa-check-circle checkmark-off";
     }
 }
 
 function clearGenreFilter() {
     var filterEl = document.getElementById("genre-filter");
     var checkboxes = filterEl.getElementsByTagName("input");
-    var checkmarks = filterEl.getElementsByClassName("glyphicon-check");
+    var checkmarks = filterEl.getElementsByClassName("fa-check-circle");
 
     var i;
     for (i=0; i < checkboxes.length; i++) {
@@ -212,14 +212,14 @@ function clearGenreFilter() {
         }
     }
     for (i=0; i < checkmarks.length; i++) {
-        checkmarks[i].className = "glyphicon glyphicon-check checkmark-off";
+        checkmarks[i].className = "far fa-check-circle checkmark-off";
     }
 }
 
 function clearContentTypeFilter() {
     var filterEl = document.getElementById("contenttype-filter");
     var checkboxes = filterEl.getElementsByTagName("input");
-    var checkmarks = filterEl.getElementsByClassName("glyphicon-check");
+    var checkmarks = filterEl.getElementsByClassName("fa-check-circle");
 
     var i;
     for (i=0; i < checkboxes.length; i++) {
@@ -228,7 +228,7 @@ function clearContentTypeFilter() {
         }
     }
     for (i=0; i < checkmarks.length; i++) {
-        checkmarks[i].className = "glyphicon glyphicon-check checkmark-off";
+        checkmarks[i].className = "far fa-check-circle checkmark-off";
     }
 }
 
@@ -242,9 +242,9 @@ function toggleFilmlistFilter(btnId, checkboxId) {
 
     // Update the class for the checkmark
     if (checkbox.checked) {
-        checkmark.className = "glyphicon glyphicon-check checkmark-on";
+        checkmark.className = "far fa-check-circle checkmark-on";
     } else {
-        checkmark.className = "glyphicon glyphicon-check checkmark-off";
+        checkmark.className = "far fa-check-circle checkmark-off";
     }
 }
 
