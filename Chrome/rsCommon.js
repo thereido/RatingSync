@@ -289,6 +289,8 @@ function showConfirmationRating(filmId, uniqueName, score, titleNum) {
 
     var row1El = document.createElement("div");
     var row2El = document.createElement("div");
+    row2El.setAttribute("class", "pt-1");
+
     row1El.append(rateButton);
     row2El.append(removeButton);
     row2El.append(cancelButton);
