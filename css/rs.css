@@ -212,7 +212,7 @@ detail-episodeNumber {
     position: absolute;
     top: 0;
     z-index: 1;
-    width: 325px;
+    width: 334px;
     min-height: 231px;
     background-color: rgba(249, 249, 249, 0.95);
     border-style: outset;
@@ -233,7 +233,7 @@ detail-episodeNumber {
 }
 
 .detail-left {
-    left: -305px;
+    left: -314px;
     border-left-style: outset;
     border-right-style: none;
     border-top-left-radius: 3%;

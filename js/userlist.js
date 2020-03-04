@@ -30,10 +30,10 @@ function sizeBreakpointCallback() {
         var dropdownEl = document.getElementById("film-dropdown-" + filmId);
         var dropdownClass = "detail-left";
 
-        var itemRect = filmEl.getBoundingClientRect();
+        var itemRect = document.getElementById("userlist-film-" + filmId).getBoundingClientRect();
         var spaceOnTheLeft = itemRect.right - leftEnd;
         var spaceOnTheRight = rightEnd - itemRect.left;
-        if (spaceOnTheRight > 480 || spaceOnTheRight > spaceOnTheLeft) {
+        if (spaceOnTheRight > 504 || spaceOnTheRight > spaceOnTheLeft) {
             // Dropdown to right
             dropdownClass = "detail-right";
         }
