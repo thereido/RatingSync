@@ -71,7 +71,6 @@ poster {
     margin: 4px;
     border-radius: 3px;
     min-width: 150px;
-    min-height: 221px;
     display: inline-flex;
 }
 
@@ -90,7 +89,6 @@ poster > a > img {
 
 .img-episode {
     border-radius: 25%;
-    border: 1px solid black;
 }
 
 episodeListPoster {
@@ -202,6 +200,11 @@ detail-episodeNumber {
     border-width: thin;
     border-radius: 3%;
     margin-bottom: 5px;
+}
+
+.userlist-film-episode {
+    min-height: auto;
+    border-radius: 25%;
 }
 
 .film-dropdown-content {

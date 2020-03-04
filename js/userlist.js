@@ -83,13 +83,17 @@ function renderUserlistFilms() {
 
         // Image
         var image = "";
-        var imageClass = "";
         if (rsSource.image) {
             var image = RS_URL_BASE + rsSource.image;
+        }
 
-            if (film.contentType == CONTENT_TV_EPISODE) {
-                imageClass = ' class="img-episode"';
-            }
+        // Episode style classes
+        var episodeClass = {image:"", userlistfilm:""};
+        var isEpisode = "false";
+        if (film.contentType == CONTENT_TV_EPISODE) {
+            episodeClass["image"] = "img-episode";
+            episodeClass["userlistfilm"] = "userlist-film-episode";
+            isEpisode = "true";
         }
 
         // Parent
@@ -101,18 +105,18 @@ function renderUserlistFilms() {
         var onMouseEnter = "onMouseEnter='detailTimer = setTimeout(function () { showFilmDropdownForUserlist(" + filmId + "); }, 500)'";
         var onMouseLeave = "onMouseLeave='hideFilmDropdownForUserlist(" + filmId + ", detailTimer)'";
         
-        html = html + "  <filmItem class='col' id='" + uniqueName + "' data-film-id='" + filmId + "'>\n";
-        html = html + "    <div class='userlist-film' " + onMouseEnter + " " + onMouseLeave + ">\n";
-        html = html + "      <poster id='poster-" + uniqueName + "' data-filmId='" + filmId + "'>\n";
-        html = html + "        <a href='/php/detail.php?i=" + filmId + parentIdParam + contentTypeParam + "'>\n";
-        html = html + "          <img src='" + image + "' alt='" + titleNoQuotes + "' " + imageClass + " />\n";
-        html = html + "        </a>\n";
-        html = html + "        <div id='film-dropdown-" + filmId + "' class='film-dropdown-content'></div>\n";
-        html = html + "      </poster>\n";
-        html = html + "    </div>\n";
-        html = html + "  </filmItem>\n";
+        html = html + '  <filmItem class="col" id="' + uniqueName + '" data-film-id="' + filmId + '">' + '\n';
+        html = html + '    <div class="userlist-film '+episodeClass["userlistfilm"]+'" id="userlist-film-'+filmId+'" data-episode="'+isEpisode+'" ' + onMouseEnter + ' ' + onMouseLeave + '>' + '\n';
+        html = html + '      <poster id="poster-' + uniqueName + '" data-filmId="' + filmId + '">' + '\n';
+        html = html + '        <a href="/php/detail.php?i=' + filmId + parentIdParam + contentTypeParam + '">' + '\n';
+        html = html + '          <img src="' + image + '" alt="' + titleNoQuotes + '" class="'+episodeClass["image"]+'" />' + '\n';
+        html = html + '        </a>' + '\n';
+        html = html + '        <div id="film-dropdown-' + filmId + '" class="film-dropdown-content"></div>' + '\n';
+        html = html + '      </poster>' + '\n';
+        html = html + '    </div>' + '\n';
+        html = html + '  </filmItem>' + '\n';
     }
-    html = html + "</div>\n";
+    html = html + '</div>' + '\n';
     document.getElementById("film-table").innerHTML = html;
     
     sizeBreakpointCallback();
@@ -142,6 +146,14 @@ function showFilmDropdownForUserlist(filmId) {
         if (dropdownHeight - 10 > posterHeight) {
             var newPosterHeight = dropdownHeight - 10;
             posterEl.setAttribute("style", "height: " + newPosterHeight + "px");
+
+            // The film element for episodes are rounded, so the dropdown border
+            // would not match the border. Temporarily use a regular class while\
+            // the dropdown is shown.
+            var filmEl = document.getElementById("userlist-film-" + filmId);
+            if (filmEl.getAttribute("data-episode") == "true") {
+                filmEl.setAttribute("class", "userlist-film");
+            }
         }
     }
 }
@@ -155,6 +167,11 @@ function hideFilmDropdownForUserlist(filmId, detailTimer) {
     // default height
     var posterEl = document.getElementById("poster-rs" + filmId);
     posterEl.removeAttribute("style");
+
+    var filmEl = document.getElementById("userlist-film-" + filmId);
+    if (filmEl.getAttribute("data-episode") == "true") {
+        filmEl.setAttribute("class", "userlist-film userlist-film-episode");
+    }
 }
 
 function createFilmlist() {
