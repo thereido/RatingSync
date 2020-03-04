@@ -58,7 +58,7 @@ $pageFooter = getPageFooter();
 <script>
 var contextData;
 var currentPageNum = <?php echo $pageNum; ?>;;
-var defaultPageSize = 96;
+var defaultPageSize = 90;
 var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
 var TMDB_API_KEY = "<?php echo Constants::TMDB_API_KEY; ?>";
 var IMAGE_PATH_TMDBAPI = "<?php echo Constants::IMAGE_PATH_TMDBAPI; ?>";
