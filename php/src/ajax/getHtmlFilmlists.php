@@ -5,7 +5,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." .
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Constants.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Genre.php";
 
-function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "", $displayListname = "", $offerFilter = true) {
+function getHtmlUserlistHeader($listnames, $sortDirection, $currentListname = "", $displayListname = "", $offerFilter = true) {
     $username = getUsername();
     if ($displayListname == "") {
         $displayListname = $currentListname;
@@ -21,7 +21,7 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
 
     // List filter
     $listFilterHtml = "";
-    if ($currentListname != "Create New List" && count($listnames) > 1) {
+    if (count($listnames) > 1) {
         $listFilterHtml .= '<div class="d-inline-flex rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
         $listFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Lists</button>'."\n";
         $listFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="filmlist-filter">'."\n";
@@ -41,7 +41,7 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
 
     $genreFilterHtml = "";
     $genres = Genre::getGenresFromDb();
-    if ($currentListname != "Create New List" && count($genres) > 1) {
+    if (count($genres) > 1) {
         $genreFilterHtml .= '<div class="d-inline-flex rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
         $genreFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Genres</button>'."\n";
         $genreFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="genre-filter">'."\n";
@@ -56,16 +56,14 @@ function getHtmlFilmlistsHeader($listnames, $sortDirection, $currentListname = "
 
     // Content type filter
     $contentFilterHtml = "";
-    if ($currentListname != "Create New List") {
-        $contentFilterHtml .= '<div class="d-inline-flex rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
-        $contentFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Types</button>'."\n";
-        $contentFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="contenttype-filter">'."\n";
-        $contentFilterHtml .= '    <a href="javascript:void(0)" onClick="clearContentTypeFilter();">Clear filter</a>'."\n";
-        $contentFilterHtml .= '    <div class="dropdown-divider"></div>'."\n";
-        $contentFilterHtml .=      getHtmlContentTypeForFilter();
-        $contentFilterHtml .= '  </div>'."\n";
-        $contentFilterHtml .= '</div>'."\n";
-    }
+    $contentFilterHtml .= '<div class="d-inline-flex rs-dropdown-checklist" onmouseleave="setFilmlistFilter();">'."\n";
+    $contentFilterHtml .= '  <button class="btn btn-md btn-primary" onclick="setFilmlistFilter();">Types</button>'."\n";
+    $contentFilterHtml .= '  <div class="rs-dropdown-checklist-content" id="contenttype-filter">'."\n";
+    $contentFilterHtml .= '    <a href="javascript:void(0)" onClick="clearContentTypeFilter();">Clear filter</a>'."\n";
+    $contentFilterHtml .= '    <div class="dropdown-divider"></div>'."\n";
+    $contentFilterHtml .=      getHtmlContentTypeForFilter();
+    $contentFilterHtml .= '  </div>'."\n";
+    $contentFilterHtml .= '</div>'."\n";
 
     // Sort
     $hiddenSort = "";

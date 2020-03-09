@@ -385,6 +385,11 @@ detail-episode-rating {
 	border-color: #2e6da4;
 }
 
+.filmlist > a,
+.filmlist > a:any-link {
+    color: inherit;
+}
+
 /* Small */
 @media (min-width:576px) {
     .rating-detail {

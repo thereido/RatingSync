@@ -89,7 +89,7 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '        <div class="dropdown-menu" aria-labelledby="navbarDropdown">'."\n";
     $html .=            getHtmlFilmlistNamesForNav($listnames);
     $html .= '          <div class="dropdown-divider"></div>'."\n";
-    $html .= '          <a class="dropdown-item" href="/php/userlist.php?nl=1">Create a list</a>'."\n";
+    $html .= '          <a class="dropdown-item" href="/php/managelists.php">Manage</a>'."\n";
     $html .= '        </div>'."\n";
     $html .= '      </li>'."\n";
     $html .= '    </ul>'."\n";

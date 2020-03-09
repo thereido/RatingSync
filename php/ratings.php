@@ -24,7 +24,7 @@ if (empty($sortDirection)) {
 
 if (!empty($username)) {
     $listnames = Filmlist::getUserListsFromDbByParent($username, false);
-    $filmlistHeader = getHtmlFilmlistsHeader($listnames, $sortDirection, null, Constants::RATINGS_PAGE_LABEL);
+    $filmlistHeader = getHtmlUserlistHeader($listnames, $sortDirection, null, Constants::RATINGS_PAGE_LABEL);
     $filmlistPagination = getHmtlFilmlistPagination("./ratings.php");
 }
 

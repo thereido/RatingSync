@@ -230,7 +230,7 @@ function renderFilmlists(includedListnames, filmId) {
     html = html + '    <div class="dropdown-menu" id="filmlists-'+filmId+'">' + "\n";
     html = html +        listItemsHtml + "\n";
     html = html + '      <div class="dropdown-divider"></div>' + "\n";
-    html = html + '      <a class="dropdown-item" href="/php/userlist.php?nl=1&id='+filmId+'">New list</a>' + "\n";
+    html = html + '      <a class="dropdown-item" href="/php/managelists.php?nl=1&id='+filmId+'">New list</a>' + "\n";
     html = html + '    </div>' + "\n";
     html = html + '  </div>' + "\n";
     html = html + '</div>' + "\n";
