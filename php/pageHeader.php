@@ -143,7 +143,8 @@ function getHtmlFilmlistNamesForNav($listnames, $level = 0) {
         $listname = $list["listname"];
         if ($listname != "Watchlist") {
             $safeListname = htmlentities($listname, ENT_COMPAT, "utf-8");
-            $html .= '<a class="dropdown-item" href="/php/userlist.php?l='.$safeListname.'">'. $prefix . $listname .'</a>'."\n";
+            $id = "nav-lists-item-$listname";
+            $html .= '<a class="dropdown-item" id="'.$id.'" href="/php/userlist.php?l='.$safeListname.'">'. $prefix . $listname .'</a>'."\n";
             $html .= getHtmlFilmlistNamesForNav($list["children"], $level+1);
         }
     }

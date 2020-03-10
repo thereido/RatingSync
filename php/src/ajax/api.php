@@ -57,7 +57,16 @@ elseif ($action == "validateNewUsername") {
 elseif ($action == "getSeason") {
     $response = api_getSeason($username);
 }
+elseif ($action == "deleteFilmlist") {
+    $response = api_deleteFilmlist($username);
+}
+elseif ($action == "renameFilmlist") {
+    $response = api_renameFilmlist($username);
+}
 
+if (empty($response)) {
+    $response = "{}";
+}
 echo $response;
 
 function api_getSearchFilm($username, $get)
@@ -741,6 +750,44 @@ function api_getSeason($username)
     $response = json_encode(array("Response" => "False"));
     if (!empty($season)) {
         $response = $season->json_encode(true);
+    }
+
+    return $response;
+}
+
+function api_deleteFilmlist($username)
+{
+    $listname = array_value_by_key("l", $_GET);
+    logDebug("Params l=$listname", __FUNCTION__." ".__LINE__);
+
+    $result = '{ "Success": "false" }';
+    if (!empty($username) && !empty($listname)) {
+        $result = Filmlist::removeListFromDb($username, $listname, true);
+        $success = $result["Success"];
+        $deletedLists = $result["DeletedLists"];
+    }
+
+    return json_encode($result);
+}
+
+function api_renameFilmlist($username)
+{
+    $oldListname = array_value_by_key("oldl", $_GET);
+    $newListname = array_value_by_key("newl", $_GET);
+    logDebug("Params oldl=$oldListname, newl=$newListname", __FUNCTION__." ".__LINE__);
+
+    $success = false;
+    if (!empty($username) && !empty($listname)) {
+        $filmlist = new Filmlist($username, $oldListname);
+        if (!empty($filmlist)) {
+            $success = $filmlist->renameToDb($newListname);
+        }
+    }
+
+    if ($success) {
+        $response = '{"Success":"true"}';
+    } else {
+        $response = '{"Success":"false"}';
     }
 
     return $response;

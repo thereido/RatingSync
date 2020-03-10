@@ -542,7 +542,7 @@ class Filmlist
     }
 
     /**
-     * Delete from the DB. If the list have children this fails.
+     * Delete from the DB. If the list has children and this fails.
      *
      * @return boolean True for success. False for error or there are children.
      */
@@ -585,12 +585,83 @@ class Filmlist
     }
 
     /**
-     * @return boolean True for success. False for error or there are children.
+     * @return array result["Success"] true if the list and all sublists are deleted.
+     *               result["Success"] false if the list or any of its sublists fail.
+     *               result["Success"] false if removeSubLists=false and the list has sublists.
+     *               result["DeletedLists"] an array listname of any list get deleted.
+     *                  It is possible that some of the sublists are deleted, but not
+     *                  all (unlikely). In that case Success=false and DeletedLists shows
+     *                  the lists that did get deleted.
      */
-    public static function removeListFromDb($username, $listname)
+    public static function removeListFromDb($username, $listname, $removeSubLists = false)
     {
         $list = new Filmlist($username, $listname);
-        return $list->removeFromDb();
+        $success = true;
+        $deletedLists = array();
+
+        if ($removeSubLists) {
+            $sublists = $list->getUserListsFromDbByParent($username, false, $list->getListname());
+            foreach ($sublists as $sublistArr) {
+                $sublist = new Filmlist($username, $sublistArr["listname"], $listname);
+                $result = Filmlist::removeListFromDb($username, $sublist->getListname(), true);
+                
+                $deletedLists = array_merge($deletedLists, $result["DeletedLists"]);
+                if ($result["Success"] != "true") {
+                    $success = false;
+                    break;
+                }
+            }
+        }
+        
+        if ($success) {
+            $success = $list->removeFromDb();
+            if ($success) {
+                $deletedLists[] = $list->getListname();
+            }
+        }
+
+        $successStr = "false";
+        if ($success) {
+            $successStr = "true";
+        }
+        $result = array("Success" => $successStr, "DeletedLists" => $deletedLists);
+
+        return $result;
+    }
+
+    public function renameToDb($newListname) {
+        if (empty($this->username) || empty($this->listname)) {
+            throw new \InvalidArgumentException(__FUNCTION__." username (".$this->username.") and listName (".$this->listname.") must not be empty");
+        }
+        $username = $this->username;
+        $oldListname = $this->listname;
+
+        $db = getDatabase();
+        $success = true;
+        
+        // Rename the listname on the list itself
+        $query  = "UPDATE user_filmlist SET listname='$newListname'";
+        $query .= " WHERE user_name='$username'";
+        $query .= "   AND listname='$oldListname'";
+        logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
+        if (! $db->query($query)) {
+            $success = false;
+            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+        }
+
+        // Rename the listname on the items in the list
+        if ($success) {
+            $query  = "UPDATE filmlist SET listname='$newListname'";
+            $query .= " WHERE user_name='$username'";
+            $query .= "   AND listname='$oldListname'";
+            logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            if (! $db->query($query)) {
+                $success = false;
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            }
+        }
+
+        return $success;
     }
 
     public function initFromDb()

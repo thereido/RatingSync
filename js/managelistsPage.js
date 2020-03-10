@@ -135,12 +135,16 @@ function renderFilmlist(filmlist, containerEl, level) {
     if (filmlist.children.length == 0) {
         caretEl.setAttribute("hidden", "true");
     }
+    renameButtonEl.setAttribute("id", "filmlist-rename-" + encodeURI(filmlist.listname));
+    deleteButtonEl.setAttribute("id", "filmlist-delete-" + encodeURI(filmlist.listname));
+    deleteButtonEl.setAttribute("data-toggle", "modal");
+    deleteButtonEl.setAttribute("data-target", "#delete-modal");
+    deleteButtonEl.setAttribute("data-listname", filmlist.listname);
     childrenEl.setAttribute("id", childrenElId);
     childrenEl.setAttribute("hidden", "true");
 
-    // Hide Rename & Delete buttons until they are implemented
+    // Hide Rename button until it is implemented
     renameButtonEl.setAttribute("hidden", "true");
-    deleteButtonEl.setAttribute("hidden", "true");
 
     // Content
     indentationEl.innerHTML = indentation;
@@ -165,4 +169,60 @@ function toggleChildFilmlists(listname) {
     else {
         childrenEl.setAttribute("hidden", "true");
     }
+}
+
+function deleteFilmlist() {
+    var listname = document.getElementById("delete-listname").value;
+    disableManageListButtons(listname, true);
+
+    var params = "?action=deleteFilmlist";
+    params = params + "&l=" + encodeURI(listname);
+	var xmlhttp = new XMLHttpRequest();
+    var callbackHandler = function () { deleteFilmlistCallback(xmlhttp, listname); };
+    xmlhttp.onreadystatechange = callbackHandler;
+	xmlhttp.open("GET", RS_URL_API + params, true);
+	xmlhttp.send();
+}
+
+function deleteFilmlistCallback(xmlhttp, listname) {
+    if (xmlhttp.readyState == 4) {
+        var success = false;
+        if (xmlhttp.status == 200) {
+            result = JSON.parse(xmlhttp.responseText);
+            if (result.Success == "true") {
+                success = true;
+            }
+        }
+
+        $('#delete-modal').modal('hide');
+
+        // Remove the deleted filmlist from the Nav Lists menu
+        var deletedLists = result.DeletedLists;
+        if (deletedLists) {
+            for (i = 0; i < deletedLists.length; i++) {
+                var menuItemEl = document.getElementById("nav-lists-item-" + deletedLists[i]);
+                menuItemEl.remove();
+            }
+        }
+
+	    if (success) {
+            // Remove the deleted filmlist from the page
+            var filmlistEl = document.getElementById("filmlist-" + encodeURI(listname));
+            var childrenEl = document.getElementById("filmlist-children-" + encodeURI(listname));
+            filmlistEl.remove();
+            childrenEl.remove();
+        }
+        else {
+            $('#delete-fail-modal').modal('show');
+            disableManageListButtons(listname, false);
+        }
+	}
+}
+
+function disableManageListButtons(listname, isDisabled = true) {
+    var renameButtonEl = document.getElementById("filmlist-rename-" + encodeURI(listname));
+    var deleteButtonEl = document.getElementById("filmlist-delete-" + encodeURI(listname));
+
+    renameButtonEl.disabled = isDisabled;
+    deleteButtonEl.disabled = isDisabled;
 }

@@ -115,6 +115,47 @@ $pageFooter = getPageFooter();
 
     <div id="filmlists" class="mt-1"></div>
 
+    <div class="modal fade" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="delete-modal-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="delete-modal-label">Delete List</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div>Delete "<span id="delete-modal-listname"></span>" and all of its sub-lists?</div>
+                    <div>This cannot be undone.</div>
+                    <input type="text" id="delete-listname" hidden>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button id="delete-modal-submit" type="button" class="btn btn-primary" onClick="deleteFilmlist()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="delete-fail-modal" tabindex="-1" role="dialog" aria-labelledby="delete-fail-modal-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="delete-modal-label">Delete List</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Something went wrong. Unable to delete the list.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
   <?php echo $pageFooter; ?>
 </div>
 
@@ -127,6 +168,14 @@ $pageFooter = getPageFooter();
     if (<?php echo $newList; ?> != 1) {
          getFilmlists();
     }
+
+    $('#delete-modal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget) // Button that triggered the modal
+      var listname = button.data('listname')
+      var modal = $(this)
+      modal.find('#delete-modal-listname').text(listname)
+      modal.find('#delete-listname').val(listname);
+    })
 </script>
           
 </body>
