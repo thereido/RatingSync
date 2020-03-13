@@ -777,7 +777,7 @@ function api_renameFilmlist($username)
     logDebug("Params oldl=$oldListname, newl=$newListname", __FUNCTION__." ".__LINE__);
 
     $success = false;
-    if (!empty($username) && !empty($listname)) {
+    if (!empty($username) && !empty($oldListname) && !empty($newListname)) {
         $filmlist = new Filmlist($username, $oldListname);
         if (!empty($filmlist)) {
             $success = $filmlist->renameToDb($newListname);
