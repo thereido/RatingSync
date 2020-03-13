@@ -95,3 +95,29 @@ function renderMsg(message, element) {
         }
     }
 }
+
+function showLoginForm() {
+    var loginEl = document.getElementById("login-form");
+    var loginLinkEl = document.getElementById("login-form-link");
+    var registerEl = document.getElementById("register-form");
+    var registerLinkEl = document.getElementById("register-form-link");
+
+    registerEl.hidden = true;
+    registerLinkEl.setAttribute("class", "");
+
+    loginEl.removeAttribute("hidden");
+    loginLinkEl.setAttribute("class", "active");
+}
+
+function showRegisterForm() {
+    var loginEl = document.getElementById("login-form");
+    var loginLinkEl = document.getElementById("login-form-link");
+    var registerEl = document.getElementById("register-form");
+    var registerLinkEl = document.getElementById("register-form-link");
+
+    loginEl.hidden = true;
+    loginLinkEl.setAttribute("class", "");
+
+    registerEl.removeAttribute("hidden");
+    registerLinkEl.setAttribute("class", "active");
+}
