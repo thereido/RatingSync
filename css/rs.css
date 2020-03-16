@@ -81,13 +81,15 @@ poster > a {
 poster > img,
 poster > a > img {
     width: 150px;
-    max-height: 221px;
+    height: 221px;
     object-fit: cover;
     object-position: center;
     border-radius: .3rem;
 }
 
 .img-episode {
+    max-height: 221px;
+    height: auto;
     border-radius: 25%;
 }
 

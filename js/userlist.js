@@ -91,8 +91,6 @@ function renderUserlistFilms() {
         var episodeClass = {image:"", userlistfilm:""};
         var isEpisode = "false";
         if (film.contentType == CONTENT_TV_EPISODE) {
-            episodeClass["image"] = "img-episode";
-            episodeClass["userlistfilm"] = "userlist-film-episode";
             isEpisode = "true";
         }
 
@@ -138,9 +136,17 @@ function showFilmDropdownForUserlist(filmId) {
             getFilmForDropdown(film);
         }
 
+        // Change the style classes on posters for episodes
+        var filmEl = document.getElementById("userlist-film-" + filmId);
+        var posterEl = document.getElementById("poster-rs" + filmId);
+        if (film.contentType == CONTENT_TV_EPISODE) {
+            var posterImgEl = posterEl.getElementsByTagName("img")[0];
+            filmEl.setAttribute("class", "userlist-film userlist-film-episode");
+            posterImgEl.setAttribute("class", "img-episode");
+        }
+
         // Resize the poster to match the dropdown. Sometimes the dropdown is taller
         // than the poster.
-        var posterEl = document.getElementById("poster-rs" + filmId);
         var posterHeight = posterEl.getBoundingClientRect().height;
         var dropdownHeight = dropdownEl.getBoundingClientRect().height;
         if (dropdownHeight - 10 > posterHeight) {
@@ -148,9 +154,8 @@ function showFilmDropdownForUserlist(filmId) {
             posterEl.setAttribute("style", "height: " + newPosterHeight + "px");
 
             // The film element for episodes are rounded, so the dropdown border
-            // would not match the border. Temporarily use a regular class while\
+            // would not match the border. Temporarily use a regular class while
             // the dropdown is shown.
-            var filmEl = document.getElementById("userlist-film-" + filmId);
             if (filmEl.getAttribute("data-episode") == "true") {
                 filmEl.setAttribute("class", "userlist-film");
             }
@@ -163,13 +168,18 @@ function hideFilmDropdownForUserlist(filmId, detailTimer) {
     el.style.display = "none";
     clearTimeout(detailTimer);
 
+    var filmEl = document.getElementById("userlist-film-" + filmId);
+    var posterEl = document.getElementById("poster-rs" + filmId);
+
+    // Change the style classes on posters for episodes (put it back to normal,
+    // because it was changed while hovering)
+    if (filmEl.getAttribute("data-episode") == "true") {
+        var posterImgEl = posterEl.getElementsByTagName("img")[0];
+        filmEl.setAttribute("class", "userlist-film");
+        posterImgEl.setAttribute("class", "");
+    }
+
     // Poster might have been resized to match the dropdown. Put it back the
     // default height
-    var posterEl = document.getElementById("poster-rs" + filmId);
     posterEl.removeAttribute("style");
-
-    var filmEl = document.getElementById("userlist-film-" + filmId);
-    if (filmEl.getAttribute("data-episode") == "true") {
-        filmEl.setAttribute("class", "userlist-film userlist-film-episode");
-    }
 }
