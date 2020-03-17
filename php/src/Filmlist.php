@@ -306,7 +306,7 @@ class Filmlist
         $isDuplicate = false;
         $prevItemUpdated = false;
         $username = $this->username;
-        $listname = $this->listname;
+        $listname = $db->real_escape_string($this->listname);
         $wherePrefix = " WHERE user_name='$username' AND listname='$listname' ";
 
         // Check for an duplicate
@@ -386,7 +386,7 @@ class Filmlist
         $errorFree = true;
         $rowExists = false;
         $username = $this->username;
-        $listname = $this->listname;
+        $listname = $db->real_escape_string($this->listname);
         $wherePrefix = " WHERE user_name='$username' AND listname='$listname' ";
 
         $query = "SELECT next_film_id, position FROM filmlist $wherePrefix" .
@@ -484,8 +484,8 @@ class Filmlist
         $db = getDatabase();
         $errorFree = true;
         $username = $this->username;
-        $listname = $this->listname;
-        $parentListname = $this->parentListname;
+        $listname = $db->real_escape_string($this->listname);
+        $parentListname = $db->real_escape_string($this->parentListname);
 
         // Error if the list already exists
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname'";
@@ -542,7 +542,7 @@ class Filmlist
     }
 
     /**
-     * Delete from the DB. If the list have children this fails.
+     * Delete from the DB. If the list has children and this fails.
      *
      * @return boolean True for success. False for error or there are children.
      */
@@ -555,7 +555,7 @@ class Filmlist
 
         // Check for children (Don't delete a list with children)
         $username = $this->username;
-        $listname = $this->listname;
+        $listname = $db->real_escape_string($this->listname);
         $query = "SELECT * FROM user_filmlist" .
                     " WHERE parent_listname='$listname'" . 
                     "   AND user_name='$username'";
@@ -585,12 +585,97 @@ class Filmlist
     }
 
     /**
-     * @return boolean True for success. False for error or there are children.
+     * @return array result["Success"] true if the list and all sublists are deleted.
+     *               result["Success"] false if the list or any of its sublists fail.
+     *               result["Success"] false if removeSubLists=false and the list has sublists.
+     *               result["DeletedLists"] an array listname of any list get deleted.
+     *                  It is possible that some of the sublists are deleted, but not
+     *                  all (unlikely). In that case Success=false and DeletedLists shows
+     *                  the lists that did get deleted.
      */
-    public static function removeListFromDb($username, $listname)
+    public static function removeListFromDb($username, $listname, $removeSubLists = false)
     {
         $list = new Filmlist($username, $listname);
-        return $list->removeFromDb();
+        $success = true;
+        $deletedLists = array();
+
+        if ($removeSubLists) {
+            $sublists = $list->getUserListsFromDbByParent($username, false, $list->getListname());
+            foreach ($sublists as $sublistArr) {
+                $sublist = new Filmlist($username, $sublistArr["listname"], $listname);
+                $result = Filmlist::removeListFromDb($username, $sublist->getListname(), true);
+                
+                $deletedLists = array_merge($deletedLists, $result["DeletedLists"]);
+                if ($result["Success"] != "true") {
+                    $success = false;
+                    break;
+                }
+            }
+        }
+        
+        if ($success) {
+            $success = $list->removeFromDb();
+            if ($success) {
+                $deletedLists[] = $list->getListname();
+            }
+        }
+
+        $successStr = "false";
+        if ($success) {
+            $successStr = "true";
+        }
+        $result = array("Success" => $successStr, "DeletedLists" => $deletedLists);
+
+        return $result;
+    }
+
+    public function renameToDb($newListname) {
+        if (empty($this->username) || empty($this->listname)) {
+            throw new \InvalidArgumentException(__FUNCTION__." username (".$this->username.") and listName (".$this->listname.") must not be empty");
+        }
+        $username = $this->username;
+
+        $db = getDatabase();
+        $success = true;
+
+        $oldListname = $db->real_escape_string($this->listname);
+        $newListname = $db->real_escape_string($newListname);
+        
+        // Rename the listname on the list itself
+        $query  = "UPDATE user_filmlist SET listname='$newListname'";
+        $query .= " WHERE user_name='$username'";
+        $query .= "   AND listname='$oldListname'";
+        logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
+        if (! $db->query($query)) {
+            $success = false;
+            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+        }
+
+        // Rename the listname on the items in the list
+        if ($success) {
+            $query  = "UPDATE filmlist SET listname='$newListname'";
+            $query .= " WHERE user_name='$username'";
+            $query .= "   AND listname='$oldListname'";
+            logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            if (! $db->query($query)) {
+                $success = false;
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            }
+        }
+
+        // Update the parent name for sublists
+        if ($success) {
+            $query  = "UPDATE user_filmlist SET parent_listname='$newListname'";
+            $query .= " WHERE user_name='$username'";
+            $query .= "   AND parent_listname='$oldListname'";
+            logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            if (! $db->query($query)) {
+                $success = false;
+                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            }
+        }
+
+        return $success;
     }
 
     public function initFromDb()
@@ -603,6 +688,8 @@ class Filmlist
 
         $this->removeAllItems();
         $db = getDatabase();
+
+        $listname = $db->real_escape_string($listname);
 
         $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
         $result = $db->query($query);
@@ -653,12 +740,6 @@ class Filmlist
             $filmId = $row['film_id'];
             $filteredFilmIds[] = $filmId;
         }
-        
-        $query  = "SELECT film_id, next_film_id FROM filmlist";
-        $query .= " WHERE user_name='$username'";
-        $query .= "   AND listname='$listname'";
-        $query .= " ORDER BY " . $this->getOrderColumn() . " " . $this->getSortDirection();
-        $result = $db->query($query);
 
         $sortedFilmIds = null;
         if ($this->getSort() == static::SORT_POSITION) {
@@ -757,6 +838,7 @@ class Filmlist
 
         $parentSelect = "parent_listname IS NULL";
         if (!empty($parentListname)) {
+            $parentListname = $db->real_escape_string($parentListname);
             $parentSelect = "parent_listname='$parentListname'";
         }
 
@@ -842,6 +924,7 @@ class Filmlist
         $ancestors = array();
 
         while (!empty($listname)) {
+            $listname = $db->real_escape_string($listname);
             $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
             $result = $db->query($query);
             if ($result->num_rows == 1) {
@@ -926,7 +1009,7 @@ class Filmlist
 
         $db = getDatabase();
         $wherePrefix = " WHERE user_name='" . $this->username . "'" .
-                    "   AND listname='" . $this->listname . "' ";
+                    "   AND listname='" . $db->real_escape_string($this->listname) . "' ";
         $queryPrefix = "SELECT film_id FROM filmlist" . $wherePrefix; 
         $newPrevQuery = $queryPrefix . "AND next_film_id=$nextFilmId";    
 
@@ -1010,9 +1093,10 @@ class Filmlist
 
     public function getItemsByNextId($sortDirection) {
         $username = $this->getUsername();
-        $listname = $this->getListname();
-        
         $db = getDatabase();
+        
+        $listname = $db->real_escape_string($this->getListname());
+
         $query  = "SELECT film_id, next_film_id FROM filmlist";
         $query .= " WHERE user_name='$username'";
         $query .= "   AND listname='$listname'";
@@ -1046,9 +1130,9 @@ class Filmlist
             $sortDirection = static::SORTDIR_ASC;
         }
         $username = $this->getUsername();
-        $listname = $this->getListname();
-
         $db = getDatabase();
+        $listname = $db->real_escape_string($this->getListname());
+
         $query  = "SELECT film_id, next_film_id FROM filmlist";
         $query .= " WHERE user_name='$username'";
         $query .= "   AND listname='$listname'";

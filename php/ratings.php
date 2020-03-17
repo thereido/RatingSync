@@ -24,7 +24,7 @@ if (empty($sortDirection)) {
 
 if (!empty($username)) {
     $listnames = Filmlist::getUserListsFromDbByParent($username, false);
-    $filmlistHeader = getHtmlFilmlistsHeader($listnames, $sortDirection, null, Constants::RATINGS_PAGE_LABEL);
+    $filmlistHeader = getHtmlUserlistHeader($listnames, $sortDirection, null, Constants::RATINGS_PAGE_LABEL);
     $filmlistPagination = getHmtlFilmlistPagination("./ratings.php");
 }
 
@@ -34,14 +34,10 @@ $pageFooter = getPageFooter();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php echo includeHeadHtmlForAllPages(); ?>
     <title><?php echo Constants::SITE_NAME; ?> Ratings</title>
-    <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
-    <link href="../css/rs.css" rel="stylesheet">
     <link rel="icon" href="<?php echo Constants::FAVICON_URL; ?>">
     <?php if (empty($username)) { echo '<script type="text/javascript">window.location.href = "/php/Login"</script>'; } ?>
-    <?php echo includeJavascriptFiles(); ?>
     <script src="../js/ratings.js"></script>
     <script src="../js/filmlistHeader.js"></script>
     <script src="../js/film.js"></script>
@@ -52,7 +48,7 @@ $pageFooter = getPageFooter();
   <?php echo $pageHeader; ?>
   <?php echo $filmlistHeader; ?>
 
-    <div id="film-table"></div>
+    <div id="film-table"  class="mt-3"></div>
     
   <?php echo $filmlistPagination; ?>
     
@@ -62,7 +58,7 @@ $pageFooter = getPageFooter();
 <script>
 var contextData;
 var currentPageNum = <?php echo $pageNum; ?>;;
-var defaultPageSize = 96;
+var defaultPageSize = 90;
 var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
 var TMDB_API_KEY = "<?php echo Constants::TMDB_API_KEY; ?>";
 var IMAGE_PATH_TMDBAPI = "<?php echo Constants::IMAGE_PATH_TMDBAPI; ?>";

@@ -33,14 +33,10 @@ $pageFooter = getPageFooter();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php echo includeHeadHtmlForAllPages(); ?>
     <title><?php echo Constants::SITE_NAME; ?></title>
-    <link href="../css/bootstrap_rs.min.css" rel="stylesheet">
-    <link href="../css/rs.css" rel="stylesheet">
     <link rel="icon" href="<?php echo Constants::FAVICON_URL; ?>">
     <?php if (empty($username)) { echo '<script type="text/javascript">window.location.href = "/php/Login"</script>'; } ?>
-    <?php echo includeJavascriptFiles(); ?>
     <script src="../js/ratings.js"></script>
     <script src="../js/film.js"></script>
 </head>
@@ -50,12 +46,16 @@ $pageFooter = getPageFooter();
 <div class="container">
     <?php echo $pageHeader; ?>
 
-    <div class='well well-sm'>
-        <h2><?php echo $searchPageLabel; ?></h2>
+    <div class='card bg-light mt-3'>
+        <div class="card-body">
+            <h2><?php echo $searchPageLabel; ?></h2>
+        </div>
     </div>
     
     <div id="debug"></div>
 
+    <div id="search-results" class="mt-3">
+    </div>
     <table class="table table-striped">
         <tbody id="search-result-tbody">
         </tbody>

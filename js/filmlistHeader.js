@@ -187,7 +187,7 @@ function getContentTypeFilterParam() {
 function clearFilmlistFilter() {
     var filterEl = document.getElementById("filmlist-filter");
     var checkboxes = filterEl.getElementsByTagName("input");
-    var checkmarks = filterEl.getElementsByClassName("glyphicon-check");
+    var checkmarks = filterEl.getElementsByClassName("fa-check-circle");
 
     var i;
     for (i=0; i < checkboxes.length; i++) {
@@ -196,14 +196,14 @@ function clearFilmlistFilter() {
         }
     }
     for (i=0; i < checkmarks.length; i++) {
-        checkmarks[i].className = "glyphicon glyphicon-check checkmark-off";
+        checkmarks[i].className = "far fa-check-circle checkmark-off";
     }
 }
 
 function clearGenreFilter() {
     var filterEl = document.getElementById("genre-filter");
     var checkboxes = filterEl.getElementsByTagName("input");
-    var checkmarks = filterEl.getElementsByClassName("glyphicon-check");
+    var checkmarks = filterEl.getElementsByClassName("fa-check-circle");
 
     var i;
     for (i=0; i < checkboxes.length; i++) {
@@ -212,14 +212,14 @@ function clearGenreFilter() {
         }
     }
     for (i=0; i < checkmarks.length; i++) {
-        checkmarks[i].className = "glyphicon glyphicon-check checkmark-off";
+        checkmarks[i].className = "far fa-check-circle checkmark-off";
     }
 }
 
 function clearContentTypeFilter() {
     var filterEl = document.getElementById("contenttype-filter");
     var checkboxes = filterEl.getElementsByTagName("input");
-    var checkmarks = filterEl.getElementsByClassName("glyphicon-check");
+    var checkmarks = filterEl.getElementsByClassName("fa-check-circle");
 
     var i;
     for (i=0; i < checkboxes.length; i++) {
@@ -228,7 +228,7 @@ function clearContentTypeFilter() {
         }
     }
     for (i=0; i < checkmarks.length; i++) {
-        checkmarks[i].className = "glyphicon glyphicon-check checkmark-off";
+        checkmarks[i].className = "far fa-check-circle checkmark-off";
     }
 }
 
@@ -242,9 +242,9 @@ function toggleFilmlistFilter(btnId, checkboxId) {
 
     // Update the class for the checkmark
     if (checkbox.checked) {
-        checkmark.className = "glyphicon glyphicon-check checkmark-on";
+        checkmark.className = "far fa-check-circle checkmark-on";
     } else {
-        checkmark.className = "glyphicon glyphicon-check checkmark-off";
+        checkmark.className = "far fa-check-circle checkmark-off";
     }
 }
 
@@ -277,10 +277,10 @@ function renderPagination() {
     var previousEl = document.getElementById("previous");
     if (pageNum > 1) {
         previousPageNum = pageNum - 1;
-        previousEl.removeAttribute("class");
+        previousEl.disabled = false;
         previousEl.setAttribute("onclick", "submitPageForm(" + previousPageNum + ");");
     } else {
-        previousEl.setAttribute("class", "disabled");
+        previousEl.disabled = true;
         previousEl.removeAttribute("onclick");
     }
 
@@ -288,10 +288,10 @@ function renderPagination() {
     var nextEl = document.getElementById("next");
     if (totalCount > pageNum * pageSize) {
         nextPageNum = pageNum + 1;
-        nextEl.removeAttribute("class");
+        nextEl.disabled = false;
         nextEl.setAttribute("onclick", "submitPageForm(" + nextPageNum + ");");
     } else {
-        nextEl.setAttribute("class", "disabled");
+        nextEl.disabled = true;
         nextEl.removeAttribute("onclick");
     }
 
@@ -299,14 +299,13 @@ function renderPagination() {
     var pageSelectEl = document.getElementById("page-select");
     pageSelectEl.innerHTML = "";
     for (var pageOption = 0; totalCount > pageOption * pageSize; pageOption++) {
-        var optionEl = document.createElement("option");
-        optionEl.value = pageOption + 1;
-        optionEl.innerHTML = optionEl.value;
-        if (pageOption+1 == pageNum) {
-            optionEl.selected = true;
-        }
+        var optionEl = document.createElement("li");
+        optionNum = pageOption + 1;
+        optionEl.innerHTML = optionNum;
+        optionEl.setAttribute("onClick", "submitPageForm("+optionNum+")");
         pageSelectEl.appendChild(optionEl);
     }
+    document.getElementById("page-select-label").innerHTML = pageNum;
     
     var paginationEl = document.getElementById("pagination");
     if (previousPageNum != 0 || nextPageNum != 0) {

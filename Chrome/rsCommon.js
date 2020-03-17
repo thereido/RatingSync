@@ -207,13 +207,12 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
     var otherListsElement = document.getElementById("filmlists-" + filmId);
     if (defaultBtn) defaultBtn.disabled = true;
     if (otherListsBtn) otherListsBtn.disabled = true;
-    if (otherListsElement) otherListsElement.disabled = true;
     
     var activeBtn = document.getElementById(activeBtnId);
     var checkmark = activeBtn.getElementsByTagName("span")[0];
     var filmIsInTheList = false;
     var addToList = 1; //yes
-    if (checkmark.className == "glyphicon glyphicon-check checkmark-on") {
+    if (checkmark.className == "far fa-check-circle checkmark-on") {
         filmIsInTheList = true;
         var addToList = 0; //no (remove)
     }
@@ -223,9 +222,9 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             filmIsInTheList = !filmIsInTheList;
             if (filmIsInTheList) {
-                checkmark.className = "glyphicon glyphicon-check checkmark-on";
+                checkmark.className = "far fa-check-circle checkmark-on";
             } else {
-                checkmark.className = "glyphicon glyphicon-check checkmark-off";
+                checkmark.className = "far fa-check-circle checkmark-off";
             }
             
             var film = JSON.parse(xmlhttp.responseText);
@@ -290,6 +289,8 @@ function showConfirmationRating(filmId, uniqueName, score, titleNum) {
 
     var row1El = document.createElement("div");
     var row2El = document.createElement("div");
+    row2El.setAttribute("class", "pt-1");
+
     row1El.append(rateButton);
     row2El.append(removeButton);
     row2El.append(cancelButton);
@@ -327,9 +328,9 @@ function getFilmlists(callback) {
 
 function getCheckmarkClass(checked) {
     if (checked) {
-        return "glyphicon glyphicon-check checkmark-on";
+        return "far fa-check-circle checkmark-on";
     } else {
-        return "glyphicon glyphicon-check checkmark-off";
+        return "far fa-check-circle checkmark-off";
     }
 }
 
@@ -350,19 +351,6 @@ function addFilmlistListeners(el, filmId) {
         var clickDefaultListHandler = function () { toggleFilmlist(listname, filmId, defaultListBtn.getAttribute("id")); };
         defaultListBtn.addEventListener("click", clickDefaultListHandler);
 	}
-
-    // "Others" button
-	var otherListsBtn = document.getElementById("filmlist-btn-others-"+filmId);
-	if (otherListsBtn != null) {
-        var clickOtherListsHandler = function () { toggleHideFilmlists('filmlists-'+filmId); };
-        otherListsBtn.addEventListener("click", clickOtherListsHandler);
-	}
-
-    // Other lists buttons
-    var buttons = el.getElementsByClassName("btn-filmlist");
-    for (i = 0; i < buttons.length; i++) {
-        addFilmlistListener(buttons[i].getAttribute("id"));
-    }
 }
 
 function addFilmlistListener(elementId) {

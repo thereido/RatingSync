@@ -4,7 +4,6 @@
 }
 
 .footer {
-    padding-top: 19px;
     color: #777;
     border-top: 1px solid #e5e5e5;
 }
@@ -39,8 +38,10 @@
 .rating-star {
     font-size: 125%;
 }
+
 .rating-date {
-    font-size: 100%;
+    display:inline-block;
+    min-height: 17px;
 }
 
 .rating-background {
@@ -51,7 +52,7 @@
     font-size: 125%;
 }
 .film-line > .film-title {
-    font-size: 125%;
+    font-size: 115%;
     font-weight: bold;
 }
 .film-line > .film-title > a {
@@ -59,7 +60,7 @@
 }
 
 .tv-episode-title {
-    font-size: 110%;
+    font-size: 105%;
     font-weight: bold;
 }
 .tv-season, 
@@ -67,9 +68,14 @@
 }
 
 poster {
-    float: left;
-    padding: 5px;
+    margin: 4px;
     border-radius: 3px;
+    min-width: 150px;
+    display: inline-flex;
+}
+
+poster > a {
+    margin: auto;
 }
 
 poster > img,
@@ -78,24 +84,22 @@ poster > a > img {
     height: 221px;
     object-fit: cover;
     object-position: center;
+    border-radius: .3rem;
 }
 
-posterEpisode {
+.img-episode {
+    max-height: 221px;
+    height: auto;
+    border-radius: 25%;
+}
+
+episodeListPoster {
     float: left;
     padding: 2px;
 }
 
-posterEpisode > img {
+episodeListPoster > img {
     min-height: 52px;
-    border-radius: 25%;
-}
-
-detail {
-    float: left;
-    vertical-align: middle;
-    padding: 15px;
-    padding-top: 5px;
-    padding-bottom: 5px;
 }
 
 detail-episodeNumber {
@@ -110,7 +114,6 @@ detail-episodeNumber {
 .thirdparty-bar {
     position: relative;
     text-align: left;
-    padding-bottom: 5px;
 }
 
 .thirdparty-bar > .source-logo-1,
@@ -139,12 +142,10 @@ detail-episodeNumber {
 }
 
 .checkmark-off {
-    font-weight: bold;
     color: grey;    
 }
 
 .checkmark-on {
-    font-weight: bold;
     color: #10b33c;    
 }
 
@@ -203,29 +204,39 @@ detail-episodeNumber {
     margin-bottom: 5px;
 }
 
+.userlist-film-episode {
+    min-height: auto;
+    border-radius: 25%;
+}
+
 .film-dropdown-content {
     display: none;
     position: absolute;
     top: 0;
     z-index: 1;
-    min-width: 325px;
+    width: 334px;
     min-height: 231px;
     background-color: rgba(249, 249, 249, 0.95);
     border-style: outset;
     border-width: thin;
     margin-bottom: 5px;
+    padding-bottom: 3px;
+    padding-left: 5px;
 }
 
-.film-dropdown-col-1,.film-dropdown-col-3,.film-dropdown-col-5,.film-dropdown-col-7,.film-dropdown-col-9,.film-dropdown-col-11 {
+.detail-right {
     left: 170px;
     border-left-style: none;
+    border-right-style: outset;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     border-top-right-radius: 3%;
     border-bottom-right-radius: 3%;
 }
-.film-dropdown-col-2,.film-dropdown-col-4,.film-dropdown-col-6,.film-dropdown-col-8,.film-dropdown-col-10,.film-dropdown-col-12 {
-    left: -305px;
+
+.detail-left {
+    left: -314px;
+    border-left-style: outset;
     border-right-style: none;
     border-top-left-radius: 3%;
     border-bottom-left-radius: 3%;
@@ -254,6 +265,7 @@ detail-episodeNumber {
     position: absolute;
     background-color: #f9f9f9;
     min-width: 160px;
+    top: 38px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
 }
@@ -268,7 +280,10 @@ detail-episodeNumber {
 }
 
 /* Change color of dropdown links on hover */
-.rs-dropdown-checklist-content a:hover {background-color: #f1f1f1}
+.rs-dropdown-checklist-content a:hover,
+.pagination-options li:hover {
+    background-color: #f1f1f1;
+}
 
 /* Show the dropdown menu on hover */
 .rs-dropdown-checklist:hover .rs-dropdown-checklist-content {
@@ -288,17 +303,21 @@ checklist-line input[type="radio"] {
 
 #header-search-suggestion {
     position: absolute;
+    top: 38px;
+    width: 100%;
     padding: 1px 5px 1px 5px;
     border: 1px;
     border-style: solid;
     border-top: none;
-    border-radius: 0 4px 10px 10px;
+    border-radius: 4px 4px 10px 10px;
+    border-color: #ccc;
     z-index: 10;
     background-color: white;
 }
 
 #header-search-suggestion a {
-    text-decoration-line: none;
+    text-decoration: none;
+    color: #495057;
 }
 
 #header-search-suggestion a.suggestion-selected > div {
@@ -306,30 +325,29 @@ checklist-line input[type="radio"] {
 }
 
 .search-suggestion-item {
-    padding-top: 1px;
-    padding-bottom: 1px;
-    border-bottom: 1px solid #ccc;
-    min-height: 61px;
+    border-top: 1px solid #ccc;
+    padding-top: .15rem;
+    min-height: 64px;
+    margin: 0px;
 }
 
-.search-suggestion-item > poster {
-    padding: 0px;
-    padding-right: 1px;
-}
-
-.search-suggestion-item > poster > img,
-.search-suggestion-item > poster > a > img {
-	width: 40px;
+.suggestion-poster {
+    width: 40px;
     height: auto;
+    border: 1px solid #dee2e6;
 }
 
-.search-suggestion-rating-rs {
+.suggestion-rating {
     color: orange;
+    line-height: 1.1;
+}
+
+.suggestion-rating > .rating-star {
+    font-size: inherit;
 }
 
 .search-suggestion-label {
     text-align: center;
-    border-bottom: 1px solid #ccc;
 }
 
 .rs-filmlist-sort {
@@ -342,25 +360,14 @@ checklist-line input[type="radio"] {
 }
 
 .rs-navbar {
-    margin-bottom: 0px;
-}
-
-.filmlist-header {
-    margin-top: 20px;
+    border-radius: 4px;
+	border: 1px solid #e7e7e7;
 }
 
 detail-film {
 }
 
-detail-episodes {
-    padding-left: 15px;
-    padding-right: 15px;
-}
-
 detail-episode {
-    float: left;
-    width: 80%;
-    margin-left: 30px;
     margin-bottom: 7px;
     border: 1px solid #e3e3e3;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -378,27 +385,29 @@ detail-episode-rating {
     color: orange;
 }
 
+.btn-primary {
+	background-color: #337ab7;
+	border-color: #2e6da4;
+}
+
+.filmlist > a,
+.filmlist > a:any-link {
+    color: inherit;
+}
+
+/* Small */
+@media (min-width:576px) {
+    .rating-detail {
+        width: 80%;
+        left: 10%;
+    }
+}
+
+/* Medium */
 @media (min-width:768px) {
     .rating-detail {
         width: 70%;
         left: 15%;
-    }
-
-    .film-dropdown-col-1,.film-dropdown-col-2,.film-dropdown-col-4,.film-dropdown-col-5,.film-dropdown-col-7,.film-dropdown-col-8,.film-dropdown-col-10,.film-dropdown-col-11 {
-        left: 170px;
-        border-left-style: none;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-        border-top-right-radius: 3%;
-        border-bottom-right-radius: 3%;
-    }
-    .film-dropdown-col-3,.film-dropdown-col-6,.film-dropdown-col-9,.film-dropdown-col-12 {
-        left: -305px;
-        border-right-style: none;
-        border-top-left-radius: 3%;
-        border-bottom-left-radius: 3%;
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
     }
 
     .footer {
@@ -407,50 +416,18 @@ detail-episode-rating {
     }
 }
 
+/* Large */
 @media (min-width:992px) {
     .rating-detail {
         width: 60%;
         left: 20%;
     }
-
-    .film-dropdown-col-1,.film-dropdown-col-2,.film-dropdown-col-5,.film-dropdown-col-6,.film-dropdown-col-9,.film-dropdown-col-10 {
-        left: 170px;
-        border-left-style: none;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-        border-top-right-radius: 3%;
-        border-bottom-right-radius: 3%;
-    }
-    .film-dropdown-col-3,.film-dropdown-col-4,.film-dropdown-col-7,.film-dropdown-col-8,.film-dropdown-col-11,.film-dropdown-col-12 {
-        left: -305px;
-        border-right-style: none;
-        border-top-left-radius: 3%;
-        border-bottom-left-radius: 3%;
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-    }
 }
 
+/* X-Large */
 @media (min-width:1200px) {
     .rating-detail {
         width: 46%;
         left: 27%;
-    }
-
-    .film-dropdown-col-1,.film-dropdown-col-2,.film-dropdown-col-3,.film-dropdown-col-4,.film-dropdown-col-7,.film-dropdown-col-8,.film-dropdown-col-9,.film-dropdown-col-10 {
-        left: 170px;
-        border-left-style: none;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-        border-top-right-radius: 3%;
-        border-bottom-right-radius: 3%;
-    }
-    .film-dropdown-col-5,.film-dropdown-col-6,.film-dropdown-col-11,.film-dropdown-col-12 {
-        left: -305px;
-        border-right-style: none;
-        border-top-left-radius: 3%;
-        border-bottom-left-radius: 3%;
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
     }
 }

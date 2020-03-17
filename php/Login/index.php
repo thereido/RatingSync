@@ -13,6 +13,9 @@ $loginFormDisplay = "block";
 $loginHeaderClass = "active";
 $regFormDisplay = "none";
 $regHeaderClass = "";
+$regFormHidden = "hidden";
+$regHeaderHidden = "hidden";
+/* UNCOMMENT for register $regHeaderHidden = "";*/
 
 $http_referer = "";
 if (array_key_exists("destination", $_POST)) {
@@ -28,7 +31,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $loginFormDisplay = "block";
         $loginHeaderClass = "active";
         $regFormDisplay = "none";
-        $regHeaderClass = "";
+		$regHeaderClass = "";
+		$regFormHidden = "hidden";
         $msgInfo = "<p>Incorrect username or password. Please try again.</p>";
         if (!empty($_POST['username']) && !empty($_POST['password'])) {
             SessionUtility::logout();
@@ -45,12 +49,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     } else if ($_POST['active-form'] == "verify-form") {
 		/*
-		 * UNCOMMENT when you are ready to register users
-		 * 
+		 * UNCOMMENT for register
+		 * When you are ready to register users look for "UNCOMMENT for register" in this file
+		 *
         $loginFormDisplay = "none";
         $loginHeaderClass = "";
         $regFormDisplay = "block";
-        $regHeaderClass = "active";
+		$regHeaderClass = "active";
+		$regFormHidden = "";
         if (!empty($_POST['username']) && !empty($_POST['password'])) {
             $username = $_POST['username'];
             $password = $_POST['password'];
@@ -66,124 +72,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $msgRegWarning = "<strong>Registration failed</strong><br>Please try again. Maybe with a different username and/or password.<br>";
             }
 		}
-		*/
+		UNCOMMENT for register */
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+    <?php echo includeHeadHtmlForAllPages(); ?>
     <title><?php echo Constants::SITE_NAME; ?> Login</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="../../css/bootstrap_rs.min.css" rel="stylesheet" id="bootstrap-css">
-    <link href="../../css/rs.css" rel="stylesheet">
-    <?php echo includeJavascriptFiles(); ?>
-    <script src="../../js/login.js"></script>
-    <style type="text/css">
-    body {
-    padding-top: 90px;
-}
-.panel-login {
-	border-color: #ccc;
-	-webkit-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
-	-moz-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
-	box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
-}
-.panel-login>.panel-heading {
-	color: #00415d;
-	background-color: #fff;
-	border-color: #fff;
-	text-align:center;
-}
-.panel-login>.panel-heading a{
-	text-decoration: none;
-	color: #666;
-	font-weight: bold;
-	font-size: 15px;
-	-webkit-transition: all 0.1s linear;
-	-moz-transition: all 0.1s linear;
-	transition: all 0.1s linear;
-}
-.panel-login>.panel-heading a.active{
-	color: #029f5b;
-	font-size: 18px;
-}
-.panel-login>.panel-heading hr{
-	margin-top: 10px;
-	margin-bottom: 0px;
-	clear: both;
-	border: 0;
-	height: 1px;
-	background-image: -webkit-linear-gradient(left,rgba(0, 0, 0, 0),rgba(0, 0, 0, 0.15),rgba(0, 0, 0, 0));
-	background-image: -moz-linear-gradient(left,rgba(0,0,0,0),rgba(0,0,0,0.15),rgba(0,0,0,0));
-	background-image: -ms-linear-gradient(left,rgba(0,0,0,0),rgba(0,0,0,0.15),rgba(0,0,0,0));
-	background-image: -o-linear-gradient(left,rgba(0,0,0,0),rgba(0,0,0,0.15),rgba(0,0,0,0));
-}
-.panel-login input[type="text"],.panel-login input[type="email"],.panel-login input[type="password"] {
-	height: 45px;
-	border: 1px solid #ddd;
-	font-size: 16px;
-	-webkit-transition: all 0.1s linear;
-	-moz-transition: all 0.1s linear;
-	transition: all 0.1s linear;
-}
-.panel-login input:hover,
-.panel-login input:focus {
-	outline:none;
-	-webkit-box-shadow: none;
-	-moz-box-shadow: none;
-	box-shadow: none;
-	border-color: #ccc;
-}
-.btn-login {
-	background-color: #59B2E0;
-	outline: none;
-	color: #fff;
-	font-size: 14px;
-	height: auto;
-	font-weight: normal;
-	padding: 14px 0;
-	text-transform: uppercase;
-	border-color: #59B2E6;
-}
-.btn-login:hover,
-.btn-login:focus {
-	color: #fff;
-	background-color: #53A3CD;
-	border-color: #53A3CD;
-}
-.forgot-password {
-	text-decoration: underline;
-	color: #888;
-}
-.forgot-password:hover,
-.forgot-password:focus {
-	text-decoration: underline;
-	color: #666;
-}
+	<link rel="icon" href="<?php echo Constants::FAVICON_URL; ?>">
+	<link href="/css/login.css" rel="stylesheet">
+	<script src="../../js/login.js"></script>
 
-.btn-register {
-	background-color: #1CB94E;
-	outline: none;
-	color: #fff;
-	font-size: 14px;
-	height: auto;
-	font-weight: normal;
-	padding: 14px 0;
-	text-transform: uppercase;
-	border-color: #1CB94A;
-}
-.btn-register:hover,
-.btn-register:focus {
-	color: #fff;
-	background-color: #1CA347;
-	border-color: #1CA347;
-}
-
-    </style>
-    <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="../../js/bootstrap_rs.min.js"></script>
     <?php echo $headerScript; ?>
 </head>
 
@@ -191,20 +92,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	<div class="container">
     	<div class="row">
-			<div class="col-md-6 col-md-offset-3">
-				<div class="panel panel-login">
-					<div class="panel-heading">
+			<div class="col-xl-6 col-lg-7 col-md-9 mx-auto">
+				<div class="card card-login">
+					<div class="card-header">
 						<div class="row">
-							<div class="col-xs-6">
-								<a href="#" class="<?php echo $loginHeaderClass;?>" id="login-form-link">Login</a>
+							<div class="col-6">
+								<a href="#" class="<?php echo $loginHeaderClass;?>" id="login-form-link" onClick="showLoginForm()">Login</a>
 							</div>
-							<div class="col-xs-6" hidden>
-								<a href="#" class="<?php echo $regHeaderClass;?>" id="register-form-link">Register</a>
+							<div class="col-6" <?php echo $regHeaderHidden; ?>>
+								<a href="#" class="<?php echo $regHeaderClass;?>" id="register-form-link" onClick="showRegisterForm()">Register</a>
 							</div>
 						</div>
 						<hr>
 					</div>
-					<div class="panel-body">
+					<div class="card-body">
 						<div class="row">
 							<div class="col-lg-12">
 								<form id="login-form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" role="form" style="display: <?php echo $loginFormDisplay; ?>;">
@@ -212,7 +113,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <input type="hidden" name="destination" id="destination" value="<?php echo $http_referer;?>">
                                     <div id="msg-success" class="alert alert-success" hidden></div>
                                     <div id="msg-info" class="alert alert-info" hidden></div>
-                                    <div id="msg-warning" class="alert alert-warning" hidden></div>
+									<div id="msg-warning" class="alert alert-warning" hidden></div>
 									<div class="form-group">
 										<input type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username" value="">
 									</div>
@@ -225,8 +126,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 									</div>
 									<div class="form-group">
 										<div class="row">
-											<div class="col-sm-6 col-sm-offset-3">
-												<input type="submit" name="login-submit" id="login-submit" tabindex="4" class="form-control btn btn-login" value="Log In">
+											<div class="col mx-auto col-sm-6 col-12">
+												<input type="submit" name="login-submit" id="login-submit" tabindex="4" class="form-control btn btn-primary" value="Log In">
 											</div>
 										</div>
 									</div>
@@ -240,7 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 										</div>
 									</div>
 								</form>
-								<form id="register-form" hidden method="post" role="form" style="display: <?php echo $regFormDisplay; ?>;" onsubmit="validateRegistrationInput(); return false;">
+								<form id="register-form" <?php echo $regFormHidden; ?> method="post" role="form" onsubmit="validateRegistrationInput(); return false;">
                                     <input type="hidden" name="active-form" id="active-form" value="register-form">
                                     <div id="msg-reg-success" class="alert alert-success" hidden></div>
                                     <div id="msg-reg-info" class="alert alert-info" hidden></div>
@@ -256,7 +157,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 									</div>
 									<div class="form-group">
 										<div class="row">
-											<div class="col-sm-6 col-sm-offset-3">
+											<div class="col mx-auto col-sm-6 col-12">
                                                 <button type="button" class="form-control btn btn-register" tabindex="4" onclick="validateRegistrationInput()">
                                                   Register
                                                 </button>
@@ -264,7 +165,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 										</div>
 									</div>  
 								</form>    
-                                <form id="verify-form" hidden action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" role="form">
+                                <form id="verify-form" hidden action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" role="form">
                                     <input type="hidden" name="active-form" id="active-form" value="verify-form">
                                     <input type="text" name="username" id="username-verify" hidden>
                                     <input type="text" name="password" id="password-verify" hidden>
@@ -308,27 +209,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     renderMsg("<?php echo $msgRegWarning; ?>", document.getElementById("msg-reg-warning"));
 </script>
 
-<script type="text/javascript">
-
-    $(function () {
-
-        $('#login-form-link').click(function (e) {
-            $("#login-form").delay(100).fadeIn(100);
-            $("#register-form").fadeOut(100);
-            $('#register-form-link').removeClass('active');
-            $(this).addClass('active');
-            e.preventDefault();
-        });
-        $('#register-form-link').click(function (e) {
-            $("#register-form").delay(100).fadeIn(100);
-            $("#login-form").fadeOut(100);
-            $('#login-form-link').removeClass('active');
-            $(this).addClass('active');
-            e.preventDefault();
-        });
-
-    });
-
-</script>
 </body>
 </html>

@@ -326,9 +326,6 @@ function setRating($filmId, $score)
 
 function getPageFooter() {
     $html = "";
-    $html .= "<p/>";
-    $html .= "<footer class=\"footer container-fluid\">";
-    $html .= "</footer>";
 
     return $html;
 }
