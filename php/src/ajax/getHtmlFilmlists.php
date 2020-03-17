@@ -205,7 +205,7 @@ function getHtmlContentTypeForFilter() {
 
 function getHmtlFilmlistPagination($action) {
     $html = "";
-    $html .= '<form name="pageForm" action="'.$action.'" method="post">';
+    $html .= '  <form name="pageForm" class="form-inline" action="'.$action.'" method="post">'."\n";
     $html .= '    <input id="param-p" name="p" hidden>';
     $html .= '    <input id="param-sort" name="sort" hidden>';
     $html .= '    <input id="param-direction" name="direction" hidden>';
@@ -213,12 +213,22 @@ function getHmtlFilmlistPagination($action) {
     $html .= '    <input id="param-filtergenreany" name="filtergenreany" hidden>';
     $html .= '    <input id="param-filtergenres" name="filtergenres" hidden>';
     $html .= '    <input id="param-filtercontenttypes" name="filtercontenttypes" hidden>';
-    $html .= '    <ul id="pagination" class="pager" hidden>';
-    $html .= '        <li id="previous"><a href="javascript:void(0);">Previous</a></li>';
-    $html .= '        <li><select id="page-select" onchange="changePageNum()"></select></li>';
-    $html .= '        <li id="next"><a href="javascript:void(0);">Next</a></li>';
-    $html .= '    </ul>';
-    $html .= '</form>';
+    $html .= '    <div id="pagination" class="mx-auto my-3">'."\n";
+    $html .= '      <div class="input-group">'."\n";
+    $html .= '        <div class="input-group-prepend">'."\n";
+    $html .= '          <button id="previous" class="input-group-text btn" aria-disabled="true">Previous</button>'."\n";
+    $html .= '        </div>'."\n";
+    $html .= '        <button type="button" class="input-group-text btn btn-default dropdown-toggle rounded-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'."\n";
+    $html .= '          <span id="page-select-label"></span><span class="caret"></span>'."\n";
+    $html .= '        </button>'."\n";
+    $html .= '        <ul id="page-select" class="dropdown-menu pagination-options" aria-labelledby="paginationDropdown">'."\n";
+    $html .= '        </ul>'."\n";
+    $html .= '        <div class="input-group-append">'."\n";
+    $html .= '          <button id="next" class="input-group-text btn">Next</button>'."\n";
+    $html .= '        </div>'."\n";
+    $html .= '      </div>'."\n";
+    $html .= '    </div>'."\n";
+    $html .= '  </form>'."\n";
 
     return $html;
 }

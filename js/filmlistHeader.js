@@ -277,10 +277,10 @@ function renderPagination() {
     var previousEl = document.getElementById("previous");
     if (pageNum > 1) {
         previousPageNum = pageNum - 1;
-        previousEl.removeAttribute("class");
+        previousEl.disabled = false;
         previousEl.setAttribute("onclick", "submitPageForm(" + previousPageNum + ");");
     } else {
-        previousEl.setAttribute("class", "disabled");
+        previousEl.disabled = true;
         previousEl.removeAttribute("onclick");
     }
 
@@ -288,10 +288,10 @@ function renderPagination() {
     var nextEl = document.getElementById("next");
     if (totalCount > pageNum * pageSize) {
         nextPageNum = pageNum + 1;
-        nextEl.removeAttribute("class");
+        nextEl.disabled = false;
         nextEl.setAttribute("onclick", "submitPageForm(" + nextPageNum + ");");
     } else {
-        nextEl.setAttribute("class", "disabled");
+        nextEl.disabled = true;
         nextEl.removeAttribute("onclick");
     }
 
@@ -299,14 +299,13 @@ function renderPagination() {
     var pageSelectEl = document.getElementById("page-select");
     pageSelectEl.innerHTML = "";
     for (var pageOption = 0; totalCount > pageOption * pageSize; pageOption++) {
-        var optionEl = document.createElement("option");
-        optionEl.value = pageOption + 1;
-        optionEl.innerHTML = optionEl.value;
-        if (pageOption+1 == pageNum) {
-            optionEl.selected = true;
-        }
+        var optionEl = document.createElement("li");
+        optionNum = pageOption + 1;
+        optionEl.innerHTML = optionNum;
+        optionEl.setAttribute("onClick", "submitPageForm("+optionNum+")");
         pageSelectEl.appendChild(optionEl);
     }
+    document.getElementById("page-select-label").innerHTML = pageNum;
     
     var paginationEl = document.getElementById("pagination");
     if (previousPageNum != 0 || nextPageNum != 0) {
