@@ -355,16 +355,14 @@ function getDirectionParam() {
     return direction;
 }
 
-function onChangeSort() {
-    // Set sort direction to default
-    setSortDirection();
-    
+function onChangeSort(direction, isRatingsPage) {
+    setSortDirection(direction, isRatingsPage);    
     setFilmlistFilter();
 }
 
-function setSortDirection(direction) {
+function setSortDirection(direction, isRatingsPage) {
     var directionEl = document.getElementById("direction");
-    var imageEl = document.getElementById("direction-image");
+    var iconEls = document.getElementsByName("direction-image");
 
     // Use default (desc) unless it is specifcally setting to asc
     if (!direction || direction != "asc") {
@@ -375,18 +373,22 @@ function setSortDirection(direction) {
         directionEl.value = direction;
     }
 
-    if (imageEl) {
-        if (direction == "asc") {
-            imageEl.setAttribute("src", "/image/sort-asc.png");
-            imageEl.setAttribute("alt", "Ascending order");
-        } else {
-            imageEl.setAttribute("src", "/image/sort-desc.png");
-            imageEl.setAttribute("alt", "Descending order");
+    // Show the one icon appropriate and hide the rest
+    for (var i = 0; i < iconEls.length; i++) {
+        var el = iconEls[i];
+        el.hidden = true;
+
+        var iconDirection = el.getAttribute("data-direction");
+        var iconForPage = el.getAttribute("data-page");
+        var isIconForRatingsPage = iconForPage == "ratings";
+
+        if (direction == iconDirection && !isRatingsPage == !isIconForRatingsPage) {
+            el.removeAttribute("hidden");
         }
-    }
+    } 
 }
 
-function toggleSortDirection() {
+function toggleSortDirection(isRatingsPage) {
     var direction = "desc";
     var directionEl = document.getElementById("direction");
 
@@ -394,7 +396,7 @@ function toggleSortDirection() {
         direction = "asc";
     }
 
-    setSortDirection(direction);
+    setSortDirection(direction, isRatingsPage);
     setFilmlistFilter();
 }
 
