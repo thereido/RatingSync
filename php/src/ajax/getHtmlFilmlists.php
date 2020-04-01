@@ -5,7 +5,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." .
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Constants.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Genre.php";
 
-function getHtmlUserlistHeader($listnames, $sortDirection, $currentListname = "", $displayListname = "", $offerFilter = true) {
+function getHtmlUserlistHeader($listnames, $sort, $sortDirection, $currentListname = "", $displayListname = "", $offerFilter = true) {
     $username = getUsername();
     if ($displayListname == "") {
         $displayListname = $currentListname;
@@ -66,19 +66,37 @@ function getHtmlUserlistHeader($listnames, $sortDirection, $currentListname = ""
     $contentFilterHtml .= '</div>'."\n";
 
     // Sort
-    $hiddenSort = "";
+    $isRatingsPage = false;
     if ($displayListname == Constants::RATINGS_PAGE_LABEL) {
-        $hiddenSort = "hidden";
+        $isRatingsPage = true;
     }
-    $sortImage = "/image/sort-$sortDirection.png";
+    $sortOptionsHtml = "";
+    $hiddenSort = "";
+    if ($isRatingsPage) {
+        $selectedDate = $sort == "date" ? "selected" : "";
+        $selectedScore = $sort == "score" ? "selected" : "";
+        $sortOptionsHtml .= '    <option value="date" '.$selectedDate.'>Date</option>'."\n";
+        $sortOptionsHtml .= '    <option value="score" '.$selectedScore.'>Stars</option>'."\n";
+    } else {
+        $hiddenSort = "hidden";
+        $selectedPos = $sort == "pos" ? "selected" : "";
+        $selectedMod = $sort == "mod" ? "selected" : "";
+        $sortOptionsHtml .= '    <option value="pos" '.$selectedPos.'>Position</option>'."\n";
+        $sortOptionsHtml .= '    <option value="mod" '.$selectedMod.'>Added</option>'."\n";
+    }
     $sortHtml = "";
-    $sortHtml .= '<select class="ml-auto"  id="sort" onchange="onChangeSort();" '.$hiddenSort.'>'."\n";
-    $sortHtml .= '  <option value="pos">Position</option>'."\n";
-    $sortHtml .= '  <option value="mod">Added</option>'."\n";
+    $sortHtml  = '<select class="ml-auto mt-3"  id="sort" onchange="onChangeSort(\'desc\', '.$isRatingsPage.');" '.$hiddenSort.'>'."\n";
+    $sortHtml .=    $sortOptionsHtml;
     $sortHtml .= '</select>'."\n";
+    $sortHtml .= '<a href="javascript:void(0);" style="text-decoration: none; color: inherit;">'."\n";
+    $sortHtml .= '  '.getHtmlSortDirectionIcon("direction-image-asc-ratings",  true,  "asc",  $sortDirection, $isRatingsPage)."\n";
+    $sortHtml .= '  '.getHtmlSortDirectionIcon("direction-image-desc-ratings", true,  "desc", $sortDirection, $isRatingsPage)."\n";
+    $sortHtml .= '  '.getHtmlSortDirectionIcon("direction-image-asc-list",     false, "asc",  $sortDirection, $isRatingsPage)."\n";
+    $sortHtml .= '  '.getHtmlSortDirectionIcon("direction-image-desc-list",    false, "desc", $sortDirection, $isRatingsPage)."\n";
+    $sortHtml .= '</a>'."\n";
     $sortHtml .= '<input type="text" id="direction" value="' . $sortDirection . '" hidden>'."\n";
-    $sortHtml .= '<a href="javascript:void(0);"><img id="direction-image" height="25px" alt="Ascending order" src="' . $sortImage . '" onclick="toggleSortDirection();"></a>'."\n";
-    
+    $sortHtml .= '<input type="text" id="sort" value="' . $sort . '" hidden>'."\n";
+
     $html = "\n";
     $html .= '' . "\n";
     $html .= "<div class='card bg-light mt-3'>\n";
@@ -200,6 +218,58 @@ function getHtmlContentTypeForFilter() {
         $html .= '    <a href="javascript:void(0)" '.$onClick.' id="contenttype-filter-'.$contentType.'">'.$checkmark.$contentTypes[$contentType].'</a>'."\n";
     }
 
+    return $html;
+}
+
+function getHtmlSortDirectionIcon($id, $forRatingsPage, $direction, $currentDirection, $isRatingsPage) {
+    // These are attributes for the new element
+    //   class     - font awesome image
+    //   name     - onClick function will need to know which icons to hide or show
+    //   direction - asc/desc
+    //   page      - page name: ratings/list
+    //   onClick   - do the sorting and hide/show the right icons
+    //   title     - text to show when the user hovers
+    //   hidden    - "hidden" or "". Only one icon is showing at a time.
+
+    // class
+    $upOrDown = "down";
+    if ($direction == "asc") {
+        $upOrDown = "up";
+    }
+
+    $class = "class='fas fa-sort-amount-$upOrDown'";
+
+    // name
+    $name = "name='direction-image'";
+
+    // direction attribute
+    $directionAttr = "data-direction='$direction'";
+
+    // page
+    $page = "data-page='list'";
+    if ($forRatingsPage) {
+        $page = "data-page='ratings'";
+    }
+
+    // onClick
+    $iconIsForRatingsPage = $forRatingsPage ? "true" : "false";
+    $onClick = 'onClick="toggleSortDirection(\''.$iconIsForRatingsPage.'\');"';
+    
+    // title
+    $title = "Descending order";
+    if ($direction == "asc") {
+        $title = "Ascending order";
+    }
+    $title = "title='$title'";
+
+    // hidden
+    $hidden = "hidden";
+    if ($forRatingsPage == $isRatingsPage && $direction == $currentDirection) {
+        $hidden = "";
+    }
+
+    $html = "<i $class $name $directionAttr $page $onClick $title $hidden></i>"."\n";
+    
     return $html;
 }
 

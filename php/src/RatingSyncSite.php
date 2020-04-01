@@ -15,7 +15,8 @@ require_once "SiteRatings.php";
 class RatingSyncSite extends \RatingSync\SiteRatings
 {
     const RATINGSYNC_DATE_FORMAT = "n/j/y";
-    const SORT_MODIFIED     = 'yourRatingDate';
+    const SORT_RATING_DATE  = 'yourRatingDate';
+    const SORT_YOUR_SCORE   = 'yourScore';
     const SORTDIR_ASC       = 'ASC';
     const SORTDIR_DESC      = 'DESC';
 
@@ -58,7 +59,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $this->http = new Http($this->sourceName, $username);
         $this->dateFormat = self::RATINGSYNC_DATE_FORMAT;
         $this->maxCriticScore = 100;
-        $this->sort = static::SORT_MODIFIED;
+        $this->sort = static::SORT_RATING_DATE;
         $this->sortDirection = static::SORTDIR_DESC;
         $this->clearContentTypeFilter();
         $this->clearListFilter();
@@ -66,7 +67,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
 
     public static function validSort($sort)
     {
-        $validSorts = array(static::SORT_MODIFIED);
+        $validSorts = array(static::SORT_RATING_DATE, static::SORT_YOUR_SCORE);
         if (in_array($sort, $validSorts)) {
             return true;
         }
@@ -164,7 +165,10 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $refreshCache = Constants::USE_CACHE_NEVER;
         $films = array();
 
-        $orderBy = "ORDER BY yourRatingDate " . $this->getSortDirection();
+        $orderBy = "";
+        if (!empty($this->getSort())) {
+            $orderBy = "ORDER BY " . $this->getSort() . " " . $this->getSortDirection();
+        }
 
         $limit = "";
         if (!empty($limitPages)) {

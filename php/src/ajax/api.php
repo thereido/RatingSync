@@ -388,7 +388,7 @@ function api_getRatings($username)
     $filtergenres = array_value_by_key("filtergenres", $_GET);
     $filtergenreany = array_value_by_key("filtergenreany", $_GET);
     $filtercontenttypes = array_value_by_key("filtercontenttypes", $_GET);
-    logDebug("Params ps=$pageSize, bp=$beginPage, sort=$sort (ignored), sortDirection=$sortDirection, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany, filtercontenttypes=$filtercontenttypes", __FUNCTION__." ".__LINE__);
+    logDebug("Params ps=$pageSize, bp=$beginPage, sort=$sort, sortDirection=$sortDirection, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany, filtercontenttypes=$filtercontenttypes", __FUNCTION__." ".__LINE__);
     
     if (empty($pageSize)) {
         $pageSize = null;
@@ -397,20 +397,20 @@ function api_getRatings($username)
         $beginPage = 1;
     }
 
-    if (strtolower($sort) == "pos") {
-        $sort = Filmlist::SORT_POSITION;
-    } elseif (strtolower($sort) == "mod") {
-        $sort = Filmlist::SORT_ADDED;
-    } elseif (!Filmlist::validSortDirection($sort)) {
-        $sort = Filmlist::SORT_ADDED;
+    if (strtolower($sort) == "date") {
+        $sort = RatingSyncSite::SORT_RATING_DATE;
+    } elseif (strtolower($sort) == "score") {
+        $sort = RatingSyncSite::SORT_YOUR_SCORE;
+    } elseif (!RatingSyncSite::validSort($sort)) {
+        $sort = RatingSyncSite::SORT_RATING_DATE;
     }
 
     if (strtolower($sortDirection) == "desc") {
-        $sortDirection = Filmlist::SORTDIR_DESC;
+        $sortDirection = RatingSyncSite::SORTDIR_DESC;
     } elseif (strtolower($sortDirection) == "asc") {
-        $sortDirection = Filmlist::SORTDIR_ASC;
-    } elseif (!Filmlist::validSortDirection($sortDirection)) {
-        $sortDirection = Filmlist::SORTDIR_DESC;
+        $sortDirection = RatingSyncSite::SORTDIR_ASC;
+    } elseif (!RatingSyncSite::validSortDirection($sortDirection)) {
+        $sortDirection = RatingSyncSite::SORTDIR_DESC;
     }
 
     // Filter by other lists. Return only films in this list that
@@ -450,6 +450,7 @@ function api_getRatings($username)
     }
 
     $site = new \RatingSync\RatingSyncSite($username);
+    $site->setSort($sort);
     $site->setSortDirection($sortDirection);
     $site->setListFilter($filterListsArr);
     $site->setGenreFilter($filterGenresArr);
@@ -497,7 +498,7 @@ function api_getFilmsByList($username)
         $sort = Filmlist::SORT_POSITION;
     } elseif (strtolower($sort) == "mod") {
         $sort = Filmlist::SORT_ADDED;
-    } elseif (!Filmlist::validSortDirection($sort)) {
+    } elseif (!Filmlist::validSort($sort)) {
         $sort = Filmlist::SORT_POSITION;
     }
 

@@ -17,6 +17,10 @@ $pageNum = array_value_by_key("p", $_POST);
 if (empty($pageNum)) {
     $pageNum = 1;
 }
+$sort = array_value_by_key("sort", $_POST);
+if (empty($sort)) {
+    $sort = "date";
+}
 $sortDirection = array_value_by_key("direction", $_POST);
 if (empty($sortDirection)) {
     $sortDirection = "desc";
@@ -24,7 +28,7 @@ if (empty($sortDirection)) {
 
 if (!empty($username)) {
     $listnames = Filmlist::getUserListsFromDbByParent($username, false);
-    $filmlistHeader = getHtmlUserlistHeader($listnames, $sortDirection, null, Constants::RATINGS_PAGE_LABEL);
+    $filmlistHeader = getHtmlUserlistHeader($listnames, $sort, $sortDirection, null, Constants::RATINGS_PAGE_LABEL);
     $filmlistPagination = getHmtlFilmlistPagination("./ratings.php");
 }
 
