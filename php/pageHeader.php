@@ -67,8 +67,8 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
         $rightSide = $accountLink;
     }
 
-    $html  = '<nav class="navbar navbar-expand-lg navbar-light bg-light rs-navbar rs-navbar-light">'."\n";
-    $html .= '  <a class="navbar-brand text-muted" href="/">'."\n";
+    $html  = '<nav class="navbar navbar-expand-lg rs-navbar">'."\n";
+    $html .= '  <a class="navbar-brand rs-text-muted" href="/">'."\n";
     $html .= '    <img src="'.Constants::RS_IMAGE_URL_PATH.'favicon.png" width="30" height="30" class="d-inline-block align-top" alt="">'."\n";
     $html .=      Constants::SITE_NAME."\n";
     $html .= '  </a>'."\n";
@@ -97,7 +97,7 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '    <form class="form-inline my-2 my-lg-0" id="header-search-form" action="/php/search.php" onSubmit="onSubmitHeaderSearch();" method="get">'."\n";
     $html .= '      <div class="input-group  mr-sm-2">'."\n";
     $html .= '        <div class="input-group-prepend"  id="search-dropdown">'."\n";
-    $html .= '          <button type="button" class="input-group-text btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'."\n";
+    $html .= '          <button type="button" class="input-group-text btn btn-default dropdown-toggle" style="z-index: auto" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'."\n";
     $html .= '            <span class="caret"></span>'."\n";
     $html .= '          </button>'."\n";
     $html .= '          <ul class="dropdown-menu" aria-labelledby="searchDropdown">'."\n";

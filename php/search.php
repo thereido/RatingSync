@@ -46,7 +46,7 @@ $pageFooter = getPageFooter();
 <div class="container">
     <?php echo $pageHeader; ?>
 
-    <div class='card bg-light mt-3'>
+    <div class='card mt-3'>
         <div class="card-body">
             <h2><?php echo $searchPageLabel; ?></h2>
         </div>

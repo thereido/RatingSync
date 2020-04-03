@@ -99,7 +99,7 @@ function getHtmlUserlistHeader($listnames, $sort, $sortDirection, $currentListna
 
     $html = "\n";
     $html .= '' . "\n";
-    $html .= "<div class='card bg-light mt-3'>\n";
+    $html .= "<div class='card mt-3'>\n";
     $html .= '  <div class="card-body">' . "\n";
     $html .=      $parentListsHtml;
     $html .= '    <h2>'.$displayListname.'</h2>' . "\n";
