@@ -82,7 +82,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <?php echo includeHeadHtmlForAllPages(); ?>
     <title><?php echo Constants::SITE_NAME; ?> Login</title>
 	<link rel="icon" href="<?php echo Constants::FAVICON_URL; ?>">
-	<link href="/css/login.css" rel="stylesheet">
 	<script src="../../js/login.js"></script>
 
     <?php echo $headerScript; ?>
@@ -91,11 +90,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>   
 
 	<div class="container">
-    	<div class="row">
+    	<div class="row mt-5">
 			<div class="col-xl-6 col-lg-7 col-md-9 mx-auto">
 				<div class="card card-login">
 					<div class="card-header">
-						<div class="row">
+						<div class="row mt-3 mt-0">
 							<div class="col-6">
 								<a href="#" class="<?php echo $loginHeaderClass;?>" id="login-form-link" onClick="showLoginForm()">Login</a>
 							</div>
@@ -127,7 +126,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 									<div class="form-group">
 										<div class="row">
 											<div class="col mx-auto col-sm-6 col-12">
-												<input type="submit" name="login-submit" id="login-submit" tabindex="4" class="form-control btn btn-primary" value="Log In">
+												<input type="submit" name="login-submit" id="login-submit" tabindex="4" class="btn btn-primary btn-login w-100 py-3" value="Log In">
 											</div>
 										</div>
 									</div>
@@ -158,40 +157,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 									<div class="form-group">
 										<div class="row">
 											<div class="col mx-auto col-sm-6 col-12">
-                                                <button type="button" class="form-control btn btn-register" tabindex="4" onclick="validateRegistrationInput()">
+                                                <button type="button" class="btn btn-primary btn-register w-100 py-3" tabindex="4" onclick="validateRegistrationInput()">
                                                   Register
                                                 </button>
 											</div>
 										</div>
 									</div>  
-								</form>    
-                                <form id="verify-form" hidden action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" role="form">
-                                    <input type="hidden" name="active-form" id="active-form" value="verify-form">
-                                    <input type="text" name="username" id="username-verify" hidden>
-                                    <input type="text" name="password" id="password-verify" hidden>
-                                    <div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="registerModalLabel">
-                                      <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                          <div class="modal-header">
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                            <h4 class="modal-title" id="myModalLabel">Password warning</h4>
-                                          </div>
-                                          <div class="modal-body">
-                                              <p><strong>Do not forget your password!</strong></p>
-                                              This site has many limitations as it is still in development.
-                                              <ul>
-                                                  <li>If you forget your password we cannot reset it</li>
-                                                  <li>You cannot change your password after you register</li>
-                                              </ul>
-                                          </div>
-                                          <div class="modal-footer">
-                                            <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
-                                            <button type="submit" class="btn btn-register">&nbsp;&nbsp;Register&nbsp;&nbsp;</button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
 								</form>
+                                <div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="registerModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="registerModalLabel">Password warning</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>Do not forget your password!</strong></p>
+                                                This site has many limitations as it is still in development.
+                                                <ul>
+                                                    <li>If you forget your password we cannot reset it</li>
+                                                    <li>You cannot change your password after you register</li>
+                                                </ul>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form id="verify-form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" role="form">
+                                                    <input type="hidden" name="active-form" id="active-form" value="verify-form">
+                                                    <input type="text" name="username" id="username-verify" hidden>
+                                                    <input type="text" name="password" id="password-verify" hidden>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                    <button id="rename-modal-submit" type="submit" class="btn btn-primary">Register</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 							</div>
 						</div>
 					</div>
