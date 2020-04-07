@@ -54,12 +54,9 @@ $pageFooter = getPageFooter();
     
     <div id="debug"></div>
 
-    <div id="search-results" class="mt-3">
+    <div class="row">
+        <div class="col-auto mr-auto" id="search-results"></div>
     </div>
-    <table class="table table-striped">
-        <tbody id="search-result-tbody">
-        </tbody>
-    </table>
     
   <?php echo $pageFooter; ?>
 </div>
