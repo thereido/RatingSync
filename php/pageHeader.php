@@ -59,14 +59,6 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
         $headerSearchText = $_GET['search'];
     }
 
-    $signupLink  = '<li class="nav-item"><a class="nav-link" href="/php/Login"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>'."\n";
-    $loginLink = '<li class="nav-item"><a class="nav-link" id="myaccount-link" href="/php/Login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>'."\n";
-    $accountLink = '<li class="nav-item"><a class="nav-link" id="myaccount-link" href="/php/account/myAccount.php">'.$username.'</a></li>'."\n";
-    $rightSide = $signupLink . $loginLink;
-    if ($username) {
-        $rightSide = $accountLink;
-    }
-
     $html  = '<nav class="navbar navbar-expand-lg rs-navbar">'."\n";
     $html .= '  <a class="navbar-brand rs-text-muted" href="/">'."\n";
     $html .= '    <img src="'.Constants::RS_IMAGE_URL_PATH.'favicon.png" width="30" height="30" class="d-inline-block align-top" alt="">'."\n";
@@ -118,9 +110,17 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     $html .= '      <input id="selected-suggestion-contenttype" name="selsug-ct" hidden>'."\n";
     $html .= '      <input id="search-domain-input" name="sd" hidden>'."\n";
     $html .= '    </form>'."\n";
-    // Account
+    // User menu
     $html .= '    <ul class="navbar-nav ml-auto">'."\n";
-    $html .=        $rightSide;
+    $html .= '      <li class="nav-item dropdown">'."\n";
+    $html .= '        <a class="nav-link" href="#" id="navbarSettingsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'."\n";
+    $html .= '          <i class="fas fa-ellipsis-v"></i>'."\n";
+    $html .= '        </a>'."\n";
+    $html .= '        <div class="dropdown-menu" aria-labelledby="navbarSettingsDropdown">'."\n";
+    $html .= '          <a class="dropdown-item" href="/php/account/myAccount.php">'.$username.'</a>'."\n";
+    $html .= '          <a class="dropdown-item" href="/php/Login/logout.php">Sign Out</a>'."\n";
+    $html .= '        </div>'."\n";
+    $html .= '      </li>'."\n";
     $html .= '    </ul>'."\n";
     $html .= '  </div>'."\n";
     $html .= '</nav>'."\n";
