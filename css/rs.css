@@ -399,19 +399,20 @@ detail-episode-rating {
 .border { border-color: var(--border) !important; }
 .btn-danger { background-color: var(--danger); color: var(--fg-danger); border-color: var(--border-danger); }
 .btn.focus, .btn:focus { box-shadow: 0 0 0 .2rem var(--shadow-primary); }
+.btn-link, .btn-link:hover { color: var(--primary); }
 .btn-primary { background-color: var(--primary); color: var(--fg-primary); border-color: var(--border-primary); }
 .btn-primary:hover, .btn-primary:active, .btn-primary:focus, .btn-primary:not(:disabled):not(.disabled):active, .show > .btn-primary.dropdown-toggle, .show > .btn-primary.dropdown-toggle:focus { background-color: var(--primary-alt); color: var(--fg-primary-alt); border-color: var(--border-primary-alt); box-shadow: 0 0 0 .2rem var(--shadow-primary); }
 .card { border-color: var(--border); }
 .card, .card-header { background-color: var(--bg-surface); color: var(--fg); }
-.close, .close:hover { color: var(--fg-surface); text-shadow: 0 1px 0 var(--border-surface); }
+.close, .close:hover { color: var(--fg-surface); text-shadow: 0 1px 0 var(--border-surface-input); }
 .dropdown-item:hover, .dropdown-item:focus { background-color: var(--bg-input-text-active); color: var(--fg-surface) }
 .dropdown-menu { background-color: var(--bg-input-text); color: var(--fg-surface-muted); }
 .dropdown-menu li a:hover { background-color: var(--bg-input-text-active); color: var(--fg-surface) }
-.form-control { background-color: var(--bg-input-text); color: var(--fg-surface); border-color: var(--border-surface); }
+.form-control { background-color: var(--bg-input-text); color: var(--fg-surface); border-color: var(--border-surface-input); }
 .form-control.focus, .form-control:focus { background-color: var(--bg-input-text); color: var(--fg-input-text); border-color: var(--primary); box-shadow: 0 0 0 .2rem var(--shadow-primary); }
-.input-group-text { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border); }
+.input-group-text { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border-surface-input); }
 .input-group-text:hover { color: var(--primary); }
-.modal-body input { background-color: var(--bg-input-text); color: var(--fg-input-text); border-color: var(--border-surface); }
+.modal-body input { background-color: var(--bg-input-text); color: var(--fg-input-text); border-color: var(--border-surface-input); }
 .modal-content { background-color: var(--bg-surface); color: var(--fg-surface); border-color: var(--border-surface); }
 .modal-header, .modal-footer { border-color: var(--border-surface); }
 .navbar-toggler-icon { border: 1px solid var(--border-surface); border-radius: 3px; }
@@ -489,6 +490,7 @@ detail-episode-rating { color: var(--star); }
     --border-primary-alt: rgba(91, 54, 137); /* primary-alt - 50 */
     --border-danger: rgba(157, 52, 71); /* danger - 50 */
     --border-surface: rgba(255, 255, 255, 0.15);
+    --border-surface-input: rgba(255, 255, 255, 0.25);
     --border-surface-primary: rgba(64, 52, 80); /* bg-surface-primary + 20 */
 
     --shadow: rgba(255, 255, 255, 0.2);
@@ -540,6 +542,7 @@ detail-episode-rating { color: var(--star); }
         --border-primary-alt: rgba(71, 34, 117); /* primary-alt - 50 */
         --border-danger: #dc3545;
         --border-surface: #e3e3e3;
+        --border-surface-input: #e3e3e3;
         --border-surface-primary: rgba(32, 59, 64); /* bg-surface-primary + 20 */
 
         --shadow: rgba(0, 0, 0, 0.1);
