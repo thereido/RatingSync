@@ -66,34 +66,35 @@ function getHtmlUserlistHeader($listnames, $sort, $sortDirection, $currentListna
     $contentFilterHtml .= '</div>'."\n";
 
     // Sort
-    $isRatingsPage = false;
-    if ($displayListname == Constants::RATINGS_PAGE_LABEL) {
-        $isRatingsPage = true;
-    }
     $sortOptionsHtml = "";
-    $hiddenSort = "";
+    $isRatingsPage = $displayListname == Constants::RATINGS_PAGE_LABEL;
     if ($isRatingsPage) {
-        $selectedDate = $sort == "date" ? "selected" : "";
-        $selectedScore = $sort == "score" ? "selected" : "";
-        $sortOptionsHtml .= '    <option value="date" '.$selectedDate.'>Date</option>'."\n";
-        $sortOptionsHtml .= '    <option value="score" '.$selectedScore.'>Stars</option>'."\n";
+        $selectedDateAsc = $sort == "date" && $sortDirection == "asc" ? "selected" : "";
+        $selectedDateDesc = $sort == "date" && $sortDirection == "desc" ? "selected" : "";
+        $selectedScoreAsc = $sort == "score" && $sortDirection == "asc" ? "selected" : "";
+        $selectedScoreDesc = $sort == "score" && $sortDirection == "desc" ? "selected" : "";
+        $sortOptionsHtml .= '    <a class="dropdown-item '.$selectedDateAsc.'" id="sort-date-asc" name="sort" href="javascript:void(0);" onClick="onChangeSort(\'date\', \'asc\');">Rating Date (oldest)</a>'."\n";
+        $sortOptionsHtml .= '    <a class="dropdown-item '.$selectedDateDesc.'" id="sort-date-desc" name="sort" href="javascript:void(0);" onClick="onChangeSort(\'date\', \'desc\');">Rating Date (newest)</a>'."\n";
+        $sortOptionsHtml .= '    <a class="dropdown-item '.$selectedScoreDesc.'" id="sort-score-desc" name="sort" href="javascript:void(0);" onClick="onChangeSort(\'score\', \'desc\');">Stars (highest)</a>'."\n";
+        $sortOptionsHtml .= '    <a class="dropdown-item '.$selectedScoreAsc.'" id="sort-score-asc" name="sort" href="javascript:void(0);" onClick="onChangeSort(\'score\', \'asc\');">Stars (lowest)</a>'."\n";
     } else {
-        $hiddenSort = "hidden";
-        $selectedPos = $sort == "pos" ? "selected" : "";
-        $selectedMod = $sort == "mod" ? "selected" : "";
-        $sortOptionsHtml .= '    <option value="pos" '.$selectedPos.'>Position</option>'."\n";
-        $sortOptionsHtml .= '    <option value="mod" '.$selectedMod.'>Added</option>'."\n";
+        $onClick = 'onClick="toggleSortDirection(\'false\');"';
+        $selectedPosAsc = $sort == "pos" && $sortDirection == "asc" ? "selected" : "";
+        $selectedPosDesc = $sort == "pos" && $sortDirection == "desc" ? "selected" : "";
+        $selectedModAsc = $sort == "mod" && $sortDirection == "asc" ? "selected" : "";
+        $selectedModDesc = $sort == "mod" && $sortDirection == "desc" ? "selected" : "";
+        $sortOptionsHtml .= '    <a class="dropdown-item '.$selectedPosAsc.'" id="sort-pos-asc" name="sort" href="javascript:void(0);" onClick="onChangeSort(\'pos\', \'asc\');">Position (lowest)</a>'."\n";
+        $sortOptionsHtml .= '    <a class="dropdown-item '.$selectedPosDesc.'" id="sort-pos-desc" name="sort" href="javascript:void(0);" onClick="onChangeSort(\'pos\', \'desc\');">Position (highest)</a>'."\n";
+        // $sortOptionsHtml .= '    <a class="dropdown-item '.$selectedModDesc.'" id="sort-mod-desc" name="sort" href="javascript:void(0);" onClick="onChangeSort(\'mod\', \'desc\');">Added (newest)</a>'."\n";
+        // $sortOptionsHtml .= '    <a class="dropdown-item '.$selectedModAsc.'" id="sort-mod-asc" name="sort" href="javascript:void(0);" onClick="onChangeSort(\'mod\', \'asc\');">Added (oldest)</a>'."\n";
     }
     $sortHtml = "";
-    $sortHtml  = '<select class="ml-auto mt-3"  id="sort" onchange="onChangeSort(\'desc\', '.$isRatingsPage.');" '.$hiddenSort.'>'."\n";
-    $sortHtml .=    $sortOptionsHtml;
-    $sortHtml .= '</select>'."\n";
-    $sortHtml .= '<a href="javascript:void(0);" style="text-decoration: none; color: inherit;">'."\n";
-    $sortHtml .= '  '.getHtmlSortDirectionIcon("direction-image-asc-ratings",  true,  "asc",  $sortDirection, $isRatingsPage)."\n";
-    $sortHtml .= '  '.getHtmlSortDirectionIcon("direction-image-desc-ratings", true,  "desc", $sortDirection, $isRatingsPage)."\n";
-    $sortHtml .= '  '.getHtmlSortDirectionIcon("direction-image-asc-list",     false, "asc",  $sortDirection, $isRatingsPage)."\n";
-    $sortHtml .= '  '.getHtmlSortDirectionIcon("direction-image-desc-list",    false, "desc", $sortDirection, $isRatingsPage)."\n";
-    $sortHtml .= '</a>'."\n";
+    $sortHtml .= '<div class="dropdown">'."\n";
+    $sortHtml .= '  <a href="#" class="fas fa-sort-amount-down" id="sortDropdown" title="Sort" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>'."\n";
+    $sortHtml .= '  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">'."\n";
+    $sortHtml .=      $sortOptionsHtml;
+    $sortHtml .= '  </div>'."\n";
+    $sortHtml .= '</div>'."\n";
     $sortHtml .= '<input type="text" id="direction" value="' . $sortDirection . '" hidden>'."\n";
     $sortHtml .= '<input type="text" id="sort" value="' . $sort . '" hidden>'."\n";
 

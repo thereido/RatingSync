@@ -17,7 +17,7 @@ if (empty($listname)) {
 $pageNum = array_value_by_key("p", $_POST);
 $sort = array_value_by_key("sort", $_POST);
 if (empty($sort)) {
-    $sort = "position";
+    $sort = "pos";
 }
 $sortDirection = array_value_by_key("direction", $_POST);
 if (empty($sortDirection)) {

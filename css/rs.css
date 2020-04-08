@@ -407,7 +407,7 @@ detail-episode-rating {
 .close, .close:hover { color: var(--fg-surface); text-shadow: 0 1px 0 var(--border-surface-input); }
 .dropdown-item:hover, .dropdown-item:focus { background-color: var(--bg-input-text-active); color: var(--fg-surface) }
 .dropdown-menu { background-color: var(--bg-input-text); color: var(--fg-surface-muted); }
-.dropdown-menu li a:hover { background-color: var(--bg-input-text-active); color: var(--fg-surface) }
+.dropdown-menu li a:hover { background-color: var(--bg-input-text-active); color: var(--fg-surface); }
 .form-control { background-color: var(--bg-input-text); color: var(--fg-surface); border-color: var(--border-surface-input); }
 .form-control.focus, .form-control:focus { background-color: var(--bg-input-text); color: var(--fg-input-text); border-color: var(--primary); box-shadow: 0 0 0 .2rem var(--shadow-primary); }
 .input-group-text { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border-surface-input); }
@@ -438,9 +438,10 @@ select { background-color: var(--bg-input-text); color: var(--fg-surface-muted);
 .btn-primary:hover > .checkmark-on, .btn-primary:active > .checkmark-on, .btn-primary:focus > .checkmark-on { color: var(--fg-primary-alt-green); }
 .card-login { box-shadow: 0px 2px 3px 0px var(--shadow-primary); }
 .card-login > .card-header { color: var(--fg-surface); }
-.card-login >.card-header hr { background-image: -webkit-linear-gradient(left,rgba(255, 255, 255, 0),rgba(141, 104, 187),rgba(255, 255, 255, 0)); background-image: -moz-linear-gradient(left,rgba(255,255,255,0),var(--primary-alt),rgba(255,255,255,0)); background-image: -ms-linear-gradient(left,rgba(255,255,255,0),rgba(141, 104, 187),rgba(255,255,255,0)); background-image: -o-linear-gradient(left,rgba(255,255,255,0),rgba(141, 104, 187),rgba(255,255,255,0)); }
+.card-login > .card-header hr { background-image: -webkit-linear-gradient(left,rgba(255, 255, 255, 0),rgba(141, 104, 187),rgba(255, 255, 255, 0)); background-image: -moz-linear-gradient(left,rgba(255,255,255,0),var(--primary-alt),rgba(255,255,255,0)); background-image: -ms-linear-gradient(left,rgba(255,255,255,0),rgba(141, 104, 187),rgba(255,255,255,0)); background-image: -o-linear-gradient(left,rgba(255,255,255,0),rgba(141, 104, 187),rgba(255,255,255,0)); }
 .checkmark-off { color: var(--fg-surface-disabled); }
 .checkmark-on { color: var(--primary); }
+.dropdown-menu > .selected { background: var(--primary); color: var(--fg-surface); }
 .film-dropdown-content { background-color: var(--bg-surface); border-color: var(--border-surface); }
 .film-line > .film-title > a { color: var(--fg); }
 .footer { border-top-color: var(--footer-border); }
