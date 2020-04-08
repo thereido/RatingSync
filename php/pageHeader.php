@@ -61,7 +61,7 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
 
     $html  = '<nav class="navbar navbar-expand-lg rs-navbar">'."\n";
     $html .= '  <a class="navbar-brand rs-text-muted" href="/">'."\n";
-    $html .= '    <img src="'.Constants::RS_IMAGE_URL_PATH.'favicon.png" width="30" height="30" class="d-inline-block align-top" alt="">'."\n";
+    $html .= '    <img src="'.Constants::RS_IMAGE_URL_PATH.'logo.png" width="30" height="30" class="d-inline-block align-top" alt="">'."\n";
     $html .=      Constants::SITE_NAME."\n";
     $html .= '  </a>'."\n";
     $html .= '  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">'."\n";
