@@ -355,14 +355,18 @@ function getDirectionParam() {
     return direction;
 }
 
-function onChangeSort(direction, isRatingsPage) {
-    setSortDirection(direction, isRatingsPage);    
+function onChangeSort(sort, direction) {
+    setSortDirection(sort, direction);    
     setFilmlistFilter();
 }
 
-function setSortDirection(direction, isRatingsPage) {
+function setSortDirection(sort, direction) {
+    var sortEl = document.getElementById("sort");
     var directionEl = document.getElementById("direction");
-    var iconEls = document.getElementsByName("direction-image");
+
+    if (sortEl) {
+        sortEl.value = sort;
+    }
 
     // Use default (desc) unless it is specifcally setting to asc
     if (!direction || direction != "asc") {
@@ -374,30 +378,17 @@ function setSortDirection(direction, isRatingsPage) {
     }
 
     // Show the one icon appropriate and hide the rest
-    for (var i = 0; i < iconEls.length; i++) {
-        var el = iconEls[i];
-        el.hidden = true;
+    var sortOptionEls = document.getElementsByName("sort");
+    for (var i = 0; i < sortOptionEls.length; i++) {
+        var el = sortOptionEls[i];
+        var id = el.getAttribute("id");
+        $("#" + id).removeClass("selected");
 
-        var iconDirection = el.getAttribute("data-direction");
-        var iconForPage = el.getAttribute("data-page");
-        var isIconForRatingsPage = iconForPage == "ratings";
-
-        if (direction == iconDirection && !isRatingsPage == !isIconForRatingsPage) {
-            el.removeAttribute("hidden");
+        var selected = id == "sort" + "-" + sort + "-" + direction;
+        if (selected) {
+            $("#" + id).addClass("selected");
         }
     } 
-}
-
-function toggleSortDirection(isRatingsPage) {
-    var direction = "desc";
-    var directionEl = document.getElementById("direction");
-
-    if (directionEl && directionEl.value == "desc") {
-        direction = "asc";
-    }
-
-    setSortDirection(direction, isRatingsPage);
-    setFilmlistFilter();
 }
 
 function changeContentTypeFilter() {

@@ -59,18 +59,24 @@ $pageFooter = getPageFooter();
     <div id="debug" class="container"></div>
     
     <div class="row pt-3" id="detail-film">
-        <div class="col-auto">
-            <poster><img></poster>
-        </div>
-        <div class="col pl-0">
-            <detail id="detail"></detail>
+        <div class="col-auto mr-auto">
+            <div class="card">
+                <div class="row p-3" id="detail-film">
+                    <div class="col-auto">
+                        <poster><img></poster>
+                    </div>
+                    <div class="col pl-0">
+                        <detail id="detail"></detail>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
+    
     <div class="container pt-2">
         <div id="seasons" hidden>
-                <label for="seasonSel">Season:</label>
-                <select id="seasonSel" onchange="changeSeasonNum()"></select>
+            <label for="seasonSel">Season:</label>
+            <select id="seasonSel" onchange="changeSeasonNum()"></select>
         </div>
         
         <detail-episodes id="episodes"></detail-episodes>

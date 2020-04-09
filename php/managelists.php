@@ -76,7 +76,7 @@ $pageFooter = getPageFooter();
 
     <?php echo $pageHeader; ?>
 
-    <div class='card bg-light mt-3'>
+    <div class='card mt-3'>
         <div class="card-body">
             <h2><?php echo $filmlistsHeaderText; ?></h2>
         </div>
@@ -95,7 +95,7 @@ $pageFooter = getPageFooter();
                 <div class="form-group">
                     <label for="filmlist-parent">Parent List <small>(Optional)</small></label>
                     <select class="form-control" id="filmlist-parent" aria-describedby="parentHelp"><?php echo $filmlistSelectOptions; ?></select>
-                    <small id="parentHelp" class="form-text text-muted">You may choose to put the new list into a parent list.</small>
+                    <small id="parentHelp" class="form-text rs-text-muted">You may choose to put the new list into a parent list.</small>
                 </div>
                 <div class="form-group form-check">
                     <?php echo $filmHtml; ?>
@@ -109,7 +109,7 @@ $pageFooter = getPageFooter();
 
     <div class="mt-3 row mx-0" <?php echo $displayAddButton ?>>
         <div class="col-auto ml-auto">
-            <a href="/php/managelists.php?nl=1"><button class="btn btn-secondary fas fa-plus fa-xs"></button></a>
+            <a href="/php/managelists.php?nl=1"><button class="btn btn-primary fas fa-plus fa-xs"></button></a>
         </div>
     </div>
 

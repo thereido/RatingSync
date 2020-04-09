@@ -1,9 +1,6 @@
 
 function fullSearch(query) {
-    if (query.length == 0) {
-	    var searchResultEl = document.getElementById("search-result-tbody");
-        searchResultEl.innerHTML = "";
-    } else if (query != oldSearchQuery) {
+    if (query != oldSearchQuery) {
 	    var xmlhttp = new XMLHttpRequest();
         var callbackHandler = function () { searchPageCallback(query, xmlhttp); };
         searchFilms(query, xmlhttp, callbackHandler);
@@ -88,7 +85,7 @@ function searchPageCallback(query, xmlhttp) {
         var uniqueName = getUniqueName(film, DATA_API_DEFAULT);
 
         var rowEl = document.createElement("DIV");
-        rowEl.setAttribute("class", "row");
+        rowEl.setAttribute("class", "row mt-3");
         rowEl.setAttribute("id", "search-" + uniqueName);
         searchResultEl.appendChild(rowEl);
         renderSearchResultFilm(film, rowEl);
@@ -245,15 +242,26 @@ function suggestionRatingCallback(xmlhttp) {
 }
 
 function renderSearchResultFilm(film, filmRowEl) {
+    var cardCol = document.createElement("DIV");
+    var cardEl = document.createElement("DIV");
+    var contentRow = document.createElement("DIV");
     var posterColEl = document.createElement("DIV");
     var detailColEl = document.createElement("DIV");
     var posterEl = document.createElement("poster");
     var detailEl = buildFilmDetailElement(film);
 
-    filmRowEl.appendChild(posterColEl);
-    filmRowEl.appendChild(detailColEl);
+    filmRowEl.appendChild(cardCol);
+    cardCol.appendChild(cardEl);
+    cardEl.appendChild(contentRow);
+    contentRow.appendChild(posterColEl);
+    contentRow.appendChild(detailColEl);
     posterColEl.appendChild(posterEl);
     detailColEl.appendChild(detailEl);
+
+    // Layout elements attrs
+    cardCol.setAttribute("class", "col");
+    cardEl.setAttribute("class", "card");
+    contentRow.setAttribute("class", "row px-1");
 
     // Poster column attrs & html
     posterColEl.setAttribute("class", "col-auto");
@@ -353,19 +361,20 @@ function renderRsFilmDetails(film, filmEl) {
 
 function renderNoRsFilmDetails(filmEl, film) {
     var uniqueName = getUniqueName(film, DATA_API_DEFAULT);
-
-    var html = '\n';
-    html = html + '<div id="seemore-'+uniqueName+'"><a href="javascript:void(0);">More</a></div>';
-
-    var seeMoreEl = document.createElement("seemore");
-    seeMoreEl.innerHTML = html;
-    seeMoreEl.onclick = function() { onClickSeeMore(film, filmEl, seeMoreEl); };
+    
+    var moreButton = document.createElement("button");
+    moreButton.setAttribute("id", "seemore-"+uniqueName);
+    moreButton.setAttribute("type", "button");
+    moreButton.setAttribute("class", "btn btn-link btn-sm");
+    moreButton.innerHTML = "More";
+    var moreHandler = function () { onClickSeeMore(film, filmEl, moreButton); };
+    moreButton.addEventListener("click", moreHandler);
 
     var detailEl = filmEl.getElementsByTagName("detail")[0];
     if (detailEl) {
-        detailEl.appendChild(seeMoreEl);
+        detailEl.appendChild(moreButton);
     } else {
-        filmEl.appendChild(seeMoreEl);
+        filmEl.appendChild(moreButton);
     }
 }
 

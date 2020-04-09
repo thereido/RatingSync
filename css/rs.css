@@ -4,8 +4,8 @@
 }
 
 .footer {
-    color: #777;
-    border-top: 1px solid #e5e5e5;
+    border-top: 1px solid;
+    /* border-top-color is in the color area of this file */
 }
 
 .rating-stars,
@@ -18,22 +18,22 @@
 .rating-stars-noclick {
     display: inline-block;
     position: relative;
-    color: orange;
+    /* color is in the colors area of this file */
 }
 .rating-stars > span:hover:before,
 .rating-stars > span:hover ~ span:before {
     content: "\2605";
     position: absolute;
-    color: #0094ff;
+    /* color is in the colors area of this file */
 }
 .rating-stars > score {
     font-weight: bold;
-    color: orange;
+    /* color is in the colors area of this file */
 }
 .rating-stars > score > of-possible  {
     font-size: 75%;
     font-weight: lighter;
-    color: grey;
+    /* color is in the colors area of this file */
 }
 .rating-star {
     font-size: 125%;
@@ -44,19 +44,12 @@
     min-height: 17px;
 }
 
-.rating-background {
-    background-image: url("/image/gold_circle.png");
-}
-
 .film-line {
     font-size: 125%;
 }
 .film-line > .film-title {
     font-size: 115%;
     font-weight: bold;
-}
-.film-line > .film-title > a {
-    color: black;
 }
 
 .tv-episode-title {
@@ -126,7 +119,7 @@ detail-episodeNumber {
     position: absolute;
     top: 1px;
     left: 12px;
-    color: black;
+    /* color is in the colors area of this file */
 }
 
 .thirdparty-bar > .source-logo-2 > a > imdbScore,
@@ -134,19 +127,11 @@ detail-episodeNumber {
     position: absolute;
     top: 1px;
     left: 85px;
-    color: black;
+    /* color is in the colors area of this file */
 }
 
 .thirdparty-bar > a:link {
     text-decoration: none;
-}
-
-.checkmark-off {
-    color: grey;    
-}
-
-.checkmark-on {
-    color: #10b33c;    
 }
 
 .film-filmlists {
@@ -168,7 +153,7 @@ detail-episodeNumber {
 
 .stream-icon {
     background-image: url("Icons.png");
-    background-color: transparent;
+    /* background-color is in the colors area of this file */
     border-radius: 4px;
     height: 33px;
     width: 35px;
@@ -181,27 +166,15 @@ detail-episodeNumber {
 .icon-YouTube { background-position: -625px -10px; }
 .icon-HBO { background-position: -625px -96px; }
 
-.rating-detail {
-    position: fixed;
-    margin-right:auto;
-    margin-left:auto;
-    border-radius: 5px;
-    top: 30%;
-    width: 90%;
-    left: 5%;
-    z-index: 1;
-    background-color: rgba(255, 255, 255, 0.85);
-    box-shadow: 10px 10px 5px grey;
-}
-
 .userlist-film {
     min-height: 231px;
     width: 160px;
-    background-color: #f9f9f9;
+    /* background-color is in the colors area of this file */
     border-style: outset;
     border-width: thin;
     border-radius: 3%;
-    margin-bottom: 5px;
+    /* border-color is in the colors area of this file */
+    margin-bottom: 15px;
 }
 
 .userlist-film-episode {
@@ -216,9 +189,10 @@ detail-episodeNumber {
     z-index: 1;
     width: 334px;
     min-height: 231px;
-    background-color: rgba(249, 249, 249, 0.95);
+    /* background-color is in the colors area of this file */
     border-style: outset;
     border-width: thin;
+    /* border-color is in the colors area of this file */
     margin-bottom: 5px;
     padding-bottom: 3px;
     padding-left: 5px;
@@ -263,26 +237,20 @@ detail-episodeNumber {
 .rs-dropdown-checklist-content {
     display: none;
     position: absolute;
-    background-color: #f9f9f9;
     min-width: 160px;
     top: 38px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
+    /* background-color is in the color area in this file */
+    /* box-shadow is in the color area in this file */
 }
 
 /* Links inside the dropdown */
 .rs-dropdown-checklist-content a {
-    color: black;
     text-decoration: none;
     display: block;
     white-space: nowrap;
     padding: 3px 20px 3px 20px;
-}
-
-/* Change color of dropdown links on hover */
-.rs-dropdown-checklist-content a:hover,
-.pagination-options li:hover {
-    background-color: #f1f1f1;
+    /* color is in the color area in this file */
 }
 
 /* Show the dropdown menu on hover */
@@ -300,7 +268,6 @@ detail-episodeNumber {
 checklist-line input[type="radio"] {
     margin-right: 3px;
 }
-
 #header-search-suggestion {
     position: absolute;
     top: 38px;
@@ -310,35 +277,32 @@ checklist-line input[type="radio"] {
     border-style: solid;
     border-top: none;
     border-radius: 4px 4px 10px 10px;
-    border-color: #ccc;
+    /* border-color is in the colors area in this file */
     z-index: 10;
-    background-color: white;
+    /* background-color is in the colors area in this file */
 }
 
 #header-search-suggestion a {
     text-decoration: none;
-    color: #495057;
-}
-
-#header-search-suggestion a.suggestion-selected > div {
-	background-color: #f1f1f1;
+    /* color is in the colors area in this file */
 }
 
 .search-suggestion-item {
-    border-top: 1px solid #ccc;
     padding-top: .15rem;
     min-height: 64px;
     margin: 0px;
+    border-top: 1px solid;
+    /* border-color is in the colors area in this file */
 }
 
 .suggestion-poster {
     width: 40px;
     height: auto;
-    border: 1px solid #dee2e6;
+    border: 1px solid;
 }
 
 .suggestion-rating {
-    color: orange;
+    /* color is in the colors area in this file */
     line-height: 1.1;
 }
 
@@ -361,7 +325,8 @@ checklist-line input[type="radio"] {
 
 .rs-navbar {
     border-radius: 4px;
-	border: 1px solid #e7e7e7;
+    border: 1px solid; 
+    /* border-color is in the color area in this file */
 }
 
 detail-film {
@@ -369,65 +334,235 @@ detail-film {
 
 detail-episode {
     margin-bottom: 7px;
-    border: 1px solid #e3e3e3;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    color: #777;
+    border: 1px solid;
+    /* border-color is the color area in this file */
+    /* box-shadow is the color area in this file */
+    /* color is the color area in this file */
 }
 
-detail-episode > a,
-detail-episode > a:any-link {
+a, a:any-link {
     text-decoration: none;
-    color: inherit;
 }
 
 detail-episode-rating {
     padding-left: 5px;
-    color: orange;
+    /* color is the color area in this file */
 }
 
-.btn-primary {
-	background-color: #337ab7;
-	border-color: #2e6da4;
+.card-login > .card-header {
+    text-align:center;
+    /* color is in the colors area of this file */
 }
 
-.filmlist > a,
-.filmlist > a:any-link {
-    color: inherit;
+.card-login > .card-header a {
+  font-weight: bold;
+  font-size: medium;
+  -webkit-transition: all 0.1s linear;
+  -moz-transition: all 0.1s linear;
+  transition: all 0.1s linear;
+}
+
+.card-login > .card-header a.active, .card-login > .card-header a.active {
+  font-size: larger;
+}
+
+.btn-login, .btn-register {
+  text-transform: uppercase;
+}
+
+.card-login > .card-header hr {
+  margin-top: 10px;
+  margin-bottom: 0px;
+  clear: both;
+  border: 0;
+  height: 1px;
+  /* background-image is in the colors area in this file */
 }
 
 /* Small */
 @media (min-width:576px) {
-    .rating-detail {
-        width: 80%;
-        left: 10%;
-    }
 }
 
 /* Medium */
 @media (min-width:768px) {
-    .rating-detail {
-        width: 70%;
-        left: 15%;
-    }
-
-    .footer {
-        padding-right: 0;
-        padding-left: 0;
-    }
 }
 
 /* Large */
 @media (min-width:992px) {
-    .rating-detail {
-        width: 60%;
-        left: 20%;
-    }
 }
 
 /* X-Large */
 @media (min-width:1200px) {
-    .rating-detail {
-        width: 46%;
-        left: 27%;
+}
+
+/* Colors overriding bootstrap */
+.border { border-color: var(--border) !important; }
+.btn-danger { background-color: var(--danger); color: var(--fg-danger); border-color: var(--border-danger); }
+.btn.focus, .btn:focus { box-shadow: 0 0 0 .2rem var(--shadow-primary); }
+.btn-link, .btn-link:hover { color: var(--primary); }
+.btn-primary { background-color: var(--primary); color: var(--fg-primary); border-color: var(--border-primary); }
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus, .btn-primary:not(:disabled):not(.disabled):active, .show > .btn-primary.dropdown-toggle, .show > .btn-primary.dropdown-toggle:focus { background-color: var(--primary-alt); color: var(--fg-primary-alt); border-color: var(--border-primary-alt); box-shadow: 0 0 0 .2rem var(--shadow-primary); }
+.card { border-color: var(--border); }
+.card, .card-header { background-color: var(--bg-surface); color: var(--fg); }
+.close, .close:hover { color: var(--fg-surface); text-shadow: 0 1px 0 var(--border-surface-input); }
+.dropdown-item:hover, .dropdown-item:focus { background-color: var(--bg-input-text-active); color: var(--fg-surface) }
+.dropdown-menu { background-color: var(--bg-input-text); color: var(--fg-surface-muted); }
+.dropdown-menu li a:hover { background-color: var(--bg-input-text-active); color: var(--fg-surface); }
+.form-control { background-color: var(--bg-input-text); color: var(--fg-surface); border-color: var(--border-surface-input); }
+.form-control.focus, .form-control:focus { background-color: var(--bg-input-text); color: var(--fg-input-text); border-color: var(--primary); box-shadow: 0 0 0 .2rem var(--shadow-primary); }
+.input-group-text { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border-surface-input); }
+.input-group-text:hover { color: var(--primary); }
+.modal-body input { background-color: var(--bg-input-text); color: var(--fg-input-text); border-color: var(--border-surface-input); }
+.modal-content { background-color: var(--bg-surface); color: var(--fg-surface); border-color: var(--border-surface); }
+.modal-header, .modal-footer { border-color: var(--border-surface); }
+.navbar-toggler-icon { border: 1px solid var(--border-surface); border-radius: 3px; }
+.navbar-toggler-icon { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.5)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); }
+.rs-navbar { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border-surface); }
+.rs-text-muted { color: var(--fg-surface-muted); }
+.rs-dropdown-checklist-content { background-color: var(--bg-input-text); color: var(--fg-surface-muted); box-shadow: 0px 8px 16px 0px var(--shadow); }
+.rs-dropdown-checklist-content a:hover, .pagination-options li:hover { background-color: var(--bg-input-text-active); color: var(--fg-surface) }
+
+/* Colors overriding HTML */
+a:any-link { color: inherit; }
+a:hover { color: var(--primary); }
+body { background-color: var(--bg); color: var(--fg); }
+select { background-color: var(--bg-input-text); color: var(--fg-surface-muted); border-color: var(--border-surface); }
+
+/* Colors for custom classes and elements */
+#header-search-suggestion { border-color: var(--border); background-color: var(--bg-input-text); }
+#header-search-suggestion a { color: var(--fg-surface-muted); }
+#header-search-suggestion a.suggestion-selected > div { background-color: var(--bg-input-text-active); color: var(--fg-surface) }
+.btn-primary > .checkmark-off { color: var(--fg-primary-disabled); }
+.btn-primary > .checkmark-on { color: var(--fg-primary-green); }
+.btn-primary:hover > .checkmark-off, .btn-primary:active > .checkmark-off, .btn-primary:focus > .checkmark-off { color: var(--fg-primary-alt-disabled); }
+.btn-primary:hover > .checkmark-on, .btn-primary:active > .checkmark-on, .btn-primary:focus > .checkmark-on { color: var(--fg-primary-alt-green); }
+.card-login { box-shadow: 0px 2px 3px 0px var(--shadow-primary); }
+.card-login > .card-header { color: var(--fg-surface); }
+.card-login > .card-header hr { background-image: -webkit-linear-gradient(left,rgba(255, 255, 255, 0),rgba(141, 104, 187),rgba(255, 255, 255, 0)); background-image: -moz-linear-gradient(left,rgba(255,255,255,0),var(--primary-alt),rgba(255,255,255,0)); background-image: -ms-linear-gradient(left,rgba(255,255,255,0),rgba(141, 104, 187),rgba(255,255,255,0)); background-image: -o-linear-gradient(left,rgba(255,255,255,0),rgba(141, 104, 187),rgba(255,255,255,0)); }
+.checkmark-off { color: var(--fg-surface-disabled); }
+.checkmark-on { color: var(--primary); }
+.dropdown-menu > .selected { background: var(--primary); color: var(--fg-surface); }
+.film-dropdown-content { background-color: var(--bg-surface); border-color: var(--border-surface); }
+.film-line > .film-title > a { color: var(--fg); }
+.footer { border-top-color: var(--footer-border); }
+.rating-stars > span, .rating-stars-noclick, .rating-stars > score { color: var(--star); }
+.rating-stars > span:hover:before, .rating-stars > span:hover ~ span:before { color: var(--primary); }
+.rating-stars > score > of-possible  { color: var(--fg-surface-muted); }
+.search-suggestion-item { border-color: var(--border);}
+.stream-icon { background-color: transparent; }
+.suggestion-poster { border-color: var(--border); }
+.suggestion-rating { color: var(--star); }
+.thirdparty-bar > .source-logo-1 > a > imdbScore, .thirdparty-bar > .source-logo-1 > a > tmdbScore { color: var(--fg); }
+.thirdparty-bar > .source-logo-2 > a > imdbScore, .thirdparty-bar > .source-logo-2 > a > tmdbScore { color: var(--fg); }
+.userlist-film { background-color: var(--bg-surface); border-color: var(--border-surface); }
+detail-episode { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border-surface); box-shadow: 0 2px 5px var(--shadow-primary); }
+detail-episode-rating { color: var(--star); }
+
+:root {
+    --bg: #121212;
+    --bg-surface: #212121;
+    --bg-surface-trans: rgba(33, 33, 33, 0.95);
+    --bg-surface-hover: #313131;
+    --bg-surface-primary: rgba(44, 32, 60); /* 24% primary */
+    --bg-surface-primary-trans: rgba(44, 32, 60, 0.95);
+    --primary: #bb86fc; /* 187, 134, 252 */
+    --primary-alt: rgba(141, 104, 187);
+    --bg-secondary: #03dac6;
+    --danger: #cf6679;
+    --bg-input-text: rgba(56, 56, 56); /* rgba(255, 255, 255, .1) over bg-surface */
+    --bg-input-text-active: rgba(187, 134, 252, 0.25); /* primary .25 trans */ /* rgba(76, 76, 76); * /* bg-input-text +20 */
+    
+    --fg: rgba(255, 255, 255, 0.87);
+    --fg-surface: rgba(255, 255, 255, 0.87);
+    --fg-surface-muted: rgba(255, 255, 255, 0.60);
+    --fg-surface-disabled: rgba(255, 255, 255, 0.38);
+    --fg-primary: rgba(0, 0, 0, 0.87);
+    --fg-primary-disabled: rgba(0, 0, 0, 0.38);
+    --fg-primary-green: rgb(0, 115, 0);
+    --fg-primary-alt: rgba(255, 255, 255, 0.87);
+    --fg-primary-alt-disabled: rgba(255, 255, 255, 0.38);
+    --fg-primary-alt-green: rgb(0, 168, 0);
+    --fg-secondary: #000000;
+    --fg-danger: #000;
+    --fg-input-text: #eeeeee;
+
+    --border: rgba(255, 255, 255, 0.15);
+    --border-primary: rgba(137, 84, 202); /* primary - 50 */
+    --border-primary-alt: rgba(91, 54, 137); /* primary-alt - 50 */
+    --border-danger: rgba(157, 52, 71); /* danger - 50 */
+    --border-surface: rgba(255, 255, 255, 0.15);
+    --border-surface-input: rgba(255, 255, 255, 0.25);
+    --border-surface-primary: rgba(64, 52, 80); /* bg-surface-primary + 20 */
+
+    --shadow: rgba(255, 255, 255, 0.2);
+    --shadow-primary: rgba(187, 134, 252, 0.25); /* primary .25 trans */
+
+    --footer: #e5e5e5;
+    --footer-border: #777;
+    --star: orange;
+
+    background-color: var(--bg);
+    color: var(--fg);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg: white;
+        --bg-surface: #f8f9fa;
+        --bg-surface-trans: rgba(192, 192, 192, 0.95);
+        --bg-surface-hover: #f1f1f1;
+        --bg-surface-primary: rgba(12, 29, 44); /* 24% primary */
+        --bg-surface-primary-trans: rgba(12, 29, 44, 0.95);
+        --primary: rgba(167, 114, 232);
+        --primary-alt: rgb(121, 84, 167);
+        --secondary: #f9f9f9;
+        --danger: #dc3545;
+        --bg-input-text: rgba(255, 255, 255);
+        --bg-input-text-active: rgba(235, 235, 235); /* bg-input-text -20 */
+        
+        --fg: rgb(0, 0, 0, 0.87);
+        --fg-surface: rgb(0, 0, 0, 0.87);
+        --fg-surface-muted: rgba(0, 0, 0, 0.60);
+        --fg-surface-disabled: rgba(0, 0, 0, 0.38);
+        /* Using dark mode setting for primary
+        --fg-primary: 
+        --fg-primary-disabled: 
+        */
+        --fg-primary-green: rgb(0, 158, 0);
+        /* Using dark mode setting for primary
+        --fg-primary-alt: 
+        --fg-primary-alt-disabled: 
+        --fg-primary-alt-green: 
+        */
+        --fg-secondary: #000000;
+        --fg-danger: #fff;
+        --fg-input-text: #495057;
+
+        --border: #ccc;
+        --border-primary: rgba(107, 34, 152); /* primary - 50 */
+        --border-primary-alt: rgba(71, 34, 117); /* primary-alt - 50 */
+        --border-danger: #dc3545;
+        --border-surface: #e3e3e3;
+        --border-surface-input: #e3e3e3;
+        --border-surface-primary: rgba(32, 59, 64); /* bg-surface-primary + 20 */
+
+        --shadow: rgba(0, 0, 0, 0.1);
+        --shadow-primary: rgba(87, 14, 132, .25); /* primary -80, .25 trans */
+
+        --footer: var(--fg-surface-muted);
+        --footer-border: #e5e5e5;
+        --star: orange;
+
+        background-color: var(--bg);
+        color: var(--fg);
+    }
+    
+    .navbar-toggler-icon { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 0, 0, 0.5)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); }
+    
+    .card-login>.card-header hr{
+      background-image: -webkit-linear-gradient(left,rgba(0, 0, 0, 0),rgba(141, 104, 187),rgba(0, 0, 0, 0));
+      background-image: -moz-linear-gradient(left,rgba(0, 0, 0,0),var(--primary-alt),rgba(0, 0, 0,0));
+      background-image: -ms-linear-gradient(left,rgba(0, 0, 0,0),rgba(141, 104, 187),rgba(0, 0, 0,0));
+      background-image: -o-linear-gradient(left,rgba(0, 0, 0,0),rgba(141, 104, 187),rgba(0, 0, 0,0));
     }
 }

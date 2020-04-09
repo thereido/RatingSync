@@ -35,6 +35,7 @@ Setup
     - <doc_root>/RatingSync/php/output
     - <doc_root>/RatingSync/image
 - If you have a favicon image copy it to the location you set in DomainConstants.php
+- If you have logo image copy it to <doc_root>/RatingSync/image/logo.png
 - Change http://localhost:8080 to your host URL in these javascript files
     - <doc_root>/RatingSync/Chrome/constants.js
     - <doc_root>/RatingSync/Chrome/popup.html

@@ -13,6 +13,7 @@
 /php/tests/script/*
 /image/rs*.jpg
 /image/favicon.png
+/image/logo.png
 /HTMLPage.html
 /.vscode/*
 /.project

@@ -46,7 +46,7 @@ $pageFooter = getPageFooter();
 <div class="container">
     <?php echo $pageHeader; ?>
 
-    <div class='card bg-light mt-3'>
+    <div class='card mt-3'>
         <div class="card-body">
             <h2><?php echo $searchPageLabel; ?></h2>
         </div>
@@ -54,12 +54,9 @@ $pageFooter = getPageFooter();
     
     <div id="debug"></div>
 
-    <div id="search-results" class="mt-3">
+    <div class="row">
+        <div class="col-auto mr-auto" id="search-results"></div>
     </div>
-    <table class="table table-striped">
-        <tbody id="search-result-tbody">
-        </tbody>
-    </table>
     
   <?php echo $pageFooter; ?>
 </div>
