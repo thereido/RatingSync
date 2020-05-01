@@ -29,7 +29,6 @@ class SessionUtility {
         $password = $db->real_escape_string($password);
         $passwordHash = NULL;
 
-        $db = getDatabase();     
         $query = "SELECT * FROM user WHERE username='$username'";
         $result = $db->query($query);
         if ($result->num_rows == 1) {
