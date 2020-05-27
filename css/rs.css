@@ -465,12 +465,12 @@ detail-episode-rating { color: var(--star); }
     --bg-surface-hover: #313131;
     --bg-surface-primary: rgba(44, 32, 60); /* 24% primary */
     --bg-surface-primary-trans: rgba(44, 32, 60, 0.95);
-    --primary: #bb86fc; /* 187, 134, 252 */
-    --primary-alt: rgba(141, 104, 187);
+    --primary: rgba(141, 104, 187);
+    --primary-alt: rgb(126, 104, 187);
     --bg-secondary: #03dac6;
     --danger: #cf6679;
     --bg-input-text: rgba(56, 56, 56); /* rgba(255, 255, 255, .1) over bg-surface */
-    --bg-input-text-active: rgba(187, 134, 252, 0.25); /* primary .25 trans */ /* rgba(76, 76, 76); * /* bg-input-text +20 */
+    --bg-input-text-active: rgba(141, 104, 187, 0.25); /* primary .25 trans */
     
     --fg: rgba(255, 255, 255, 0.87);
     --fg-surface: rgba(255, 255, 255, 0.87);
@@ -478,24 +478,24 @@ detail-episode-rating { color: var(--star); }
     --fg-surface-disabled: rgba(255, 255, 255, 0.38);
     --fg-primary: rgba(0, 0, 0, 0.87);
     --fg-primary-disabled: rgba(0, 0, 0, 0.38);
-    --fg-primary-green: rgb(0, 115, 0);
+    --fg-primary-green: rgba(0, 168, 0, 0.75);
     --fg-primary-alt: rgba(255, 255, 255, 0.87);
-    --fg-primary-alt-disabled: rgba(255, 255, 255, 0.38);
-    --fg-primary-alt-green: rgb(0, 168, 0);
+    --fg-primary-alt-disabled: rgba(0, 0, 0, 0.38);
+    --fg-primary-alt-green: rgba(0, 168, 0, 0.75);
     --fg-secondary: #000000;
     --fg-danger: #000;
     --fg-input-text: #eeeeee;
 
     --border: rgba(255, 255, 255, 0.15);
-    --border-primary: rgba(137, 84, 202); /* primary - 50 */
-    --border-primary-alt: rgba(91, 54, 137); /* primary-alt - 50 */
+    --border-primary: rgba(91, 54, 137); /* primary - 50 */
+    --border-primary-alt: rgba(76, 54, 137); /* primary-alt - 50 */
     --border-danger: rgba(157, 52, 71); /* danger - 50 */
     --border-surface: rgba(255, 255, 255, 0.15);
     --border-surface-input: rgba(255, 255, 255, 0.25);
     --border-surface-primary: rgba(64, 52, 80); /* bg-surface-primary + 20 */
 
     --shadow: rgba(255, 255, 255, 0.2);
-    --shadow-primary: rgba(187, 134, 252, 0.25); /* primary .25 trans */
+    --shadow-primary: rgba(141, 104, 187, 0.25); /* primary .25 trans */
 
     --footer: #e5e5e5;
     --footer-border: #777;
