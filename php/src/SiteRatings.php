@@ -271,6 +271,25 @@ abstract class SiteRatings extends \RatingSync\Site
         $filename =  Constants::outputFilePath() . $filename;
         $fp = fopen($filename, "w");
 
+        $success = true;
+        $outputAsStr = "";
+        if (empty($format) || $format == "csv") {
+            $outputAsStr = $this->filmsAsCsv($films);
+        }
+        else {
+            $outputAsStr = $this->filmsAsXml($films);
+        }
+
+        if ($success && fwrite($fp, $outputAsStr) !== FALSE) {
+            $success = true;
+        }
+        fclose($fp);
+        
+        return $success;
+    }
+
+    public function filmsAsXml($films)
+    {
         // Write XML
         $xml = new \SimpleXMLElement("<films/>");
         foreach ($films as $film) {
@@ -278,10 +297,37 @@ abstract class SiteRatings extends \RatingSync\Site
         }
         $filmCount = $xml->count();
         $xml->addChild('count', $filmCount);
-        fwrite($fp, $xml->asXml());
-        fclose($fp);
-        
-        return true;
+
+        return $xml->asXml();
+    }
+
+    public function filmsAsCsv($films)
+    {
+        $csv = "imdbID,Title,Year,Rating10,WatchedDate" . "\n"; // letterboxd format
+        foreach ($films as $film) {
+            if ($film->getContentType() == Film::CONTENT_TV_EPISODE) {
+                continue;
+            }
+            $title = $film->getTitle();
+            $year = $film->getYear();
+            $imdbId = $film->getUniqueName(Constants::SOURCE_IMDB);
+            $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+            if (empty($rating)) {
+                logDebug("Rating empty for $title");
+                continue;
+            }
+            $ratingScore = $rating->getYourScore();
+            $ratingDateStr = $rating->getYourRatingDate()->format("Y-m-d");
+
+            if ($imdbId == null) {
+                $imdbId = "";
+            }
+
+            // Write a line for this film
+            $csv .= "$imdbId,\"$title\",$year,$ratingScore,$ratingDateStr" . "\n";
+        }
+
+        return $csv;
     }
 
     /**

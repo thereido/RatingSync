@@ -46,7 +46,7 @@ function import($username, $filename, $format)
  */
 function export($username, $source, $format)
 {
-    $filename = "ratings.xml";
+    $filename = "ratings.csv";
     $site = null;
 
     if ($source == "ratingsync") {
