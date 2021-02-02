@@ -46,6 +46,8 @@ class Constants
     const DB_MODE_TEST                  = DomainConstants::DB_MODE_TEST;
     const DB_MODE                       = DomainConstants::DB_MODE;
     const RS_HOST                       = DomainConstants::RS_HOST;
+    const API_TEST_USERNAME             = DomainConstants::API_TEST_USERNAME;
+    const API_TEST_TOKEN                = DomainConstants::API_TEST_TOKEN;
     const OMDB_API_KEY                  = DomainConstants::OMDB_API_KEY;
     const TMDB_API_KEY                  = DomainConstants::TMDB_API_KEY;
     const SITE_NAME                     = DomainConstants::SITE_NAME;

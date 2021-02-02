@@ -7,6 +7,13 @@ require_once "getHtmlFilmlists.php";
 $username = getUsername();
 $response = "";
 
+if (empty($username)) {
+    $token = array_value_by_key("token", $_GET);
+    if ($token == Constants::API_TEST_TOKEN) {
+        $username = Constants::API_TEST_USERNAME;
+    }
+}
+
 $action = array_value_by_key("action", $_GET);
 logDebug("API action: $action, username: $username", "api.php ".__LINE__);
 if ($action == "getSearchFilm") {
@@ -471,6 +478,7 @@ function api_getRatings($username)
     }
     $response .= ']}';
 
+/*RT*/ logDebug($response);
     return $response;
 }
 

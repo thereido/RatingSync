@@ -228,3 +228,13 @@ CREATE TABLE IF NOT EXISTS user_filmlist
             REFERENCES user(username)
     );
 ALTER TABLE user_filmlist ADD COLUMN create_ts TIMESTAMP NOT NULL DEFAULT current_timestamp() AFTER parent_listname;
+
+CREATE TABLE IF NOT EXISTS token_auth
+    (
+        id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        user_name varchar(255) NOT NULL,
+        password_hash varchar(255) NOT NULL,
+        selector_hash varchar(255) NOT NULL,
+        is_expired int(11) NOT NULL DEFAULT '0',
+        expiry_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
