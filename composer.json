@@ -4,8 +4,8 @@
     "homepage": "https://github.com/thereido/RatingSync",
     "license": "GPL-3.0",
     "require": {
-        "php": ">=5.5",
-        "phpunit/phpunit": "4.6.*"
+        "php": ">=7.4",
+        "phpunit/phpunit": "9.1.*"
     },
     "autoload": {
         "classmap": [

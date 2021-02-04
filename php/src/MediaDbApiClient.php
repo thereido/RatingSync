@@ -4,6 +4,8 @@
  */
 namespace RatingSync;
 
+use mysql_xdevapi\Exception;
+
 require_once "ApiClient.php";
 require_once "Season.php";
 
@@ -69,8 +71,19 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
     abstract protected function buildUrlSeasonDetail($uniqueName, $seasonNum);
     abstract protected function validateResponseSeasonDetail($seasonJson);
 
+    /**
+     * Return the API URL for similar items for a film.
+     *
+     * @param \RatingSync\Film $film Similar items for this film
+     *
+     * @return string API URL
+     */
+    abstract protected function buildUrlSimilar($film);
+    abstract protected function validateResponseSimilar($json);
+
     abstract protected function populateFilmDetail($response, $film, $overwrite = true);
     abstract protected function populateSeason($seasonJson, $seriesId);
+    abstract protected function similarResponseToArray($json, $originalFilm);
     abstract protected function searchForUniqueName($film);
     abstract protected function printResultToLog($filmJson, $requestName, $contentType);
 
@@ -415,6 +428,107 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
     public function getUniqueNameFromSourceId($sourceId, $contentType = null)
     {
         return $sourceId;
+    }
+
+    public function getSimilarFromApi($filmId, $refreshCache = null)
+    {
+        if (is_null($filmId) || !is_numeric($filmId) ) {
+            throw new \InvalidArgumentException("\$filmId ($filmId) must be numeric");
+        }
+
+        if (is_null($refreshCache)) {
+            $refreshCache = $this->defaultRefreshCache;
+        }
+
+        $json = null;
+        $validationMsg = null;
+
+        $film = null;
+        try {
+            $film = Film::getFilmFromDb($filmId);
+        } catch (Exception $ex) {
+            // Log it and continue with the null $film
+            logDebug("Exception getting filmId $filmId from the db.\n" . $ex.getMessage());
+        }
+        if (empty($film)) {
+            return false;
+        }
+        $uniqueName = $film->getUniqueName($this->sourceName);
+
+        $response = $this->getSimilarFromCache($filmId, $refreshCache);
+        if (empty($response) && !empty($uniqueName)) {
+            try {
+                $url = $this->buildUrlSimilar($film);
+                $response = $this->apiRequest($url, null, false, false);
+                $json =  json_decode($response, true);
+                $validationMsg = $this->validateResponseSimilar($json);
+
+                if ($validationMsg == "Success") {
+                    $this->cacheSimilar($response, $filmId);
+                }
+                else {
+                    $errorMsg = "TMDb API 'Similar' request failed.";
+                    $errorMsg .= " Title=".$film->getTitle();
+                    $errorMsg .= ", UniqueName=" . $uniqueName;
+                    $errorMsg .= "\n$validationMsg";
+                    logDebug($errorMsg, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                    throw new \Exception("TMDbApi 'Similar' request failed. $validationMsg");
+                }
+            } catch (\Exception $e) {
+                logDebug($e, __FUNCTION__." ".__LINE__);
+                throw $e;
+            }
+        } else {
+            $json =  json_decode($response, true);
+        }
+
+        return $this->similarResponseToArray($json, $film);
+    }
+
+    /**
+     * Return cached similar items for a  film if the cached file is fresh
+     * enough. The $refreshCache param shows if it is fresh enough. If the file
+     * is out of date return null.
+     *
+     * @param \RatingSync\Film $film         Film needed detail for
+     * @param int|0            $refreshCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
+     *
+     * @return string File as a string. Null if the use cache is not used.
+     */
+    public function getSimilarFromCache($filmId, $refreshCache = null)
+    {
+        if (is_null($refreshCache)) {
+            $refreshCache = $this->defaultRefreshCache;
+        }
+
+        if (Constants::USE_CACHE_NEVER == $refreshCache) {
+            return null;
+        }
+
+        $filename = $this->getSimilarCacheFilename($filmId);
+        return $this->readFromCache($filename, $refreshCache);
+    }
+
+    /**
+     * Cache a similar (films) result in json in a local file
+     *
+     * @param string    $apiResult      File as a string
+     * @param int       $filmId         DB film_id
+     */
+    public function cacheSimilar($apiResult, $filmId)
+    {
+        $filename = $this->getSimilarCacheFilename($filmId);
+        $this->writeToCache($apiResult, $filename);
+    }
+
+    protected function getSimilarCacheFilename($filmId)
+    {
+        $filename = $this->sourceName;
+        $filename .= "_film_" . $filmId;
+        $filename .= "_similar";
+        $filename .= "." . $this->cacheFileExtension;
+
+        return $filename;
     }
 }
 

@@ -1,17 +1,19 @@
 
 function getFilmForDetailPage(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum) {
-    var xmlhttp = new XMLHttpRequest();
-    var callbackHandler = function () { detailPageCallback(xmlhttp); };
+    const xmlhttp = new XMLHttpRequest();
+    const callbackHandler = function () {
+        detailPageCallback(xmlhttp);
+    };
     getFilmFromRs(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum, xmlhttp, callbackHandler);
 }
 
 function detailPageCallback(xmlhttp) {
 	if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-        var result = JSON.parse(xmlhttp.responseText);
+        const result = JSON.parse(xmlhttp.responseText);
         if (result.Success != "false" && result.filmId != "undefined") {
-            var film = result;
+            const film = result;
             contextData.films.push(film);
-            var filmEl = document.getElementById("detail-film");
+            const filmEl = document.getElementById("detail-film");
             renderRsFilmDetails(film, filmEl);
 
             if (film.contentType == "TvSeries" || film.contentType == "TvEpisode") {
@@ -27,30 +29,35 @@ function detailPageCallback(xmlhttp) {
                     contextData.episodeFilm = film;
 
                     // Made the series title be a link
-                    var titleEl = document.getElementsByClassName("film-title")[0];
+                    const titleEl = document.getElementsByClassName("film-title")[0];
                     titleEl.innerHTML = "<a href='/php/detail.php?i=" + film.parentId + "&ct=" + CONTENT_TV_SERIES + "'>" + titleEl.innerHTML + "</a>";
                 }
                 
                 getSeriesForDetailPage(film);
+            } else {
+                // For movies, get similar item for a other movies
+                getSimilar(film);
             }
         }
 	}
 }
 
 function getSeriesForDetailPage() {
-    var seriesFilm = contextData.seriesFilm;
-    var episodeFilm = contextData.episodeFilm;
+    const seriesFilm = contextData.seriesFilm;
+    const episodeFilm = contextData.episodeFilm;
 
     if (seriesFilm) {
         renderSeasons(seriesFilm);
         getEpisodesForDetailPage(seriesFilm.filmId);
     } else if (episodeFilm) {
-        var params = "?action=getFilm";
+        let params = "?action=getFilm";
         params = params + "&id=" + episodeFilm.parentId;
         params = params + "&ct=" + CONTENT_TV_SERIES;
         params = params + "&rsonly=1";
-        var xmlhttp = new XMLHttpRequest();
-        var callbackHandler = function () { detailPageSeriesCallback(xmlhttp); };
+        const xmlhttp = new XMLHttpRequest();
+        const callbackHandler = function () {
+            detailPageSeriesCallback(xmlhttp);
+        };
         xmlhttp.onreadystatechange = callbackHandler;
         xmlhttp.open("GET", RS_URL_API + params, true);
         xmlhttp.send();
@@ -59,9 +66,9 @@ function getSeriesForDetailPage() {
 
 function detailPageSeriesCallback(xmlhttp) {
 	if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-        var result = JSON.parse(xmlhttp.responseText);
+        const result = JSON.parse(xmlhttp.responseText);
         if (result.Success != "false" && result.filmId != "undefined") {
-            var seriesFilm = result;
+            const seriesFilm = result;
             renderSeasons(seriesFilm);
             getEpisodesForDetailPage(seriesFilm.filmId);
         }
@@ -69,21 +76,21 @@ function detailPageSeriesCallback(xmlhttp) {
 }
 
 function renderSeasons(film) {
-    var seasonsEl = document.getElementById("seasons");
+    const seasonsEl = document.getElementById("seasons");
     seasonsEl.removeAttribute("hidden");
-    var seasonSelectEl = document.getElementById("seasonSel");
+    const seasonSelectEl = document.getElementById("seasonSel");
     var seasonCount = 0;
 
-    for (var i = 0; i < film.seasonCount; i++) {
+    for (let i = 0; i < film.seasonCount; i++) {
         var seasonCount = i + 1;
-        var optionEl = document.createElement("option");
-        var textnode = document.createTextNode(seasonCount);
+        const optionEl = document.createElement("option");
+        const textnode = document.createTextNode(seasonCount);
         optionEl.appendChild(textnode);
         seasonSelectEl.appendChild(optionEl);
     }
     
     // Select to the episode's season
-    var episodeFilm = contextData.episodeFilm;
+    const episodeFilm = contextData.episodeFilm;
     if (episodeFilm && episodeFilm.season > 0 && episodeFilm.season <= seasonCount) {
         seasonSelectEl.value = episodeFilm.season;
     } else {
@@ -95,11 +102,13 @@ function renderSeasons(film) {
 }
 
 function getEpisodesForDetailPage(seriesFilmId) {
-    var params = "?action=getSeason";
+    let params = "?action=getSeason";
     params = params + "&id=" + seriesFilmId;
     params = params + "&s=" + document.getElementById("seasonSel").value;
-	var xmlhttp = new XMLHttpRequest();
-    var callbackHandler = function () { detailPageEpisodesCallback(xmlhttp); };
+    const xmlhttp = new XMLHttpRequest();
+    const callbackHandler = function () {
+        detailPageEpisodesCallback(xmlhttp);
+    };
     xmlhttp.onreadystatechange = callbackHandler;
 	xmlhttp.open("GET", RS_URL_API + params, true);
     xmlhttp.send();
@@ -107,7 +116,7 @@ function getEpisodesForDetailPage(seriesFilmId) {
 
 function detailPageEpisodesCallback(xmlhttp) {
 	if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-        var result = JSON.parse(xmlhttp.responseText);
+        const result = JSON.parse(xmlhttp.responseText);
         if (result.Response != "False") {
             renderEpisodes(result);
             getEpisodeRatings(result);
@@ -116,12 +125,12 @@ function detailPageEpisodesCallback(xmlhttp) {
 }
 
 function renderEpisodes(result) {
-    var episodesEl = document.getElementById("episodes");
+    const episodesEl = document.getElementById("episodes");
     episodesEl.innerHTML = "";
-    var episodes = result.episodes;
+    const episodes = result.episodes;
 
-    for (var i = 0; i < episodes.length; i++) {
-        var episode = episodes[i];
+    for (let i = 0; i < episodes.length; i++) {
+        const episode = episodes[i];
 
         // Create elements
         // episodes -> row -> episode -> link -> number, poster, detail
@@ -144,7 +153,7 @@ function renderEpisodes(result) {
         rowEl.setAttribute("class", "row");
 
         // Link attrs
-        var episodeUrl = "/php/detail.php";
+        let episodeUrl = "/php/detail.php";
         episodeUrl = episodeUrl + "?sid=" + episode.sourceId;
         episodeUrl = episodeUrl + "&ct=" + CONTENT_TV_EPISODE;
         episodeUrl = episodeUrl + "&pid=" + episode.seriesFilmId;
@@ -161,7 +170,7 @@ function renderEpisodes(result) {
         numberEl.innerHTML = "" + episode.number;
 
         // Poster attrs
-        var imageEl = document.createElement("img");
+        const imageEl = document.createElement("img");
         if (episode.image) {
             imageEl.setAttribute("class", "img-episode");
         }
@@ -180,17 +189,17 @@ function renderEpisodes(result) {
 }
 
 function getEpisodeRatings(seasonJson) {
-    var seasonNum = seasonJson.number;
-    var episodes = seasonJson.episodes;
+    const seasonNum = seasonJson.number;
+    const episodes = seasonJson.episodes;
     if (!episodes || episodes.length == 0) {
         return;
     }
-    var parentId = "";
-    var params = "?action=getFilms";
+    let parentId = "";
+    let params = "?action=getFilms";
     params += "&s=" + seasonNum;
     params += "&e="; // episode numbers for all episodes
-    var delim = "";
-    for (var i = 0; i < episodes.length; i++) {
+    let delim = "";
+    for (let i = 0; i < episodes.length; i++) {
         params += delim + episodes[i].number;
         delim = "+";
         if (!parentId || parentId == "" || parentId == "undefined") {
@@ -198,8 +207,10 @@ function getEpisodeRatings(seasonJson) {
         }
     }
     params += "&pid=" + parentId;
-	var xmlhttp = new XMLHttpRequest();
-    var callbackHandler = function () { detailPageEpisodeRatingsCallback(xmlhttp); };
+    const xmlhttp = new XMLHttpRequest();
+    const callbackHandler = function () {
+        detailPageEpisodeRatingsCallback(xmlhttp);
+    };
     xmlhttp.onreadystatechange = callbackHandler;
 	xmlhttp.open("GET", RS_URL_API + params, true);
     xmlhttp.send();
@@ -207,21 +218,23 @@ function getEpisodeRatings(seasonJson) {
 
 function detailPageEpisodeRatingsCallback(xmlhttp) {
 	if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-	    var result = JSON.parse(xmlhttp.responseText);
-        var films = result.films;
+        const result = JSON.parse(xmlhttp.responseText);
+        const films = result.films;
 
-        for (var i=0; i<films.length; i++) {
-            var film = films[i];
+        for (let i=0; i<films.length; i++) {
+            const film = films[i];
 
-            var yourScore = "";
-            var source = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+            let yourScore = "";
+            const source = film.sources.find(function (findSource) {
+                return findSource.name == "RatingSync";
+            });
             if (source && source != "undefined") {
                 if (source.rating && source.rating != "undefined") {
                     yourScore = source.rating.yourScore;
                 }
             }
 
-            var ratingEl = document.getElementById("detail-episode-rating-" + film.episodeNumber);
+            const ratingEl = document.getElementById("detail-episode-rating-" + film.episodeNumber);
             if (ratingEl && yourScore) {
                 ratingEl.innerHTML = "★" + yourScore;
             }
@@ -231,4 +244,113 @@ function detailPageEpisodeRatingsCallback(xmlhttp) {
 
 function changeSeasonNum() {
     getEpisodesForDetailPage(contextData.seriesFilmId);
+}
+
+function getSimilar(film) {
+    let params = "?action=getSimilar";
+    params = params + "&id=" + film.filmId;
+    const xmlhttp = new XMLHttpRequest();
+    const callbackHandler = function () {
+        similarCallback(xmlhttp);
+    };
+    xmlhttp.onreadystatechange = callbackHandler;
+    xmlhttp.open("GET", RS_URL_API + params, true);
+    xmlhttp.send();
+}
+
+function similarCallback(xmlhttp) {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        const result = JSON.parse(xmlhttp.responseText);
+        if (result.Response != "False") {
+            contextData.similarFilms = result;
+            renderSimilar();
+        }
+    }
+}
+
+function renderSimilar() {
+    let similarFilms = contextData.similarFilms;
+    const row = 0;
+    let html = "\n";
+    html = html + "<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 row-cols-xl-6' id='similar-row'>\n";
+    for (let filmIndex = 0; filmIndex < similarFilms.length; filmIndex++) {
+        const similarFilm = similarFilms[filmIndex];
+        const uniqueName = similarFilm.uniqueName;
+
+        // Title
+        const title = similarFilm.title;
+        const titleNoQuotes = title.replace(/\"/g, '\\\"').replace(/\'/g, "\\\'");
+
+        // ContentType
+        let contentTypeParam = "";
+        if (similarFilm.contentType != "undefined") { contentTypeParam = "&ct=" + similarFilm.contentType; }
+
+        // Image
+        let image = "";
+        if (similarFilm.poster) {
+            image = IMAGE_PATH_TMDBAPI + "/w154" + similarFilm.poster;
+        }
+
+        // JavaScript
+        const onMouseEnter = `onMouseEnter='detailTimer = setTimeout(function () { showFilmDropdownForSimilar(${uniqueName}); }, 500)'`;
+        const onMouseLeave = `onMouseLeave='hideFilmDropdownForSimilar(${uniqueName}, detailTimer)'`;
+
+        html = html + '  <filmItem class="col" id="' + uniqueName + '" data-unique-name="' + uniqueName + '">' + '\n';
+        html = html + '    <div class="similar-film" id="similar-film-'+uniqueName+'" ' + onMouseEnter + ' ' + onMouseLeave + '>' + '\n';
+        html = html + '      <poster id="poster-' + uniqueName + '" data-unique-name="' + uniqueName + '">' + '\n';
+        html = html + '        <a href="/php/detail.php?sid=' + uniqueName + contentTypeParam + '">' + '\n';
+        html = html + '          <img src="' + image + '" alt="' + titleNoQuotes + '" />' + '\n';
+        html = html + '        </a>' + '\n';
+        html = html + '        <div id="similarfilm-dropdown-' + uniqueName + '" class="film-dropdown-content"></div>' + '\n';
+        html = html + '      </poster>' + '\n';
+        html = html + '    </div>' + '\n';
+        html = html + '  </filmItem>' + '\n';
+    }
+    html = html + '</div>' + '\n';
+    document.getElementById("similar").innerHTML = html;
+
+/*RT*
+    sizeBreakpointCallback();
+
+    renderPagination();
+*RT*/
+}
+
+// Needs "contextData" JSON in the page
+function showFilmDropdownForSimilar(uniqueName) {
+    const filmIndex = contextData.similarFilms.findIndex(function (findFilm) { return findFilm.uniqueName == uniqueName; });
+
+    if (filmIndex != -1) {
+        const similarFilm = contextData.similarFilms[filmIndex];
+        const dropdownEl = document.getElementById("similarfilm-dropdown-" + uniqueName);
+        renderSimilarDetail(similarFilm, dropdownEl);
+
+        // Change the style classes on posters for episodes
+        const filmEl = document.getElementById("similar-film-" + uniqueName);
+        const posterEl = document.getElementById("poster-" + uniqueName);
+
+        // Resize the poster to match the dropdown. Sometimes the dropdown is taller
+        // than the poster.
+        const posterHeight = posterEl.getBoundingClientRect().height;
+        const dropdownHeight = dropdownEl.getBoundingClientRect().height;
+        if (dropdownHeight - 10 > posterHeight) {
+            const newPosterHeight = dropdownHeight - 10;
+            posterEl.setAttribute("style", "height: " + newPosterHeight + "px");
+        }
+    }
+}
+
+function hideFilmDropdownForSimilar(uniqueName, detailTimer) {
+    el = document.getElementById("similarfilm-dropdown-" + uniqueName);
+    el.style.display = "none";
+    clearTimeout(detailTimer);
+
+    const filmEl = document.getElementById("similar-film-" + uniqueName);
+    const posterEl = document.getElementById("poster-" + uniqueName);
+}
+
+function renderSimilarDetail(similarFilm, dropdownEl) {
+    dropdownEl.innerHTML = "";
+    dropdownEl.appendChild(buildSimilarElement(similarFilm));
+    dropdownEl.style.display = "block";
 }

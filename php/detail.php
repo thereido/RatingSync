@@ -48,6 +48,7 @@ $pageFooter = getPageFooter();
     <?php if (empty($username)) { echo '<script type="text/javascript">window.location.href = "/php/Login"</script>'; } ?>
     <script src="../js/ratings.js"></script>
     <script src="../js/film.js"></script>
+    <script src="../js/similar.js"></script>
     <script src="../js/detailPage.js"></script>
 </head>
 
@@ -80,6 +81,10 @@ $pageFooter = getPageFooter();
         </div>
         
         <detail-episodes id="episodes"></detail-episodes>
+    </div>
+
+    <div class="container">
+        <similar id="similar"></similar>
     </div>
     
   <?php echo $pageFooter; ?>

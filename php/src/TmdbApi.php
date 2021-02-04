@@ -6,6 +6,7 @@ namespace RatingSync;
 
 require_once "MediaDbApiClient.php";
 require_once "Site.php";
+require_once "SimilarFilm.php";
 
 /**
  * Get data from the TMDb API website
@@ -28,6 +29,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
     const REQUEST_SEARCH_SERIES = "search_tv";
     const REQUEST_SEARCH_MULTI = "search_multi";
     const REQUEST_CREDITS = "credits";
+    const REQUEST_SIMILAR = "similar";
     const ATTR_CREDITS_CREDITS = "credits_credits";
     const ATTR_CREDITS_CAST = "credits_cast";
     const ATTR_CREDITS_CREW = "credits_crew";
@@ -120,6 +122,28 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         return $url;
     }
 
+    protected function buildUrlSimilar($film)
+    {
+        if ( empty($film) || empty($film->getUniqueName($this->sourceName)) || empty($film->getContentType()) ) {
+            throw new \InvalidArgumentException(__CLASS__."::".__FUNCTION__.' TMDb uniqueName and contentType must not be empty');
+        }
+
+        $url = static::BASE_API_URL;
+        $uniqueName = $film->getUniqueName($this->sourceName);
+        $contentType = $film->getContentType();
+        if ($contentType == Film::CONTENT_FILM) {
+            $url .= "/movie/" . $this->getSourceIdFromUniqueName($uniqueName);
+        }
+        else if ($contentType == Film::CONTENT_TV_SERIES) {
+            $url .= "/tv/" . $this->getSourceIdFromUniqueName($uniqueName);
+        } else {
+            return null;
+        }
+        $url .= "/recommendations?api_key=" . Constants::TMDB_API_KEY;
+
+        return $url;
+    }
+
     protected function validateResponseSeasonDetail($json)
     {
         $errorMsg = $this->getErrorMessageFromResponse($json);
@@ -141,6 +165,21 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
 
         if (empty($errorMsg) && !array_key_exists("id", $json)) {
             $errorMsg = "Response appears to be invalid because there is no 'id' in the response.";
+        }
+
+        if (empty($errorMsg)) {
+            return "Success";
+        } else {
+            return $errorMsg;
+        }
+    }
+
+    protected function validateResponseSimilar($json)
+    {
+        $errorMsg = $this->getErrorMessageFromResponse($json);
+
+        if (empty($errorMsg) && !array_key_exists("results", $json)) {
+            $errorMsg = "Response appears to be invalid.";
         }
 
         if (empty($errorMsg)) {
@@ -532,6 +571,32 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         return $season;
     }
 
+    public function similarResponseToArray($json, $originalFilm)
+    {
+        if ($json == null || !is_array($json["results"])) {
+            throw new \InvalidArgumentException("\$json param \$json[results] must be an array");
+        }
+
+        $requestName = self::REQUEST_SIMILAR;
+        $similarFilms = Array();
+
+        foreach ($json["results"] as $item) {
+            $similarFilm = new SimilarFilm();
+            $similarFilm->setSourceName($this->getSourceName());
+            $similarFilm->setContentType($originalFilm->getContentType());
+            $similarFilm->setUniqueName($this->jsonValue($item, SimilarFilm::ATTR_UNIQUE_NAME, $requestName));
+            $similarFilm->setTitle($this->jsonValue($item, SimilarFilm::ATTR_TITLE, $requestName));
+            $similarFilm->setYear($this->jsonValue($item, SimilarFilm::ATTR_YEAR, $requestName));
+            $similarFilm->setPoster($this->jsonValue($item, SimilarFilm::ATTR_POSTER, $requestName));
+            $similarFilm->setBackdrop($this->jsonValue($item, SimilarFilm::ATTR_BACKDROP, $requestName));
+            $similarFilm->setScore($this->jsonValue($item, SimilarFilm::ATTR_SCORE, $requestName));
+
+            $similarFilms[] = $similarFilm->asArray();
+        }
+
+        return $similarFilms;
+    }
+
     protected function printResultToLog($filmJson, $requestName, $contentType) {
         $requestName = $this->getRequestName($requestName, $contentType);
         $titleAttr = Film::ATTR_TITLE;
@@ -916,6 +981,14 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             $tmdbIndexes[self::ATTR_CREDITS_CAST] = "cast";
             $tmdbIndexes[self::ATTR_CREDITS_CREW] = "crew";
         }
+        elseif ($requestName == static::REQUEST_SIMILAR) {
+            $tmdbIndexes[SimilarFilm::ATTR_UNIQUE_NAME] = "id";
+            $tmdbIndexes[SimilarFilm::ATTR_TITLE] = "title";
+            $tmdbIndexes[SimilarFilm::ATTR_YEAR] = "release_date";
+            $tmdbIndexes[SimilarFilm::ATTR_POSTER] = "poster_path";
+            $tmdbIndexes[SimilarFilm::ATTR_BACKDROP] = "backdrop_path";
+            $tmdbIndexes[SimilarFilm::ATTR_SCORE] = "vote_average";
+        }
 
         $tmdbIndexes[self::ATTR_API_REQUEST_NAME] = self::ATTR_API_REQUEST_NAME;
 
@@ -928,7 +1001,8 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
 
         if ($attrName == Film::ATTR_YEAR
             || $attrName == Film::ATTR_YEAR ."_". Film::CONTENT_FILM
-            || $attrName == Season::ATTR_YEAR)
+            || $attrName == Season::ATTR_YEAR
+            || $attrName == SimilarFilm::ATTR_YEAR)
         {
             $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_MOVIE);
             if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_SERIES); }
@@ -938,6 +1012,7 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_SEARCH_SERIES); }
             if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_SEARCH_MULTI); }
             if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_DETAIL_SEASON); }
+            if (empty($dateStr)) { $dateStr = parent::jsonValue($json, $attrName, self::REQUEST_SIMILAR); }
 
             if (!empty($dateStr)) {
                 $value = substr($dateStr, 0, 4);

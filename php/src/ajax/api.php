@@ -57,6 +57,9 @@ elseif ($action == "validateNewUsername") {
 elseif ($action == "getSeason") {
     $response = api_getSeason($username);
 }
+elseif ($action == "getSimilar") {
+    $response = api_getSimilar($username);
+}
 elseif ($action == "deleteFilmlist") {
     $response = api_deleteFilmlist($username);
 }
@@ -747,7 +750,7 @@ function api_getSeason($username)
                     "\n$e";
         logDebug($errorMsg, __FUNCTION__." ".__LINE__);
     }
-    
+
     $response = json_encode(array("Response" => "False"));
     if (!empty($season)) {
         $response = $season->json_encode(true);
@@ -789,6 +792,31 @@ function api_renameFilmlist($username)
         $response = '{"Success":"true"}';
     } else {
         $response = '{"Success":"false"}';
+    }
+
+    return $response;
+}
+
+function api_getSimilar($username)
+{
+    $filmId = array_value_by_key("id", $_GET);
+    logDebug("Params id=$filmId", __FUNCTION__." ".__LINE__);
+
+    $dataApi = getMediaDbApiClient();
+    $similar = null;
+    try {
+        $similar = $dataApi->getSimilarFromApi($filmId);
+    }
+    catch (\Exception $e) {
+        $errorMsg = "Error getSimilarFromApi(filmId=$filmId)" .
+            "\nException " . $e->getCode() . " " . $e->getMessage() .
+            "\n$e";
+        logDebug($errorMsg, __FUNCTION__." ".__LINE__);
+    }
+
+    $response = json_encode(array("Response" => "False"));
+    if (is_array($similar)) {
+        $response = json_encode($similar);
     }
 
     return $response;
