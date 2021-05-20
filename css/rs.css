@@ -36,12 +36,12 @@
     /* color is in the colors area of this file */
 }
 .rating-star {
-    font-size: 125%;
+    font-size: 110%;
 }
 
-.rating-date {
+ratingDate {
     display:inline-block;
-    min-height: 17px;
+    padding-top: 7px;
 }
 
 .film-line {
