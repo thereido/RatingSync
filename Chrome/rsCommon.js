@@ -498,3 +498,14 @@ function renderFilmDetail(film, dropdownEl) {
     renderStreams(film, true);
     renderFilmlists(film.filmlists, film.filmId);
 }
+
+function renderMsg(message, element) {
+    if (element) {
+        if (message && message.length > 0) {
+            element.innerHTML = message;
+            element.hidden = false;
+        } else {
+            element.hidden = true;
+        }
+    }
+}
