@@ -174,11 +174,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                <p><strong>Do not forget your password!</strong></p>
                                                 This site has many limitations as it is still in development.
                                                 <ul>
-                                                    <li>If you forget your password we cannot reset it</li>
-                                                    <li>You cannot change your password after you register</li>
+                                                    <li>If you forget your password we cannot reset it.</li>
+                                                    <li>You cannot change your password after you register.</li>
                                                 </ul>
                                             </div>
                                             <div class="modal-footer">
