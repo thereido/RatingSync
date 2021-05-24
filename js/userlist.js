@@ -63,7 +63,12 @@ function getFilmsForFilmlistCallback(xmlhttp) {
 }
 
 function renderUserlistFilms() {
-    var films = contextData.films;
+    let films = contextData.films;
+
+    if (!films || (films.length < 1)) {
+        renderEmptyList();
+    }
+
     var row = 0;
     var html = "\n";
     html = html + "<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 row-cols-xl-6' id='userlist-row'>\n";
@@ -182,4 +187,14 @@ function hideFilmDropdownForUserlist(filmId, detailTimer) {
     // Poster might have been resized to match the dropdown. Put it back the
     // default height
     posterEl.removeAttribute("style");
+}
+
+function renderEmptyList() {
+    let msgEl = document.getElementById("empty-list");
+
+    if (msgEl) {
+        msgEl.classList.add("mt-3");
+        let text = "Begin by using the Search bar to find titles you want to rate.";
+        renderMsg(text, msgEl);
+    }
 }

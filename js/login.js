@@ -85,17 +85,6 @@ function validateNewUsernameCallback(xmlhttp, username) {
     }
 }
 
-function renderMsg(message, element) {
-    if (element) {
-        if (message && message.length > 0) {
-            element.innerHTML = message;
-            element.hidden = false;
-        } else {
-            element.hidden = true;
-        }
-    }
-}
-
 function showLoginForm() {
     var loginEl = document.getElementById("login-form");
     var loginLinkEl = document.getElementById("login-form-link");

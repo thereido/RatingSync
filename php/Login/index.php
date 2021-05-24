@@ -15,7 +15,7 @@ $regFormDisplay = "none";
 $regHeaderClass = "";
 $regFormHidden = "hidden";
 $regHeaderHidden = "hidden";
-/* UNCOMMENT for register $regHeaderHidden = "";*/
+$regHeaderHidden = ""; /* UNCOMMENTED for register */
 
 $http_referer = "";
 if (array_key_exists("destination", $_POST)) {
@@ -49,9 +49,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     } else if ($_POST['active-form'] == "verify-form") {
 		/*
-		 * UNCOMMENT for register
+		 * UNCOMMENTED for register
 		 * When you are ready to register users look for "UNCOMMENT for register" in this file
-		 *
+		 */
         $loginFormDisplay = "none";
         $loginHeaderClass = "";
         $regFormDisplay = "block";
@@ -72,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $msgRegWarning = "<strong>Registration failed</strong><br>Please try again. Maybe with a different username and/or password.<br>";
             }
 		}
-		UNCOMMENT for register */
+		/* UNCOMMENTED for register */
     }
 }
 ?>
@@ -174,11 +174,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                <p><strong>Do not forget your password!</strong></p>
                                                 This site has many limitations as it is still in development.
                                                 <ul>
-                                                    <li>If you forget your password we cannot reset it</li>
-                                                    <li>You cannot change your password after you register</li>
+                                                    <li>If you forget your password we cannot reset it.</li>
+                                                    <li>You cannot change your password after you register.</li>
                                                 </ul>
                                             </div>
                                             <div class="modal-footer">

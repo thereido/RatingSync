@@ -505,7 +505,7 @@ detail-episode-rating { color: var(--star); }
     color: var(--fg);
 }
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: disabled) {
     :root {
         --bg: white;
         --bg-surface: #f8f9fa;

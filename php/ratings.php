@@ -52,6 +52,7 @@ $pageFooter = getPageFooter();
   <?php echo $pageHeader; ?>
   <?php echo $filmlistHeader; ?>
 
+    <div id="empty-list" class="alert alert-info" hidden></div>
     <div id="film-table"  class="mt-3"></div>
     
   <?php echo $filmlistPagination; ?>
