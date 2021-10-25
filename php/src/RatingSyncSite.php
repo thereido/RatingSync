@@ -385,7 +385,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
 
     public function getContentTypeFilterCommaDelimited() {
         $filteredOut = "";
-        $comma = "";\
+        $comma = "";
         reset($this->contentTypeFilter);
         while (list($key, $val) = each($this->contentTypeFilter)) {
             if (Film::validContentType($key) && $val === false) {
