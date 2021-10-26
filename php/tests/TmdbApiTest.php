@@ -29,7 +29,7 @@ class TmdbApiTest extends RatingSyncTestCase
     const TESTFILM_PRIMARY_TMDBID_SOURCEID = "109445";
     const TESTFILM_PRIMARY_USER_SCORE = 7.3;
     const TESTFILM_PRIMARY_CRITIC_SCORE = null;
-    const TESTFILM_PRIMARY_IMAGE = "/eFnGmj63QPUpK7QUWSOUhypIQOT.jpg";
+    const TESTFILM_PRIMARY_IMAGE = "/kgwjIb2JDHRhNk13lmSxiClFjVk.jpg";
     const TESTFILM_PRIMARY_DIRECTORS = array("Chris Buck", "Jennifer Lee");
     const TESTFILM_PRIMARY_GENRES = array("Animation", "Adventure", "Family");
     
@@ -42,7 +42,7 @@ class TmdbApiTest extends RatingSyncTestCase
     const TESTSERIES_CRITIC_SCORE = null;
     const TESTSERIES_IMAGE = "/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg";
     const TESTSERIES_DIRECTORS = array();
-    const TESTSERIES_GENRES = array("Sci-Fi & Fantasy", "Drama");
+    const TESTSERIES_GENRES = array("Sci-Fi & Fantasy", "Drama", "Action & Adventure");
     const TESTSERIES_SEASON_COUNT = 8;
     
     const TESTEPISODE_TITLE = self::TESTSERIES_TITLE;

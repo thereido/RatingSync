@@ -604,6 +604,7 @@ class RatingTest extends RatingSyncTestCase
         // Test
         $username = "notfound_username";
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
+        $rating->setYourScore(5);
         $success = $rating->saveToDb($username, $filmId);
 
         // Verify
@@ -626,6 +627,7 @@ class RatingTest extends RatingSyncTestCase
         // Test
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
+        $rating->setYourScore(5);
         $success = $rating->saveToDb($username, 1500);
 
         // Verify

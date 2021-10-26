@@ -167,25 +167,25 @@ class RatingSyncSiteTest extends RatingSyncTestCase
 
         $query = "SELECT * FROM rating WHERE user_name='".Constants::TEST_RATINGSYNC_USERNAME."' AND source_name='".Constants::SOURCE_RATINGSYNC."' ORDER BY film_id ASC";
         $result = $db->query($query);
-        $this->assertEquals(6, $result->num_rows, "Count ".Constants::SOURCE_RATINGSYNC."ratings for ".Constants::TEST_RATINGSYNC_USERNAME);
+        $this->assertEquals(6, $result->num_rows, "Count ".Constants::SOURCE_RATINGSYNC." ratings for ".Constants::TEST_RATINGSYNC_USERNAME);
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         while ($row = $result->fetch_assoc()) {
             $rating->initFromDbRow($row);
             $filmId = $row['film_id'];
             if ($filmId == 1) {
-                $this->assertEquals(8, $rating->getYourScore(), "Rating score");
-                $this->assertEquals("2015-05-04", date_format($rating->getYourRatingDate(), 'Y-m-d'), "Rating date");
+                $this->assertEquals(8, $rating->getYourScore(), "The Jinni was more recent, so the RS rating should have the new score");
+                $this->assertEquals("2015-05-04", date_format($rating->getYourRatingDate(), 'Y-m-d'), "The Jinni was more recent, so the RS rating should have the new date");
             } else if ($filmId == 2) {
-                $this->assertEquals(1, $rating->getYourScore(), "Rating score");
-                $this->assertEquals("2015-01-01", date_format($rating->getYourRatingDate(), 'Y-m-d'), "Rating date");
+                $this->assertEquals(1, $rating->getYourScore(), "Rating score (RS rating should not have changed)");
+                $this->assertEquals("2015-01-01", date_format($rating->getYourRatingDate(), 'Y-m-d'), "Rating date (RS rating should not have changed)");
             } else if ($filmId == 3) {
-                $this->assertEquals(2, $rating->getYourScore(), "Rating score");
-                $this->assertEquals("2015-01-02", date_format($rating->getYourRatingDate(), 'Y-m-d'), "Rating date");
+                $this->assertEquals(2, $rating->getYourScore(), "Rating score - The IMDb rating should have been copied");
+                $this->assertEquals("2015-01-02", date_format($rating->getYourRatingDate(), 'Y-m-d'), "Rating date - The IMDb rating should have been copied");
             } else if ($filmId == 4) {
-                $this->assertFalse(true, "Film Id=4, That rating came from another user");
+                $this->assertFalse(true, "Film Id=4, That rating came from another user so it should not show up in the results");
             } else if ($filmId == 7) {
-                $this->assertEquals(6, $rating->getYourScore(), "Rating score");
-                $this->assertEquals("2015-01-06", date_format($rating->getYourRatingDate(), 'Y-m-d'), "Rating date");
+                $this->assertEquals(6, $rating->getYourScore(), "Rating score (RS rating should not have changed)");
+                $this->assertEquals("2015-01-06", date_format($rating->getYourRatingDate(), 'Y-m-d'), "Rating date (RS rating should not have changed)");
             }
         }
 

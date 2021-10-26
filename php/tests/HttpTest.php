@@ -117,6 +117,21 @@ class HttpTest extends RatingSyncTestCase
      * @covers \RatingSync\Http::getPage
      * @depends testObjectCanBeConstructed
      */
+    public function testGetPageTmdbApi()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        $http = new Http(Constants::SOURCE_TMDBAPI);
+        $json = $http->getPage("/movie/109445?api_key=" . Constants::TMDB_API_KEY);
+        $result = json_decode($json, true);
+        $this->assertFalse(empty($result), "Result should not be empty");
+        $this->assertEquals("Frozen", $result["title"], "Result 'title' should be 'Frozen'");
+    }
+
+    /**
+     * @covers \RatingSync\Http::getPage
+     * @depends testObjectCanBeConstructed
+     */
+    /*
     public function testGetPageOmdbApi()
     {$this->start(__CLASS__, __FUNCTION__);
 
@@ -126,6 +141,7 @@ class HttpTest extends RatingSyncTestCase
         $this->assertFalse(empty($result), "Result should not be empty");
         $this->assertEquals("True", $result["Response"], "Result 'Response' should be 'True'");
     }
+    */
 
     /**
      * @covers \RatingSync\Http::getPage
