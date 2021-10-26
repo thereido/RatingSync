@@ -10,6 +10,8 @@
  */
 namespace RatingSync;
 
+use ArrayObject;
+
 require_once "Constants.php";
 
 /**
@@ -865,11 +867,17 @@ class Filmlist
         $filteredOut = "";
         $comma = "";
         reset($this->contentFilter);
-        while (list($key, $val) = each($this->contentFilter)) {
-            if (Film::validContentType($key) && $val === false) {
+
+        $iter = (new ArrayObject($this->contentFilter))->getIterator();
+        while ($iter->valid()) {
+
+            $key = $iter->key();
+            if (Film::validContentType($key) && $iter->current() === false) {
                 $filteredOut .= $comma . "'$key'";
                 $comma = ", ";
             }
+
+            $iter->next();
         }
         
         return $filteredOut;

@@ -4,6 +4,8 @@
  */
 namespace RatingSync;
 
+use ArrayObject;
+
 require_once "SiteRatings.php";
 
 /**
@@ -175,7 +177,6 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             $beginRecord = ($limitPages * $beginPage) - $limitPages;
             $limit = "LIMIT $beginRecord, $limitPages";
         }
-        
         $db = getDatabase();
         $query = $this->getRatingsQuery("rating.film_id", $orderBy, $limit);
         $result = $db->query($query);
@@ -387,13 +388,19 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $filteredOut = "";
         $comma = "";
         reset($this->contentTypeFilter);
-        while (list($key, $val) = each($this->contentTypeFilter)) {
-            if (Film::validContentType($key) && $val === false) {
+
+        $iter = (new ArrayObject($this->contentTypeFilter))->getIterator();
+        while ($iter->valid()) {
+
+            $key = $iter->key();
+            if (Film::validContentType($key) && $iter->current() === false) {
                 $filteredOut .= $comma . "'$key'";
                 $comma = ", ";
             }
+
+            $iter->next();
         }
-        
+
         return $filteredOut;
     }
 
