@@ -185,7 +185,7 @@ class Rating
         } elseif (empty($this->sourceName)) {
             throw new \InvalidArgumentException("Rating must have a sourceName");
         }
-        
+
         $saveSuccess = false;
         $originalThis = $this;
         $sourceName = $this->sourceName;
@@ -196,15 +196,10 @@ class Rating
         if (empty($existingRating)) {
             // This is a new rating. Simply insert it to the db.
 
-            // Don't insert a new rating unless there is a score (your or suggested)
-            if (empty($this->getYourScore()) && empty($this->getSuggestedScore())) {
-                $saveSuccess = true;
-            } else {
-                $thisValues = self::setColumnsAndValues($this, $username, $filmId);
-                $insertThisRating = "REPLACE INTO rating (".$thisValues['columns'].") VALUES (".$thisValues['values'].")";
-                logDebug($insertThisRating, __CLASS__."::".__FUNCTION__." ".__LINE__);
-                $saveSuccess = $db->query($insertThisRating);
-            }
+            $thisValues = self::setColumnsAndValues($this, $username, $filmId);
+            $insertThisRating = "REPLACE INTO rating (".$thisValues['columns'].") VALUES (".$thisValues['values'].")";
+            logDebug($insertThisRating, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            $saveSuccess = $db->query($insertThisRating);
         } else {
             // There is an existing rating. This one goes to the rating
             // table and the other goes the archive table.
@@ -247,7 +242,7 @@ class Rating
                 $saveSuccess = $db->query($archive);
             }
         }
-        
+
         return $saveSuccess;
     }
     
@@ -262,7 +257,7 @@ class Rating
             $rating = new Rating($sourceName);
             $rating->initFromDbRow($result->fetch_assoc());
         }
-        
+
         return $rating;
     }
 
