@@ -160,6 +160,8 @@ class Http
             $lightweightUrl = "/help/?general/&ref_=hlp_brws";
         } elseif ($sourceName == Constants::SOURCE_OMDBAPI) {
             $lightweightUrl = "&s=foo";
+        } elseif ($sourceName == Constants::SOURCE_TMDBAPI) {
+            $lightweightUrl = "/movie/109445?api_key=" . Constants::TMDB_API_KEY;
         } elseif ($sourceName == Constants::SOURCE_JINNI) {
             $lightweightUrl = "/about";
         } elseif ($sourceName == Constants::SOURCE_NETFLIX) {
