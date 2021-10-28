@@ -18,6 +18,7 @@ require_once "TmdbApiTest.php";
 
 class MainTest extends RatingSyncTestCase
 {
+    const RATING_USER = "rs_user1";
 
     protected function setUp(): void
     {
@@ -179,8 +180,8 @@ class MainTest extends RatingSyncTestCase
     public function testSearchEmptyArgs()
     {$this->start(__CLASS__, __FUNCTION__);
 
-        $film = search(null, null)['match'];
-        $this->assertEmpty($film, "Empty args should return nothing");
+        $emptySearchResults = search(null, null)['match'];
+        $this->assertEmpty($emptySearchResults, "Empty args should return nothing");
     }
     
     /**
@@ -253,7 +254,7 @@ class MainTest extends RatingSyncTestCase
         $this->assertEquals($year, $film->getYear(), "Year");
         $this->assertEquals($contentType, $film->getContentType(), 'Content Type');
         $this->assertEquals($filmImage, $film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match("@($sourceImage)@", $film->getImage($sourceName), $matches), "Image link ($sourceName)");
+        $this->assertEquals(1, preg_match("@($sourceImage)@", $film->getImage($sourceName), $matches), "Image link ($sourceName) should be '" . $sourceImage . "', not '" . $film->getImage($sourceName) . "'");
         $this->assertEquals(round($criticScore), round($film->getCriticScore($sourceName)), 'Critic score');
         $this->assertEquals(round($userScore), round($film->getUserScore($sourceName)), 'User score');
         $this->assertEquals($directors, $directorsFromSearch, 'Director(s)');

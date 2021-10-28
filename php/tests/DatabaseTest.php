@@ -12,7 +12,8 @@ class DatabaseTest extends RatingSyncTestCase
 {
     public static function resetDb()
     {
-        $command = "mysql -u " . Constants::DB_ADMIN_USER . " -p". Constants::DB_ADMIN_PWD . " " . Constants::DB_TEST_DATABASE;
+//        $command = "mysql -u " . Constants::DB_ADMIN_USER . " -p'". Constants::DB_ADMIN_PWD . "' " . Constants::DB_TEST_DATABASE;
+        $command = "mysql -u " . Constants::DB_ADMIN_USER . " " . Constants::DB_TEST_DATABASE;
         $sqlDir = ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "sql" . DIRECTORY_SEPARATOR;
         exec("$command < " . $sqlDir . "db_tables_drop.sql");
         exec("$command < " . $sqlDir . "db_tables_create.sql");

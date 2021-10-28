@@ -73,7 +73,7 @@ function getDatabase($mode = Constants::DB_MODE)
         throw new \InvalidArgumentException('Must set database mode');
     }
     
-    $db_conn;
+    $db_conn = null;
     if ($mode == Constants::DB_MODE_STANDARD) {
         $db_name = Constants::DB_DATABASE;
         if (empty($db_conn_standard)) {
@@ -184,8 +184,9 @@ function getUsername() {
  */
 function search($searchTerms, $username = null)
 {
+    $emptyResults = ['match' => null, 'parent' => null];
     if (empty($searchTerms) || !is_array($searchTerms)) {
-        return null;
+        return $emptyResults;
     }
 
     if (empty($username)) {
@@ -214,7 +215,7 @@ function search($searchTerms, $username = null)
         $validSearchTerms = true;
     }
     if (!$validSearchTerms) {
-        return null;
+        return $emptyResults;
     }
     
     $newFilm = false;
@@ -226,7 +227,7 @@ function search($searchTerms, $username = null)
         // Not in the DB. Search the API to the content source.
         $sourceApi = getMediaDbApiClient();
         if (is_null($sourceApi)) {
-            return null;
+            return $emptyResults;
         }
         
         $nonApiSources = array(); // Not including obselete sources
