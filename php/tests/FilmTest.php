@@ -2811,8 +2811,10 @@ class FilmTest extends RatingSyncTestCase
         $filmId = $row['id'];
         
         // Delete the image from the db
-        $this->assertTrue($db->query("UPDATE film SET image=NULL WHERE id=".$filmId), "Delete film image");
-        $this->assertTrue($db->query("UPDATE film_source SET image=NULL WHERE film_id=".$filmId), "Delete film_source image");
+        $querySuccess = $db->query("UPDATE film SET image=NULL WHERE id=".$filmId) !== false;
+        $this->assertTrue($querySuccess, "Delete film image");
+        $querySuccess = $db->query("UPDATE film_source SET image=NULL WHERE film_id=".$filmId) !== false;
+        $this->assertTrue($querySuccess, "Delete film_source image");
 
         // Get a Film object from the db
         $film = Film::getFilmFromDb($filmId);
@@ -2891,8 +2893,10 @@ class FilmTest extends RatingSyncTestCase
         $filmId2 = intval($row['id']);
         
         // Delete images from the db
-        $this->assertTrue($db->query("UPDATE film SET image=NULL WHERE id IN ($filmId1, $filmId2)"), "Delete film image");
-        $this->assertTrue($db->query("UPDATE film_source SET image=NULL WHERE film_id IN ($filmId1, $filmId2)"), "Delete film_source image");
+        $querySuccess = $db->query("UPDATE film SET image=NULL WHERE id IN ($filmId1, $filmId2)") !== false;
+        $this->assertTrue($querySuccess, "Delete film image");
+        $querySuccess = $db->query("UPDATE film_source SET image=NULL WHERE film_id IN ($filmId1, $filmId2)") !== false;
+        $this->assertTrue($querySuccess, "Delete film_source image");
 
         // Test
         Film::reconnectFilmImages();

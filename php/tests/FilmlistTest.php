@@ -1614,9 +1614,11 @@ class FilmlistTest extends RatingSyncTestCase
         // Set up
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $query = "DELETE FROM filmlist WHERE user_name='$username'";
-        $this->assertTrue($db->query($query), "Delete from filmlist");
+        $querySuccess = $db->query($query) !== false;
+        $this->assertTrue($querySuccess, "Delete from filmlist");
         $query = "DELETE FROM user_filmlist WHERE user_name='$username' AND listname!='".Constants::LIST_DEFAULT."'";
-        $this->assertTrue($db->query($query), "Delete from user_filmlist");
+        $querySuccess = $db->query($query) !== false;
+        $this->assertTrue($querySuccess, "Delete from user_filmlist");
 
         // Set no lists
 
@@ -1638,8 +1640,11 @@ class FilmlistTest extends RatingSyncTestCase
     
         // Set up
         $username = Constants::TEST_RATINGSYNC_USERNAME;
-        //*RT* $query = "DELETE FROM filmlist WHERE user_name='$username'";
-        //*RT* $this->assertTrue($db->query($query));
+        /*RT
+        $query = "DELETE FROM filmlist WHERE user_name='$username'";
+        $querySuccess = $db->query($query) !== false;
+        $this->assertTrue($querySuccess);
+        *RT*/
 
         $listname1 = "testUserGetListsFromDb";
         $list1 = new Filmlist($username, $listname1);

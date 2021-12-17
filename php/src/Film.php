@@ -997,9 +997,10 @@ class Film {
                 $values = "$director, $director";
                 $query = "INSERT INTO person ($columns) VALUES ($values)";
                 logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
-                $success = $db->query($query);
+                $success = $db->query($query) !== false;
                 if (!$success) {
                     $errorFree = false;
+                    logDebug("SQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__.":".__LINE__);
                 }
                 $personId = $db->lastInsertId();
             }
@@ -1008,9 +1009,10 @@ class Film {
             $values = "$personId, $filmId, 'Director'";
             $query = "REPLACE INTO credit ($columns) VALUES ($values)";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
-            $success = $db->query($query);
+            $success = $db->query($query) !== false;
             if (!$success) {
                 $errorFree = false;
+                logDebug("SQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__.":".__LINE__);
             }
         }
         
@@ -1022,9 +1024,10 @@ class Film {
                 $values = "'$genre'";
                 $query = "INSERT INTO genre ($columns) VALUES ($values)";
                 logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
-                $success = $db->query($query);
+                $success = $db->query($query) !== false;
                 if (!$success) {
                     $errorFree = false;
+                    logDebug("SQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__.":".__LINE__);
                 }
             }
 
@@ -1032,9 +1035,10 @@ class Film {
             $values = "$filmId, '$genre'";
             $query = "REPLACE INTO film_genre ($columns) VALUES ($values)";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
-            $success = $db->query($query);
+            $success = $db->query($query) !== false;
             if (!$success) {
                 $errorFree = false;
+                logDebug("SQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__.":".__LINE__);
             }
         }
 
@@ -1079,9 +1083,10 @@ class Film {
         $where = "id=$filmId";
         $query = "UPDATE film SET $values WHERE $where";
         logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
-        $success = $db->query($query);
+        $success = $db->query($query) !== false;
         if (!$success) {
             $errorFree = false;
+            logDebug("SQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__.":".__LINE__);
         }
 
         return $errorFree;

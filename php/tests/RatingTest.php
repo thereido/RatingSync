@@ -483,7 +483,8 @@ class RatingTest extends RatingSyncTestCase
         $this->assertTrue($film->saveToDb($username), "Saving film $title");
         $db = getDatabase();
         $newUsername = "rs_user1";
-        $this->assertTrue($db->query("REPLACE INTO user (username, password) VALUES ('$newUsername', 'password')"), "Insert user $newUsername");
+        $querySuccess = $db->query("REPLACE INTO user (username, password) VALUES ('$newUsername', 'password')") !== false;
+        $this->assertTrue($querySuccess, "Insert user $newUsername");
         $film = new Film();
         $film->setTitle($title);
         $film->setYear($year);

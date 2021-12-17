@@ -308,8 +308,8 @@ class Filmlist
         $isDuplicate = false;
         $prevItemUpdated = false;
         $username = $this->username;
-        $listname = $db->quote($this->listname);
-        $wherePrefix = " WHERE user_name='$username' AND listname=$listname ";
+        $listnameEscapedAndQuoted = $db->quote($this->listname);
+        $wherePrefix = " WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted ";
 
         // Check for an duplicate
         $query = "SELECT count(1) as count FROM filmlist $wherePrefix" .
@@ -325,7 +325,7 @@ class Filmlist
             $query = "UPDATE filmlist SET next_film_id=$filmId $wherePrefix" .
                         "   AND next_film_id IS NULL";
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             } else {
                 $prevItemUpdated = true;
@@ -344,10 +344,10 @@ class Filmlist
             }
 
             $columns = "user_name, film_id, listname, position, next_film_id, create_ts";
-            $values = "'$username', $filmId, '$listname', $position, NULL, CURRENT_TIMESTAMP";
+            $values = "'$username', $filmId, $listnameEscapedAndQuoted, $position, NULL, CURRENT_TIMESTAMP";
             $query = "INSERT INTO filmlist ($columns) VALUES ($values)";
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo().__CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
                 if ($prevItemUpdated) {
                     // Undo the update
@@ -416,7 +416,7 @@ class Filmlist
         if ($db->query($query)) {
             $nextIdUpdated = true;
         } else {
-            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo().__CLASS__."::".__FUNCTION__." ".__LINE__);
+            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             $errorFree = false;
         }
                 
@@ -428,7 +428,7 @@ class Filmlist
             if ($db->query($query)) {
                 $positionsUpdated = true;
             } else {
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo().__CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -440,7 +440,7 @@ class Filmlist
             if ($db->query($query)) {
                 $nextIdUpdated = false;
             } else {
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -451,7 +451,7 @@ class Filmlist
                         "   AND film_id=$removeThisFilmId";
             logDebug("Delete filmlist item: " . $query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -519,7 +519,7 @@ class Filmlist
                     " VALUES ('$username', $listnameEscapedAndQuoted, CURRENT_TIMESTAMP".$parentListValue.")";
         logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
         if (! $db->query($query)) {
-            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             $errorFree = false;
         }
 
@@ -538,7 +538,7 @@ class Filmlist
                      " VALUES ('$username', $listnameEscapedAndQuoted, $position, $filmId, $nextFilmId, CURRENT_TIMESTAMP)";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -576,14 +576,14 @@ class Filmlist
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
                 $success = false;
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             }
         
             // Delete the list itself
             $query = "DELETE FROM user_filmlist WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted";
             if (! $db->query($query)) {
                 $success = false;
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             }
         }
 
@@ -655,7 +655,7 @@ class Filmlist
         logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
         if (! $db->query($query)) {
             $success = false;
-            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
         }
 
         // Rename the listname on the items in the list
@@ -666,7 +666,7 @@ class Filmlist
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
                 $success = false;
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             }
         }
 
@@ -678,7 +678,7 @@ class Filmlist
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
                 $success = false;
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             }
         }
 
@@ -1033,7 +1033,7 @@ class Filmlist
         // Validate that myFilmID and nextFilmId are in the db 
         $filmIdsValid = false;
         if ($nextFilmId != -1) {
-            $result = $db->querys($queryPrefix . "AND (film_id=$myFilmId OR film_id=$nextFilmId)");
+            $result = $db->query($queryPrefix . "AND (film_id=$myFilmId OR film_id=$nextFilmId)");
             if ($result->rowCount() == 2) {
                 $filmIdsValid = true;
             }
@@ -1077,7 +1077,7 @@ class Filmlist
             $query = "UPDATE filmlist SET next_film_id=$origNextFilmId" .
                         $wherePrefix . " AND film_id=$origPrevFilmId";
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -1088,7 +1088,7 @@ class Filmlist
             $query = "UPDATE filmlist SET next_film_id=$myFilmId" .
                         $wherePrefix . " AND film_id=$newPrevFilmId";
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -1101,7 +1101,7 @@ class Filmlist
         $query = "UPDATE filmlist SET $nextFilmIdSet" .
                     $wherePrefix . " AND film_id=$myFilmId";
         if (! $db->query($query)) {
-            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             $errorFree = false;
         }
 
