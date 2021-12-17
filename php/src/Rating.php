@@ -253,9 +253,9 @@ class Rating
         $rating = null;
         $query = "SELECT * FROM rating WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId'";
         $result = $db->query($query);
-        if (!empty($result) && $result->num_rows == 1) {
+        if (!empty($result) && $result->rowCount() == 1) {
             $rating = new Rating($sourceName);
-            $rating->initFromDbRow($result->fetch_assoc());
+            $rating->initFromDbRow($result->fetch());
         }
 
         return $rating;
@@ -334,8 +334,8 @@ class Rating
         $sourceName = $this->sourceName;
         $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId' ORDER BY ts DESC LIMIT 1";
         $result = $db->query($query);
-        if (!empty($result) && $result->num_rows == 1) {
-            $row = $result->fetch_assoc();
+        if (!empty($result) && $result->rowCount() == 1) {
+            $row = $result->fetch();
             $existingScore = $row['yourScore'];
             $existingDate = new \DateTime($row['yourRatingDate']);
             $yourScore = $this->getYourScore();

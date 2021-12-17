@@ -120,8 +120,8 @@ class ApiTest extends RatingSyncTestCase
         $db = getDatabase();
         $query = "SELECT title FROM film, film_source WHERE uniqueName='$uniqueName' AND source_name='IMDb' AND id=film_id";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There should be one result");
-        $titleDb = $result->fetch_assoc()['title'];
+        $this->assertEquals(1, $result->rowCount(), "There should be one result");
+        $titleDb = $result->fetch()['title'];
         $this->assertEquals($title, $titleDb, "Title from the db should match '$title'");
     }
 

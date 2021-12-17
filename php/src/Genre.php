@@ -38,7 +38,7 @@ class Genre {
         $genres = array();
         
         $result = $db->query("SELECT * FROM genre ORDER BY name ASC");
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $genres[] = $row['name'];
         }
 

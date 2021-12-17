@@ -181,7 +181,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $query = $this->getRatingsQuery("rating.film_id", $orderBy, $limit);
         $result = $db->query($query);
         // Iterate over films rated
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = intval($row["film_id"]);
             $film = Film::getFilmFromDb($filmId, $this->username);
             $films[] = $film;
@@ -194,7 +194,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $db = getDatabase();
         $query = $this->getRatingsQuery("count(DISTINCT rating.film_id) as count");
         $result = $db->query($query);
-        $row = $result->fetch_assoc();
+        $row = $result->fetch();
         
         return $row["count"];
     }
@@ -270,7 +270,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $result = $db->query($query);
 
         // Iterate over ratings from other sources
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $rating = new Rating($row["source_name"]);
             $rating->initFromDbRow($row);
             $rating->saveToRs($username, $row["film_id"]);
@@ -463,7 +463,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         // Search titles with the full $searchQuery
         $query = $this->getSearchSql($searchDomain, $searchQuery, $limit);
         $result = $db->query($query);
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = intval($row["film_id"]);
             $film = Film::getFilmFromDb($filmId, $this->username);
             $films[] = $film;
@@ -476,7 +476,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             foreach ($queryWords as $word) {
                 $query = $this->getSearchSql($searchDomain, $word, $limit);
                 $result = $db->query($query);
-                while ($row = $result->fetch_assoc()) {
+                foreach ($result->fetchAll() as $row) {
                     $filmId = intval($row["film_id"]);
                     if (!in_array($filmId, $filmIds)) {
                         $film = Film::getFilmFromDb($filmId, $this->username);
@@ -497,7 +497,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             foreach ($queryWords as $word) {
                 $query = $this->getRatingsSqlQuery($word, $limit, true);
                 $result = $db->query($query);
-                while ($row = $result->fetch_assoc()) {
+                foreach ($result->fetchAll() as $row) {
                     $filmId = intval($row["film_id"]);
                     if (!in_array($filmId, $filmIds)) {
                         $film = Film::getFilmFromDb($filmId, $this->username);
@@ -628,7 +628,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
 
         $query = "SELECT count(1) as count FROM user WHERE username='" . $username . "'";
         $result = $db->query($query);
-        $row = $result->fetch_assoc();
+        $row = $result->fetch();
         
         $exists = false;
         if ($row["count"] > 0) {

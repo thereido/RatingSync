@@ -56,22 +56,22 @@ class MainTest extends RatingSyncTestCase
         $username_rs = "rs_user1";
         $query = "INSERT INTO user (username, password) VALUES ('$username_rs', 'password')";
         if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
+            echo $query."  SQL Error: ".$db->errorInfo();
             $success = false;
         }
         $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_IMDB."', 'imdb_user1', 'pwd')";
         if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
+            echo $query."  SQL Error: ".$db->errorInfo();
             $success = false;
         }
         $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_JINNI."', 'jinni_user1', 'pwd')";
         if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
+            echo $query."  SQL Error: ".$db->errorInfo();
             $success = false;
         }
         $query = "INSERT INTO user_source (user_name, source_name, username, password) VALUES ('$username_rs', '".Constants::SOURCE_RATINGSYNC."', '$username_rs', 'password')";
         if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
+            echo $query."  SQL Error: ".$db->errorInfo();
             $success = false;
         }
         
@@ -79,7 +79,7 @@ class MainTest extends RatingSyncTestCase
         $filmId = 1; $filmId2 = 2; $filmId4 = 4;
         $result = $db->query("SELECT * FROM rating WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."' AND source_name='".Constants::SOURCE_IMDB."'");
         $rating = new Rating(Constants::SOURCE_IMDB);
-        $rating->initFromDbRow($result->fetch_assoc());
+        $rating->initFromDbRow($result->fetch());
         $rating->saveToRs($username_rs, $filmId);
         $rating->saveToRs($username_rs, $filmId2);
         $rating->setYourRatingDate(new \DateTime());
@@ -87,21 +87,21 @@ class MainTest extends RatingSyncTestCase
 
         $query = "UPDATE rating SET source_name='".Constants::SOURCE_IMDB."' WHERE film_id=$filmId4 AND user_name='$username_rs'";
         if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
+            echo $query."  SQL Error: ".$db->errorInfo();
             $success = false;
         }
 
         $filmId = 1;
         $query = "UPDATE rating SET yourRatingDate='2015-1-1' WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."' AND source_name='".Constants::SOURCE_RATINGSYNC."'";
         if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
+            echo $query."  SQL Error: ".$db->errorInfo();
             $success = false;
         }
 
         $filmId = 3;
         $query = "UPDATE rating SET source_name='".Constants::SOURCE_IMDB."' WHERE film_id=$filmId AND user_name='".Constants::TEST_RATINGSYNC_USERNAME."'";
         if (! $db->query($query) ) {
-            echo $query."  SQL Error: ".$db->error;
+            echo $query."  SQL Error: ".$db->errorInfo();
             $success = false;
         }
 

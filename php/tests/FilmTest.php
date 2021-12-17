@@ -2438,7 +2438,7 @@ class FilmTest extends RatingSyncTestCase
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='' OR title IS NULL";
         $result = $db->query($query);
-        $this->assertEquals(0, $result->num_rows, "There should be no result");
+        $this->assertEquals(0, $result->rowCount(), "There should be no result");
     }
     
     /**
@@ -2460,7 +2460,7 @@ class FilmTest extends RatingSyncTestCase
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='Title no year' AND year IS NULL";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "Should be a result");
+        $this->assertEquals(1, $result->rowCount(), "Should be a result");
     }
     
     /**
@@ -2512,8 +2512,8 @@ class FilmTest extends RatingSyncTestCase
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There should be one result");
-        $filmId = $result->fetch_assoc()['id'];
+        $this->assertEquals(1, $result->rowCount(), "There should be one result");
+        $filmId = $result->fetch()['id'];
         $dbFilm = Film::getFilmFromDb($filmId, $username_rs);
         $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
         $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
@@ -2535,7 +2535,7 @@ class FilmTest extends RatingSyncTestCase
         $this->assertEmpty($dbFilm->getYourScore($sourceName), "Should be no RS rating");
         $query = "SELECT film_id FROM rating WHERE film_id=$filmId AND source_name='$sourceName'";
         $result = $db->query($query);
-        $this->assertEquals(0, $result->num_rows, "There should be no $sourceName rating");
+        $this->assertEquals(0, $result->rowCount(), "There should be no $sourceName rating");
     }
     
     /**
@@ -2591,8 +2591,8 @@ class FilmTest extends RatingSyncTestCase
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There should be one result");
-        $filmId = $result->fetch_assoc()['id'];
+        $this->assertEquals(1, $result->rowCount(), "There should be one result");
+        $filmId = $result->fetch()['id'];
         $dbFilm = Film::getFilmFromDb($filmId, $username_rs);
         $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
         $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
@@ -2608,7 +2608,7 @@ class FilmTest extends RatingSyncTestCase
         $this->assertEquals($film->getUserScore($sourceRs), $dbFilm->getUserScore($sourceRs), "UserScore RS");
         $query = "SELECT film_id FROM rating WHERE film_id=$filmId";
         $result = $db->query($query);
-        $this->assertEquals(0, $result->num_rows, "There should be no ratings");
+        $this->assertEquals(0, $result->rowCount(), "There should be no ratings");
     }
     
     /**
@@ -2648,8 +2648,8 @@ class FilmTest extends RatingSyncTestCase
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There should be one result");
-        $filmId = $result->fetch_assoc()['id'];
+        $this->assertEquals(1, $result->rowCount(), "There should be one result");
+        $filmId = $result->fetch()['id'];
         $dbFilm = Film::getFilmFromDb($filmId, $username_rs);
         $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
         $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
@@ -2663,7 +2663,7 @@ class FilmTest extends RatingSyncTestCase
         $this->assertEquals("rs$filmId", $dbFilm->getUniqueName($sourceRsName), "UniqueName RS");
         $query = "SELECT film_id FROM rating WHERE film_id=$filmId AND source_name='$sourceRsName'";
         $result = $db->query($query);
-        $this->assertEquals(0, $result->num_rows, "There should be no $sourceRsName rating");
+        $this->assertEquals(0, $result->rowCount(), "There should be no $sourceRsName rating");
     }
     
     /**
@@ -2750,8 +2750,8 @@ class FilmTest extends RatingSyncTestCase
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There should be one result");
-        $filmId = $result->fetch_assoc()['id'];
+        $this->assertEquals(1, $result->rowCount(), "There should be one result");
+        $filmId = $result->fetch()['id'];
         $dbFilm = Film::getFilmFromDb($filmId, $username_rs);
         $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
         $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
@@ -2807,7 +2807,7 @@ class FilmTest extends RatingSyncTestCase
         // Get a film id 
         $query = "SELECT id, image FROM film WHERE title='Zombeavers'";
         $result = $db->query($query);
-        $row = $result->fetch_assoc();
+        $row = $result->fetch();
         $filmId = $row['id'];
         
         // Delete the image from the db
@@ -2862,8 +2862,8 @@ class FilmTest extends RatingSyncTestCase
         $db = getDatabase();
         $query = "SELECT id FROM film WHERE title='".$film->getTitle()."' AND year=".$film->getYear();
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There should be one result");
-        $filmId = $result->fetch_assoc()['id'];
+        $this->assertEquals(1, $result->rowCount(), "There should be one result");
+        $filmId = $result->fetch()['id'];
         $dbFilm = Film::getFilmFromDb($filmId, $username_rs);
         $this->assertEquals($film->getTitle(), $dbFilm->getTitle(), "Title");
         $this->assertEquals($film->getYear(), $dbFilm->getYear(), "Year");
@@ -2883,11 +2883,11 @@ class FilmTest extends RatingSyncTestCase
         // Get a film ids
         $query = "SELECT id, image FROM film WHERE title='Frozen'";
         $result = $db->query($query);
-        $row = $result->fetch_assoc();
+        $row = $result->fetch();
         $filmId1 = intval($row['id']);
         $query = "SELECT id, image FROM film WHERE title='Zombeavers'";
         $result = $db->query($query);
-        $row = $result->fetch_assoc();
+        $row = $result->fetch();
         $filmId2 = intval($row['id']);
         
         // Delete images from the db
@@ -2901,16 +2901,16 @@ class FilmTest extends RatingSyncTestCase
 
         $query = "SELECT id, image FROM film WHERE title='Frozen'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There should be one result");
-        $row = $result->fetch_assoc();
+        $this->assertEquals(1, $result->rowCount(), "There should be one result");
+        $row = $result->fetch();
         $id = $row['id'];
         $image = $row['image'];
         $this->assertEquals("/image/Frozen_rs.jpg", $image, 'Image link');
 
         $query = "SELECT id, image FROM film WHERE title='Zombeavers'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There should be one result");
-        $row = $result->fetch_assoc();
+        $this->assertEquals(1, $result->rowCount(), "There should be one result");
+        $row = $result->fetch();
         $id = $row['id'];
         $image = $row['image'];
         $this->assertEquals("/image/rs$id.jpg", $image, 'Image link');
@@ -2965,7 +2965,7 @@ class FilmTest extends RatingSyncTestCase
         // Verify
         $title = "Star Wars: Episode IV - A New Hope"; $count = 0; $providers = "";
         $query = "SELECT id FROM film WHERE title='$title'";
-        $id = $db->query($query)->fetch_assoc()['id'];
+        $id = $db->query($query)->fetch()['id'];
         $film = Film::getFilmFromDb($id);
         $streams = $film->getStreams();
         $this->assertEquals($count, count($streams), "Should be $count streams for $title $providers");
@@ -2973,7 +2973,7 @@ class FilmTest extends RatingSyncTestCase
         /*
         $title = TEST_AMAZON_TITLE; $count = 1; $providers = "(Amazon)";
         $query = "SELECT id FROM film WHERE title='$title'";
-        $id = $db->query($query)->fetch_assoc()['id'];
+        $id = $db->query($query)->fetch()['id'];
         $film = Film::getFilmFromDb($id);
         $streams = $film->getStreams();
         $this->assertEquals($count, count($streams), "Should be $count streams for $title $providers");
@@ -2984,7 +2984,7 @@ class FilmTest extends RatingSyncTestCase
         
         $title = TEST_NETFLIX_TITLE; $count = 1; $providers = "(Netflix)";
         $query = "SELECT id FROM film WHERE title='$title'";
-        $id = $db->query($query)->fetch_assoc()['id'];
+        $id = $db->query($query)->fetch()['id'];
         $film = Film::getFilmFromDb($id);
         $streams = $film->getStreams();
         $this->assertEquals($count, count($streams), "Should be $count streams for $title $providers");
@@ -2997,7 +2997,7 @@ class FilmTest extends RatingSyncTestCase
         /*
         $title = TEST_XFINITY_TITLE; $count = 1; $providers = "(xfinity)";
         $query = "SELECT id FROM film WHERE title='$title'";
-        $id = $db->query($query)->fetch_assoc()['id'];
+        $id = $db->query($query)->fetch()['id'];
         $film = Film::getFilmFromDb($id);
         $streams = $film->getStreams();
         $this->assertEquals($count, count($streams), "Should be $count streams for $title $providers");

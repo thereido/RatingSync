@@ -75,5 +75,6 @@ class Constants
     {
         return self::basePath() .  DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "image" . DIRECTORY_SEPARATOR;
     }
+
 }
 ?>

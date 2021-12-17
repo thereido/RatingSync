@@ -898,13 +898,13 @@ class Film {
 
         $filmId = $this->id;
         $parentId = $this->parentId;
-        $title = $db->real_escape_string($this->getTitle());
+        $title = $db->quote($this->getTitle());
         $year = $this->getYear();
         $contentType = $this->getContentType();
         $seasonCount = $this->getSeasonCount();
-        $season = $db->real_escape_string($this->getSeason());
+        $season = $db->quote($this->getSeason());
         $episodeNumber = $this->getEpisodeNumber();
-        $episodeTitle = $db->real_escape_string($this->getEpisodeTitle());
+        $episodeTitle = $db->quote($this->getEpisodeTitle());
         $image = $this->getImage();
         $refreshDate = $this->getRefreshDate();
         $refreshDateUpdate = ", refreshDate=NULL";
@@ -933,13 +933,13 @@ class Film {
         $newRow = false;
         if (empty($filmId)) {
             $query  = "SELECT id FROM film";
-            $query .= " WHERE title='$title'";
+            $query .= " WHERE title=$title";
             $query .= "   AND $selectYear";
-            $query .= "   AND season='$season'";
+            $query .= "   AND season=$season";
             $query .= "   AND $selectEpisodeNumber";
             $result = $db->query($query);
-            if ($result->num_rows == 1) {
-                $row = $result->fetch_assoc();
+            if ($result->rowCount() == 1) {
+                $row = $result->fetch();
                 $filmId = $row["id"];
                 $this->id = $filmId;
                 $newRow = false;
@@ -951,11 +951,11 @@ class Film {
         // Insert Film row
         if ($newRow) {
             $columns = "parent_id, title, year, contentType, seasonCount, season, episodeNumber, episodeTitle, image";
-            $values = "$parentId, '$title', $year, '$contentType', $seasonCount, '$season', $episodeNumber, '$episodeTitle', '$image'";
+            $values = "$parentId, $title, $year, '$contentType', $seasonCount, $season, $episodeNumber, $episodeTitle, '$image'";
             $query = "INSERT INTO film ($columns) VALUES ($values)";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if ($db->query($query)) {
-                $filmId = $db->insert_id;
+                $filmId = $db->lastInsertId();
                 $this->id = $filmId;
                 $refreshDateUpdate = "";
             }
@@ -986,22 +986,22 @@ class Film {
         
         // Directors
         foreach ($this->getDirectors() as $director) {
-            $director = $db->real_escape_string($director);
+            $director = $db->quote($director);
             $personId;
-            $result = $db->query("SELECT id FROM person WHERE fullname='$director'");
-            if ($result->num_rows == 1) {
-                $row = $result->fetch_assoc();
+            $result = $db->query("SELECT id FROM person WHERE fullname=$director");
+            if ($result->rowCount() == 1) {
+                $row = $result->fetch();
                 $personId = $row["id"];
             } else {
                 $columns = "fullname, lastname";
-                $values = "'$director', '$director'";
+                $values = "$director, $director";
                 $query = "INSERT INTO person ($columns) VALUES ($values)";
                 logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $success = $db->query($query);
                 if (!$success) {
                     $errorFree = false;
                 }
-                $personId = $db->insert_id;
+                $personId = $db->lastInsertId();
             }
 
             $columns = "person_id, film_id, position";
@@ -1017,7 +1017,7 @@ class Film {
         // Genres
         foreach ($this->getGenres() as $genre) {
             $result = $db->query("SELECT 1 FROM genre WHERE name='$genre'");
-            if ($result->num_rows == 0) {
+            if ($result->rowCount() == 0) {
                 $columns = "name";
                 $values = "'$genre'";
                 $query = "INSERT INTO genre ($columns) VALUES ($values)";
@@ -1075,7 +1075,7 @@ class Film {
         
         // Update Film row. If this is a new film then this update is
         // only for setting an image.
-        $values = "parent_id=$parentId, title='$title', year=$year, contentType='$contentType', seasonCount=$seasonCount, season='$season', episodeNumber=$episodeNumber, episodeTitle='$episodeTitle', image='$filmImage' $refreshDateUpdate";
+        $values = "parent_id=$parentId, title=$title, year=$year, contentType='$contentType', seasonCount=$seasonCount, season=$season, episodeNumber=$episodeNumber, episodeTitle=$episodeTitle, image='$filmImage' $refreshDateUpdate";
         $where = "id=$filmId";
         $query = "UPDATE film SET $values WHERE $where";
         logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
@@ -1083,8 +1083,7 @@ class Film {
         if (!$success) {
             $errorFree = false;
         }
-        
-        $db->commit();
+
         return $errorFree;
     }
 
@@ -1097,10 +1096,10 @@ class Film {
         $db = getDatabase();
         
         $result = $db->query("SELECT * FROM film WHERE id=$filmId");
-        if ($result->num_rows != 1) {
+        if ($result->rowCount() != 1) {
             throw new \Exception('Film not found by Film ID: ' .$filmId);
         }
-        $row = $result->fetch_assoc();
+        $row = $result->fetch();
 
         return self::getFilmFromDbRow($row, $username);
     }
@@ -1129,7 +1128,7 @@ class Film {
 
         // Sources
         $result = $db->query("SELECT * FROM film_source WHERE film_id=$filmId");
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $source = $film->getSource($row['source_name']);
             $source->setImage($row['image']);
             $source->setUniqueName($row['uniqueName']);
@@ -1148,8 +1147,8 @@ class Film {
             if (!empty($username)) {
                 $query = "SELECT * FROM rating WHERE film_id=$filmId AND source_name='".$source->getName()."' AND user_name='".$username."'";
                 $ratingResult = $db->query($query);
-                if ($ratingResult->num_rows == 1) {
-                    $row = $ratingResult->fetch_assoc();
+                if ($ratingResult->rowCount() == 1) {
+                    $row = $ratingResult->fetch();
                     $rating = new Rating($source->getName());
                     $rating->initFromDbRow($row);
                     $source->setRating($rating);
@@ -1162,14 +1161,14 @@ class Film {
                  "   AND film_id=$filmId" .
                  "   AND position='Director'";
         $result = $db->query($query);
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $film->addDirector($row['fullname']);
         }
         
         // Genres
         $query = "SELECT * FROM film_genre WHERE film_id=$filmId ORDER BY genre_name ASC";
         $result = $db->query($query);
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $film->addGenre($row['genre_name']);
         }
         
@@ -1177,7 +1176,7 @@ class Film {
         if (!empty($username)) {
             $query = "SELECT listname FROM filmlist WHERE user_name='$username' AND film_id=$filmId";
             $result = $db->query($query);
-            while ($row = $result->fetch_assoc()) {
+            foreach ($result->fetchAll() as $row) {
                 $film->addFilmlist($row['listname']);
             }
         }
@@ -1196,10 +1195,10 @@ class Film {
         $query .= " WHERE source_name='$sourceName'";
         $query .= "   AND uniqueName='$uniqueName'";
         $result = $db->query($query);
-        if ($result->num_rows != 1) {
+        if ($result->rowCount() != 1) {
             return null;
         }
-        $row = $result->fetch_assoc();
+        $row = $result->fetch();
         $filmId = $row["film_id"];
 
         return self::getFilmFromDb($filmId, $username);
@@ -1217,10 +1216,10 @@ class Film {
         $query .= "   AND season=$seasonNum";
         $query .= "   AND episodeNumber=$episodeNum";
         $result = $db->query($query);
-        if ($result->num_rows != 1) {
+        if ($result->rowCount() != 1) {
             return null;
         }
-        $row = $result->fetch_assoc();
+        $row = $result->fetch();
         $filmId = $row["id"];
 
         return self::getFilmFromDb($filmId, $username);
@@ -1235,7 +1234,7 @@ class Film {
         $query = "SELECT id FROM film";
         $result = $db->query($query);
 
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $film = self::getFilmFromDb($row['id']);
             $http = new Http(Constants::SOURCE_RATINGSYNC);
             $isValid = $http->isPageValid($film->getImage());
@@ -1295,26 +1294,31 @@ class Film {
         $uniqueName = array_value_by_key("uniqueName", $searchTerms);
         //$uniqueEpisode = array_value_by_key("uniqueEpisode", $searchTerms);
         //$uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
-        $title = $db->real_escape_string(array_value_by_key("title", $searchTerms));
+        $title = array_value_by_key("title", $searchTerms);
+        $titleEscapedAndQuoted = $db->quote($title);
         $year = array_value_by_key("year", $searchTerms);
         $parentYear = array_value_by_key("parentYear", $searchTerms);
         $contentType = array_value_by_key("contentType", $searchTerms);
-        $season = $db->real_escape_string(array_value_by_key("season", $searchTerms));
+        $season = array_value_by_key("season", $searchTerms);
+        $seasonEscapedAndQuoted = $db->quote($season);
+        $seasonEscaped = unquote($seasonEscapedAndQuoted);
         $episodeNumber = array_value_by_key("episodeNumber", $searchTerms);
-        $episodeTitle = $db->real_escape_string(array_value_by_key("episodeTitle", $searchTerms));
+        $episodeTitle = array_value_by_key("episodeTitle", $searchTerms);
+        $episodeTitleEscapedAndQuoted = $db->quote($episodeTitle);
+        $episodeTitleEscaped = unquote($episodeTitleEscapedAndQuoted);
         $sourceName = array_value_by_key("sourceName", $searchTerms);
         
-        $selectTitle = "title='$title'";
+        $selectTitle = "title=$titleEscapedAndQuoted";
         $selectYear = "year=$year";
         if (is_null($year)) $selectYear = "year IS NULL";
         if (!is_null($parentYear)) $selectYear = "($selectYear OR year=$parentYear)";
-        $selectSeason = "season='$season'";
+        $selectSeason = "season=$seasonEscapedAndQuoted";
         if (empty($season)) $selectSeason = "(season='' OR season IS NULL)";
         $selectEpisodeNumber = "episodeNumber=$episodeNumber";
         if (is_null($episodeNumber)) $selectEpisodeNumber = "episodeNumber IS NULL";
         //$selectUniqueEpisode = "uniqueEpisode='$uniqueEpisode'";
         //if (empty($uniqueEpisode)) $selectUniqueEpisode = "(uniqueEpisode='' OR uniqueEpisode IS NULL)";
-        $selectEpisodeTitle = "episodeTitle='$episodeTitle'";
+        $selectEpisodeTitle = "episodeTitle=$episodeTitleEscapedAndQuoted";
         if (empty($episodeTitle)) $selectEpisodeTitle = "(episodeTitle='' OR episodeTitle IS NULL)";
         $selectSourceName = "";
         if (!empty($sourceName)) $selectSourceName = " AND source_name='$sourceName'";
@@ -1346,8 +1350,8 @@ class Film {
         // Get existing film from a source
         if (!empty($query)) {
             $result = $db->query($query);
-            if ($result->num_rows == 1) {
-                $row = $result->fetch_assoc();
+            if ($result->rowCount() == 1) {
+                $row = $result->fetch();
                 $film = self::getFilmFromDb($row['id'], $username);
             }
         }
@@ -1359,8 +1363,8 @@ class Film {
             $query .=  "  AND (($selectSeason AND $selectEpisodeNumber) OR $selectEpisodeTitle)";
             
             $result = $db->query($query);
-            if ($result->num_rows == 1) {
-                $row = $result->fetch_assoc();
+            if ($result->rowCount() == 1) {
+                $row = $result->fetch();
                 $film = self::getFilmFromDb($row['id'], $username);
             }
         }
@@ -1389,7 +1393,7 @@ class Film {
             $originalEpisodeTitle = $film->getEpisodeTitle();
             $needToSaveFilm = false;
             if (empty($originalSeason) && !empty($season)) {
-                $film->setSeason($season);
+                $film->setSeason($seasonEscaped);
                 $needToSaveFilm = true;
             }
             if (empty($originalEpisodeNumber) && !empty($episodeNumber)) {
@@ -1397,7 +1401,7 @@ class Film {
                 $needToSaveFilm = true;
             }
             if (empty($originalEpisodeTitle) && !empty($episodeTitle)) {
-                $film->setEpisodeTitle($episodeTitle);
+                $film->setEpisodeTitle($episodeTitleEscaped);
                 $needToSaveFilm = true;
             }
             if (in_array($film->getContentType(), array(self::CONTENT_TV_SEASON, self::CONTENT_TV_EPISODE))) {
@@ -1429,15 +1433,15 @@ class Film {
         $parentId = $film->getParentId();
         if (empty($parentId)) {
             $query .= " WHERE contentType='". self::CONTENT_TV_SERIES ."'";
-            $query .= "   AND title='". $db->real_escape_string($film->getTitle()) ."'";
+            $query .= "   AND title=". $db->quote($film->getTitle());
             $query .= "   AND year=". $film->getYear();
         } else {
             $query .= " WHERE id=$parentId";
         }
 
         $result = $db->query($query);
-        if ($result->num_rows == 1) {
-            $row = $result->fetch_assoc();
+        if ($result->rowCount() == 1) {
+            $row = $result->fetch();
             $parentFilm = self::getFilmFromDb($row['id'], $username);
         }
 
@@ -1453,7 +1457,7 @@ class Film {
         $query = "SELECT id FROM film";
         $result = $db->query($query);
 
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             Source::createAllSourcesToDb($row['id']);
         }
     }

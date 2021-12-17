@@ -11,7 +11,7 @@ $sourceName = $tmdb->getSourceName();
 $query = "SELECT id FROM film";
 $result = $db->query($query);
 
-while ($row = $result->fetch_assoc()) {
+foreach ($result->fetchAll() as $row) {
     $film = Film::getFilmFromDb($row['id']);
     $tmdbUniqueName = $film->getUniqueName($tmdb->getSourceName());
     if (empty($tmdbUniqueName)) {
