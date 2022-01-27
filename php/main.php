@@ -87,8 +87,6 @@ function getDatabase($mode = Constants::DB_MODE)
                 logDebug("Connection failed: " . $e->getMessage());
                 die("Connection failed: " . $e->getMessage());
             }
-
-            $db_conn_standard->queryDone("USE " . $db_name);
         }
         $db_conn = $db_conn_standard;
     } else if ($mode == Constants::DB_MODE_TEST) {
