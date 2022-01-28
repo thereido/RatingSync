@@ -750,7 +750,7 @@ class SourceTest extends RatingSyncTestCase
                  " WHERE film_id=$filmId" .
                    " AND source_name='".$source->getName()."'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
+        $this->assertEquals(1, $result->rowCount(), "There sure be one Film/Source row $filmId/" . $source->getName());
     }
 
     /**
@@ -770,7 +770,7 @@ class SourceTest extends RatingSyncTestCase
                  " WHERE film_id=$filmId" .
                    " AND source_name='".$source->getName()."'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
+        $this->assertEquals(1, $result->rowCount(), "There sure be one Film/Source row $filmId/" . $source->getName());
     }
 
     /**
@@ -792,8 +792,8 @@ class SourceTest extends RatingSyncTestCase
                  " WHERE film_id=$filmId" .
                    " AND source_name='".$source->getName()."'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
-        $row = $result->fetch_assoc();
+        $this->assertEquals(1, $result->rowCount(), "There sure be one Film/Source row $filmId/" . $source->getName());
+        $row = $result->fetch();
         $this->assertEquals("http://example.com/title2_imdb_image.jpeg", $row['image']);
     }
 
@@ -815,8 +815,8 @@ class SourceTest extends RatingSyncTestCase
                  " WHERE film_id=$filmId" .
                    " AND source_name='".$source->getName()."'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
-        $row = $result->fetch_assoc();
+        $this->assertEquals(1, $result->rowCount(), "There sure be one Film/Source row $filmId/" . $source->getName());
+        $row = $result->fetch();
         $this->assertEmpty($row['image']);
     }
 
@@ -838,7 +838,7 @@ class SourceTest extends RatingSyncTestCase
                  " WHERE film_id=$filmId" .
                    " AND source_name='".$source->getName()."'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "There sure be one Film/Source row $filmId/" . $source->getName());
+        $this->assertEquals(1, $result->rowCount(), "There sure be one Film/Source row $filmId/" . $source->getName());
     }
     
     /**

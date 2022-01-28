@@ -9,6 +9,8 @@
  */
 namespace RatingSync;
 
+use PDO;
+
 require_once "src/Constants.php";
 require_once "src/Jinni.php";
 require_once "src/Imdb.php";
@@ -77,25 +79,29 @@ function getDatabase($mode = Constants::DB_MODE)
     if ($mode == Constants::DB_MODE_STANDARD) {
         $db_name = Constants::DB_DATABASE;
         if (empty($db_conn_standard)) {
-            $db_conn_standard = new \mysqli("localhost", Constants::DB_ADMIN_USER, Constants::DB_ADMIN_PWD);
-
-            // Check connection
-            if ($db_conn_standard->connect_error) {
-                die("Connection failed: " . $db_conn->connect_error);
+            try {
+                $db_conn_standard = new PDO("mysql:host=localhost;dbname=$db_name", Constants::DB_ADMIN_USER, Constants::DB_ADMIN_PWD);
+                // set the PDO error mode to exception
+                $db_conn_standard->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
+            } catch(PDOException $e) {
+                logDebug("Connection failed: " . $e->getMessage());
+                die("Connection failed: " . $e->getMessage());
             }
-            $db_conn_standard->query("USE " . $db_name);
         }
         $db_conn = $db_conn_standard;
     } else if ($mode == Constants::DB_MODE_TEST) {
         $db_name = Constants::DB_TEST_DATABASE;
         if (empty($db_conn_test)) {
-            $db_conn_test = new \mysqli("localhost", Constants::DB_ADMIN_USER, Constants::DB_ADMIN_PWD);
-
-            // Check connection
-            if ($db_conn_test->connect_error) {
-                die("Connection failed: " . $db_conn->connect_error);
+            try {
+                $db_conn_test = new PDO("mysql:host=localhost;dbname=$db_name", Constants::DB_ADMIN_USER, Constants::DB_ADMIN_PWD);
+                // set the PDO error mode to exception
+                $db_conn_test->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
+            } catch(PDOException $e) {
+                logDebug("Connection failed: " . $e->getMessage());
+                die("Connection failed: " . $e->getMessage());
+            } catch(\Exception $e) {
+                logDebug("Connection failed: " . $e->getMessage());
             }
-            $db_conn_test->query("USE " . $db_name);
         }
         $db_conn = $db_conn_test;
     }
@@ -341,6 +347,22 @@ function getMediaDbApiClient($sourceName = Constants::DATA_API_DEFAULT)
     }
     
     return $api;
+}
+
+function unquote($str)
+{
+    $length = strlen($str);
+    if ( $length < 2 ) {
+        return $str;
+    }
+
+    $startsWithQuote = str_starts_with($str, "'");
+    $endsWithQuote = str_starts_with($str, "'");
+    if ( !$startsWithQuote || !$endsWithQuote ) {
+        return $str;
+    }
+
+    return substr($str, 1, $length-2);
 }
 
 ?>

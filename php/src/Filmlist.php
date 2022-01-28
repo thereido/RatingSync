@@ -308,14 +308,14 @@ class Filmlist
         $isDuplicate = false;
         $prevItemUpdated = false;
         $username = $this->username;
-        $listname = $db->real_escape_string($this->listname);
-        $wherePrefix = " WHERE user_name='$username' AND listname='$listname' ";
+        $listnameEscapedAndQuoted = $db->quote($this->listname);
+        $wherePrefix = " WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted ";
 
         // Check for an duplicate
         $query = "SELECT count(1) as count FROM filmlist $wherePrefix" .
                     "   AND film_id=$filmId";
         $result = $db->query($query);
-        $row = $result->fetch_assoc();
+        $row = $result->fetch();
         if ($row["count"] > 0) {
             $isDuplicate = true;
         }
@@ -325,7 +325,7 @@ class Filmlist
             $query = "UPDATE filmlist SET next_film_id=$filmId $wherePrefix" .
                         "   AND next_film_id IS NULL";
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             } else {
                 $prevItemUpdated = true;
@@ -339,15 +339,15 @@ class Filmlist
             $query = "SELECT position FROM filmlist $wherePrefix" .
                         " ORDER BY position DESC LIMIT 1";
             $result = $db->query($query);
-            if ($result->num_rows == 1) {
-                $position = $result->fetch_assoc()["position"] + 1;
+            if ($result->rowCount() == 1) {
+                $position = $result->fetch()["position"] + 1;
             }
 
             $columns = "user_name, film_id, listname, position, next_film_id, create_ts";
-            $values = "'$username', $filmId, '$listname', $position, NULL, CURRENT_TIMESTAMP";
+            $values = "'$username', $filmId, $listnameEscapedAndQuoted, $position, NULL, CURRENT_TIMESTAMP";
             $query = "INSERT INTO filmlist ($columns) VALUES ($values)";
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
                 if ($prevItemUpdated) {
                     // Undo the update
@@ -388,15 +388,16 @@ class Filmlist
         $errorFree = true;
         $rowExists = false;
         $username = $this->username;
-        $listname = $db->real_escape_string($this->listname);
-        $wherePrefix = " WHERE user_name='$username' AND listname='$listname' ";
+        $listname = $this->listname;
+        $listnameEscapedAndQuoted = $db->quote($listname);
+        $wherePrefix = " WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted ";
 
         $query = "SELECT next_film_id, position FROM filmlist $wherePrefix" .
                     "   AND film_id=$removeThisFilmId";
         $result = $db->query($query);
-        if ($result->num_rows == 1) {
+        if ($result->rowCount() == 1) {
             $rowExists = true;
-            $row = $result->fetch_assoc();
+            $row = $result->fetch();
             $nextFilmId = $row["next_film_id"];
             if (empty($nextFilmId)) {
                 $nextFilmId = "NULL";
@@ -415,7 +416,7 @@ class Filmlist
         if ($db->query($query)) {
             $nextIdUpdated = true;
         } else {
-            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             $errorFree = false;
         }
                 
@@ -427,7 +428,7 @@ class Filmlist
             if ($db->query($query)) {
                 $positionsUpdated = true;
             } else {
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -439,7 +440,7 @@ class Filmlist
             if ($db->query($query)) {
                 $nextIdUpdated = false;
             } else {
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -450,7 +451,7 @@ class Filmlist
                         "   AND film_id=$removeThisFilmId";
             logDebug("Delete filmlist item: " . $query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -486,13 +487,15 @@ class Filmlist
         $db = getDatabase();
         $errorFree = true;
         $username = $this->username;
-        $listname = $db->real_escape_string($this->listname);
-        $parentListname = $db->real_escape_string($this->parentListname);
+        $listname = $this->listname;
+        $listnameEscapedAndQuoted = $db->quote($listname);
+        $parentListname = $this->parentListname;
+        $parentListnameEscapedAndQuoted = $db->quote($parentListname);
 
         // Error if the list already exists
-        $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname'";
+        $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted";
         $result = $db->query($query);
-        if ($result->num_rows > 1) {
+        if ($result->rowCount() > 1) {
             throw new \InvalidArgumentException(__FUNCTION__." username (".$this->username.") and listName (".$this->listname.") existing list cannot be created");
         }
 
@@ -500,23 +503,23 @@ class Filmlist
         $parentListColumn = "";
         $parentListValue = "";
         if (!empty($parentListname)) {
-            $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$parentListname'";
+            $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname=$parentListnameEscapedAndQuoted";
             $result = $db->query($query);
-            if ($result->num_rows == 1) {
+            if ($result->rowCount() == 1) {
                 $parentListColumn = ", parent_listname";
-                $parentListValue = ", '" . $parentListname . "'";
+                $parentListValue = ", $parentListnameEscapedAndQuoted";
             } else {
-                logDebug("Warning: Creating filmlist '$listname' with parent '$parentListname'.\nParent does not exist. Continuing to create the list without a parent.", __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug("Warning: Creating filmlist $listnameEscapedAndQuoted with parent $parentListnameEscapedAndQuoted.\nParent does not exist. Continuing to create the list without a parent.", __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
 
         // Insert filmlist
         $query = "INSERT INTO user_filmlist (user_name, listname, create_ts".$parentListColumn.")" .
-                    " VALUES ('$username', '$listname', CURRENT_TIMESTAMP".$parentListValue.")";
+                    " VALUES ('$username', $listnameEscapedAndQuoted, CURRENT_TIMESTAMP".$parentListValue.")";
         logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
         if (! $db->query($query)) {
-            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             $errorFree = false;
         }
 
@@ -532,10 +535,10 @@ class Filmlist
             }
 
             $query = "INSERT INTO filmlist (user_name, listname, position, film_id, next_film_id, create_ts)" .
-                     " VALUES ('$username', '$listname', $position, $filmId, $nextFilmId, CURRENT_TIMESTAMP)";
+                     " VALUES ('$username', $listnameEscapedAndQuoted, $position, $filmId, $nextFilmId, CURRENT_TIMESTAMP)";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -557,29 +560,30 @@ class Filmlist
 
         // Check for children (Don't delete a list with children)
         $username = $this->username;
-        $listname = $db->real_escape_string($this->listname);
+        $listname = $this->listname;
+        $listnameEscapedAndQuoted = $db->quote($listname);
         $query = "SELECT * FROM user_filmlist" .
-                    " WHERE parent_listname='$listname'" . 
+                    " WHERE parent_listname=$listnameEscapedAndQuoted" .
                     "   AND user_name='$username'";
         $result = $db->query($query);
-        if ($result->num_rows > 0) {
+        if ($result->rowCount() > 0) {
             $success = false;
         } else {
             // Delete all entries from this list
             $query = "DELETE FROM filmlist" .
                         " WHERE user_name='$username'" .
-                        " AND listname='$listname'";
+                        " AND listname=$listnameEscapedAndQuoted";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
                 $success = false;
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             }
         
             // Delete the list itself
-            $query = "DELETE FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
+            $query = "DELETE FROM user_filmlist WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted";
             if (! $db->query($query)) {
                 $success = false;
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             }
         }
 
@@ -640,40 +644,41 @@ class Filmlist
         $db = getDatabase();
         $success = true;
 
-        $oldListname = $db->real_escape_string($this->listname);
-        $newListname = $db->real_escape_string($newListname);
+        $oldListname = $this->listname;
+        $oldListnameEscapedAndQuoted = $db->quote($oldListname);
+        $newListnameEscapedAndQuoted = $db->quote($newListname);
         
         // Rename the listname on the list itself
-        $query  = "UPDATE user_filmlist SET listname='$newListname'";
+        $query  = "UPDATE user_filmlist SET listname=$newListnameEscapedAndQuoted";
         $query .= " WHERE user_name='$username'";
-        $query .= "   AND listname='$oldListname'";
+        $query .= "   AND listname=$oldListnameEscapedAndQuoted";
         logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
         if (! $db->query($query)) {
             $success = false;
-            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
         }
 
         // Rename the listname on the items in the list
         if ($success) {
-            $query  = "UPDATE filmlist SET listname='$newListname'";
+            $query  = "UPDATE filmlist SET listname=$newListnameEscapedAndQuoted";
             $query .= " WHERE user_name='$username'";
-            $query .= "   AND listname='$oldListname'";
+            $query .= "   AND listname=$oldListnameEscapedAndQuoted";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
                 $success = false;
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             }
         }
 
         // Update the parent name for sublists
         if ($success) {
-            $query  = "UPDATE user_filmlist SET parent_listname='$newListname'";
+            $query  = "UPDATE user_filmlist SET parent_listname=$newListnameEscapedAndQuoted";
             $query .= " WHERE user_name='$username'";
-            $query .= "   AND parent_listname='$oldListname'";
+            $query .= "   AND parent_listname=$oldListnameEscapedAndQuoted";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
                 $success = false;
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             }
         }
 
@@ -691,12 +696,12 @@ class Filmlist
         $this->removeAllItems();
         $db = getDatabase();
 
-        $listname = $db->real_escape_string($listname);
+        $listnameEscapedAndQuoted = $db->quote($listname);
 
-        $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
+        $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted";
         $result = $db->query($query);
-        if ($result->num_rows == 1) {
-            $this->parentListname = $result->fetch_assoc()['parent_listname'];
+        if ($result->rowCount() == 1) {
+            $this->parentListname = $result->fetch()['parent_listname'];
         }
         
         $queryTables = "filmlist";
@@ -731,14 +736,14 @@ class Filmlist
         
         $query  = "SELECT film_id FROM $queryTables";
         $query .= " WHERE user_name='$username'";
-        $query .= "   AND listname='$listname'";
+        $query .= "   AND listname=$listnameEscapedAndQuoted";
         $query .=     $contentTypeFilterWhere;
         $query .=     $listFilterWhere;
         $query .=     $genreFilterWhere;
 
         $result = $db->query($query);
         $filteredFilmIds = array();
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $filteredFilmIds[] = $filmId;
         }
@@ -775,7 +780,7 @@ class Filmlist
 
         $query = "SELECT * FROM user_filmlist WHERE user_name='$username' ORDER BY parent_listname ASC, listname ASC";
         $result = $db->query($query);
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $listname = $row['listname'];
             $list = new Filmlist($username, $listname);
             $list->initFromDb();
@@ -784,7 +789,7 @@ class Filmlist
 
         $query = "SELECT * FROM filmlist WHERE user_name='$username' ORDER BY listname ASC, position ASC";
         $result = $db->query($query);
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $list = null;
             $listname = $row['listname'];
             $filmId = $row['film_id'];
@@ -838,26 +843,27 @@ class Filmlist
         $db = getDatabase();
         $listnames = array();  // Keys are listname, parentListname, children (arrays like this one)
 
+        $parentListnameEscapedAndQuoted = null;
         $parentSelect = "parent_listname IS NULL";
         if (!empty($parentListname)) {
-            $parentListname = $db->real_escape_string($parentListname);
-            $parentSelect = "parent_listname='$parentListname'";
+            $parentListnameEscapedAndQuoted = $db->quote($parentListname);
+            $parentSelect = "parent_listname=$parentListnameEscapedAndQuoted";
         }
 
         // From the DB build a flat array with listname the keys and parentList as the values
         $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND $parentSelect ORDER BY listname ASC";
         $result = $db->query($query);
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $listname = $row['listname'];
-            $parentListname = $row['parent_listname'];
+            $parentListnameDb = $row['parent_listname'];
             $items = array();
             if ($populateFilms) {
-                $filmlist = new Filmlist($username, $listname, $parentListname);
+                $filmlist = new Filmlist($username, $listname, $parentListnameDb);
                 $filmlist->initFromDb();
                 $items = $filmlist->getItems();
             }
             $children = self::getUserListsFromDbByParent($username, $populateFilms, $listname);
-            $listnames[] = array("listname" => $listname, "parentListname" => $parentListname, "items" => $items, "children" => $children);
+            $listnames[] = array("listname" => $listname, "parentListname" => $parentListnameDb, "items" => $items, "children" => $children);
         }
 
         return $listnames;
@@ -932,14 +938,17 @@ class Filmlist
         $ancestors = array();
 
         while (!empty($listname)) {
-            $listname = $db->real_escape_string($listname);
-            $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
+            $listnameEscapedAndQuoted = $db->quote($listname);
+            $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted";
             $result = $db->query($query);
-            if ($result->num_rows == 1) {
-                $listname = $result->fetch_assoc()['parent_listname'];
-                if (!empty($listname)) {
-                    $ancestors[] = $listname;
+            if ($result->rowCount() == 1) {
+                $parentListname = $result->fetch()['parent_listname'];
+                if (!empty($parentListname)) {
+                    $parentListnameEscapedAndQuoted = $db->quote($parentListname);
+                    $parentListnameEscaped = unquote($parentListnameEscapedAndQuoted);
+                    $ancestors[] = $parentListnameEscaped;
                 }
+                $listname = $parentListname;
             }
         }
 
@@ -1017,7 +1026,7 @@ class Filmlist
 
         $db = getDatabase();
         $wherePrefix = " WHERE user_name='" . $this->username . "'" .
-                    "   AND listname='" . $db->real_escape_string($this->listname) . "' ";
+                    "   AND listname=" . $db->quote($this->listname);
         $queryPrefix = "SELECT film_id FROM filmlist" . $wherePrefix; 
         $newPrevQuery = $queryPrefix . "AND next_film_id=$nextFilmId";    
 
@@ -1025,14 +1034,14 @@ class Filmlist
         $filmIdsValid = false;
         if ($nextFilmId != -1) {
             $result = $db->query($queryPrefix . "AND (film_id=$myFilmId OR film_id=$nextFilmId)");
-            if ($result->num_rows == 2) {
+            if ($result->rowCount() == 2) {
                 $filmIdsValid = true;
             }
         } else {
             $newPrevQuery = $queryPrefix . "AND next_film_id IS NULL";
 
             $result = $db->query($queryPrefix . "AND film_id=$myFilmId");
-            if ($result->num_rows == 1) {
+            if ($result->rowCount() == 1) {
                 $filmIdsValid = true;
             }
         }
@@ -1042,16 +1051,16 @@ class Filmlist
         }
 
         $result = $db->query($newPrevQuery);
-        if ($result->num_rows == 1) {
-            $newPrevFilmId = $result->fetch_assoc()['film_id'];
+        if ($result->rowCount() == 1) {
+            $newPrevFilmId = $result->fetch()['film_id'];
         }
-        $result = $db->query($queryPrefix . "AND next_film_id=$myFilmId");    
-        if ($result->num_rows == 1) {
-            $origPrevFilmId = $result->fetch_assoc()['film_id'];
+        $result = $db->query($queryPrefix . "AND next_film_id=$myFilmId");
+        if ($result->rowCount() == 1) {
+            $origPrevFilmId = $result->fetch()['film_id'];
         }
-        $result = $db->query("SELECT next_film_id FROM filmlist" . $wherePrefix . "AND film_id=$myFilmId");    
-        if ($result->num_rows == 1) {
-            $origNextFilmId = $result->fetch_assoc()['next_film_id'];
+        $result = $db->query("SELECT next_film_id FROM filmlist" . $wherePrefix . "AND film_id=$myFilmId");
+        if ($result->rowCount() == 1) {
+            $origNextFilmId = $result->fetch()['next_film_id'];
             if (empty($origNextFilmId)) {
                 $origNextFilmId = "NULL";
             }
@@ -1068,7 +1077,7 @@ class Filmlist
             $query = "UPDATE filmlist SET next_film_id=$origNextFilmId" .
                         $wherePrefix . " AND film_id=$origPrevFilmId";
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -1079,7 +1088,7 @@ class Filmlist
             $query = "UPDATE filmlist SET next_film_id=$myFilmId" .
                         $wherePrefix . " AND film_id=$newPrevFilmId";
             if (! $db->query($query)) {
-                logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+                logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
                 $errorFree = false;
             }
         }
@@ -1092,7 +1101,7 @@ class Filmlist
         $query = "UPDATE filmlist SET $nextFilmIdSet" .
                     $wherePrefix . " AND film_id=$myFilmId";
         if (! $db->query($query)) {
-            logDebug($query."\nSQL Error (".$db->errno.") ".$db->error, __CLASS__."::".__FUNCTION__." ".__LINE__);
+            logDebug($query."\nSQL Error (".$db->errorCode().") ".$db->errorInfo()[2], __CLASS__."::".__FUNCTION__." ".__LINE__);
             $errorFree = false;
         }
 
@@ -1103,15 +1112,15 @@ class Filmlist
         $username = $this->getUsername();
         $db = getDatabase();
         
-        $listname = $db->real_escape_string($this->getListname());
+        $listnameEscapedAndQuoted = $db->quote($this->getListname());
 
         $query  = "SELECT film_id, next_film_id FROM filmlist";
         $query .= " WHERE user_name='$username'";
-        $query .= "   AND listname='$listname'";
+        $query .= "   AND listname=$listnameEscapedAndQuoted";
         $result = $db->query($query);
         
         $items = array(); // Keys are next_film_id, Values are film_id
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $next = $row['next_film_id'];
             $items[$next] = intval($filmId);
@@ -1139,16 +1148,16 @@ class Filmlist
         }
         $username = $this->getUsername();
         $db = getDatabase();
-        $listname = $db->real_escape_string($this->getListname());
+        $listnameEscapedAndQuoted = $db->quote($this->getListname());
 
         $query  = "SELECT film_id, next_film_id FROM filmlist";
         $query .= " WHERE user_name='$username'";
-        $query .= "   AND listname='$listname'";
+        $query .= "   AND listname=$listnameEscapedAndQuoted";
         $query .= " ORDER BY create_ts $sortDirection";
         $result = $db->query($query);
         
         $items = array(); // Keys are next_film_id, Values are film_id
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $items[] = $row['film_id'];
         }
 

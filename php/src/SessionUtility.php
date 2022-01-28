@@ -25,20 +25,21 @@ class SessionUtility {
         self::logout();
         self::start();
         $db = getDatabase();
-        $username = $db->real_escape_string($username);
-        $password = $db->real_escape_string($password);
+        $usernameEscapedAndQuoted = $db->quote($username);
+        $usernameEscaped = unquote($usernameEscapedAndQuoted);
         $passwordHash = NULL;
+        $passwordEscapedAndQuoted = $db->quote($password);
+        $passwordEscaped = unquote($passwordEscapedAndQuoted);
 
-        $query = "SELECT * FROM user WHERE username='$username'";
+        $query = "SELECT * FROM user WHERE username=$usernameEscapedAndQuoted";
         $result = $db->query($query);
-        if ($result->num_rows == 1) {
-            $row = $result->fetch_assoc();
-            $passwordHash = $row["password"];
+        if ($result->rowCount() == 1) {
+            $passwordHash = $result->fetch()["password"];
         }
 
-        if (!empty($passwordHash) && password_verify($password, $passwordHash)) {
+        if (!empty($passwordHash) && password_verify($passwordEscaped, $passwordHash)) {
             $_SESSION['LoggedIn'] = 1;
-            $_SESSION['Username'] = $username;
+            $_SESSION['Username'] = $usernameEscaped;
             $success = true;
         }
 
@@ -73,11 +74,12 @@ class SessionUtility {
         $failure = false;
         $db = getDatabase();
 
-        $username = $db->real_escape_string($username);
-        $password = $db->real_escape_string($password);
+        $usernameEscapedAndQuoted = $db->quote($username);
+        $passwordEscapedAndQuoted = $db->quote($password);
+        $passwordEscaped = unquoted($passwordEscapedAndQuoted);
 
         // Hash the password
-        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        $passwordHash = password_hash($passwordEscaped, PASSWORD_DEFAULT);
         if (!$passwordHash) {
             $failure = true;
         }
@@ -85,7 +87,7 @@ class SessionUtility {
         // Create User
         if (!$failure) {
             $columns = "username, password, enabled";
-            $values = "'$username', '$passwordHash', FALSE";
+            $values = "$usernameEscapedAndQuoted, '$passwordHash', FALSE";
             $query = "INSERT INTO user ($columns) VALUES ($values)";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             $failure = !($db->query($query));
@@ -94,7 +96,7 @@ class SessionUtility {
         // Create default userlist
         if (!$failure) {
             $columns = "user_name, listname, create_ts";
-            $values = "'$username', '".Constants::LIST_DEFAULT."', CURRENT_TIMESTAMP";
+            $values = "$usernameEscapedAndQuoted, '".Constants::LIST_DEFAULT."', CURRENT_TIMESTAMP";
             $query = "INSERT INTO user_filmlist ($columns) VALUES ($values)";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             $failure = !($db->query($query));
@@ -103,8 +105,8 @@ class SessionUtility {
         // Enable the user
         if (!$failure) {
             $columns = "username, password, enabled";
-            $values = "'$username', '$password', FALSE";
-            $query = "UPDATE user SET enabled=TRUE WHERE username='$username'";
+            $values = "$usernameEscapedAndQuoted, '$passwordHash', FALSE";
+            $query = "UPDATE user SET enabled=TRUE WHERE username=$usernameEscapedAndQuoted";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             $failure = !($db->query($query));
         }

@@ -491,16 +491,16 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertTrue($errorFree, "createToDb() should return true (error free)");
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY create_ts ASC";
         $result = $db->query($query);
-        $this->assertEquals(3, $result->num_rows, "Should be 3 films in the list");
+        $this->assertEquals(3, $result->rowCount(), "Should be 3 films in the list");
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' AND next_film_id=2";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->fetch_assoc()['film_id'], "First item should be filmId 1");
+        $this->assertEquals(1, $result->fetch()['film_id'], "First item should be filmId 1");
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' AND next_film_id=3";
         $result = $db->query($query);
-        $this->assertEquals(2, $result->fetch_assoc()['film_id'], "Second item should be filmId 2");
+        $this->assertEquals(2, $result->fetch()['film_id'], "Second item should be filmId 2");
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' AND next_film_id IS NULL";
         $result = $db->query($query);
-        $this->assertEquals(3, $result->fetch_assoc()['film_id'], "Last item should be filmId 3");
+        $this->assertEquals(3, $result->fetch()['film_id'], "Last item should be filmId 3");
     }
 
     /**
@@ -528,7 +528,7 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY create_ts ASC";
         $result = $db->query($query);
-        $this->assertEquals(0, $result->num_rows, "Should be no films in the list");
+        $this->assertEquals(0, $result->rowCount(), "Should be no films in the list");
         $this->assertTrue($errorFree, "createToDb() should return true (error free)");
     }
 
@@ -577,7 +577,7 @@ class FilmlistTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         // Set up
-        $listname1 = TEST_LIST;
+        $listname1 = "list1";
         $listname2 = "list2";
         $list = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, $listname1);
         $list->addItem(1);
@@ -654,7 +654,7 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertFalse($success, "Should not succeed");
         $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
         $result = $db->query($query);
-        $this->assertEquals(0, $result->num_rows, "List ($listname) should not be inserted");
+        $this->assertEquals(0, $result->rowCount(), "List ($listname) should not be inserted");
     }
 
     /**
@@ -689,8 +689,8 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify
         $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$listname' AND parent_listname='$parent'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "List $listname should be have a parent ($parent)");
-        $this->assertEquals($parent, $result->fetch_assoc()['parent_listname'], "user_filmlist.parent_listname should be '$parent'");
+        $this->assertEquals(1, $result->rowCount(), "List $listname should be have a parent ($parent)");
+        $this->assertEquals($parent, $result->fetch()['parent_listname'], "user_filmlist.parent_listname should be '$parent'");
         $this->assertTrue($errorFree, "createToDb() should return true (error free)");
     }
 
@@ -730,14 +730,14 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify
         $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "user_filmlist should be inserted");
-        $this->assertEquals("", $result->fetch_assoc()['parent_listname'], "user_filmlist.parent_listname should be NULL");
+        $this->assertEquals(1, $result->rowCount(), "user_filmlist should be inserted");
+        $this->assertEquals("", $result->fetch()['parent_listname'], "user_filmlist.parent_listname should be NULL");
         $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$parent'";
         $result = $db->query($query);
-        $this->assertEquals(0, $result->num_rows, "There should not be a user_filmlist row of the parent ($parent)");
+        $this->assertEquals(0, $result->rowCount(), "There should not be a user_filmlist row of the parent ($parent)");
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname'";
         $result = $db->query($query);
-        $this->assertEquals(2, $result->num_rows, "2 filmlist rows (list items) should be inserted");
+        $this->assertEquals(2, $result->rowCount(), "2 filmlist rows (list items) should be inserted");
         $this->assertFalse($errorFree, "createToDb() should return false (error free = false)");
     }
     
@@ -775,11 +775,11 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify
         $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "user_filmlist should be inserted");
+        $this->assertEquals(1, $result->rowCount(), "user_filmlist should be inserted");
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->num_rows, "Should be exactly 1 filmlist inserted");
-        $this->assertEquals($goodFilmId, $result->fetch_assoc()['film_id'], "filmlist.film_id should be $goodFilmId");
+        $this->assertEquals(1, $result->rowCount(), "Should be exactly 1 filmlist inserted");
+        $this->assertEquals($goodFilmId, $result->fetch()['film_id'], "filmlist.film_id should be $goodFilmId");
         $this->assertFalse($errorFree, "createToDb() should return false (error free = false)");
     }
 
@@ -823,7 +823,7 @@ class FilmlistTest extends RatingSyncTestCase
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         $itemsArr = array(1 => array("pos" => "", "next" => ""), 2 => array("pos" => "", "next" => ""), 3 => array("pos" => "", "next" => ""));
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $itemsArr[$filmId]["pos"] = $row['position'];
             $itemsArr[$filmId]["next"] = $row['next_film_id'];
@@ -877,7 +877,7 @@ class FilmlistTest extends RatingSyncTestCase
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         $itemsArr = array(1 => array("pos" => "", "next" => ""), 2 => array("pos" => "", "next" => ""));
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $itemsArr[$filmId]["pos"] = $row['position'];
             $itemsArr[$filmId]["next"] = $row['next_film_id'];
@@ -923,7 +923,7 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals(array(3), $items, "Item should be 3");
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
-        $row = $result->fetch_assoc();
+        $row = $result->fetch();
         $this->assertEquals(1, $row['position'], "Id 3 position should be 1");
         $this->assertEquals(null, $row['next_film_id'], "Id 3 next item should null");
     }
@@ -970,7 +970,7 @@ class FilmlistTest extends RatingSyncTestCase
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         $itemsArr = array(1 => array("pos" => "", "next" => ""), 2 => array("pos" => "", "next" => ""), 3 => array("pos" => "", "next" => ""));
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $itemsArr[$filmId]["pos"] = $row['position'];
             $itemsArr[$filmId]["next"] = $row['next_film_id'];
@@ -1025,7 +1025,7 @@ class FilmlistTest extends RatingSyncTestCase
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         $itemsArr = array(1 => array("pos" => "", "next" => ""), 2 => array("pos" => "", "next" => ""), 3 => array("pos" => "", "next" => ""));
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $itemsArr[$filmId]["pos"] = $row['position'];
             $itemsArr[$filmId]["next"] = $row['next_film_id'];
@@ -1079,7 +1079,7 @@ class FilmlistTest extends RatingSyncTestCase
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         $itemsArr = array(1 => array("pos" => "", "next" => ""), 3 => array("pos" => "", "next" => ""));
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $itemsArr[$filmId]["pos"] = $row['position'];
             $itemsArr[$filmId]["next"] = $row['next_film_id'];
@@ -1132,7 +1132,7 @@ class FilmlistTest extends RatingSyncTestCase
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         $itemsArr = array(1 => array("pos" => "", "next" => ""), 2 => array("pos" => "", "next" => ""));
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $itemsArr[$filmId]["pos"] = $row['position'];
             $itemsArr[$filmId]["next"] = $row['next_film_id'];
@@ -1184,7 +1184,7 @@ class FilmlistTest extends RatingSyncTestCase
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         $itemsArr = array(2 => array("pos" => "", "next" => ""), 3 => array("pos" => "", "next" => ""));
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $itemsArr[$filmId]["pos"] = $row['position'];
             $itemsArr[$filmId]["next"] = $row['next_film_id'];
@@ -1236,7 +1236,7 @@ class FilmlistTest extends RatingSyncTestCase
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         $itemsArr = array(1 => array("pos" => "", "next" => ""), 2 => array("pos" => "", "next" => ""), 3 => array("pos" => "", "next" => ""));
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $itemsArr[$filmId]["pos"] = $row['position'];
             $itemsArr[$filmId]["next"] = $row['next_film_id'];
@@ -1366,7 +1366,7 @@ class FilmlistTest extends RatingSyncTestCase
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         $itemsArr = array(1 => array("pos" => "", "next" => ""), 2 => array("pos" => "", "next" => ""), 4 => array("pos" => "", "next" => ""));
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $itemsArr[$filmId]["pos"] = $row['position'];
             $itemsArr[$filmId]["next"] = $row['next_film_id'];
@@ -1421,7 +1421,7 @@ class FilmlistTest extends RatingSyncTestCase
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         $itemsArr = array(1 => array("pos" => "", "next" => ""), 2 => array("pos" => "", "next" => ""), 3 => array("pos" => "", "next" => ""));
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $itemsArr[$filmId]["pos"] = $row['position'];
             $itemsArr[$filmId]["next"] = $row['next_film_id'];
@@ -1482,7 +1482,7 @@ class FilmlistTest extends RatingSyncTestCase
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname='$listname' ORDER BY position ASC";
         $result = $db->query($query);
         $itemsArr = array(1 => array("pos" => "", "next" => ""), 3 => array("pos" => "", "next" => ""));
-        while ($row = $result->fetch_assoc()) {
+        foreach ($result->fetchAll() as $row) {
             $filmId = $row['film_id'];
             $itemsArr[$filmId]["pos"] = $row['position'];
             $itemsArr[$filmId]["next"] = $row['next_film_id'];
@@ -1570,7 +1570,7 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals(0, $listDb->count(), "filmlist should have no items");
         $query = "SELECT 1 FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
         $result = $db->query($query);
-        $this->assertEquals(0, $result->num_rows, "User_filmlist should be gone");
+        $this->assertEquals(0, $result->rowCount(), "User_filmlist should be gone");
     }
 
     /**
@@ -1601,7 +1601,7 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals(0, $listDb->count(), "filmlist should have no items");
         $query = "SELECT 1 FROM user_filmlist WHERE user_name='$username' AND listname='$listname'";
         $result = $db->query($query);
-        $this->assertEquals(0, $result->num_rows, "User_filmlist should be gone");
+        $this->assertEquals(0, $result->rowCount(), "User_filmlist should be gone");
     }
 
     /**
@@ -1614,9 +1614,11 @@ class FilmlistTest extends RatingSyncTestCase
         // Set up
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $query = "DELETE FROM filmlist WHERE user_name='$username'";
-        $this->assertTrue($db->query($query), "Delete from filmlist");
+        $querySuccess = $db->query($query) !== false;
+        $this->assertTrue($querySuccess, "Delete from filmlist");
         $query = "DELETE FROM user_filmlist WHERE user_name='$username' AND listname!='".Constants::LIST_DEFAULT."'";
-        $this->assertTrue($db->query($query), "Delete from user_filmlist");
+        $querySuccess = $db->query($query) !== false;
+        $this->assertTrue($querySuccess, "Delete from user_filmlist");
 
         // Set no lists
 
@@ -1638,8 +1640,11 @@ class FilmlistTest extends RatingSyncTestCase
     
         // Set up
         $username = Constants::TEST_RATINGSYNC_USERNAME;
-        //*RT* $query = "DELETE FROM filmlist WHERE user_name='$username'";
-        //*RT* $this->assertTrue($db->query($query));
+        /*RT
+        $query = "DELETE FROM filmlist WHERE user_name='$username'";
+        $querySuccess = $db->query($query) !== false;
+        $this->assertTrue($querySuccess);
+        *RT*/
 
         $listname1 = "testUserGetListsFromDb";
         $list1 = new Filmlist($username, $listname1);

@@ -391,7 +391,7 @@ class Source
         // Look for an existing film row
         $newRow = false;
         $result = $db->query("SELECT 1 FROM film_source WHERE film_id=$filmId AND source_name='$sourceName'");
-        if ($result->num_rows == 0) {
+        if ($result->rowCount() == 0) {
             $newRow = true;
         }
         
@@ -399,14 +399,14 @@ class Source
             $query = "INSERT INTO film_source ($columns) VALUES ($values)";
             logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
             if (! $db->query($query)) {
-                throw new \Exception('SQL Error ' . $db->errno . ". " . $db->error);
+                throw new \Exception('SQL Error ' . $db->errorCode() . ". " . $db->errorInfo()[2]);
             }
         } else {
             if ($set != $setEmpty) {
                 $query = "UPDATE film_source $set WHERE film_id=$filmId AND source_name='$sourceName'";
                 logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
                 if (! $db->query($query)) {
-                    throw new \Exception('SQL Error ' . $db->errno . ". " . $db->error);
+                    throw new \Exception('SQL Error ' . $db->errorCode() . ". " . $db->errorInfo()[2]);
                 }
             }
         }
