@@ -165,7 +165,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $site = new RatingSyncSite($username);
         $site->syncRatings($username);
 
-        $query = "SELECT * FROM rating WHERE user_name='".Constants::TEST_RATINGSYNC_USERNAME."' AND source_name='".Constants::SOURCE_RATINGSYNC."' ORDER BY film_id ASC";
+        $query = "SELECT * FROM rating WHERE user_name='".Constants::TEST_RATINGSYNC_USERNAME."' AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1 ORDER BY film_id ASC";
         $result = $db->query($query);
         $this->assertEquals(6, $result->rowCount(), "Count ".Constants::SOURCE_RATINGSYNC." ratings for ".Constants::TEST_RATINGSYNC_USERNAME);
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);

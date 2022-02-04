@@ -21,6 +21,8 @@ class OmdbApiTest extends RatingSyncTestCase
     const TESTFILM_PRIMARY_TITLE = "Frozen";
     const TESTFILM_PRIMARY_YEAR = 2013;
     const TESTFILM_PRIMARY_IMDBID = "tt2294629";
+    const TESTFILM_PRIMARY_IMDB_YOURSCORE = 2;
+    const TESTFILM_PRIMARY_IMDB_YOURDATE = "2014-01-01";
     const TESTFILM_PRIMARY_USER_SCORE = 7.5;
     const TESTFILM_PRIMARY_CRITIC_SCORE = 7.4;
     const TESTFILM_PRIMARY_IMAGE = "MV5BMTQ1MjQwMTE5OF5BMl5BanBnXkFtZTgwNjk3MTcyMDE";
@@ -60,6 +62,8 @@ class OmdbApiTest extends RatingSyncTestCase
         $constants["filmImage"]             = self::TESTFILM_PRIMARY_IMAGE;
         $constants["filmUserScore"]         = self::TESTFILM_PRIMARY_USER_SCORE;
         $constants["filmCriticScore"]       = self::TESTFILM_PRIMARY_CRITIC_SCORE;
+        $constants["filmImdbYourScore"]      = self::TESTFILM_PRIMARY_IMDB_YOURSCORE;
+        $constants["filmImdbYourDate"]       = self::TESTFILM_PRIMARY_IMDB_YOURDATE;
 
         $constants["seriesUniqueName"]      = self::TESTSERIES_IMDBID;
         $constants["seriesImdbId"]          = self::TESTSERIES_IMDBID;

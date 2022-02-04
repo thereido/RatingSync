@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "../src/TmdbApi.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "TmdbApi.php";
 require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
@@ -24,7 +24,9 @@ class TmdbApiTest extends RatingSyncTestCase
 {
     const TESTFILM_PRIMARY_TITLE = "Frozen";
     const TESTFILM_PRIMARY_YEAR = 2013;
-    const TESTFILM_PRIMARY_IMDBID = "tt2294629";            
+    const TESTFILM_PRIMARY_IMDBID = "tt2294629";
+    const TESTFILM_PRIMARY_IMDB_YOURSCORE = 2;
+    const TESTFILM_PRIMARY_IMDB_YOURDATE = "2014-01-01";
     const TESTFILM_PRIMARY_TMDBID = "mv109445"; // mv + TESTFILM_PRIMARY_TMDBID_SOURCEID
     const TESTFILM_PRIMARY_TMDBID_SOURCEID = "109445";
     const TESTFILM_PRIMARY_USER_SCORE = 7.3;
@@ -74,6 +76,8 @@ class TmdbApiTest extends RatingSyncTestCase
         $constants["filmImage"]             = self::TESTFILM_PRIMARY_IMAGE;
         $constants["filmUserScore"]         = self::TESTFILM_PRIMARY_USER_SCORE;
         $constants["filmCriticScore"]       = self::TESTFILM_PRIMARY_CRITIC_SCORE;
+        $constants["filmImdbYourScore"]      = self::TESTFILM_PRIMARY_IMDB_YOURSCORE;
+        $constants["filmImdbYourDate"]       = self::TESTFILM_PRIMARY_IMDB_YOURDATE;
 
         $constants["seriesUniqueName"]      = self::TESTSERIES_TMDBID;
         $constants["seriesImdbId"]          = self::TESTSERIES_IMDBID;
@@ -1392,7 +1396,7 @@ class TmdbApiTest extends RatingSyncTestCase
         // Setup
         $api = new TmdbApiExt();
         $sourceName = $api->_getSourceName();
-        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_filmdetail.json";
+        $verifyFilename = __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "verify_cache_filmdetail.json";
 
         // Movie
                 // Setup
@@ -1703,7 +1707,7 @@ class TmdbApiTest extends RatingSyncTestCase
         $sourceName = $api->_getSourceName();
         $seriesFilmId = 100;
         $seasonNum = 2;
-        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_season.json";
+        $verifyFilename = __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "verify_cache_season.json";
         $seasonStr = '{"id": '.$seriesFilmId.'}';
         
         $fp = fopen($verifyFilename, "w");

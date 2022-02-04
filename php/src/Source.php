@@ -30,6 +30,7 @@ class Source
     protected $rating;
     protected $criticScore;     // Average rating by critics through the source
     protected $userScore;       // Average rating by users through the source
+    protected $archive = array(); // Inactive ratings
 
     /**
      * Film data from one source
@@ -309,6 +310,20 @@ class Source
     public function getUserScore()
     {
         return $this->userScore;
+    }
+
+    public function setArchive(?array $archive)
+    {
+        if ( is_null($archive) ) {
+            $archive = array();
+        }
+
+        $this->archive = $archive;
+    }
+
+    public function getArchive(): array
+    {
+        return $this->archive;
     }
 
     /**

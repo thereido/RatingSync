@@ -232,7 +232,8 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
 
         $query  = "SELECT $selectCols FROM $queryTables";
-        $query .= " WHERE rating.user_name='" .$this->username. "'";
+        $query .= " WHERE active=1";
+        $query .= "   AND rating.user_name='" .$this->username. "'";
         $query .= "   AND source_name='" .$this->sourceName. "'";
         $query .=     $contentTypeFilterWhere;
         $query .=     $listFilterWhere;
@@ -257,23 +258,28 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $query = "SELECT * FROM rating as rating_other" .
                  " WHERE rating_other.user_name='$username'" .
                    " AND rating_other.source_name<>'" .$this->sourceName. "'" .
+                   " AND rating_other.active=1" .
                    " AND (NOT EXISTS (SELECT NULL FROM rating as rating_rs" .
                                      " WHERE rating_rs.source_name='" .$this->sourceName. "'" .
                                        " AND rating_rs.user_name=rating_other.user_name" .
-                                       " AND rating_rs.film_id=rating_other.film_id)" .
+                                       " AND rating_rs.film_id=rating_other.film_id" .
+                                       " AND rating_rs.active=1)" .
                         " OR" .
                         " EXISTS (SELECT NULL FROM rating as rating_rs" .
                                  " WHERE rating_rs.source_name='" .$this->sourceName. "'" .
                                    " AND rating_rs.user_name=rating_other.user_name" .
                                    " AND rating_rs.film_id=rating_other.film_id" .
-                                   " AND rating_rs.yourRatingDate<rating_other.yourRatingDate))";
+                                   " AND rating_rs.yourRatingDate<rating_other.yourRatingDate" .
+                                   " AND rating_rs.active=1))";
         $result = $db->query($query);
 
         // Iterate over ratings from other sources
         foreach ($result->fetchAll() as $row) {
             $rating = new Rating($row["source_name"]);
             $rating->initFromDbRow($row);
-            $rating->saveToRs($username, $row["film_id"]);
+            if ( !empty($rating->getYourScore()) ) {
+                $rating->saveToRs($username, $row["film_id"]);
+            }
         }
     }
 
@@ -549,6 +555,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             $query .= "   AND rating.user_name = '". $this->username ."'";
             $query .= "   AND rating.source_name = 'RatingSync'";
             $query .= "   AND rating.film_id = film.id";
+            $query .= "   AND rating.active = 1";
             $query .= " LIMIT $limit";
         } else {
             $query  = "SELECT DISTINCT rating.film_id FROM rating, film_source";
@@ -557,6 +564,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             $query .= "   AND rating.user_name = '". $this->username ."'";
             $query .= "   AND rating.source_name = 'RatingSync'";
             $query .= "   AND rating.film_id = film_source.film_id";
+            $query .= "   AND rating.active = 1";
             $query .= " LIMIT $limit";
         }
 
@@ -603,7 +611,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             $query  = "SELECT DISTINCT id as film_id FROM film";
             $query .= "  WHERE film.title $sounds LIKE '%$search%'";
             $query .= "    AND (";
-            $query .= "      id IN (SELECT film_id FROM rating WHERE rating.user_name = '$username' AND rating.source_name = 'RatingSync')";
+            $query .= "      id IN (SELECT film_id FROM rating WHERE rating.user_name = '$username' AND rating.source_name = 'RatingSync' AND rating.active = 1)";
             $query .= "      OR";
             $query .= "      id IN (SELECT film_id FROM filmlist WHERE filmlist.user_name = '$username' AND filmlist.listname = '$listname')";
             $query .= "    )";
@@ -613,7 +621,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             $query .= " WHERE film_source.uniqueName = '$imdbId'";
             $query .= "   AND film_source.source_name = 'IMDb'";
             $query .= "   AND (";
-            $query .= "      film_id IN (SELECT film_id FROM rating WHERE rating.user_name = '$username' AND rating.source_name = 'RatingSync')";
+            $query .= "      film_id IN (SELECT film_id FROM rating WHERE rating.user_name = '$username' AND rating.source_name = 'RatingSync' AND rating.active = 1)";
             $query .= "      OR";
             $query .= "      film_id IN (SELECT film_id FROM filmlist WHERE filmlist.user_name = '$username' AND filmlist.listname = '$listname')";
             $query .= "      )";

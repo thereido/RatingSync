@@ -8,6 +8,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Rating.php";
 
 require_once "RatingSyncTestCase.php";
+require_once "RatingTest.php";
 require_once "SiteTest.php";
 require_once "AmazonTest.php";
 require_once "NetflixTest.php";
@@ -2202,7 +2203,7 @@ class FilmTest extends RatingSyncTestCase
         $this->assertEquals(7.7, $film->getUserScore(Constants::SOURCE_IMDB), "Frozen ".Constants::SOURCE_IMDB." user score");
         $rating = $film->getRating(Constants::SOURCE_IMDB);
         $this->assertEquals(2, $rating->getYourScore(), "Frozen ".Constants::SOURCE_IMDB." your score");
-        $this->assertNull($rating->getYourRatingDate(), "Frozen ".Constants::SOURCE_IMDB." rating date");
+        $this->assertEquals("2014-01-01", $rating->getYourRatingDate()?->format(RatingTest::DATE_FORMAT), "Frozen ".Constants::SOURCE_IMDB." rating date");
         $this->assertNull($rating->getSuggestedScore(), "Frozen ".Constants::SOURCE_IMDB." suggested score");
     }
 
@@ -2533,7 +2534,7 @@ class FilmTest extends RatingSyncTestCase
         $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), "SuggestedScore $sourceName");
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $this->assertEmpty($dbFilm->getYourScore($sourceName), "Should be no RS rating");
-        $query = "SELECT film_id FROM rating WHERE film_id=$filmId AND source_name='$sourceName'";
+        $query = "SELECT film_id FROM rating WHERE film_id=$filmId AND source_name='$sourceName' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(0, $result->rowCount(), "There should be no $sourceName rating");
     }
@@ -2606,7 +2607,7 @@ class FilmTest extends RatingSyncTestCase
         $this->assertEquals($film->getUniqueName($sourceRs), $dbFilm->getUniqueName($sourceRs), "UniqueName RS");
         $this->assertEquals($film->getCriticScore($sourceRs), $dbFilm->getCriticScore($sourceRs), "CriticScore RS");
         $this->assertEquals($film->getUserScore($sourceRs), $dbFilm->getUserScore($sourceRs), "UserScore RS");
-        $query = "SELECT film_id FROM rating WHERE film_id=$filmId";
+        $query = "SELECT film_id FROM rating WHERE film_id=$filmId AND active=1";
         $result = $db->query($query);
         $this->assertEquals(0, $result->rowCount(), "There should be no ratings");
     }
@@ -2661,7 +2662,7 @@ class FilmTest extends RatingSyncTestCase
         $this->assertEquals($film->getUniqueName($sourceRsName), $dbFilm->getUniqueName($sourceRsName), "UniqueName $sourceRsName");
         $this->assertEquals($film->getImage(), $dbFilm->getImage($sourceRsName), "Image RS");
         $this->assertEquals("rs$filmId", $dbFilm->getUniqueName($sourceRsName), "UniqueName RS");
-        $query = "SELECT film_id FROM rating WHERE film_id=$filmId AND source_name='$sourceRsName'";
+        $query = "SELECT film_id FROM rating WHERE film_id=$filmId AND source_name='$sourceRsName' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(0, $result->rowCount(), "There should be no $sourceRsName rating");
     }

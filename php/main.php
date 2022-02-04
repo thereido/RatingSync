@@ -142,7 +142,7 @@ function debugMessage($input, $prefix = null, $showTime = true, $printArray = nu
     return $prefix . $input . $suffix . PHP_EOL;
 }
 
-function logDebug($input, $prefix = null, $showTime = true, $printArray = null)
+function logToFile($filename, $input, $prefix = null, $showTime = true, $printArray = null)
 {
     $message = "";
     try {
@@ -153,14 +153,26 @@ function logDebug($input, $prefix = null, $showTime = true, $printArray = null)
     }
 
     try {
-        $logfilename =  Constants::outputFilePath() . "logDebug.txt";
-        $fp = fopen($logfilename, "a");
+        $filename =  Constants::outputFilePath() . "logDebug.txt";
+        $fp = fopen($filename, "a");
         fwrite($fp, $message);
         fclose($fp);
     }
     catch (\Exception $e) {
         // Ignore
     }
+}
+
+function logDebug($input, $prefix = null, $showTime = true, $printArray = null)
+{
+    $logfilename =  Constants::outputFilePath() . "logDebug.txt";
+    logToFile($logfilename, $input, $prefix, $showTime, $printArray);
+}
+
+function logError($input, $prefix = null, $showTime = true, $printArray = null)
+{
+    $logfilename =  Constants::outputFilePath() . "logError.txt";
+    logToFile($logfilename, $input, $prefix, $showTime, $printArray);
 }
 
 function printDebug($input, $prefix = null, $showTime = false, $printArray = null)
@@ -278,7 +290,7 @@ function array_value_by_key($key, $a, $nullValue = null) {
     }
 }
 
-function setRating($filmId, $score)
+function setRating($filmId, $score, $dateStr)
 {
     if (empty($filmId)) {
         return null;
@@ -288,6 +300,14 @@ function setRating($filmId, $score)
     $film = Film::getFilmFromDb($filmId, $username);
     if (!empty($film)) {
         $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+
+        $date = null;
+        try {
+            $date = new \DateTime($dateStr ?? "now");
+        }
+        catch (\Exception $e) {
+            $date = new \DateTime();
+        }
 
         if ($score == 0) {
             // Delete rating
@@ -310,7 +330,7 @@ function setRating($filmId, $score)
             $existingScore = $rating->getYourScore();
             $existingRatingDate = $rating->getYourRatingDate();
             $rating->setYourScore($score);
-            $rating->setYourRatingDate(new \DateTime());
+            $rating->setYourRatingDate($date);
             
             $success = false;
             try {

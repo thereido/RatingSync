@@ -131,7 +131,7 @@ class SiteTest extends RatingSyncTestCase
         $film->setUniqueName("tt2294629", $site->_getSourceName());
         
         $page = "<html><body><h2>Film Detail</h2></body></html>";
-        $verifyFilename = "testfile" . DIRECTORY_SEPARATOR . "verify_cache_filmdetailpage.xml";
+        $verifyFilename = __DIR__ . DIRECTORY_SEPARATOR . "testfile" . DIRECTORY_SEPARATOR . "verify_cache_filmdetailpage.xml";
         $fp = fopen($verifyFilename, "w");
         fwrite($fp, $page);
         fclose($fp);

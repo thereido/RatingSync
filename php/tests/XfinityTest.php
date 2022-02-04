@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once "../src/Xfinity.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Xfinity.php";
 require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 

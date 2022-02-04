@@ -101,9 +101,10 @@ CREATE TABLE IF NOT EXISTS rating
         yourScore INT NULL DEFAULT NULL,
         yourRatingDate DATE NULL DEFAULT NULL,
         suggestedScore INT NULL DEFAULT NULL,
+        active BOOLEAN DEFAULT FALSE NOT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
-        PRIMARY KEY (user_name, source_name, film_id),
+        PRIMARY KEY (user_name, source_name, film_id, yourRatingDate),
         KEY (user_name),
         KEY (source_name),
         KEY (film_id),

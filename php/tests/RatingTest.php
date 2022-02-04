@@ -14,6 +14,8 @@ require_once "RatingSyncTestCase.php";
 
 class RatingTest extends RatingSyncTestCase
 {
+    const DATE_FORMAT = 'Y-m-d';
+
     protected function setUp(): void
     {
         parent::setup();
@@ -412,7 +414,8 @@ class RatingTest extends RatingSyncTestCase
         $query = "SELECT * FROM rating" .
                  " WHERE film_id=$filmId" .
                    " AND source_name='$sourceName'" .
-                   " AND user_name='$username_rs'";
+                   " AND user_name='$username_rs'" .
+                   " AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount(), "There sure be one Film/Source row $filmId/$sourceName");
         $row = $result->fetch();
@@ -521,7 +524,7 @@ class RatingTest extends RatingSyncTestCase
         $film->setRating($rating, Constants::SOURCE_RATINGSYNC);
         $this->assertTrue($film->saveToDb($username), "Saving film $title");
         
-        $title = "Title Rating::testSaveToDbRatingExistsEmptyExistingDate";
+        $title = "Title Rating::testSaveToDbRatingExistsWithNewerDate";
         $year = 2016;
         $film = new Film();
         $film->setTitle($title);
@@ -534,6 +537,7 @@ class RatingTest extends RatingSyncTestCase
         $film->addDirector("Director");
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         $rating->setYourScore(1);
+        $rating->setYourRatingDate(new \DateTime('2022-01-01'));
         $rating->setSuggestedScore(1);
         $film->setRating($rating, Constants::SOURCE_RATINGSYNC);
         $this->assertTrue($film->saveToDb($username), "Saving film $title");
@@ -671,7 +675,7 @@ class RatingTest extends RatingSyncTestCase
 
         // Verify
         $this->assertTrue($success, "Rating::saveToDb should succeed");
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $dbRating = new Rating($rating->getSource());
@@ -712,13 +716,13 @@ class RatingTest extends RatingSyncTestCase
 
         // Verify
         $this->assertTrue($success, "Rating::saveToDb should succeed");
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $dbRating = new Rating($rating->getSource());
         $dbRating->initFromDbRow($result->fetch());
         $this->assertEmpty($dbRating->getYourScore(), 'Your score');
-        $this->assertEmpty($dbRating->getYourRatingDate(), "Your rating date");
+        $this->assertEquals($dbRating->getYourRatingDate()?->format(self::DATE_FORMAT), (new \DateTime())->format(self::DATE_FORMAT), "Your rating date");
         $this->assertEmpty($dbRating->getSuggestedScore(), 'Your score');
     }
     
@@ -757,7 +761,7 @@ class RatingTest extends RatingSyncTestCase
 
         // Verify
         $this->assertTrue($success, "Rating::saveToDb should succeed");
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $dbRating = new Rating($rating->getSource());
@@ -805,7 +809,7 @@ class RatingTest extends RatingSyncTestCase
 
         // Verify
         $this->assertTrue($success, "Rating::saveToDb should succeed");
-        $query = "SELECT * FROM rating WHERE film_id=$filmId";
+        $query = "SELECT * FROM rating WHERE film_id=$filmId AND active=1";
         $result = $db->query($query);
         $this->assertEquals(3, $result->rowCount(), "Should be 3 ratings for this film");
         foreach ($result->fetchAll() as $row) {
@@ -878,7 +882,7 @@ class RatingTest extends RatingSyncTestCase
 
         // Verify
         $this->assertTrue($success, "Rating::saveToDb should succeed");
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $dbRating = new Rating($rating->getSource());
@@ -887,8 +891,8 @@ class RatingTest extends RatingSyncTestCase
         $this->assertEquals(date_format($rating->getYourRatingDate(), 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), 'Your score');
         
-        $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
-                   " AND yourRatingDate='2015-12-01'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
+                   " AND yourRatingDate='2015-12-01' AND active=0";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $dbRating = new Rating($rating->getSource());
@@ -936,7 +940,7 @@ class RatingTest extends RatingSyncTestCase
 
         // Verify
         $this->assertTrue($success, "Rating::saveToDb should succeed");
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $dbRating = new Rating($rating->getSource());
@@ -945,71 +949,10 @@ class RatingTest extends RatingSyncTestCase
         $this->assertEquals(date_format($todayDate, 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals(6, $dbRating->getSuggestedScore(), 'Suggested score');
         
-        $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."' AND active=0" .
                    " AND yourRatingDate='$originalRatingDate'";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->rowCount());
-        $dbArchiveRating = new Rating($rating->getSource());
-        $dbArchiveRating->initFromDbRow($result->fetch());
-        $this->assertEquals($dbRating->getYourScore(), $dbArchiveRating->getYourScore(), 'Your score (archived)');
-        $this->assertEquals($originalRatingDate, date_format($dbArchiveRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
-        $this->assertEquals($dbRating->getSuggestedScore(), $dbArchiveRating->getSuggestedScore(), 'Suggested score (archived)');
-    }
-    
-    /**
-     * - Existing rating in the db for this $username/$film/source
-     * - Existing rating has empty yourRatingDate
-     * - Set all rating data
-     * - For this rating set yourRatingDate to the past
-     *
-     * Expect
-     *   - Rating table have the new data
-     *   - Archive have the existing data (yourRatingDate is NULL)
-     *
-     * @covers  \RatingSync\Rating::saveToDb
-     * @depends testSaveToDbRatingExists
-     */
-    public function testSaveToDbRatingExistsEmptyExistingDate()
-    {$this->start(__CLASS__, __FUNCTION__);
-
-        // Setup
-        $username = Constants::TEST_RATINGSYNC_USERNAME;
-        $rating = new Rating(Constants::SOURCE_RATINGSYNC);
-        $rating->setYourScore(5);
-        $rating->setYourRatingDate(new \DateTime('2015-12-05'));
-        $rating->setSuggestedScore(5);
-
-        // Get the new Film ID
-        $db = getDatabase();
-        $title = "Title Rating::testSaveToDbRatingExistsEmptyExistingDate";
-        $year = 2016;
-        $query = "SELECT id FROM film WHERE title='$title' AND year=$year";
-        $result = $db->query($query);
-        $filmId = $result->fetch()['id'];
-        
-        // Test
-        $success = $rating->saveToDb($username, $filmId);
-
-        // Verify
-        $this->assertTrue($success, "Rating::saveToDb should succeed");
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'";
-        $result = $db->query($query);
-        $this->assertEquals(1, $result->rowCount());
-        $dbRating = new Rating($rating->getSource());
-        $dbRating->initFromDbRow($result->fetch());
-        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), 'Your score');
-        $this->assertEquals(date_format($rating->getYourRatingDate(), 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
-        $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), 'Your score');
-        
-        $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
-                   " AND yourRatingDate IS NULL";
-        $result = $db->query($query);
-        $this->assertEquals(1, $result->rowCount());
-        $dbArchiveRating = new Rating($rating->getSource());
-        $dbArchiveRating->initFromDbRow($result->fetch());
-        $this->assertEquals(1, $dbArchiveRating->getYourScore(), 'Your score');
-        $this->assertEmpty($dbArchiveRating->getYourRatingDate(), 'Your rating date');
-        $this->assertEquals(1, $dbArchiveRating->getSuggestedScore(), 'Suggested score');
+        $this->assertEquals(0, $result->rowCount());
     }
     
     /**
@@ -1037,7 +980,7 @@ class RatingTest extends RatingSyncTestCase
 
         // Get the new Film ID
         $db = getDatabase();
-        $title = "Title Rating::testSaveToDbRatingExistsEmptyExistingDate";
+        $title = "Title Rating::testSaveToDbRatingExistsWithNewerDate";
         $year = 2016;
         $query = "SELECT id FROM film WHERE title='$title' AND year=$year";
         $result = $db->query($query);
@@ -1048,16 +991,16 @@ class RatingTest extends RatingSyncTestCase
 
         // Verify
         $this->assertTrue($success, "Rating::saveToDb should succeed");
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $dbRating = new Rating($rating->getSource());
         $dbRating->initFromDbRow($result->fetch());
-        $this->assertEquals(5, $dbRating->getYourScore(), 'Your score');
-        $this->assertEquals("2015-12-05", date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
-        $this->assertEquals(5, $dbRating->getSuggestedScore(), 'Suggested score');
+        $this->assertEquals(1, $dbRating->getYourScore(), 'Your score');
+        $this->assertEquals('2022-01-01', $dbRating->getYourRatingDate()?->format(self::DATE_FORMAT), "Your rating date");
+        $this->assertEquals(1, $dbRating->getSuggestedScore(), 'Suggested score');
         
-        $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."' AND active=0" .
                    " AND yourRatingDate='".date_format($rating->getYourRatingDate(), 'Y-m-d')."' ORDER BY ts LIMIT 1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
@@ -1090,13 +1033,14 @@ class RatingTest extends RatingSyncTestCase
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
         $rating->setYourScore(5);
-        $originalRatingDate = "2015-12-05";
-        $rating->setYourRatingDate(new \DateTime('2015-12-08'));
+        $originalRatingDate = "2022-01-01";
+        $newRatingDate = "2022-02-01";
+        $rating->setYourRatingDate(new \DateTime($newRatingDate));
         $rating->setSuggestedScore(8);
 
         // Get the new Film ID
         $db = getDatabase();
-        $title = "Title Rating::testSaveToDbRatingExistsEmptyExistingDate";
+        $title = "Title Rating::testSaveToDbRatingExistsWithNewerDate";
         $year = 2016;
         $query = "SELECT id FROM film WHERE title='$title' AND year=$year";
         $result = $db->query($query);
@@ -1107,24 +1051,24 @@ class RatingTest extends RatingSyncTestCase
 
         // Verify
         $this->assertTrue($success, "Rating::saveToDb should succeed");
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $dbRating = new Rating($rating->getSource());
         $dbRating->initFromDbRow($result->fetch());
         $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), 'Your score');
-        $this->assertEquals("2015-12-08", date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
+        $this->assertEquals($newRatingDate, date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
         $this->assertEquals($rating->getSuggestedScore(), $dbRating->getSuggestedScore(), 'Suggested score');
         
-        $query = "SELECT * FROM rating_archive WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."'" .
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."' AND active=0" .
                    " AND yourRatingDate='$originalRatingDate' ORDER BY ts LIMIT 1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $dbArchiveRating = new Rating($rating->getSource());
         $dbArchiveRating->initFromDbRow($result->fetch());
-        $this->assertEquals(5, $dbArchiveRating->getYourScore(), 'Your score');
+        $this->assertEquals(1, $dbArchiveRating->getYourScore(), 'Your score');
         $this->assertEquals($originalRatingDate, date_format($dbArchiveRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
-        $this->assertEquals(5, $dbArchiveRating->getSuggestedScore(), 'Suggested score');
+        $this->assertEquals(1, $dbArchiveRating->getSuggestedScore(), 'Suggested score');
     }
 
     /**
@@ -1271,7 +1215,7 @@ class RatingTest extends RatingSyncTestCase
         $this->assertGreaterThan(0, $filmId, "Film ID should be found (greater than 0)");
 
         // Get the rating in the db from another source (IMDb)
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_IMDB."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_IMDB."' AND active=1";
         $result = $db->query($query);
         $row = $result->fetch();
         $rating = new Rating(Constants::SOURCE_IMDB);
@@ -1280,7 +1224,7 @@ class RatingTest extends RatingSyncTestCase
         // Copy the new IMDb rating to a RS rating
         $rating->saveToRs($username, $filmId);
 
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $row = $result->fetch();
@@ -1313,7 +1257,7 @@ class RatingTest extends RatingSyncTestCase
         // Update the same RS rating
         $rating->saveToRs($username, $filmId);
 
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $row = $result->fetch();
@@ -1345,7 +1289,7 @@ class RatingTest extends RatingSyncTestCase
         // Update the same RS rating
         $rating->saveToRs($username, $filmId);
 
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $row = $result->fetch();
@@ -1375,7 +1319,7 @@ class RatingTest extends RatingSyncTestCase
         // Update the same RS rating
         $rating->saveToRs($username, $filmId);
 
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $row = $result->fetch();
@@ -1405,12 +1349,12 @@ class RatingTest extends RatingSyncTestCase
         // Update the same RS rating
         $rating->saveToRs($username, $filmId);
 
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $row = $result->fetch();
         $this->assertEquals(3, $row['yourScore'], 'Your score');
-        $this->assertEmpty($row['yourRatingDate'], "Your rating date");
+        $this->assertEquals((new \DateTime())->format(self::DATE_FORMAT), ($row['yourRatingDate']), "Your rating date");
     }
 
     /**
@@ -1426,7 +1370,7 @@ class RatingTest extends RatingSyncTestCase
         // Get the rating in the db from another source (IMDb)
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $filmId = 1;
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_IMDB."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_IMDB."' AND active=1";
         $result = $db->query($query);
         $row = $result->fetch();
         $rating = new Rating(Constants::SOURCE_IMDB);
@@ -1435,7 +1379,7 @@ class RatingTest extends RatingSyncTestCase
         $rating->setYourScore(null);
         $rating->saveToRs($username, $filmId);
         
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $row = $result->fetch();
@@ -1459,7 +1403,7 @@ class RatingTest extends RatingSyncTestCase
         $rating->setSuggestedScore(2);
         $rating->saveToRs($username, $filmId);
         
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $row = $result->fetch();
@@ -1502,7 +1446,7 @@ class RatingTest extends RatingSyncTestCase
         // Update the same RS rating
         $rating->saveToRs($username, $filmId);
 
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $row = $result->fetch();
@@ -1533,7 +1477,7 @@ class RatingTest extends RatingSyncTestCase
         // Update the same RS rating
         $rating->saveToRs($username, $filmId);
 
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $row = $result->fetch();
@@ -1565,7 +1509,7 @@ class RatingTest extends RatingSyncTestCase
         // Update the same RS rating
         $rating->saveToRs($username, $filmId);
 
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $row = $result->fetch();
@@ -1597,7 +1541,7 @@ class RatingTest extends RatingSyncTestCase
         // Update the same RS rating
         $rating->saveToRs($username, $filmId);
 
-        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."'";
+        $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".Constants::SOURCE_RATINGSYNC."' AND active=1";
         $result = $db->query($query);
         $this->assertEquals(1, $result->rowCount());
         $row = $result->fetch();

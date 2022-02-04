@@ -235,18 +235,12 @@ class Film {
             $arrSource['streamDate'] = $source->getStreamDate();
             $arrSource['criticScore'] = $source->getCriticScore();
             $arrSource['userScore'] = $source->getUserScore();
-            
-            $rating = $source->getRating();
-            $arrRating = array();
-            $arrRating['yourScore'] = $rating->getYourScore();
-            $ratingDate = null;
-            if (!is_null($rating->getYourRatingDate())) {
-                $ratingDate = $rating->getYourRatingDate()->format("Y-n-j");
-            }
-            $arrRating['yourRatingDate'] = $ratingDate;
-            $arrRating['suggestedScore'] = $rating->getSuggestedScore();
 
-            $arrSource['rating'] = $arrRating;
+            $arrSource['rating'] = $source->getRating()->asArray();
+            $archive = $source->getArchive();
+            $arrSource['archiveCount'] = count( $archive );
+            $arrSource['archive'] = $archive;
+
             $arrSources[] = $arrSource;
         }
         $arr['sources'] = $arrSources;
@@ -987,7 +981,7 @@ class Film {
         // Directors
         foreach ($this->getDirectors() as $director) {
             $director = $db->quote($director);
-            $personId;
+            $personId = null;
             $result = $db->query("SELECT id FROM person WHERE fullname=$director");
             if ($result->rowCount() == 1) {
                 $row = $result->fetch();
@@ -1150,14 +1144,14 @@ class Film {
 
             // Rating
             if (!empty($username)) {
-                $query = "SELECT * FROM rating WHERE film_id=$filmId AND source_name='".$source->getName()."' AND user_name='".$username."'";
-                $ratingResult = $db->query($query);
-                if ($ratingResult->rowCount() == 1) {
-                    $row = $ratingResult->fetch();
-                    $rating = new Rating($source->getName());
-                    $rating->initFromDbRow($row);
+                $rating = Rating::getRatingFromDb($username, $source->getName(), $filmId);
+                if (!empty($rating)) {
                     $source->setRating($rating);
                 }
+
+                // Rating archive (inactive ratings)
+                $archive = Rating::getInactiveRatingsFromDb($username, $source->getName(), $filmId);
+                $source->setArchive($archive);
             }
         }
         
