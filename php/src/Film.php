@@ -237,9 +237,14 @@ class Film {
             $arrSource['userScore'] = $source->getUserScore();
 
             $arrSource['rating'] = $source->getRating()->asArray();
+
             $archive = $source->getArchive();
             $arrSource['archiveCount'] = count( $archive );
-            $arrSource['archive'] = $archive;
+            $arrArchive = array();
+            foreach ($archive as $archivedRating) {
+                $arrArchive[] = $archivedRating->asArray();
+            }
+            $arrSource['archive'] = $arrArchive;
 
             $arrSources[] = $arrSource;
         }
