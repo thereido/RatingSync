@@ -77,8 +77,12 @@ class Issue38 {
     {
         $sourceName = "TMDb";
 
+        if ( $this->dryRun ) {
+            $this->log("=====================\n\tDRY RUN\n=====================");
+        }
+
         // Movies
-        $this->log("=====================Movies\n=====================");
+        $this->log("=====================\nMovies\n=====================");
         foreach ($this->getDuplicateUniqueNames("mv") as $row) {
 
             $uniqueName = $row['uniqueName'];
@@ -107,6 +111,13 @@ class Issue38 {
 
     private function getDuplicateUniqueNames($uniqueNamePrefix): array
     {
+        $query = "SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'";
+        $result = $this->selectQuery($query);
+
+        if ( $result == false ) {
+            return array();
+        }
+
         $query = "SELECT film_source.* FROM film_source WHERE source_name='TMDb' AND uniqueName LIKE '$uniqueNamePrefix%' GROUP BY uniqueName HAVING COUNT(film_id) > 1";
         $result = $this->selectQuery($query);
 
