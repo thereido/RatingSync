@@ -3012,6 +3012,87 @@ class FilmTest extends RatingSyncTestCase
         }
         */
     }
+
+    /**
+     * - The user has 1 current rating for the film
+     * - The user has 2 archived ratings for the film
+     *
+     * Expect
+     *   - Array and JSON have archive count = 2
+     *   - Array and JSON's archive matches the db
+     *
+     * @covers  \RatingSync\Film::asArray
+     * @depends testSetRating
+     * @depends testGetFilmFromDbSourceData
+     * @depends testSaveToDb
+     */
+    public function testAsArrayArchive()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
+        SessionUtility::setUsername($username);
+        $sourceName = Constants::SOURCE_RATINGSYNC;
+        $filmId = 1;
+        $currentScore = 4;
+
+        $score1 = 1;
+        $score2 = 2;
+        $date1 = new \DateTime("2022-03-05");
+        $date2 = new \DateTime("2022-03-06");
+        $rating1 = new Rating($sourceName);
+        $rating1->setYourScore($score1);
+        $rating1->setYourRatingDate($date1);
+        $rating2 = new Rating($sourceName);
+        $rating2->setYourScore($score2);
+        $rating2->setYourRatingDate($date2);
+        $archive = array($rating1, $rating2);
+
+        $film = setRating($filmId, $score1, $date1->format("Y-m-d"));
+
+        $film = Film::getFilmFromDb($filmId, $username);
+        $currentRating = $film->getRating($sourceName);
+        $currentRating->setYourScore($currentScore);
+        $film->setRating($currentRating, $sourceName);
+        $source = $film->getSource($sourceName);
+        $source->setArchive($archive);
+
+        // Test
+        $array = $film->asArray();
+        $json = $film->json_encode();
+
+        // Verify Array
+        $arrSource = null;
+        foreach ($array["sources"] as $loopSource) {
+            if ($sourceName == $loopSource["name"]) {
+                $arrSource = $loopSource;
+                break;
+            }
+        }
+        $this->assertEquals(2, $arrSource["archiveCount"], "archiveCount should be 2");
+        $arrArchive = $arrSource["archive"];
+        $this->assertEquals($arrSource["archiveCount"], count($arrArchive), "archiveCount should match the length of the archive");
+        for ($i = 0; $i < $arrSource["archiveCount"]; $i++) {
+            $this->assertEquals($archive[$i]->getYourScore(), $arrArchive[$i]["yourScore"], "yourScore");
+            $this->assertEquals($archive[$i]->getYourRatingDate()->format("Y-n-j"), $arrArchive[$i]["yourRatingDate"], "yourRatingDate");
+        }
+
+        // Verify JSON
+        $obj = json_decode($json);
+        $foundInternalSourceInJson = false;
+        foreach ($obj->sources as $objSource) {
+            if ($objSource->name == $sourceName) {
+                $foundInternalSourceInJson = true;
+                $count = $objSource->archiveCount;
+                $this->assertEquals($arrSource["archiveCount"], $count, "archiveCount should match the length of the archive in json");
+                for ($i = 0; $i < $count; $i++) {
+                    $this->assertEquals($archive[$i]->getYourScore(), $objSource->archive[$i]->yourScore, "yourScore in json");
+                    $this->assertEquals($archive[$i]->getYourRatingDate()->format("Y-n-j"), $objSource->archive[$i]->yourRatingDate, "yourRatingDate in json");
+                }
+            }
+        }
+        $this->assertTrue($foundInternalSourceInJson, "JSON result should have an internal (RatingSync) source");
+    }
 }
 
 ?>
