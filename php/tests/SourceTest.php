@@ -927,6 +927,48 @@ class SourceTest extends RatingSyncTestCase
 
         $this->assertTrue(true); // Making sure we made it this far
     }
+
+    /**
+     * - archive is empty
+     * - Set archive to an array with 2 ratings
+     *
+     * Expect
+     *   - 2 archived ratings
+     *
+     * @covers  \RatingSync\Source::setArchive
+     * @covers  \RatingSync\Source::getArchive
+     * @depends testSetupRatings
+     */
+    public function testSetAndGetArchive()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $source = new Source(Constants::SOURCE_RATINGSYNC);
+        $score1 = 1;
+        $score2 = 2;
+        $date1 = new \DateTime("2022-03-05");
+        $date2 = new \DateTime("2022-03-06");
+        $rating1 = new Rating($source->getName());
+        $rating1->setYourScore($score1);
+        $rating1->setYourRatingDate($date1);
+        $rating2 = new Rating($source->getName());
+        $rating2->setYourScore($score2);
+        $rating2->setYourRatingDate($date2);
+
+        $archive = array($rating1, $rating2);
+
+        // Test
+        $source->setArchive($archive);
+        $retrievedArchive = $source->getArchive();
+
+        // Verify
+        $this->assertEquals(count($archive), count($retrievedArchive), "Archive count");
+        $this->assertEquals(count($archive), count($retrievedArchive), "Archive count");
+        for ($i = 0; $i < count($archive); $i++) {
+            $this->assertEquals($archive[$i]->getYourScore(), $retrievedArchive[$i]->getYourScore(), "archive[$i] score");
+            $this->assertEquals($archive[$i]->getYourRatingDate(), $retrievedArchive[$i]->getYourRatingDate(), "archive[$i] date");
+        }
+    }
 }
 
 ?>

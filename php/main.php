@@ -290,65 +290,40 @@ function array_value_by_key($key, $a, $nullValue = null) {
     }
 }
 
-function setRating($filmId, $score, $dateStr)
+/**
+ * Create, Update or Delete an active or archived user's rating for a film. If
+ * the newDate param is in the future, then the current date is used.
+ * Create/Update Use cases (newDate non-null, scores 1 through 10):
+ *   - Same date as the active rating: Change the score
+ *   - Same date as an archived rating: Change the score
+ *   - No existing active rating and newer than existing archived ratings: Create the new active rating
+ *   - No existing active rating and older than the newest existing archived rating: Archive the new rating
+ *   - Newer rating than the active rating: Archive the existing and create the new active rating
+ *   - Older rating than the active rating: Archive the new rating
+ * Create/Update Use cases (newDate=null, scores 1 through 10):
+ *   - No existing active rating, but archived rating is the current date: Delete the archived rating and create the active with current date
+ *   - For all other cases with newDate=null and score range 1-10: Archive the existing and create the new active rating with current date
+ * Delete Use cases (score 0):
+ *   - No matching date and no existing active rating: do nothing
+ *   - newDate is null OR newDate is the same or newer than the existing active rating: Archive the existing active rating
+ *   - Same date as an existing archived rating: Delete
+ *
+ * @param $filmId
+ * @param $score
+ * @param $dateStr
+ *
+ * @return Film|null
+ */
+function setRating($filmId, $score, $dateStr = null)
 {
     if (empty($filmId)) {
         return null;
     }
 
     $username = getUsername();
-    $film = Film::getFilmFromDb($filmId, $username);
-    if (!empty($film)) {
-        $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
+    Rating::saveRatingChange($filmId, $username, $score, $dateStr ? new \DateTime($dateStr) : null );
 
-        $date = null;
-        try {
-            $date = new \DateTime($dateStr ?? "now");
-        }
-        catch (\Exception $e) {
-            $date = new \DateTime();
-        }
-
-        if ($score == 0) {
-            // Delete rating
-
-            $success = false;
-            try {
-                $success = $rating->deleteToDb($username, $filmId);
-            }
-            catch (\Exception $e) {
-                $success = false;
-            }
-
-            if ($success) {
-                $film->setRating(null, Constants::SOURCE_RATINGSYNC);
-            }
-
-        } else {
-            // Set rating
-            
-            $existingScore = $rating->getYourScore();
-            $existingRatingDate = $rating->getYourRatingDate();
-            $rating->setYourScore($score);
-            $rating->setYourRatingDate($date);
-            
-            $success = false;
-            try {
-                $success = $rating->saveToDb($username, $filmId);
-            }
-            catch (\Exception $e) {
-                logDebug($e, __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__);
-                $success = false;
-            }
-            
-            if ($success) {
-                $film->setRating($rating);
-            }
-            
-        }
-    }
-
-    return $film;
+    return Film::getFilmFromDb($filmId, $username);
 }
 
 function getPageFooter() {
@@ -383,6 +358,14 @@ function unquote($str)
     }
 
     return substr($str, 1, $length-2);
+}
+
+function today(): \DateTime
+{
+    $today = new \DateTime();
+    $today->setTime(0, 0, 0, 0);
+
+    return $today;
 }
 
 ?>
