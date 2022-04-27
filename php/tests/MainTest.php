@@ -1195,18 +1195,38 @@ class MainTest extends RatingSyncTestCase
      *   Note: If the dateStr param is in the future, then the current date is used.
      * Create/Update Use cases (newDate non-null, scores 1 through 10):
      *   1) Same date as the active rating: Change the score
+     *     1a) originalDate matches an archived rating: also delete original rating
      *   2) Same date as an archived rating: Change the score
+     *     2a) originalDate matches active rating: also delete the original active rating, activate the newest archived rating
+     *       2a.1) newDate is newest archived rating: 2a results
+     *       2a.2) newDate is not newest archived rating 2a results
+     *     2b) originalDate matches another archived rating: also delete original rating
      *   3) No existing active rating and newer than existing archived ratings: Create the new active rating
+     *     3a) originalDate matches another archived rating: also delete original rating
      *   4) No existing active rating and older than the newest existing archived rating: Archive the new rating
-     *   5) Newer rating than the active rating: Archive the existing and create the new active rating
+     *     4a) originalDate matches another archived rating: also delete original rating
+     *   5) Newer rating than the active rating: Archive the existing active rating and create the new active rating
+     *     5a) originalDate matches active rating: Delete the original rating and create the new active rating
+     *     5b) originalDate matches another archived rating: Archive the existing active rating and create the new active rating and delete original rating
      *   6) Older rating than the active rating: Archive the new rating
+     *     6a) originalDate matches active rating: Delete the original rating, then do use case 3 or 4 (no existing active rating)
+     *     6b) originalDate matches another archived rating: also delete original rating
+     *
      * Create/Update Use cases (newDate=null, scores 1 through 10):
      *   7) No existing active rating, but archived rating is the current date: Delete the archived rating and create the active with current date
      *   8) For all other cases with newDate=null and score range 1-10: Archive the existing and create the new active rating with current date
+     *     8a) With an active rating newDate=null and score range 1-10
+     *     8b) Without an active rating newDate=null and score range 1-10
+     *
      * Delete Use cases (score 0):
      *   9) No matching date and no existing active rating: do nothing
      *   10) newDate is null OR newDate is the same or newer than the existing active rating: Archive the existing active rating
+     *     10a) newDate is null
+     *     10b) newDate is the same as the existing active rating
+     *     10c) Newer than the existing active rating
      *   11) Same date as an existing archived rating: Delete
+     *
+     * 12) Create/Update Use cases (newDate non-null, scores 1 through 10, originalDate non-null does not match any ratings): return false without doing anything
      *
      * @covers  \RatingSync\setRating
      * @depends testSetRating
@@ -1232,12 +1252,16 @@ class MainTest extends RatingSyncTestCase
         $todayStr = $today->format("Y-m-d");
 
         $defaultActiveScore = 5;
-        $defaultActiveDateStr = "2022-03-20";
         $archive0Score = 6;
-        $archive0Date = "2022-03-16";
         $archive1Score = 7;
-        $archive1Date = "2022-03-15";
-        $defaultArchive = [["score" => $archive0Score, "date" => $archive0Date], ["score" => $archive1Score, "date" => $archive1Date]];
+        $newerThanActiveDateStr = "2022-03-22";
+        $defaultActiveDateStr = "2022-03-20";
+        $newerThanNewestArchiveDateStr = "2022-03-18";
+        $archive0DateStr = "2022-03-16";
+        $betweenArchiveItemsDateStr = "2022-03-14";
+        $archive1DateStr = "2022-03-12";
+        $olderThanOldestArchiveDateStr = "2022-03-10";
+        $defaultArchive = [["score" => $archive0Score, "date" => $archive0DateStr], ["score" => $archive1Score, "date" => $archive1DateStr]];
         $defaultNewScore = 8;
 
         // Create/Update Use cases (dateStr non-null, scores 1 through 10)
@@ -1251,8 +1275,8 @@ class MainTest extends RatingSyncTestCase
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
 
         // Test (case 1)
         $filmReturned = setRating($filmId, $newScore, $newDate);
@@ -1275,18 +1299,51 @@ class MainTest extends RatingSyncTestCase
         $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
 
         // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 1) Same date as the active rating: Change the score
+        //   1a) originalDate matches an archived rating: also delete original rating
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $defaultActiveDateStr;
+        $originalDateStr =$archive1DateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 1a)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 1a)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName);
+        $this->assertEquals($newScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($existingActiveDateStr, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(1, $dbArchive, "Archive count");
+        $dbArchivedRating = $dbArchive[0];
+        $this->assertEquals($existingArchive[0]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[0]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
         // 2) Same date as an archived rating: Change the score
 
         $existingActiveScore = $defaultActiveScore;
         $existingActiveDateStr = $defaultActiveDateStr;
         $existingArchive = $defaultArchive;
         $newScore = $defaultNewScore;
-        $newDate = $archive0Date; // Same as the newest archived rating
+        $newDate = $archive0DateStr; // Same as the newest archived rating
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
 
         // Test (case 2)
         $filmReturned = setRating($filmId, $newScore, $newDate);
@@ -1309,6 +1366,107 @@ class MainTest extends RatingSyncTestCase
         $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
 
         // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 2) Same date as an archived rating: Change the score
+        //   2a) originalDate matches active rating: also delete the original active rating, activate the newest archived rating
+        //     2a.1) newDate is same date as the newest archived rating: 2a results
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $archive0DateStr; // Same as the newest archived rating
+        $originalDateStr = $existingActiveDateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 2a.1)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 2a.1)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName);
+        $this->assertEquals($newScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($newDate, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(1, $dbArchive, "Archive count");
+        $dbArchivedRating = $dbArchive[0];
+        $this->assertEquals($existingArchive[1]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 2) Same date as an archived rating: Change the score
+        //   2a) originalDate matches active rating: also delete the original active rating, activate the newest archived rating
+        //     2a.2) newDate is not same date as the newest archived rating: 2a results
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $archive1DateStr; // Same as the oldest archived rating
+        $originalDateStr = $existingActiveDateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 2a.2)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 2a.2)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // Active was the originalDate, so it was deleted. Archive 0 is now active.
+        $this->assertEquals($existingArchive[0]["score"], $rating->getYourScore(), "active score");
+        $this->assertEquals($existingArchive[0]["date"], $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(1, $dbArchive, "Archive count");
+        $dbArchivedRating = $dbArchive[0]; // New rating moved from the active rating to Archive 1. Archive 0 is active now.
+        $this->assertEquals($newScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($newDate, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 2) Same date as an archived rating: Change the score
+        //   2b) originalDate matches another archived rating: also delete original rating
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $archive1DateStr; // Same as the oldest archived rating
+        $originalDateStr = $archive0DateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 2b)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 2b)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // Active rating was not changed
+        $this->assertEquals($existingActiveScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($existingActiveDateStr, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(1, $dbArchive, "Archive count");
+        $dbArchivedRating = $dbArchive[0]; // Archive 0 was deleted. New rating replaced archive 1.
+        $this->assertEquals($newScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($newDate, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
         // 3) No existing active rating and newer than existing archived ratings: Create the new active rating
 
         $existingActiveScore = $defaultActiveScore;
@@ -1319,8 +1477,8 @@ class MainTest extends RatingSyncTestCase
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be archived before the test)
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
         setRating($filmId, 0, $existingActiveDateStr); // Delete active rating (which will be archived)
 
         // Test (case 3)
@@ -1328,7 +1486,7 @@ class MainTest extends RatingSyncTestCase
 
         // Verify (case 3)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
-        $rating = $filmReturned->getRating($sourceName);
+        $rating = $filmReturned->getRating($sourceName); // New rating is now active
         $this->assertEquals($newScore, $rating->getYourScore(), "active score");
         $this->assertEquals($newDate, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
         $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
@@ -1336,13 +1494,50 @@ class MainTest extends RatingSyncTestCase
         $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
         $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
         $this->assertCount(3, $dbArchive, "Archive count");
-        $dbArchivedRating = $dbArchive[0];
+        $dbArchivedRating = $dbArchive[0]; // Active rating was archived before the test
         $this->assertEquals($existingActiveScore, $dbArchivedRating->getYourScore(), "archived score");
         $this->assertEquals($existingActiveDateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
-        $dbArchivedRating = $dbArchive[1];
+        $dbArchivedRating = $dbArchive[1]; // Archive 0 was pushed to the 2nd archive
         $this->assertEquals($existingArchive[0]["score"], $dbArchivedRating->getYourScore(), "archived score");
         $this->assertEquals($existingArchive[0]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
-        $dbArchivedRating = $dbArchive[2];
+        $dbArchivedRating = $dbArchive[2]; // Archive 1 was pushed to the 3rd archive
+        $this->assertEquals($existingArchive[1]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 3) No existing active rating and newer than existing archived ratings: Create the new active rating
+        //   3a) originalDate matches another archived rating: also delete original rating
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $todayStr;
+        $originalDateStr = $archive0DateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be archived before the test)
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, 0, $existingActiveDateStr); // Delete active rating (which will be archived)
+
+        // Test (case 3a)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 3a)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // New rating is now active
+        $this->assertEquals($newScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($newDate, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(2, $dbArchive, "Archive count"); // There were 3 archived ratings. Archive 0 was replaced by the new rating, then activated.
+        $dbArchivedRating = $dbArchive[0]; // Active rating was archived before the test
+        $this->assertEquals($existingActiveScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingActiveDateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+        $dbArchivedRating = $dbArchive[1]; // Archive 1 was pushed to 3rd archive before test. Archive 0 was deleted. Archive 1 ended up as the 2nd archive (again).
         $this->assertEquals($existingArchive[1]["score"], $dbArchivedRating->getYourScore(), "archived score");
         $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
 
@@ -1353,12 +1548,12 @@ class MainTest extends RatingSyncTestCase
         $existingActiveDateStr = $defaultActiveDateStr;
         $existingArchive = $defaultArchive;
         $newScore = 3;
-        $newDate = "2022-03-14";
+        $newDate = $olderThanOldestArchiveDateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be delete before the test)
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be deleted before the test)
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
         $deleteSuccess = $this->deleteOneRating($username, $sourceName, $filmId, $existingActiveDateStr); // The active rating
         $this->assertTrue($deleteSuccess, "Failed delete the active rating before testing case 4");
 
@@ -1367,21 +1562,99 @@ class MainTest extends RatingSyncTestCase
 
         // Verify (case 4)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
-        $rating = $filmReturned->getRating($sourceName);
+        $rating = $filmReturned->getRating($sourceName); // Still no active rating
         $this->assertNull($rating->getYourScore(), "active score");
         $this->assertNull($rating->getYourRatingDate(), "active rating date");
         $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
         $this->assertNull($dbRating->getYourScore(), "active score from db");
         $this->assertNull($dbRating->getYourRatingDate(), "active rating date from db");
         $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
-        $this->assertCount(3, $dbArchive, "Archive count");
-        $dbArchivedRating = $dbArchive[0];
+        $this->assertCount(3, $dbArchive, "Archive count"); // There 2 archived ratings before the test. New rating was archived.
+        $dbArchivedRating = $dbArchive[0]; // Archive 0 unchanged
         $this->assertEquals($existingArchive[0]["score"], $dbArchivedRating->getYourScore(), "archived score");
         $this->assertEquals($existingArchive[0]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
-        $dbArchivedRating = $dbArchive[1];
+        $dbArchivedRating = $dbArchive[1]; // Archive 1 unchanged
         $this->assertEquals($existingArchive[1]["score"], $dbArchivedRating->getYourScore(), "archived score");
         $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
-        $dbArchivedRating = $dbArchive[2];
+        $dbArchivedRating = $dbArchive[2]; // New rating was archived with the oldest date
+        $this->assertEquals($newScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($newDate, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 4) No existing active rating and older than the newest existing archived rating: Archive the new rating
+        //   4a) originalDate matches another archived rating: also delete original rating
+        //     4a.1) originalDate matches the newest archived rating: 4a results
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = 3;
+        $newDate = $olderThanOldestArchiveDateStr;
+        $originalDateStr = $archive0DateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be deleted before the test)
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+        $deleteSuccess = $this->deleteOneRating($username, $sourceName, $filmId, $existingActiveDateStr); // The active rating
+        $this->assertTrue($deleteSuccess, "Failed delete the active rating before testing case 4");
+
+        // Test (case 4a.1)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 4a.1)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // Still no active rating
+        $this->assertNull($rating->getYourScore(), "active score");
+        $this->assertNull($rating->getYourRatingDate(), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertNull($dbRating->getYourScore(), "active score from db");
+        $this->assertNull($dbRating->getYourRatingDate(), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(2, $dbArchive, "Archive count"); // There 2 archived ratings before the test. New rating replaced the newest archive and now has an older date.
+        $dbArchivedRating = $dbArchive[0]; // Archive 0 was deleted. Archive 1 is now 1st.
+        $this->assertEquals($existingArchive[1]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+        $dbArchivedRating = $dbArchive[1]; // New rating is now 2nd archive.
+        $this->assertEquals($newScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($newDate, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 4) No existing active rating and older than the newest existing archived rating: Archive the new rating
+        //   4a) originalDate matches another archived rating: also delete original rating
+        //     4a.2) originalDate matches an archived rating that is not the newest: 4a results
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = 3;
+        $newDate = $olderThanOldestArchiveDateStr;
+        $originalDateStr = $archive1DateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be deleted before the test)
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+        $deleteSuccess = $this->deleteOneRating($username, $sourceName, $filmId, $existingActiveDateStr); // The active rating
+        $this->assertTrue($deleteSuccess, "Failed delete the active rating before testing case 4");
+
+        // Test (case 4a.2)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 4a.2)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // Still no active rating
+        $this->assertNull($rating->getYourScore(), "active score");
+        $this->assertNull($rating->getYourRatingDate(), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertNull($dbRating->getYourScore(), "active score from db");
+        $this->assertNull($dbRating->getYourRatingDate(), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(2, $dbArchive, "Archive count"); // There 2 archived ratings before the test. New rating replaced the oldest archive and now has even an older date.
+        $dbArchivedRating = $dbArchive[0]; // Archive 1 unchanged.
+        $this->assertEquals($existingArchive[0]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[0]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+        $dbArchivedRating = $dbArchive[1]; // Archive 0 was deleted. New rating is now 2nd archive.
         $this->assertEquals($newScore, $dbArchivedRating->getYourScore(), "archived score");
         $this->assertEquals($newDate, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
 
@@ -1396,8 +1669,8 @@ class MainTest extends RatingSyncTestCase
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
 
         // Test (case 5)
         $filmReturned = setRating($filmId, $newScore, $newDate);
@@ -1423,41 +1696,339 @@ class MainTest extends RatingSyncTestCase
         $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
 
         // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 5) Newer rating than the active rating: Archive the existing active rating and create the new active rating
+        //   5a) originalDate matches active rating: Delete the original rating and create the new active rating
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $todayStr;
+        $originalDateStr = $existingActiveDateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 5a)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 5a)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // New rating is now active, the existing active is gone.
+        $this->assertEquals($newScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($newDate, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(2, $dbArchive, "Archive count"); // Archive is unchanged
+        $dbArchivedRating = $dbArchive[0];
+        $this->assertEquals($existingArchive[0]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[0]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+        $dbArchivedRating = $dbArchive[1];
+        $this->assertEquals($existingArchive[1]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 5) Newer rating than the active rating: Archive the existing active rating and create the new active rating
+        //   5b) originalDate matches another archived rating: Archive the existing active rating and create the new active rating and delete original rating
+        //     5b.1) originalDate matches the newest archived rating: 5b results
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $todayStr;
+        $originalDateStr = $archive0DateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 5b.1)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 5b.1)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // New rating is active, existing active was archived
+        $this->assertEquals($newScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($newDate, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(2, $dbArchive, "Archive count"); // There were 2 archived rating before the test. Existing active is 1st archive, Archive 0 is gone, Archive 1 is still the 2nd archive.
+        $dbArchivedRating = $dbArchive[0]; // Existing active rating was archived
+        $this->assertEquals($existingActiveScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingActiveDateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+        $dbArchivedRating = $dbArchive[1]; // Archive 0 was deleted. Archive 1 is still 2nd.
+        $this->assertEquals($existingArchive[1]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 5) Newer rating than the active rating: Archive the existing active rating and create the new active rating
+        //   5b) originalDate matches another archived rating: Archive the existing active rating and create the new active rating and delete original rating
+        //     5b.2) originalDate matches the oldest archived rating: 5b results
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $todayStr;
+        $originalDateStr = $archive1DateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 5b.2)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 5b.2)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // New rating is active, existing active was archived
+        $this->assertEquals($newScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($newDate, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(2, $dbArchive, "Archive count"); // There were 2 archived rating before the test. Existing active is 1st archive, Archive 0 is 2nd, Archive 1 is gone.
+        $dbArchivedRating = $dbArchive[0]; // Existing active rating was archived
+        $this->assertEquals($existingActiveScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingActiveDateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+        $dbArchivedRating = $dbArchive[1]; // Archive 0 is now 2nd. Archive 1 was deleted.
+        $this->assertEquals($existingArchive[0]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[0]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
         // 6) Older rating than the active rating: Archive the new rating
 
         $existingActiveScore = $defaultActiveScore;
         $existingActiveDateStr = $defaultActiveDateStr;
         $existingArchive = $defaultArchive;
         $newScore = $defaultNewScore;
-        $newDate = "2022-03-19"; // Between the active and the lasted archive
+        $newDate = $newerThanNewestArchiveDateStr; // Between the active and the lasted archive
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
 
         // Test (case 6)
         $filmReturned = setRating($filmId, $newScore, $newDate);
 
         // Verify (case 6)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
-        $rating = $filmReturned->getRating($sourceName);
+        $rating = $filmReturned->getRating($sourceName); // Active rating unchanged.
         $this->assertEquals($existingActiveScore, $rating->getYourScore(), "active score");
         $this->assertEquals($existingActiveDateStr, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
         $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
         $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
         $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
         $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
-        $this->assertCount(3, $dbArchive, "Archive count");
-        $dbArchivedRating = $dbArchive[0];
+        $this->assertCount(3, $dbArchive, "Archive count"); // Archive had 2 ratings before the test. New rating is 1st archive, archive 0 is 2nd, archive 1 is 3rd.
+        $dbArchivedRating = $dbArchive[0]; // New rating
         $this->assertEquals($newScore, $dbArchivedRating->getYourScore(), "archived score");
         $this->assertEquals($newDate, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
-        $dbArchivedRating = $dbArchive[1];
+        $dbArchivedRating = $dbArchive[1]; // Archive 0 was bumped to 2nd.
         $this->assertEquals($existingArchive[0]["score"], $dbArchivedRating->getYourScore(), "archived score");
         $this->assertEquals($existingArchive[0]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
-        $dbArchivedRating = $dbArchive[2];
+        $dbArchivedRating = $dbArchive[2]; // Archive 1 was bumped to 3rd.
         $this->assertEquals($existingArchive[1]["score"], $dbArchivedRating->getYourScore(), "archived score");
         $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 6) Older rating than the active rating: Archive the new rating
+        //   6a) originalDate matches active rating: Delete the original rating, then create the new active rating
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $newerThanNewestArchiveDateStr; // Between the active and the lasted archive
+        $originalDateStr = $existingActiveDateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 6a)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 6a)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // Active is deleted. New rating is now active.
+        $this->assertEquals($newScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($newDate, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(2, $dbArchive, "Archive count"); // Archive is unchanged.
+        $dbArchivedRating = $dbArchive[0];
+        $this->assertEquals($existingArchive[0]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[0]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+        $dbArchivedRating = $dbArchive[1];
+        $this->assertEquals($existingArchive[1]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 6) Older rating than the active rating: Archive the new rating
+        //   6b) originalDate matches another archived rating: also delete original rating
+        //     6b.1) originalDate matches newest archived rating: 6b result
+        //       6b.1.a) newDate is newer than the newest archived rating: 6b result
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $newerThanNewestArchiveDateStr; // Between the active and the newest archive
+        $originalDateStr = $archive0DateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 6b.1.a)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 6b.1.a)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // Active is unchanged.
+        $this->assertEquals($existingActiveScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($existingActiveDateStr, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(2, $dbArchive, "Archive count"); // Archive 0 was deleted. Now archive is new rating and archive 1
+        $dbArchivedRating = $dbArchive[0]; // New rating
+        $this->assertEquals($newScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($newDate, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+        $dbArchivedRating = $dbArchive[1]; // Archive 1 is still 2nd
+        $this->assertEquals($existingArchive[1]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[1]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 6) Older rating than the active rating: Archive the new rating
+        //   6b) originalDate matches another archived rating: also delete original rating
+        //     6b.1) originalDate matches newest archived rating: 6b result
+        //       6b.1.b) newDate is between newest and oldest archived ratings: 6b result
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $betweenArchiveItemsDateStr; // Between the newest archive and oldest archive
+        $originalDateStr = $archive0DateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 6b.1.b)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 6b.1.b)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // Active is unchanged.
+        $this->assertEquals($existingActiveScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($existingActiveDateStr, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(2, $dbArchive, "Archive count"); // Archive 0 was deleted. Now archive is new rating and archive 1
+        $dbArchivedRating = $dbArchive[0]; // New rating
+        $this->assertEquals($newScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($newDate, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+        $dbArchivedRating = $dbArchive[1]; // Archive 1 is still 2nd
+        $this->assertEquals($existingArchive[1]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($archive1DateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 6) Older rating than the active rating: Archive the new rating
+        //   6b) originalDate matches another archived rating: also delete original rating
+        //     6b.2) originalDate matches oldest archived rating: 6b result
+        //       6b.2.a) newDate is newer than the newest archived rating: 6b result
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $newerThanNewestArchiveDateStr; // Between the active and the newest archive
+        $originalDateStr = $archive1DateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 6b.2.a)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 6b.2.a)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // Active is unchanged.
+        $this->assertEquals($existingActiveScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($existingActiveDateStr, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(2, $dbArchive, "Archive count"); // Archive 1 was deleted. Now archive is new rating, then archive 0
+        $dbArchivedRating = $dbArchive[0]; // New rating is 2nd
+        $this->assertEquals($newScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($newDate, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+        $dbArchivedRating = $dbArchive[1]; // Archive 0 is still 1st.
+        $this->assertEquals($existingArchive[0]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[0]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+
+        // Create/Update Use cases (dateStr non-null, scores 1 through 10)
+        // 6) Older rating than the active rating: Archive the new rating
+        //   6b) originalDate matches another archived rating: also delete original rating
+        //     6b.2) originalDate matches oldest archived rating: 6b result
+        //       6b.2.b) newDate is between than the newest and oldest archived ratings: 6b result
+
+        $existingActiveScore = $defaultActiveScore;
+        $existingActiveDateStr = $defaultActiveDateStr;
+        $existingArchive = $defaultArchive;
+        $newScore = $defaultNewScore;
+        $newDate = $betweenArchiveItemsDateStr; // Between the newest archive and oldest archive
+        $originalDateStr = $archive1DateStr;
+
+        $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
+        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
+
+        // Test (case 6b.2.b)
+        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+
+        // Verify (case 6b.2.b)
+        $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
+        $rating = $filmReturned->getRating($sourceName); // Active is unchanged.
+        $this->assertEquals($existingActiveScore, $rating->getYourScore(), "active score");
+        $this->assertEquals($existingActiveDateStr, $rating->getYourRatingDate()->format("Y-m-d"), "active rating date");
+        $dbRating = Film::getFilmFromDb($filmId, $username)->getRating($sourceName);
+        $this->assertEquals($rating->getYourScore(), $dbRating->getYourScore(), "active score from db");
+        $this->assertEquals($rating->getYourRatingDate()->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "active rating date from db");
+        $dbArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+        $this->assertCount(2, $dbArchive, "Archive count"); // Archive 1 was deleted. Now archive is archive 0, then new rating
+        $dbArchivedRating = $dbArchive[0]; // Archive 0 is still 1st.
+        $this->assertEquals($existingArchive[0]["score"], $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($existingArchive[0]["date"], $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
+        $dbArchivedRating = $dbArchive[1]; // New rating is 2nd
+        $this->assertEquals($newScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($newDate, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
 
         // Create/Update Use cases (dateStr=null, scores 1 through 10):
         // 7) No existing active rating, but archived rating is the current date: Delete the archived rating and create the active with current date
@@ -1465,14 +2036,14 @@ class MainTest extends RatingSyncTestCase
         $existingActiveScore = $defaultActiveScore;
         $existingActiveDateStr = $defaultActiveDateStr;
         $todayStr = today()->format("Y-m-d");
-        $existingArchive = [["score" => $archive0Score, "date" => $todayStr], ["score" => $archive1Score, "date" => $archive1Date]];
+        $existingArchive = [["score" => $archive0Score, "date" => $todayStr], ["score" => $archive1Score, "date" => $archive1DateStr]];
         $newScore = $defaultNewScore;
         $newDate = null;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be deleted before the test)
         setRating($filmId, $archive0Score, $todayStr);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive1Score, $archive1DateStr);
         $deleteSuccess = $this->deleteOneRating($username, $sourceName, $filmId, $existingActiveDateStr); // The active rating
         $this->assertTrue($deleteSuccess, "Failed delete the active rating before testing case 7");
 
@@ -1505,8 +2076,8 @@ class MainTest extends RatingSyncTestCase
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
 
         // Test (case 8a)
         $filmReturned = setRating($filmId, $newScore, $newDate);
@@ -1543,8 +2114,8 @@ class MainTest extends RatingSyncTestCase
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be deleted before the test)
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
         $deleteSuccess = $this->deleteOneRating($username, $sourceName, $filmId, $existingActiveDateStr); // The active rating
         $this->assertTrue($deleteSuccess, "Failed delete the active rating before testing case 8b");
 
@@ -1579,8 +2150,8 @@ class MainTest extends RatingSyncTestCase
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
 
         // Test (case 9)
         $filmReturned = setRating($filmId, $deleteScore, $deleteDate);
@@ -1614,8 +2185,8 @@ class MainTest extends RatingSyncTestCase
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
 
         // Test (case 10a)
         $filmReturned = setRating($filmId, $deleteScore, $deleteDate);
@@ -1652,8 +2223,8 @@ class MainTest extends RatingSyncTestCase
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
 
         // Test (case 10b)
         $filmReturned = setRating($filmId, $deleteScore, $deleteDate);
@@ -1690,8 +2261,8 @@ class MainTest extends RatingSyncTestCase
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
 
         // Test (case 10c)
         $filmReturned = setRating($filmId, $deleteScore, $deleteDate);
@@ -1727,8 +2298,8 @@ class MainTest extends RatingSyncTestCase
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0Date);
-        setRating($filmId, $archive1Score, $archive1Date);
+        setRating($filmId, $archive0Score, $archive0DateStr);
+        setRating($filmId, $archive1Score, $archive1DateStr);
 
         // Test (case 11)
         $filmReturned = setRating($filmId, $deleteScore, $deleteDate);

@@ -291,37 +291,31 @@ function array_value_by_key($key, $a, $nullValue = null) {
 }
 
 /**
- * Create, Update or Delete an active or archived user's rating for a film. If
- * the newDate param is in the future, then the current date is used.
- * Create/Update Use cases (newDate non-null, scores 1 through 10):
- *   - Same date as the active rating: Change the score
- *   - Same date as an archived rating: Change the score
- *   - No existing active rating and newer than existing archived ratings: Create the new active rating
- *   - No existing active rating and older than the newest existing archived rating: Archive the new rating
- *   - Newer rating than the active rating: Archive the existing and create the new active rating
- *   - Older rating than the active rating: Archive the new rating
- * Create/Update Use cases (newDate=null, scores 1 through 10):
- *   - No existing active rating, but archived rating is the current date: Delete the archived rating and create the active with current date
- *   - For all other cases with newDate=null and score range 1-10: Archive the existing and create the new active rating with current date
- * Delete Use cases (score 0):
- *   - No matching date and no existing active rating: do nothing
- *   - newDate is null OR newDate is the same or newer than the existing active rating: Archive the existing active rating
- *   - Same date as an existing archived rating: Delete
+ * See the comments at RatingSync::saveRatingToDb()
  *
- * @param $filmId
- * @param $score
- * @param $dateStr
+ * @param $filmId int
+ * @param $score int
+ * @param $dateStr string | null
+ * @param $originalDateStr string | null
  *
  * @return Film|null
  */
-function setRating($filmId, $score, $dateStr = null)
+function setRating(int $filmId, int $score, ?string $dateStr = null, ?string $originalDateStr = null) : ?Film
 {
     if (empty($filmId)) {
         return null;
     }
 
     $username = getUsername();
-    Rating::saveRatingChange($filmId, $username, $score, $dateStr ? new \DateTime($dateStr) : null );
+
+    try {
+        $date = $dateStr ? new \DateTime($dateStr) : null;
+        $originalDate = $originalDateStr ? new \DateTime($originalDateStr) : null;
+        Rating::saveRatingToDb($filmId, $username, $score, $date, $originalDate);
+    }
+    catch (\Exception) {
+        return null;
+    }
 
     return Film::getFilmFromDb($filmId, $username);
 }
