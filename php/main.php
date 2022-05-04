@@ -290,65 +290,34 @@ function array_value_by_key($key, $a, $nullValue = null) {
     }
 }
 
-function setRating($filmId, $score, $dateStr)
+/**
+ * See the comments at RatingSync::saveRatingToDb()
+ *
+ * @param $filmId int
+ * @param $score int
+ * @param $dateStr string | null
+ * @param $originalDateStr string | null
+ *
+ * @return Film|null
+ */
+function setRating(int $filmId, int $score, ?string $dateStr = null, ?string $originalDateStr = null) : ?Film
 {
     if (empty($filmId)) {
         return null;
     }
 
     $username = getUsername();
-    $film = Film::getFilmFromDb($filmId, $username);
-    if (!empty($film)) {
-        $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
 
-        $date = null;
-        try {
-            $date = new \DateTime($dateStr ?? "now");
-        }
-        catch (\Exception $e) {
-            $date = new \DateTime();
-        }
-
-        if ($score == 0) {
-            // Delete rating
-
-            $success = false;
-            try {
-                $success = $rating->deleteToDb($username, $filmId);
-            }
-            catch (\Exception $e) {
-                $success = false;
-            }
-
-            if ($success) {
-                $film->setRating(null, Constants::SOURCE_RATINGSYNC);
-            }
-
-        } else {
-            // Set rating
-            
-            $existingScore = $rating->getYourScore();
-            $existingRatingDate = $rating->getYourRatingDate();
-            $rating->setYourScore($score);
-            $rating->setYourRatingDate($date);
-            
-            $success = false;
-            try {
-                $success = $rating->saveToDb($username, $filmId);
-            }
-            catch (\Exception $e) {
-                logDebug($e, __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__);
-                $success = false;
-            }
-            
-            if ($success) {
-                $film->setRating($rating);
-            }
-            
-        }
+    try {
+        $date = $dateStr ? new \DateTime($dateStr) : null;
+        $originalDate = $originalDateStr ? new \DateTime($originalDateStr) : null;
+        Rating::saveRatingToDb($filmId, $username, $score, $date, $originalDate);
+    }
+    catch (\Exception) {
+        return null;
     }
 
-    return $film;
+    return Film::getFilmFromDb($filmId, $username);
 }
 
 function getPageFooter() {
@@ -383,6 +352,14 @@ function unquote($str)
     }
 
     return substr($str, 1, $length-2);
+}
+
+function today(): \DateTime
+{
+    $today = new \DateTime();
+    $today->setTime(0, 0, 0, 0);
+
+    return $today;
 }
 
 ?>

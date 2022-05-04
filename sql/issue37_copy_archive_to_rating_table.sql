@@ -12,7 +12,8 @@ alter table rating_archive add active boolean default false not null after sugge
 DROP PROCEDURE IF EXISTS copyArchiveToRatingTable;
 DELIMITER $$
 CREATE PROCEDURE copyArchiveToRatingTable (
-	INOUT countCopied INT(11)
+	INOUT countCopied INT(11),
+	INOUT countDups INT(11)
 )
 BEGIN
 	DECLARE finished INTEGER DEFAULT 0;
@@ -51,6 +52,8 @@ BEGIN
 		    INSERT INTO rating VALUES (username, sourceName, filmId, yourScore, yourRatingDate, suggestedScore, active, rating.ts);
 
 	        SET countCopied = countCopied + 1;
+		ELSE
+		    SET countDups = countDups + 1;
         end if;
 
 
@@ -62,5 +65,7 @@ DELIMITER ;
 
 -- Use the stored procedure
 SET @count = 0;
-CALL copyArchiveToRatingTable(@count);
+SET @countDups = 0;
+CALL copyArchiveToRatingTable(@count,@countDups);
+SELECT @countDups as 'Duplicates';
 SELECT @count as 'Copied archive ratings';
