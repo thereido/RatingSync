@@ -189,6 +189,12 @@ class Rating
             throw new \InvalidArgumentException("Rating must have a sourceName");
         }
 
+        // Don't save a empty rating. If you want to delete a rating use Rating::deleteToDb().
+        // This returns true because is has done everything that needs to be done (nothing).
+        if ( $this->empty() ) {
+            return true;
+        }
+
         $sourceName = $this->sourceName;
         $ratingDate = $this->getYourRatingDate();
         $active = true;
@@ -584,9 +590,9 @@ class Rating
                     // Activate the newest archived rating now that the active rating was deleted.
                     // If it fails ignore it (a message would be nice).
                     $newestArchivedDateStr = $archive[0]->getYourRatingDate()->format("Y-m-d");
-                    $query = "UPDATE rating SET active=1 WHERE film_id=$filmId AND user_name='$username' AND yourRatingDate='$newestArchivedDateStr'";
+                    $stmt = "UPDATE rating SET active=true WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId' AND yourRatingDate='$newestArchivedDateStr'";
                     logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
-                    $success = $db->query($query) !== false;
+                    $success = $db->exec($stmt) !== false;
                     if (!$success) {
                         $msg = "Failed to activate the newest archived rating after deleting the active rating.";
                         logDebug($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
@@ -596,6 +602,7 @@ class Rating
 
                 $saveSuccess = self::saveRatingToDb($filmId, $username, $newScore, $newDate);
                 if ( ! $saveSuccess ) {
+                    // Undo the delete (original rating)
                     $originalRating->saveToDb($username, $filmId, false);
                 }
 
@@ -733,6 +740,11 @@ class Rating
         else {
             return $rating->saveToDb($username, $filmId);
         }
+    }
+
+    protected function empty(): bool
+    {
+        return empty($this->getYourRatingDate()) && empty($this->getYourScore()) && empty($this->getSuggestedScore());
     }
 
 }

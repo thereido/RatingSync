@@ -285,7 +285,7 @@ class MainTest extends RatingSyncTestCase
         $rating = $film->getRating($sourceName);
         $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), 'UniqueName from source');
         $this->assertNull($rating->getYourScore(), 'Your Score');
-        $this->assertEquals((new \DateTime())->format(RatingTest::DATE_FORMAT), $rating->getYourRatingDate()->format(RatingTest::DATE_FORMAT), 'Rating date not available from film detail page');
+        $this->assertNull($rating->getYourRatingDate()?->format(RatingTest::DATE_FORMAT), 'Rating date not available from film detail page');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
                     // RS source created
         $source = $film->getSource(Constants::SOURCE_RATINGSYNC);
@@ -348,7 +348,7 @@ class MainTest extends RatingSyncTestCase
         $rating = $film->getRating($sourceName);
         $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), 'UniqueName from source');
         $this->assertNull($rating->getYourScore(), 'Your Score');
-        $this->assertEquals((new \DateTime())->format(RatingTest::DATE_FORMAT), $rating->getYourRatingDate()->format(RatingTest::DATE_FORMAT), 'Rating date not available from searchImdb');
+        $this->assertNull($rating->getYourRatingDate()?->format(RatingTest::DATE_FORMAT), 'Rating date not available from searchImdb');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
                     // RS source created
         $source = $film->getSource(Constants::SOURCE_RATINGSYNC);
@@ -422,7 +422,7 @@ class MainTest extends RatingSyncTestCase
         $rating = $film->getRating($sourceName);
         $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), 'UniqueName from source');
         $this->assertNull($rating->getYourScore(), 'Your Score');
-        $this->assertEquals((new \DateTime())->format(RatingTest::DATE_FORMAT), $rating->getYourRatingDate()->format(RatingTest::DATE_FORMAT), 'Rating date not available from searchImdb');
+        $this->assertNull($rating->getYourRatingDate()?->format(RatingTest::DATE_FORMAT), 'Rating date not available from searchImdb');
         $this->assertNull($rating->getSuggestedScore(), 'Suggested score not available is you are rated the film');
                     // RS source created
         $source = $film->getSource(Constants::SOURCE_RATINGSYNC);

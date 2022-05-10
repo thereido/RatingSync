@@ -12,6 +12,11 @@ require_once "ImdbTest.php";
 require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
+// Class to expose protected members and functions
+class RatingExt extends \RatingSync\Rating {
+    function _empty(): bool { return $this->empty(); }
+}
+
 class RatingTest extends RatingSyncTestCase
 {
     const DATE_FORMAT = 'Y-m-d';
@@ -690,8 +695,7 @@ class RatingTest extends RatingSyncTestCase
      * - No ratings for this film/username/source in the db
      *
      * Expect
-     *   - New rating row in db for this film/username/source combination
-     *   - Verify the empty data
+     *   - No rating row in db for this film/username/source combination
      *
      * @covers  \RatingSync\Rating::saveToDb
      * @depends testAddFilms
@@ -718,12 +722,7 @@ class RatingTest extends RatingSyncTestCase
         $this->assertTrue($success, "Rating::saveToDb should succeed");
         $query = "SELECT * FROM rating WHERE user_name='$username' AND film_id=$filmId AND source_name='".$rating->getSource()."' AND active=1";
         $result = $db->query($query);
-        $this->assertEquals(1, $result->rowCount());
-        $dbRating = new Rating($rating->getSource());
-        $dbRating->initFromDbRow($result->fetch());
-        $this->assertEmpty($dbRating->getYourScore(), 'Your score');
-        $this->assertEquals($dbRating->getYourRatingDate()?->format(self::DATE_FORMAT), (new \DateTime())->format(self::DATE_FORMAT), "Your rating date");
-        $this->assertEmpty($dbRating->getSuggestedScore(), 'Your score');
+        $this->assertEquals(0, $result->rowCount());
     }
     
     /**
@@ -1118,6 +1117,8 @@ class RatingTest extends RatingSyncTestCase
     {$this->start(__CLASS__, __FUNCTION__);
 
         $rating = new Rating(Constants::SOURCE_RATINGSYNC);
+        $rating->setYourRatingDate(new \DateTime());
+        $rating->setYourScore(6);
         $username = "Garbage Username";
         $filmId = 1;
         $success = $rating->saveToRs($username, $filmId);
@@ -1547,6 +1548,227 @@ class RatingTest extends RatingSyncTestCase
         $row = $result->fetch();
         $this->assertEquals(4, $row['yourScore'], 'Your score');
         $this->assertEquals("2016-01-17", $row['yourRatingDate'], "Your rating date");
+    }
+
+    /**
+     * - Construct Rating with source RatingSync
+     * - Do not set any other values
+     *
+     * Expect
+     *   - true
+     *
+     * @covers  \RatingSync\Rating::empty
+     * @depends testYourScoreCanBeSetWithInt
+     * @depends testYourRatingDateCanBeSetWithDateObject
+     * @depends testSuggestedScoreCanBeSetWithInt
+     */
+    public function testEmpty()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $rating = new RatingExt(Constants::SOURCE_RATINGSYNC);
+
+        // Test
+        $isEmpty = $rating->_empty();
+
+        // Verify
+        $this->assertTrue($isEmpty);
+    }
+
+    /**
+     * - Construct Rating with source IMDb
+     * - Do not set any other values
+     *
+     * Expect
+     *   - true
+     *
+     * @covers  \RatingSync\Rating::empty
+     * @depends testEmpty
+     */
+    public function testEmptyExternal()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $rating = new RatingExt(Constants::SOURCE_IMDB);
+
+        // Test
+        $isEmpty = $rating->_empty();
+
+        // Verify
+        $this->assertTrue($isEmpty);
+    }
+
+    /**
+     * - Construct Rating with source RatingSync
+     * - Set yourRatingDate
+     *
+     * Expect
+     *   - false
+     *
+     * @covers  \RatingSync\Rating::empty
+     * @depends testEmpty
+     */
+    public function testEmptyWithDate()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $rating = new RatingExt(Constants::SOURCE_RATINGSYNC);
+        $rating->setYourRatingDate(new \DateTime());
+
+        // Test
+        $isEmpty = $rating->_empty();
+
+        // Verify
+        $this->assertFalse($isEmpty);
+    }
+
+    /**
+     * - Construct Rating with source RatingSync
+     * - Set score
+     *
+     * Expect
+     *   - false
+     *
+     * @covers  \RatingSync\Rating::empty
+     * @depends testEmpty
+     */
+    public function testEmptyWithScore()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $rating = new RatingExt(Constants::SOURCE_RATINGSYNC);
+        $rating->setYourScore(7);
+
+        // Test
+        $isEmpty = $rating->_empty();
+
+        // Verify
+        $this->assertFalse($isEmpty);
+    }
+
+    /**
+     * - Construct Rating with source RatingSync
+     * - Set suggested score
+     *
+     * Expect
+     *   - false
+     *
+     * @covers  \RatingSync\Rating::empty
+     * @depends testEmpty
+     */
+    public function testEmptyWithSuggested()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $rating = new RatingExt(Constants::SOURCE_RATINGSYNC);
+        $rating->setSuggestedScore(4);
+
+        // Test
+        $isEmpty = $rating->_empty();
+
+        // Verify
+        $this->assertFalse($isEmpty);
+    }
+
+    /**
+     * - Construct Rating with source RatingSync
+     * - Set yourRatingDate and your score
+     *
+     * Expect
+     *   - false
+     *
+     * @covers  \RatingSync\Rating::empty
+     * @depends testEmpty
+     */
+    public function testEmptyWithDateAndScore()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $rating = new RatingExt(Constants::SOURCE_RATINGSYNC);
+        $rating->setYourRatingDate(new \DateTime());
+        $rating->setYourScore(7);
+
+        // Test
+        $isEmpty = $rating->_empty();
+
+        // Verify
+        $this->assertFalse($isEmpty);
+    }
+
+    /**
+     * - Construct Rating with source RatingSync
+     * - Set yourRatingDate and suggested score
+     *
+     * Expect
+     *   - false
+     *
+     * @covers  \RatingSync\Rating::empty
+     * @depends testEmpty
+     */
+    public function testEmptyWithDateAndSuggested()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $rating = new RatingExt(Constants::SOURCE_RATINGSYNC);
+        $rating->setYourRatingDate(new \DateTime());
+        $rating->setSuggestedScore(7);
+
+        // Test
+        $isEmpty = $rating->_empty();
+
+        // Verify
+        $this->assertFalse($isEmpty);
+    }
+
+    /**
+     * - Construct Rating with source RatingSync
+     * - Set suggested score and your score
+     *
+     * Expect
+     *   - false
+     *
+     * @covers  \RatingSync\Rating::empty
+     * @depends testEmpty
+     */
+    public function testEmptyWithScoreAndSuggested()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $rating = new RatingExt(Constants::SOURCE_RATINGSYNC);
+        $rating->setYourScore(5);
+        $rating->setSuggestedScore(6);
+
+        // Test
+        $isEmpty = $rating->_empty();
+
+        // Verify
+        $this->assertFalse($isEmpty);
+    }
+
+    /**
+     * - Construct Rating with source RatingSync
+     * - Set all 3, date, suggested score and your score
+     *
+     * Expect
+     *   - false
+     *
+     * @covers  \RatingSync\Rating::empty
+     * @depends testEmpty
+     */
+    public function testEmptyWithAllValues()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $rating = new RatingExt(Constants::SOURCE_RATINGSYNC);
+        $rating->setYourRatingDate(new \DateTime());
+        $rating->setYourScore(5);
+        $rating->setSuggestedScore(6);
+
+        // Test
+        $isEmpty = $rating->_empty();
+
+        // Verify
+        $this->assertFalse($isEmpty);
     }
 
 }
