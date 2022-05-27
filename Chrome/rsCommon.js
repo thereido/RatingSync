@@ -47,7 +47,7 @@ function rateFilm(filmId, uniqueName, score, titleNum) {
 }
 
 function renderYourScore(uniqueName, hoverScore, mousemove) {
-    var score = hoverScore;
+    let score = hoverScore;
     if (mousemove == "original") {
         score = document.getElementById("original-score-" + uniqueName).getAttribute("data-score");
     }
@@ -67,7 +67,7 @@ function renderStars(film) {
     if (!ratingStarsEl) {
         return;
     }
-    
+
     // The score is shown backwards
     var showYourScore = yourScore;
     if (showYourScore == "10") {
@@ -75,18 +75,18 @@ function renderStars(film) {
     } else if (showYourScore == null || showYourScore == "") {
         showYourScore = "-";
     }
-    
+
     var starsHtml = "";
     var fullStars = yourScore;
     var emptyStars = 10 - yourScore;
     var starScore = 10;
     while (emptyStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'>☆</span>";
+        starsHtml = starsHtml + "<span class='rating-star fa-star far fa-xs' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'></span>";
         emptyStars = emptyStars - 1;
         starScore = starScore - 1;
     }
     while (fullStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'>★</span>";
+        starsHtml = starsHtml + "<span class='rating-star fa-star fas fa-xs' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'></span>";
         fullStars = fullStars - 1;
         starScore = starScore - 1;
     }
@@ -95,11 +95,13 @@ function renderStars(film) {
     html = html + "    <score>\n";
     html = html + "      <of-possible>01/</of-possible><your-score id='your-score-" + uniqueName + "'>" + showYourScore + "</your-score>\n";
     html = html + "    </score>\n";
-    html = html + "    " + starsHtml + "\n";
+    html = html +      starsHtml + "\n";
     html = html + "    <div id='original-score-" + uniqueName + "' data-score='" + showYourScore + "' hidden ></div>\n";
 
     ratingStarsEl.innerHTML = html;
     addStarListeners(ratingStarsEl);
+
+    renderRatingHistory(rsSource);
 }
 
 function renderStreams(film, displaySearch) {
@@ -191,13 +193,22 @@ function renderRatingDate(film) {
 function getRatingDateText(yourRatingDate) {
     var dateStr = "";
     if (yourRatingDate && yourRatingDate != "undefined") {
-        var reDate = new RegExp("([0-9]+)-([0-9]+)-([0-9]+)");
-        var ratingYear = reDate.exec(yourRatingDate)[1];
-        var month = reDate.exec(yourRatingDate)[2];
-        var day = reDate.exec(yourRatingDate)[3];
-        dateStr = "You rated this " + month + "/" + day + "/" + ratingYear;
+        dateStr = "You rated this " + formatRatingDate(yourRatingDate);
     }
     
+    return dateStr;
+}
+
+function formatRatingDate(date) {
+    var dateStr = "";
+    if (date && date != "undefined") {
+        var reDate = new RegExp("([0-9]+)-([0-9]+)-([0-9]+)");
+        var ratingYear = reDate.exec(date)[1];
+        var month = reDate.exec(date)[2];
+        var day = reDate.exec(date)[3];
+        dateStr = month + "/" + day + "/" + ratingYear;
+    }
+
     return dateStr;
 }
 
@@ -243,7 +254,7 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
 
 function clickStar(filmId, uniqueName, score, titleNum) {
     var originalScore = document.getElementById("original-score-" + uniqueName).getAttribute('data-score');
-    if (score == originalScore || (score == 10 && originalScore == "01")) {
+    if (score == originalScore) {
         showConfirmationRating(filmId, uniqueName, score, titleNum);
     } else {
         rateFilm(filmId, uniqueName, score, titleNum);
@@ -508,4 +519,63 @@ function renderMsg(message, element) {
             element.hidden = true;
         }
     }
+}
+
+function renderRatingHistory(rsSource) {
+    let uniqueName = rsSource.uniqueName;
+    let activeRating = rsSource.rating;
+    let archive = rsSource.archive;
+
+    let ratingIndex = 0;
+    let historyLines = getHistoryLine(uniqueName, activeRating, ratingIndex);
+    for (var i = 0; i < rsSource.archiveCount; i++) {
+        ratingIndex++;
+        let archivedRating = archive[i];
+        historyLines = historyLines + getHistoryLine(uniqueName, archivedRating, ratingIndex);
+    }
+
+    let ratingHistoryEl = document.getElementById("rating-history-" + uniqueName);
+    ratingHistoryEl.innerHTML = historyLines;
+}
+
+function getHistoryLine(uniqueName, rating, ratingIndex) {
+    let score = rating.yourScore;
+    let date = rating.yourRatingDate;
+
+    const fullStar = '<i class="star fas fa-star fa-xs align-middle"></i>';
+    const halfStar = '<i class="star far fa-star-half-stroke fa-xs align-middle"></i>';
+    const emptyStar = '<i class="star far fa-star fa-xs align-middle"></i>';
+
+    const fullStarCount = Math.round(score / -2) * -1;
+    const halfStarCount = score % 2;
+
+    let stars = "";
+    for (let i = 0; i < 5; i++) {
+        let star = fullStar;
+        if (i >= fullStarCount) {
+            if (i >= fullStarCount + halfStarCount) {
+                star = emptyStar;
+            }
+            else {
+                star = halfStar;
+            }
+        }
+
+        stars = stars + star;
+    }
+
+    let historyLineHtml = "";
+    historyLineHtml = historyLineHtml + '        <div class="container-flex py-1">' + '\n';
+    historyLineHtml = historyLineHtml + '          <div class="d-flex justify-content-between">' + '\n';
+    historyLineHtml = historyLineHtml + '            <div class="px-1">' + '\n';
+    historyLineHtml = historyLineHtml +                stars;
+    historyLineHtml = historyLineHtml + '            </div>' + '\n';
+    historyLineHtml = historyLineHtml + '            <div class="px-1">' + '\n';
+    historyLineHtml = historyLineHtml + '              <span class="small">' + formatRatingDate(date) + '</span>' + '\n';
+    historyLineHtml = historyLineHtml + '              <button type="button" class="btn-edit btn far fa-solid fa-pencil fa-sm pr-0" id="rating-history-' + uniqueName + '" data-toggle="modal" data-target="#delete-modal" data-history-index="' + ratingIndex + '" aria-hidden="true"></button>' + '\n';
+    historyLineHtml = historyLineHtml + '            </div>' + '\n';
+    historyLineHtml = historyLineHtml + '          </div>' + '\n';
+    historyLineHtml = historyLineHtml + '        </div>' + '\n';
+
+    return historyLineHtml;
 }
