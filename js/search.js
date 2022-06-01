@@ -353,10 +353,12 @@ function renderRsFilmDetails(film, filmEl) {
     } else {
         filmEl.appendChild(newDetailEl);
     }
-    
-    renderStars(film);
-    renderStreams(film, true);
-    renderFilmlists(film.filmlists, film.filmId);
+
+    if (pageId != SITE_PAGE.Edit) {
+        renderStars(film);
+        renderStreams(film, true);
+        renderFilmlists(film.filmlists, film.filmId);
+    }
 }
 
 function renderNoRsFilmDetails(filmEl, film) {

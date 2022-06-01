@@ -73,6 +73,7 @@ $pageFooter = getPageFooter();
 </div>
 
 <script>
+    let pageId = SITE_PAGE.Userlist;
     var contextData;
     var listname = "<?php echo $listname; ?>";
     var currentPageNum = <?php echo $pageNum; ?>;

@@ -1,53 +1,60 @@
 
 function buildFilmDetailElement(film) {
-    var filmId = getFilmId(film);
-    var title = getFilmTitle(film);
-    var year = getFilmYear(film);
-    var episodeTitle = getFilmEpisodeTitle(film);
-    var season = "";
+    const filmId = getFilmId(film);
+    const title = getFilmTitle(film);
+    const year = getFilmYear(film);
+    const episodeTitle = getFilmEpisodeTitle(film);
+    let season = "";
     if (film.season) {
         season = "Season " + film.season;
     }
-    var episodeNumber = "";
+    let episodeNumber = "";
     if (film.episodeNumber) {
         episodeNumber = " - Episode " + film.episodeNumber;
     }
 
-    var imdbRatingHtml = "";
-    var imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
+    let imdbRatingEl = null;
+    const imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
     if (imdb && imdb != "undefined" && imdb.uniqueName) {
-        imdbUniqueName = imdb.uniqueName;
+        const imdbUniqueName = imdb.uniqueName;
 
-        var imdbScore = "";
+        let imdbScore = "";
         if (imdb.userScore) {
             imdbScore = imdb.userScore;
         }
 
-        var el = '';
-        el = el + '        <a href="'+IMDB_FILM_BASEURL + imdbUniqueName+'" target="_blank">\n';
-        el = el + '          <img src="'+RS_URL_BASE + "/image/logo-rating-imdb.png"+'" alt="IMDb Rating" height="20px"/>\n';
-        el = el + '          <imdbScore id="imdb-score-'+imdbUniqueName+'">'+imdbScore+'</imdbScore>\n'
-        el = el + '        </a>\n'
+        imdbRatingEl = document.createElement("a");
+        const imdbImgEl = document.createElement("img");
+        const imdbScoreEl = document.createElement("imdbScore");
 
-        imdbRatingHtml = el;
+        imdbRatingEl.setAttribute("href", IMDB_FILM_BASEURL + imdbUniqueName);
+        imdbRatingEl.setAttribute("target", "_blank");
+        imdbImgEl.setAttribute("src", `${RS_URL_BASE}/image/logo-rating-imdb.png`);
+        imdbImgEl.setAttribute("alt", "IMDb Rating");
+        imdbImgEl.setAttribute("height", "20px");
+        imdbScoreEl.setAttribute("id", `imdb-score-${imdbUniqueName}`);
+        imdbScoreEl.innerText = imdbScore;
+
+        imdbRatingEl.appendChild(imdbImgEl);
+        imdbRatingEl.appendChild(imdbScoreEl);
     }
 
-    var tmdbRatingHtml = "";
-    var tmdb = film.sources.find( function (findSource) { return findSource.name == "TMDb"; } );
+    let tmdbRatingEl = null;
+    const tmdb = film.sources.find( function (findSource) { return findSource.name == "TMDb"; } );
     if (tmdb && tmdb != "undefined" && tmdb.uniqueName) {
-        tmdbUniqueName = tmdb.uniqueName.substring(2); 
+        const tmdbUniqueName = tmdb.uniqueName.substring(2);
 
-        var tmdbScore = "";
+        let tmdbScore = "";
         if (tmdb.userScore) {
             tmdbScore = tmdb.userScore;
         }
 
-        var tmdbUrl = TMDB_FILM_BASEURL;
+        let tmdbUrl = TMDB_FILM_BASEURL;
         if (film.contentType && film.contentType == CONTENT_TV_SERIES) {
             tmdbUrl = tmdbUrl + "tv/" + tmdbUniqueName;
         }
         else if (film.contentType && film.contentType == CONTENT_TV_EPISODE) {
-            parentUniqueName = "null";
+            let parentUniqueName = "null";
             if (tmdb.parentUniqueName) {
                 parentUniqueName = tmdb.parentUniqueName.substring(2);
             }
@@ -57,84 +64,188 @@ function buildFilmDetailElement(film) {
             tmdbUrl = tmdbUrl + "movie/" + tmdbUniqueName;
         }
 
-        var el = '';
-        el = el + '        <a href="'+tmdbUrl+'" target="_blank">\n';
-        el = el + '          <img src="'+RS_URL_BASE + "/image/logo-rating-tmdb.png"+'" alt="TMDb Rating" height="20px"/>\n';
-        el = el + '          <tmdbScore id="tmdb-score-'+tmdbUniqueName+'">'+tmdbScore+'</tmdbScore>\n'
-        el = el + '        </a>\n'
+        tmdbRatingEl = document.createElement("a");
+        const tmdbImgEl = document.createElement("img");
+        const tmdbScoreEl = document.createElement("tmdbScore");
 
-        tmdbRatingHtml = el;
+        tmdbRatingEl.setAttribute("href", tmdbUrl);
+        tmdbRatingEl.setAttribute("target", "_blank");
+        tmdbImgEl.setAttribute("src", `${RS_URL_BASE}/image/logo-rating-tmdb.png`);
+        tmdbImgEl.setAttribute("alt", "TMDb Rating");
+        tmdbImgEl.setAttribute("height", "20px");
+        tmdbScoreEl.setAttribute("id", `tmdb-score-${tmdbUniqueName}`);
+        tmdbScoreEl.innerText = tmdbScore;
+
+        tmdbRatingEl.appendChild(tmdbImgEl);
+        tmdbRatingEl.appendChild(tmdbScoreEl);
     }
 
-    var thirdPartyBar = "";
-    var sourceLogoClass = "source-logo-1";
-    if (imdbRatingHtml != "") {
-        thirdPartyBar = thirdPartyBar + '<div class="' + sourceLogoClass + '">\n';
-        thirdPartyBar = thirdPartyBar + imdbRatingHtml + "\n";
-        thirdPartyBar = thirdPartyBar + '</div>\n';
+    let thirdpartyBarEl = document.createElement("div");
+    let thirdpartySlot0El = document.createElement("div");
+    let thirdpartySlot1El = document.createElement("div");
+    thirdpartySlot0El.setAttribute("class", "source-logo-1");
+    thirdpartySlot1El.setAttribute("class", "source-logo-2");
 
-        sourceLogoClass = "source-logo-2";
+    let nextSlotEl = thirdpartySlot0El;
+    if (imdbRatingEl != null) {
+        nextSlotEl.appendChild(imdbRatingEl);
+        thirdpartyBarEl.appendChild(nextSlotEl);
+        thirdpartyBarEl.append("\n");
+
+        nextSlotEl = thirdpartySlot1El;
     }
-    if (tmdbRatingHtml != "") {
-        thirdPartyBar = thirdPartyBar + '<div class="' + sourceLogoClass + '">\n';
-        thirdPartyBar = thirdPartyBar + tmdbRatingHtml + "\n";
-        thirdPartyBar = thirdPartyBar + '</div>\n';
+    if (tmdbRatingEl != null) {
+        nextSlotEl.appendChild(tmdbRatingEl);
+        thirdpartyBarEl.appendChild(nextSlotEl);
+        thirdpartyBarEl.append("\n");
     }
 
-    var justWatchUrl = "https://www.justwatch.com/us/search?release_year_from="+year+"&release_year_until="+year+"&q=" + encodeURIComponent(title);
-    var justWatchImage = RS_URL_BASE + "/image/logo-justwatch.png";
+    const justWatchUrl = "https://www.justwatch.com/us/search?release_year_from=" + year + "&release_year_until=" + year + "&q=" + encodeURIComponent(title);
+    const justWatchImage = RS_URL_BASE + "/image/logo-justwatch.png";
 
-    var rsUniqueName = "";
-    var dateStr = "";
-    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+    let rsUniqueName = "";
+    let dateStr = "";
+    const rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
     if (rsSource && rsSource != "undefined") {
         rsUniqueName = rsSource.uniqueName;
-        var yourRatingDate = rsSource.rating.yourRatingDate;
-        dateStr = getRatingDateText(yourRatingDate);
+        dateStr = getRatingDateMessageText(rsSource.rating.yourRatingDate);
     }
 
-    var contentTypeText = "";
+    let contentTypeText = "";
     if (film.contentType && film.contentType == CONTENT_TV_SERIES) {
         contentTypeText = " TV";
     }
 
-    var historyHtml = "";
-    historyHtml = historyHtml + '    <div class="btn-group rating-history">\n';
-    historyHtml = historyHtml + '      <div class="d-flex flex-row">\n';
-    historyHtml = historyHtml + '          <button type="button" class="rating-history btn pl-0 pr-1 py-0" disabled>\n';
-    historyHtml = historyHtml + '            <rating-date class="small" id="rating-date-'+rsUniqueName+'">'+dateStr+'</rating-date>\n';
-    historyHtml = historyHtml + '          </button>\n';
-    historyHtml = historyHtml + '          <button type="button" class="rating-history btn-rating-history btn dropdown-toggle-split py-0 px-1 align-middle" id="dropdownMenuReference" data-toggle="dropdown" aria-expanded="false" data-reference="parent">\n';
-    historyHtml = historyHtml + '            <span class="sr-only">Toggle Dropdown</span>\n';
-    historyHtml = historyHtml + '            <span class="fas fa-caret-down" aria-hidden="true"></span>\n';
-    historyHtml = historyHtml + '          </button>\n';
-    historyHtml = historyHtml + '          <div id="rating-history-'+rsUniqueName+'" class="dropdown-menu" aria-labelledby="dropdownMenuReference">\n';
-    historyHtml = historyHtml + '          </div>\n';
-    historyHtml = historyHtml + '      </div>\n';
-    historyHtml = historyHtml + '    </div>\n';
+    const detailEl = document.createElement("detail");
+    const filmLineEl = document.createElement("div");
+    const filmTitleEl = document.createElement("span");
+    const filmYearEl = document.createElement("span");
+    const episodeTitleEl = document.createElement("episodeTitle");
+    const seasonEpisodeLineEl = document.createElement("div");
+    const seasonEl = document.createElement("season");
+    const episodeNumberEl = document.createElement("episodeNumber");
+    const actionAreaEl = document.createElement("div");
+    const starsContainerEl = document.createElement("div");
+    const starsEl = document.createElement("ratingStars");
+    const historyEl = document.createElement("div");
+    const historyFlexEl = document.createElement("div");
+    const historyRatingDateBtnEl = document.createElement("button");
+    const historyRatingDateEl = document.createElement("rating-date");
+    const historyDropBtnEl = document.createElement("button");
+    const historyToggleEl = document.createElement("span");
+    const historyCaretEl = document.createElement("span");
+    const historyFormEl = document.createElement("form");
+    const historyFormInputFilmIdEl = document.createElement("input");
+    const historyFormInputIndexEl = document.createElement("input");
+    const historyMenuEl = document.createElement("div");
+    const justwatchLinkEl = document.createElement("a");
+    const justwatchImgEl = document.createElement("img");
+    const statusEl = document.createElement("status");
+    const filmlistEl = document.createElement("filmlistContainer");
+    const streamsEl = document.createElement("streams");
+    const editRatingsEl = document.createElement("div");
+    const rateConfirmEl = document.createElement("div");
 
-    var html = '\n';
-    html = html + '  <div class="film-line"><span class="film-title">'+title+'</span> ('+year+')'+contentTypeText+'</div>\n';
-    html = html + "  <episodeTitle class='tv-episode-title'>" + episodeTitle + "</episodeTitle>\n";
-    html = html + "  <div><season class='tv-season'>" + season + "</season><episodeNumber class='tv-episodenum'>" + episodeNumber + "</episodeNumber></div>\n";
-    html = html + '  <div id="action-area-'+rsUniqueName+'">\n';
-    html = html + '    <div class="mt-n2 pt-2" style="line-height: 1">\n';
-    html = html + '      <ratingStars class="rating-stars" id="rating-stars-'+rsUniqueName+'"></ratingStars>\n';
-    html = html + '    </div>\n';
-    html = html +      historyHtml;
-    html = html + '    <div class="thirdparty-bar pb-1 mt-2">\n';
-    html = html +        thirdPartyBar + '\n';
-    html = html + '      <a href="'+justWatchUrl+'" target="_blank"><img src="'+justWatchImage+'" alt="JustWatch" height="20px"/></a>'
-    html = html + '    </div>\n';
-    html = html + '    <status></status>\n';
-    html = html + '    <filmlistContainer id="filmlist-container-'+filmId+'" align="left"></filmlistContainer>\n';
-    html = html + '    <streams id="streams-'+filmId+'" class="streams"></streams>\n';
-    html = html + '  </div>\n';
-    html = html + '  <div id="rate-confirmation-'+rsUniqueName+'" hidden>\n';
-    html = html + '  </div>\n';
+    filmLineEl.setAttribute("class", "film-line");
+    filmTitleEl.setAttribute("class", "film-title");
+    episodeTitleEl.setAttribute("class", "tv-episode-title");
+    seasonEl.setAttribute("class", "tv-season");
+    episodeNumberEl.setAttribute("class", "tv-episodenum");
+    starsContainerEl.setAttribute("class", "mt-n2 pt-2");
+    starsEl.setAttribute("class", "rating-stars");
+    historyEl.setAttribute("class", "btn-group rating-history");
+    historyFlexEl.setAttribute("class", "d-flex flex-row");
+    historyRatingDateBtnEl.setAttribute("class", "rating-history btn pl-0 pr-1 py-0");
+    historyRatingDateEl.setAttribute("class", "small");
+    historyDropBtnEl.setAttribute("class", "rating-history btn-rating-history btn dropdown-toggle-split py-0 px-1 align-middle");
+    historyToggleEl.setAttribute("class", "sr-only");
+    historyCaretEl.setAttribute("class", "fas fa-caret-down");
+    historyMenuEl.setAttribute("class", "dropdown-menu");
+    thirdpartyBarEl.setAttribute("class", "thirdparty-bar pb-1");
+    streamsEl.setAttribute("class", "streams");
 
-    var detailEl = document.createElement("detail");
-    detailEl.innerHTML = html;
+    actionAreaEl.setAttribute("id", `action-area-${rsUniqueName}`);
+    starsContainerEl.setAttribute("style", "line-height: 1");
+    starsEl.setAttribute("id", `rating-stars-${rsUniqueName}`);
+    historyEl.setAttribute("id", `rating-history-${filmId}`);
+    historyEl.setAttribute("hidden", "true");
+    historyRatingDateBtnEl.setAttribute("type", "button");
+    historyRatingDateBtnEl.setAttribute("disabled", "true");
+    historyRatingDateEl.setAttribute("id", `rating-date-${rsUniqueName}`);
+    historyDropBtnEl.setAttribute("type", "button");
+    historyDropBtnEl.setAttribute("id", `rating-history-menu-btn-${filmId}`);
+    historyDropBtnEl.setAttribute("data-toggle", "dropdown");
+    historyDropBtnEl.setAttribute("aria-expanded", "false");
+    historyDropBtnEl.setAttribute("data-reference", "parent");
+    historyFormEl.setAttribute("action", "/php/edit.php");
+    historyFormEl.setAttribute("id", `rating-history-form-${filmId}`);
+    historyFormInputFilmIdEl.setAttribute("id", `param-rating-history-filmid-${filmId}`);
+    historyFormInputFilmIdEl.setAttribute("name", "i");
+    historyFormInputFilmIdEl.setAttribute("hidden", "true");
+    historyFormInputIndexEl.setAttribute("id", `param-rating-history-index-${filmId}`);
+    historyFormInputIndexEl.setAttribute("name", "ri");
+    historyFormInputIndexEl.setAttribute("hidden", "true");
+    historyMenuEl.setAttribute("id", `rating-history-menu-ref-${filmId}`);
+    historyMenuEl.setAttribute("aria-labelledby", `rating-history-menu-btn-${filmId}`);
+    thirdpartyBarEl.setAttribute("id", `thirdparty-bar-${rsUniqueName}`);
+    justwatchLinkEl.setAttribute("href", justWatchUrl);
+    justwatchLinkEl.setAttribute("target", "_blank");
+    justwatchImgEl.setAttribute("src", justWatchImage);
+    justwatchImgEl.setAttribute("alt", "JustWatch");
+    justwatchImgEl.setAttribute("height", "20px");
+    filmlistEl.setAttribute("id", `filmlist-container-${filmId}`);
+    filmlistEl.setAttribute("align", "left");
+    streamsEl.setAttribute("id", `streams-${filmId}`);
+    editRatingsEl.setAttribute("id", `edit-ratings-${filmId}`);
+    rateConfirmEl.setAttribute("id", `rate-confirmation-${rsUniqueName}`);
+    rateConfirmEl.setAttribute("hidden", "true");
+
+    filmTitleEl.innerText = title;
+    filmYearEl.innerText = ` (${year})${contentTypeText}`;
+    episodeTitleEl.innerText = episodeTitle;
+    seasonEl.innerText = season;
+    episodeNumberEl.innerText = episodeNumber;
+    historyRatingDateEl.innerText = dateStr;
+    historyToggleEl.innerText = "Toogle Dropdown";
+    historyFormInputFilmIdEl.setAttribute("value", filmId);
+
+    detailEl.appendChild(filmLineEl);
+    detailEl.appendChild(episodeTitleEl);
+    detailEl.appendChild(seasonEpisodeLineEl);
+    detailEl.appendChild(actionAreaEl);
+    detailEl.appendChild(rateConfirmEl);
+    filmLineEl.appendChild(filmTitleEl);
+    filmLineEl.appendChild(filmYearEl);
+    seasonEpisodeLineEl.appendChild(seasonEl);
+    seasonEpisodeLineEl.appendChild(episodeNumberEl);
+    if (pageId == SITE_PAGE.Edit) {
+        actionAreaEl.appendChild(editRatingsEl);
+    }
+    else {
+        actionAreaEl.appendChild(starsContainerEl);
+        actionAreaEl.appendChild(historyEl);
+        actionAreaEl.appendChild(thirdpartyBarEl);
+        actionAreaEl.appendChild(statusEl);
+        actionAreaEl.appendChild(filmlistEl);
+        actionAreaEl.appendChild(streamsEl);
+
+        starsContainerEl.appendChild(starsEl);
+
+        historyEl.appendChild(historyFlexEl);
+        historyFlexEl.appendChild(historyRatingDateBtnEl);
+        historyFlexEl.appendChild(historyDropBtnEl);
+        historyFlexEl.appendChild(historyFormEl);
+        historyRatingDateBtnEl.appendChild(historyRatingDateEl);
+        historyDropBtnEl.appendChild(historyToggleEl);
+        historyDropBtnEl.appendChild(historyCaretEl);
+        historyFormEl.appendChild(historyFormInputFilmIdEl);
+        historyFormEl.appendChild(historyFormInputIndexEl);
+        historyFormEl.appendChild(historyMenuEl);
+
+        thirdpartyBarEl.appendChild(justwatchLinkEl);
+        justwatchLinkEl.appendChild(justwatchImgEl);
+        // IMDb and TMDb are appended to thirdpartyBarEl above
+    }
 
     return detailEl;
 }

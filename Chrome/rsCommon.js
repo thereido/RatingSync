@@ -8,6 +8,17 @@ var userlistsCallbacks = [];
 var waitingForFilmlists = false;
 var contextData = JSON.parse('{"films":[]}');
 
+const SITE_PAGE = {
+    Detail: 'Detail',
+    Edit: 'Edit',
+    Ratings: "Ratings",
+    Userlist: "Userlist",
+    ManageLists: "ManageLists",
+    Search: "Search",
+    Export: "Export",
+    Import: "Import"
+};
+
 function renderStatus(statusText) {
     var statusEl = document.getElementById('status');
     if (statusEl) {
@@ -101,7 +112,9 @@ function renderStars(film) {
     ratingStarsEl.innerHTML = html;
     addStarListeners(ratingStarsEl);
 
-    renderRatingHistory(rsSource);
+    if (film.filmId > 0) {
+        renderRatingHistory(film.filmId, rsSource);
+    }
 }
 
 function renderStreams(film, displaySearch) {
@@ -187,16 +200,19 @@ function renderRatingDate(film) {
         return;
     }
     
-    ratingDateEl.innerHTML = getRatingDateText(yourRatingDate);
+    ratingDateEl.innerHTML = getRatingDateMessageText(yourRatingDate);
 }
 
-function getRatingDateText(yourRatingDate) {
-    var dateStr = "";
+function getRatingDateMessageText(yourRatingDate) {
+    var dateMsgText = "";
     if (yourRatingDate && yourRatingDate != "undefined") {
-        dateStr = "You rated this " + formatRatingDate(yourRatingDate);
+        dateMsgText = "You rated this " + formatRatingDate(yourRatingDate);
+    }
+    else {
+        dateMsgText = "Past ratings";
     }
     
-    return dateStr;
+    return dateMsgText;
 }
 
 function formatRatingDate(date) {
@@ -521,61 +537,98 @@ function renderMsg(message, element) {
     }
 }
 
-function renderRatingHistory(rsSource) {
-    let uniqueName = rsSource.uniqueName;
-    let activeRating = rsSource.rating;
-    let archive = rsSource.archive;
+function renderRatingHistory(filmId, rsSource) {
+    const uniqueName = rsSource.uniqueName;
+    const activeRating = rsSource.rating;
+    const archive = rsSource.archive;
+    const ratingHistoryEl = document.getElementById(`rating-history-${filmId}`);
+    const ratingHistoryMenuEl = document.getElementById(`rating-history-menu-ref-${filmId}`);
 
     let ratingIndex = 0;
-    let historyLines = getHistoryLine(uniqueName, activeRating, ratingIndex);
-    for (var i = 0; i < rsSource.archiveCount; i++) {
+
+    if (activeRating.yourScore > 0) {
+        renderHistoryLine(ratingHistoryMenuEl, filmId, activeRating, ratingIndex);
         ratingIndex++;
-        let archivedRating = archive[i];
-        historyLines = historyLines + getHistoryLine(uniqueName, archivedRating, ratingIndex);
     }
 
-    let ratingHistoryEl = document.getElementById("rating-history-" + uniqueName);
-    ratingHistoryEl.innerHTML = historyLines;
+    for (let i = 0; i < rsSource.archiveCount; i++) {
+        const archivedRating = archive[i];
+        renderHistoryLine(ratingHistoryMenuEl, filmId, archivedRating, ratingIndex);
+        ratingIndex++;
+    }
+
+    if (ratingIndex > 0) {
+        ratingHistoryEl.removeAttribute("hidden");
+    }
+    else {
+        // When there is no rating history shown the view looks better with the thirdparty bar with a top margin
+        let thirdpartybarEl = document.getElementById(`thirdparty-bar-${uniqueName}`);
+        const barClass = thirdpartybarEl.getAttribute("class");
+        thirdpartybarEl.setAttribute("class", `${barClass} mt-2`);
+    }
 }
 
-function getHistoryLine(uniqueName, rating, ratingIndex) {
-    let score = rating.yourScore;
-    let date = rating.yourRatingDate;
+function renderHistoryLine(parentEl, filmId, rating, ratingIndex) {
+    const score = rating.yourScore;
+    const date = rating.yourRatingDate;
 
-    const fullStar = '<i class="star fas fa-star fa-xs align-middle"></i>';
-    const halfStar = '<i class="star far fa-star-half-stroke fa-xs align-middle"></i>';
-    const emptyStar = '<i class="star far fa-star fa-xs align-middle"></i>';
+    const fullStarClass =  "star fas fa-xs align-middle fa-star";
+    const halfStarClass =  "star far fa-xs align-middle fa-star-half-stroke";
+    const emptyStarClass = "star far fa-xs align-middle fa-star";
 
     const fullStarCount = Math.round(score / -2) * -1;
     const halfStarCount = score % 2;
 
-    let stars = "";
+    const historyLineEl = document.createElement("div");
+    const flexContainerEl = document.createElement("div");
+    const starsEl = document.createElement("div");
+    const dateAndButtonEl = document.createElement("div");
+    const dateEl = document.createElement("span");
+    const editButtonEl = document.createElement("button");
+
+    historyLineEl.setAttribute("class", "container-flex py-1");
+    flexContainerEl.setAttribute("class", "d-flex justify-content-between");
+    starsEl.setAttribute("class", "px-1");
+    dateAndButtonEl.setAttribute("class", "px-1");
+    dateEl.setAttribute("class", "small");
+    editButtonEl.setAttribute("class", "btn-edit btn far fa-solid fa-pencil fa-sm pr-0");
+    editButtonEl.setAttribute("type", "submit");
+    editButtonEl.setAttribute("onclick", `submitRatingHistory(${filmId}, ${ratingIndex});`);
+    editButtonEl.setAttribute("id", `rating-history-${filmId}-${ratingIndex}`);
+    editButtonEl.setAttribute("data-history-index", `${ratingIndex}`);
+
     for (let i = 0; i < 5; i++) {
-        let star = fullStar;
+        const starEl = document.createElement("i");
+        let starClass = fullStarClass;
+
         if (i >= fullStarCount) {
             if (i >= fullStarCount + halfStarCount) {
-                star = emptyStar;
+                starClass = emptyStarClass;
             }
             else {
-                star = halfStar;
+                starClass = halfStarClass;
             }
         }
 
-        stars = stars + star;
+        starEl.setAttribute("class", starClass);
+        starsEl.appendChild(starEl);
     }
 
-    let historyLineHtml = "";
-    historyLineHtml = historyLineHtml + '        <div class="container-flex py-1">' + '\n';
-    historyLineHtml = historyLineHtml + '          <div class="d-flex justify-content-between">' + '\n';
-    historyLineHtml = historyLineHtml + '            <div class="px-1">' + '\n';
-    historyLineHtml = historyLineHtml +                stars;
-    historyLineHtml = historyLineHtml + '            </div>' + '\n';
-    historyLineHtml = historyLineHtml + '            <div class="px-1">' + '\n';
-    historyLineHtml = historyLineHtml + '              <span class="small">' + formatRatingDate(date) + '</span>' + '\n';
-    historyLineHtml = historyLineHtml + '              <button type="button" class="btn-edit btn far fa-solid fa-pencil fa-sm pr-0" id="rating-history-' + uniqueName + '" data-toggle="modal" data-target="#delete-modal" data-history-index="' + ratingIndex + '" aria-hidden="true"></button>' + '\n';
-    historyLineHtml = historyLineHtml + '            </div>' + '\n';
-    historyLineHtml = historyLineHtml + '          </div>' + '\n';
-    historyLineHtml = historyLineHtml + '        </div>' + '\n';
+    dateEl.innerHTML = formatRatingDate(date);
 
-    return historyLineHtml;
+    parentEl.appendChild(historyLineEl);
+    historyLineEl.appendChild(flexContainerEl);
+    flexContainerEl.appendChild(starsEl);
+    flexContainerEl.appendChild(dateAndButtonEl);
+    dateAndButtonEl.appendChild(dateEl);
+    dateAndButtonEl.appendChild(editButtonEl);
+}
+
+function submitRatingHistory(filmId, ratingIndex) {
+    const formId = `rating-history-form-${filmId}`;
+    const formEl = document.forms[formId];
+
+    formEl["param-rating-index"].value = ratingIndex;
+
+    document.forms[formId].submit();
 }

@@ -30,8 +30,10 @@ function detailPageCallback(xmlhttp) {
                     var titleEl = document.getElementsByClassName("film-title")[0];
                     titleEl.innerHTML = "<a href='/php/detail.php?i=" + film.parentId + "&ct=" + CONTENT_TV_SERIES + "'>" + titleEl.innerHTML + "</a>";
                 }
-                
-                getSeriesForDetailPage(film);
+
+                if (pageId != SITE_PAGE.Edit) {
+                    getSeriesForDetailPage(film);
+                }
             }
         }
 	}

@@ -61,6 +61,7 @@ $pageFooter = getPageFooter();
 </div>
 
 <script>
+let pageId = SITE_PAGE.Ratings;
 var contextData;
 var currentPageNum = <?php echo $pageNum; ?>;;
 var defaultPageSize = 90;

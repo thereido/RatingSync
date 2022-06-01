@@ -86,6 +86,7 @@ $pageFooter = getPageFooter();
 </div>
 
 <script>
+    let pageId = SITE_PAGE.Detail;
     var contextData = JSON.parse('{"films":[]}');
     var RS_URL_BASE = "<?php echo Constants::RS_HOST; ?>";
     var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
@@ -96,6 +97,7 @@ $pageFooter = getPageFooter();
     var username = "<?php getUsername(); ?>";
     var seasonNumParam = "<?php echo $seasonNum; ?>";
     getFilmForDetailPage("<?php echo $filmId; ?>", "<?php echo $uniqueName; ?>", "<?php echo $imdbId; ?>", "<?php echo $contentType; ?>", "<?php echo $parentId; ?>", "<?php echo $seasonNum; ?>", "<?php echo $episodeNum; ?>");
+
 </script>
 
 </body>

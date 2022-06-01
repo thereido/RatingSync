@@ -101,6 +101,7 @@ function test_input($data)
 </form>
 
 <script>
+    let pageId = SITE_PAGE.Export;
     var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
     var TMDB_API_KEY = "<?php echo Constants::TMDB_API_KEY; ?>";
     var IMAGE_PATH_TMDBAPI = "<?php echo Constants::IMAGE_PATH_TMDBAPI; ?>";
