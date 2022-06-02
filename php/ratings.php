@@ -46,6 +46,7 @@ $pageFooter = getPageFooter();
     <script src="../js/filmlistHeader.js"></script>
     <script src="../js/film.js"></script>
     <script src="../js/userlist.js"></script>
+    <script src="../js/RatingView.js"></script>
 </head>
 
 <div class="container">
@@ -61,15 +62,12 @@ $pageFooter = getPageFooter();
 </div>
 
 <script>
-let pageId = SITE_PAGE.Ratings;
-var contextData;
-var currentPageNum = <?php echo $pageNum; ?>;;
-var defaultPageSize = 90;
-var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
-var TMDB_API_KEY = "<?php echo Constants::TMDB_API_KEY; ?>";
-var IMAGE_PATH_TMDBAPI = "<?php echo Constants::IMAGE_PATH_TMDBAPI; ?>";
-var DATA_API_DEFAULT = "<?php echo Constants::DATA_API_DEFAULT; ?>";
-var prevFilmlistFilterParams = getFilmlistFilterParams();
+    <?php echo Constants::echoJavascriptConstants(); ?>
+    let pageId = SITE_PAGE.Ratings;
+    var contextData;
+    var currentPageNum = <?php echo $pageNum; ?>;;
+    var defaultPageSize = 90;
+    var prevFilmlistFilterParams = getFilmlistFilterParams();
 getRsRatings(defaultPageSize, <?php echo $pageNum; ?>);
 </script>
           

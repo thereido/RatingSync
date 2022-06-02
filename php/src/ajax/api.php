@@ -101,12 +101,11 @@ function api_getSearchFilm($username, $get)
 function api_setRating($username)
 {
     $film = null;
-    $titleNum = array_value_by_key("tn", $_GET);
     $filmId = array_value_by_key("fid", $_GET);
     $uniqueName = array_value_by_key("un", $_GET);
     $score = array_value_by_key("s", $_GET);
     $dateStr = array_value_by_key("d", $_GET); // Format: 2000-02-28
-    logDebug("Params fid=$filmId, un=$uniqueName, s=$score, d=$dateStr, tn=$titleNum", __FUNCTION__." ".__LINE__);
+    logDebug("Params fid=$filmId, un=$uniqueName, s=$score, d=$dateStr", __FUNCTION__." ".__LINE__);
 
     if (!empty($username) && !empty($filmId) && (!empty($score) || $score == 0)) {
         $film = setRating($filmId, $score, $dateStr);

@@ -8,17 +8,6 @@ var userlistsCallbacks = [];
 var waitingForFilmlists = false;
 var contextData = JSON.parse('{"films":[]}');
 
-const SITE_PAGE = {
-    Detail: 'Detail',
-    Edit: 'Edit',
-    Ratings: "Ratings",
-    Userlist: "Userlist",
-    ManageLists: "ManageLists",
-    Search: "Search",
-    Export: "Export",
-    Import: "Import"
-};
-
 function renderStatus(statusText) {
     var statusEl = document.getElementById('status');
     if (statusEl) {
@@ -26,7 +15,7 @@ function renderStatus(statusText) {
     }
 }
 
-function rateFilm(filmId, uniqueName, score, titleNum) {
+function rateFilm(filmId, uniqueName, score) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -49,12 +38,25 @@ function rateFilm(filmId, uniqueName, score, titleNum) {
     params = params + "&fid=" + filmId;
     params = params + "&un=" + uniqueName;
     params = params + "&s=" + score;
-    if (titleNum && titleNum != "undefined") {
-        params = params + "&tn=" + titleNum;
-    }
     xmlhttp.open("GET", RS_URL_API + "?action=setRating" + params, true);
     xmlhttp.send();
     renderStatus('Saving...');
+}
+
+function updateStars(filmId, uniqueName, score) {
+    const film = getContextDataFilm(filmId);
+
+    if (film == null) {
+        return;
+    }
+    alert(`You clicked ${score}`);
+
+    /* FIXME
+    updateContextDataFilmByFilmId(film);
+    renderStatus('Rating Saved');
+    renderStars(film);
+    renderRatingDate(film);
+     */
 }
 
 function renderYourScore(uniqueName, hoverScore, mousemove) {
@@ -69,56 +71,8 @@ function renderYourScore(uniqueName, hoverScore, mousemove) {
     document.getElementById("your-score-" + uniqueName).innerHTML = score;
 }
 
-function renderStars(film) {
-    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
-    var uniqueName = rsSource.uniqueName;
-    var yourScore = rsSource.rating.yourScore;
-
-    var ratingStarsEl = document.getElementById("rating-stars-" + uniqueName);
-    if (!ratingStarsEl) {
-        return;
-    }
-
-    // The score is shown backwards
-    var showYourScore = yourScore;
-    if (showYourScore == "10") {
-        showYourScore = "01";
-    } else if (showYourScore == null || showYourScore == "") {
-        showYourScore = "-";
-    }
-
-    var starsHtml = "";
-    var fullStars = yourScore;
-    var emptyStars = 10 - yourScore;
-    var starScore = 10;
-    while (emptyStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star fa-star far fa-xs' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'></span>";
-        emptyStars = emptyStars - 1;
-        starScore = starScore - 1;
-    }
-    while (fullStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star fa-star fas fa-xs' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'></span>";
-        fullStars = fullStars - 1;
-        starScore = starScore - 1;
-    }
-
-    var html = "";
-    html = html + "    <score>\n";
-    html = html + "      <of-possible>01/</of-possible><your-score id='your-score-" + uniqueName + "'>" + showYourScore + "</your-score>\n";
-    html = html + "    </score>\n";
-    html = html +      starsHtml + "\n";
-    html = html + "    <div id='original-score-" + uniqueName + "' data-score='" + showYourScore + "' hidden ></div>\n";
-
-    ratingStarsEl.innerHTML = html;
-    addStarListeners(ratingStarsEl);
-
-    if (film.filmId > 0) {
-        renderRatingHistory(film.filmId, rsSource);
-    }
-}
-
 function renderStreams(film, displaySearch) {
-    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+    var rsSource = getSourceJson(film, SOURCE_NAME.Internal);
     var rsUniqueName = rsSource.uniqueName;
 
     var streamsEl = document.getElementById("streams-"+film.filmId);
@@ -190,44 +144,6 @@ function renderStreams(film, displaySearch) {
     }
 }
 
-function renderRatingDate(film) {
-    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
-    var uniqueName = rsSource.uniqueName;
-    var yourRatingDate = rsSource.rating.yourRatingDate;
-    
-    var ratingDateEl = document.getElementById("rating-date-" + uniqueName);
-    if (!ratingDateEl) {
-        return;
-    }
-    
-    ratingDateEl.innerHTML = getRatingDateMessageText(yourRatingDate);
-}
-
-function getRatingDateMessageText(yourRatingDate) {
-    var dateMsgText = "";
-    if (yourRatingDate && yourRatingDate != "undefined") {
-        dateMsgText = "You rated this " + formatRatingDate(yourRatingDate);
-    }
-    else {
-        dateMsgText = "Past ratings";
-    }
-    
-    return dateMsgText;
-}
-
-function formatRatingDate(date) {
-    var dateStr = "";
-    if (date && date != "undefined") {
-        var reDate = new RegExp("([0-9]+)-([0-9]+)-([0-9]+)");
-        var ratingYear = reDate.exec(date)[1];
-        var month = reDate.exec(date)[2];
-        var day = reDate.exec(date)[3];
-        dateStr = month + "/" + day + "/" + ratingYear;
-    }
-
-    return dateStr;
-}
-
 function toggleFilmlist(listname, filmId, activeBtnId) {
     var defaultBtn = document.getElementById("filmlist-btn-default-" + filmId);
     var otherListsBtn = document.getElementById("filmlist-btn-others-" + filmId);
@@ -268,16 +184,23 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
     xmlhttp.send();
 }
 
-function clickStar(filmId, uniqueName, score, titleNum) {
+function clickStar(filmId, uniqueName, score, active) {
     var originalScore = document.getElementById("original-score-" + uniqueName).getAttribute('data-score');
-    if (score == originalScore) {
-        showConfirmationRating(filmId, uniqueName, score, titleNum);
-    } else {
-        rateFilm(filmId, uniqueName, score, titleNum);
+
+    if (active) {
+        if (score == originalScore) {
+            showConfirmationRating(filmId, uniqueName, score);
+        } else {
+            rateFilm(filmId, uniqueName, score);
+        }
+    }
+    else {
+        // This not a 'active' rate operation. Change the score on the page, but do not do to API to rate it.
+        updateStars(filmId, uniqueName, score);
     }
 }
 
-function showConfirmationRating(filmId, uniqueName, score, titleNum) {
+function showConfirmationRating(filmId, uniqueName, score) {
     // Show confirmation dialog asking what to do
     
     // Hide the action area & show the dialog
@@ -297,14 +220,14 @@ function showConfirmationRating(filmId, uniqueName, score, titleNum) {
     rateButton.setAttribute("type", "button");
     rateButton.setAttribute("class", "btn btn-primary");
     rateButton.innerHTML = "Rate " + score + " Again";
-    var rateHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, score, titleNum); };
+    var rateHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, score); };
     rateButton.addEventListener("click", rateHandler);
 
     var removeButton = document.createElement("button");
     removeButton.setAttribute("type", "button");
     removeButton.setAttribute("class", "btn btn-secondary btn-sm");
     removeButton.innerHTML = "Remove Rating";
-    var removeHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, 0, titleNum); };
+    var removeHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, 0); };
     removeButton.addEventListener("click", removeHandler);
 
     var cancelButton = document.createElement("button");
@@ -391,24 +314,23 @@ function addFilmlistListener(elementId) {
 	}
 }
 
-function addStarListeners(el) {
+function addStarListeners(el, active) {
     var stars = el.getElementsByClassName("rating-star");
     for (i = 0; i < stars.length; i++) {
-        addStarListener(stars[i].getAttribute("id"));
+        addStarListener(stars[i].getAttribute("id"), active);
     }
 }
 
-function addStarListener(elementId) {    
+function addStarListener(elementId, active) {
 	var star = document.getElementById(elementId);
 	if (star != null) {
 		var filmId = star.getAttribute('data-film-id');
 		var uniqueName = star.getAttribute('data-uniquename');
 		var score = star.getAttribute('data-score');
-		var titleNum = star.getAttribute('data-title-num');
 
 		var mouseoverHandler = function () { renderYourScore(uniqueName, score, 'new'); };
 		var mouseoutHandler = function () { renderYourScore(uniqueName, score, 'original'); };
-		var clickHandler = function () { clickStar(filmId, uniqueName, score, titleNum); };
+		var clickHandler = function () { clickStar(filmId, uniqueName, score, active); };
 
         star.addEventListener("mouseover", mouseoverHandler);
         star.addEventListener("mouseout", mouseoutHandler);
@@ -485,7 +407,7 @@ function getFilmForDropdown(film) {
         uniqueName = defaultSource.uniqueName;
     }
     var imdbId;
-    var imdbSource = film.sources.find( function (findSource) { return findSource.name == SOURCE_IMDB; } );
+    var imdbSource = film.sources.find( function (findSource) { return findSource.name == SOURCE_NAME.IMDb; } );
     if (imdbSource && imdbSource != "undefined") {
         imdbId = imdbSource.uniqueName;
     }
@@ -625,10 +547,9 @@ function renderHistoryLine(parentEl, filmId, rating, ratingIndex) {
 }
 
 function submitRatingHistory(filmId, ratingIndex) {
-    const formId = `rating-history-form-${filmId}`;
-    const formEl = document.forms[formId];
+    const formEl = document.forms[`rating-history-form-${filmId}`];
 
-    formEl["param-rating-index"].value = ratingIndex;
+    formEl[`param-rating-history-index-${filmId}`].value = ratingIndex;
 
-    document.forms[formId].submit();
+    formEl.submit();
 }

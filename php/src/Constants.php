@@ -76,5 +76,17 @@ class Constants
         return self::basePath() .  DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "image" . DIRECTORY_SEPARATOR;
     }
 
+    static function echoJavascriptConstants(): void
+    {
+        $jsConstants =  "const RS_URL_BASE = \"" . Constants::RS_HOST . "\";"                    . "\n";
+        $jsConstants .= "const RS_URL_API = RS_URL_BASE + \"/php/src/ajax/api.php\";"            . "\n";
+        $jsConstants .= "const OMDB_API_KEY  = \"" . Constants::OMDB_API_KEY . "\";"             . "\n";
+        $jsConstants .= "const TMDB_API_KEY  = \"" . Constants::TMDB_API_KEY . "\";"             . "\n";
+        $jsConstants .= "const IMAGE_PATH_TMDBAPI  = \"" . Constants::IMAGE_PATH_TMDBAPI . "\";" . "\n";
+        $jsConstants .= "const DATA_API_DEFAULT  = \"" . Constants::DATA_API_DEFAULT . "\";"     . "\n";
+
+        echo $jsConstants;
+    }
+
 }
 ?>

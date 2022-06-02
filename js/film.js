@@ -104,11 +104,9 @@ function buildFilmDetailElement(film) {
     const justWatchImage = RS_URL_BASE + "/image/logo-justwatch.png";
 
     let rsUniqueName = "";
-    let dateStr = "";
-    const rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+    const rsSource = getSourceJson(film, "RatingSync");
     if (rsSource && rsSource != "undefined") {
         rsUniqueName = rsSource.uniqueName;
-        dateStr = getRatingDateMessageText(rsSource.rating.yourRatingDate);
     }
 
     let contentTypeText = "";
@@ -126,18 +124,8 @@ function buildFilmDetailElement(film) {
     const episodeNumberEl = document.createElement("episodeNumber");
     const actionAreaEl = document.createElement("div");
     const starsContainerEl = document.createElement("div");
-    const starsEl = document.createElement("ratingStars");
-    const historyEl = document.createElement("div");
-    const historyFlexEl = document.createElement("div");
-    const historyRatingDateBtnEl = document.createElement("button");
-    const historyRatingDateEl = document.createElement("rating-date");
-    const historyDropBtnEl = document.createElement("button");
-    const historyToggleEl = document.createElement("span");
-    const historyCaretEl = document.createElement("span");
-    const historyFormEl = document.createElement("form");
-    const historyFormInputFilmIdEl = document.createElement("input");
-    const historyFormInputIndexEl = document.createElement("input");
-    const historyMenuEl = document.createElement("div");
+    const starsEl = buildRatingElement(film);
+    const historyEl = buildRatingHistoryElement(film);
     const justwatchLinkEl = document.createElement("a");
     const justwatchImgEl = document.createElement("img");
     const statusEl = document.createElement("status");
@@ -152,41 +140,11 @@ function buildFilmDetailElement(film) {
     seasonEl.setAttribute("class", "tv-season");
     episodeNumberEl.setAttribute("class", "tv-episodenum");
     starsContainerEl.setAttribute("class", "mt-n2 pt-2");
-    starsEl.setAttribute("class", "rating-stars");
-    historyEl.setAttribute("class", "btn-group rating-history");
-    historyFlexEl.setAttribute("class", "d-flex flex-row");
-    historyRatingDateBtnEl.setAttribute("class", "rating-history btn pl-0 pr-1 py-0");
-    historyRatingDateEl.setAttribute("class", "small");
-    historyDropBtnEl.setAttribute("class", "rating-history btn-rating-history btn dropdown-toggle-split py-0 px-1 align-middle");
-    historyToggleEl.setAttribute("class", "sr-only");
-    historyCaretEl.setAttribute("class", "fas fa-caret-down");
-    historyMenuEl.setAttribute("class", "dropdown-menu");
     thirdpartyBarEl.setAttribute("class", "thirdparty-bar pb-1");
     streamsEl.setAttribute("class", "streams");
 
     actionAreaEl.setAttribute("id", `action-area-${rsUniqueName}`);
     starsContainerEl.setAttribute("style", "line-height: 1");
-    starsEl.setAttribute("id", `rating-stars-${rsUniqueName}`);
-    historyEl.setAttribute("id", `rating-history-${filmId}`);
-    historyEl.setAttribute("hidden", "true");
-    historyRatingDateBtnEl.setAttribute("type", "button");
-    historyRatingDateBtnEl.setAttribute("disabled", "true");
-    historyRatingDateEl.setAttribute("id", `rating-date-${rsUniqueName}`);
-    historyDropBtnEl.setAttribute("type", "button");
-    historyDropBtnEl.setAttribute("id", `rating-history-menu-btn-${filmId}`);
-    historyDropBtnEl.setAttribute("data-toggle", "dropdown");
-    historyDropBtnEl.setAttribute("aria-expanded", "false");
-    historyDropBtnEl.setAttribute("data-reference", "parent");
-    historyFormEl.setAttribute("action", "/php/edit.php");
-    historyFormEl.setAttribute("id", `rating-history-form-${filmId}`);
-    historyFormInputFilmIdEl.setAttribute("id", `param-rating-history-filmid-${filmId}`);
-    historyFormInputFilmIdEl.setAttribute("name", "i");
-    historyFormInputFilmIdEl.setAttribute("hidden", "true");
-    historyFormInputIndexEl.setAttribute("id", `param-rating-history-index-${filmId}`);
-    historyFormInputIndexEl.setAttribute("name", "ri");
-    historyFormInputIndexEl.setAttribute("hidden", "true");
-    historyMenuEl.setAttribute("id", `rating-history-menu-ref-${filmId}`);
-    historyMenuEl.setAttribute("aria-labelledby", `rating-history-menu-btn-${filmId}`);
     thirdpartyBarEl.setAttribute("id", `thirdparty-bar-${rsUniqueName}`);
     justwatchLinkEl.setAttribute("href", justWatchUrl);
     justwatchLinkEl.setAttribute("target", "_blank");
@@ -205,9 +163,6 @@ function buildFilmDetailElement(film) {
     episodeTitleEl.innerText = episodeTitle;
     seasonEl.innerText = season;
     episodeNumberEl.innerText = episodeNumber;
-    historyRatingDateEl.innerText = dateStr;
-    historyToggleEl.innerText = "Toogle Dropdown";
-    historyFormInputFilmIdEl.setAttribute("value", filmId);
 
     detailEl.appendChild(filmLineEl);
     detailEl.appendChild(episodeTitleEl);
@@ -220,6 +175,7 @@ function buildFilmDetailElement(film) {
     seasonEpisodeLineEl.appendChild(episodeNumberEl);
     if (pageId == SITE_PAGE.Edit) {
         actionAreaEl.appendChild(editRatingsEl);
+        renderEditRatings(editRatingsEl, filmId);
     }
     else {
         actionAreaEl.appendChild(starsContainerEl);
@@ -228,20 +184,7 @@ function buildFilmDetailElement(film) {
         actionAreaEl.appendChild(statusEl);
         actionAreaEl.appendChild(filmlistEl);
         actionAreaEl.appendChild(streamsEl);
-
         starsContainerEl.appendChild(starsEl);
-
-        historyEl.appendChild(historyFlexEl);
-        historyFlexEl.appendChild(historyRatingDateBtnEl);
-        historyFlexEl.appendChild(historyDropBtnEl);
-        historyFlexEl.appendChild(historyFormEl);
-        historyRatingDateBtnEl.appendChild(historyRatingDateEl);
-        historyDropBtnEl.appendChild(historyToggleEl);
-        historyDropBtnEl.appendChild(historyCaretEl);
-        historyFormEl.appendChild(historyFormInputFilmIdEl);
-        historyFormEl.appendChild(historyFormInputIndexEl);
-        historyFormEl.appendChild(historyMenuEl);
-
         thirdpartyBarEl.appendChild(justwatchLinkEl);
         justwatchLinkEl.appendChild(justwatchImgEl);
         // IMDb and TMDb are appended to thirdpartyBarEl above
@@ -320,6 +263,18 @@ function buildFilmDetailElement(film) {
         }
 
         return episodeNumber;
+    }
+
+    function getSourceJson(film, sourceName) {
+        if (!film || !(film.sources)) {
+            return null;
+        }
+
+        return film.sources.find(
+            function (findSource) {
+                return findSource.name == sourceName;
+            }
+        );
     }
 
     // userlist (JSON) - all of the user's filmlists

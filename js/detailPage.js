@@ -216,7 +216,7 @@ function detailPageEpisodeRatingsCallback(xmlhttp) {
             var film = films[i];
 
             var yourScore = "";
-            var source = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+            const source = getSourceJson(film, SOURCE_NAME.Internal);
             if (source && source != "undefined") {
                 if (source.rating && source.rating != "undefined") {
                     yourScore = source.rating.yourScore;
