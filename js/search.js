@@ -354,8 +354,11 @@ function renderRsFilmDetails(film, filmEl) {
         filmEl.appendChild(newDetailEl);
     }
 
-    if (pageId != SITE_PAGE.Edit) {
-        renderStars(film);
+    if (pageId == SITE_PAGE.Edit) {
+        renderEditRatings(filmId);
+    }
+    else {
+        renderStarsForOneRating(film);
         renderStreams(film, true);
         renderFilmlists(film.filmlists, film.filmId);
     }

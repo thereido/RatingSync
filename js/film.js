@@ -175,7 +175,6 @@ function buildFilmDetailElement(film) {
     seasonEpisodeLineEl.appendChild(episodeNumberEl);
     if (pageId == SITE_PAGE.Edit) {
         actionAreaEl.appendChild(editRatingsEl);
-        renderEditRatings(editRatingsEl, filmId);
     }
     else {
         actionAreaEl.appendChild(starsContainerEl);

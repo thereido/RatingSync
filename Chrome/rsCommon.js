@@ -1,6 +1,6 @@
 /**
  * A html file sourcing this javascript must...
- *   - Have element with id='status'
+ *   - Have element with id='alert-placeholder'
  *   - Have a javascript var contextData as JSON with films[]
  */
 var userlistsJson;
@@ -8,67 +8,126 @@ var userlistsCallbacks = [];
 var waitingForFilmlists = false;
 var contextData = JSON.parse('{"films":[]}');
 
-function renderStatus(statusText) {
-    var statusEl = document.getElementById('status');
-    if (statusEl) {
-        statusEl.textContent = statusText;
+/**
+ * renderAlert
+ *
+ * @param message
+ * @param level Use ALERT_LEVEL enum
+ * @param operationId If there will be multiple alerts as the operation progress (saving, done, etc), use a unique id for clear each stage.
+ * @param timer in milliseconds. Zero means no timer. Default is 3 seconds, or 15 seconds for a warning, and no timer for a danger level.
+ */
+function renderAlert(message, level, operationId = null, timer = null) {
+    const alertPlaceholder = document.getElementById('alert-placeholder');
+
+    if (!alertPlaceholder) {
+        return;
+    }
+
+    const wrapper = document.createElement('alert-wrapper');
+
+    if (operationId) {
+        const previousAlerts = document.getElementsByTagName('alert-wrapper');
+        for (let i=0; i < previousAlerts.length; i++) {
+            const alertEl = previousAlerts[i];
+            if (operationId == alertEl.getAttribute("data-op-id")) {
+                alertEl.remove();
+            }
+        }
+
+        wrapper.setAttribute("data-op-id", operationId);
+    }
+
+    const newAlertEl = document.createElement("div");
+    const messageEl = document.createElement("span");
+    const closeBtnEl = document.createElement("button");
+    const xEl = document.createElement("span");
+
+    newAlertEl.setAttribute("class", `alert alert-${level} alert-dismissible fade in show`);
+    newAlertEl.setAttribute("role", "alert");
+    closeBtnEl.setAttribute("type", "button");
+    closeBtnEl.setAttribute("class", "close");
+    closeBtnEl.setAttribute("data-dismiss", "alert");
+    closeBtnEl.setAttribute("aria-label", "Close");
+    xEl.setAttribute("aria-hidden", "true");
+
+    messageEl.innerHTML = message;
+    xEl.innerHTML = "&times;";
+
+    alertPlaceholder.append(wrapper);
+    wrapper.appendChild(newAlertEl);
+    newAlertEl.appendChild(messageEl);
+    newAlertEl.appendChild(closeBtnEl);
+    closeBtnEl.appendChild(xEl);
+
+    if (timer == 0 || level == ALERT_LEVEL.danger) {
+        return;
+    }
+
+    const defaultTimer = 3000;
+    const defaultWarningTimer = 15000;
+    if (!timer || timer < 0) {
+        timer = level == ALERT_LEVEL.warning ? defaultWarningTimer : defaultTimer;
+    }
+
+    setTimeout(function () { clearAlert(newAlertEl); }, timer);
+}
+
+function clearAlert(el)
+{
+    if (el) {
+        el.remove();
     }
 }
 
-function rateFilm(filmId, uniqueName, score) {
+function rateFilm(filmId, uniqueName, score, callback, originalDate = null, index = null) {
+    const operaterId = `rateFilm-${filmId}`;
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            var film;
-            var response = JSON.parse(xmlhttp.responseText);
+            let film;
+            const response = JSON.parse(xmlhttp.responseText);
             if (response.Success && response.Success == "false") {
                 film = getContextDataFilm(filmId);
-                renderStatus('Error saving your rating');
+                const filmMsg = rateFilmResponseTitle(film);
+                const msg = `<strong>Unable to save your rating</strong>.<br>"${filmMsg}"`;
+                renderAlert(msg, ALERT_LEVEL.warning, operaterId);
             } else {
                 film = response;
+                const filmMsg = rateFilmResponseTitle(film);
                 updateContextDataFilmByFilmId(film);
-                renderStatus('Rating Saved');
+                renderAlert(`<strong>Rating Saved</strong>.<br>"${filmMsg}"`, ALERT_LEVEL.success, operaterId);
             }
-            renderStars(film);
-            renderRatingDate(film);
+            callback(film, index);
         }
     }
     var params = "";
-    params = params + "&json=1";
-    params = params + "&fid=" + filmId;
-    params = params + "&un=" + uniqueName;
-    params = params + "&s=" + score;
+    params += "&json=1";
+    params += `&fid=${filmId}`;
+    params += `&un=${uniqueName}`;
+    params += `&s=${score}`;
+    params += originalDate ? `&d=${originalDate}` : "";
+    params += originalDate ? `&od=${originalDate}` : "";
     xmlhttp.open("GET", RS_URL_API + "?action=setRating" + params, true);
     xmlhttp.send();
-    renderStatus('Saving...');
+    renderAlert('Saving...', ALERT_LEVEL.info, operaterId, 0);
 }
 
-function updateStars(filmId, uniqueName, score) {
-    const film = getContextDataFilm(filmId);
-
-    if (film == null) {
-        return;
-    }
-    alert(`You clicked ${score}`);
-
-    /* FIXME
-    updateContextDataFilmByFilmId(film);
-    renderStatus('Rating Saved');
-    renderStars(film);
-    renderRatingDate(film);
-     */
+function rateFilmResponseTitle(film) {
+    const seasonNumMsg = film.season ? ` S${film.season}` : "";
+    const episodeNumMsg = film.episodeNumber ? ` E${film.episodeNumber}` : "";
+    return film.title + seasonNumMsg + episodeNumMsg;
 }
 
-function renderYourScore(uniqueName, hoverScore, mousemove) {
+function renderYourScore(uniqueName, hoverScore, mousemove, ratingIndex = -1) {
     let score = hoverScore;
     if (mousemove == "original") {
-        score = document.getElementById("original-score-" + uniqueName).getAttribute("data-score");
+        score = document.getElementById(`original-score-${uniqueName}-${ratingIndex}`).getAttribute("data-score");
     }
 
     if (score == "10") {
         score = "01";
     }
-    document.getElementById("your-score-" + uniqueName).innerHTML = score;
+    document.getElementById(`your-score-${uniqueName}-${ratingIndex}`).innerHTML = score;
 }
 
 function renderStreams(film, displaySearch) {
@@ -184,19 +243,22 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
     xmlhttp.send();
 }
 
-function clickStar(filmId, uniqueName, score, active) {
-    var originalScore = document.getElementById("original-score-" + uniqueName).getAttribute('data-score');
+function clickStar(filmId, uniqueName, score, active, ratingIndex) {
+    const originalScoreEl = document.getElementById(`original-score-${uniqueName}-${ratingIndex}`);
+    const originalScore = originalScoreEl.getAttribute('data-score');
 
     if (active) {
         if (score == originalScore) {
             showConfirmationRating(filmId, uniqueName, score);
         } else {
-            rateFilm(filmId, uniqueName, score);
+            rateFilm(filmId, uniqueName, score, renderActiveRating);
         }
     }
     else {
-        // This not a 'active' rate operation. Change the score on the page, but do not do to API to rate it.
-        updateStars(filmId, uniqueName, score);
+        if (score != originalScore) {
+            const originalDate = document.getElementById(`rate-${uniqueName}-${score}-${ratingIndex}`).getAttribute('data-date');
+            rateFilm(filmId, uniqueName, score, renderEditRating, originalDate, ratingIndex);
+        }
     }
 }
 
@@ -220,14 +282,14 @@ function showConfirmationRating(filmId, uniqueName, score) {
     rateButton.setAttribute("type", "button");
     rateButton.setAttribute("class", "btn btn-primary");
     rateButton.innerHTML = "Rate " + score + " Again";
-    var rateHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, score); };
+    var rateHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, score, renderActiveRating); };
     rateButton.addEventListener("click", rateHandler);
 
     var removeButton = document.createElement("button");
     removeButton.setAttribute("type", "button");
     removeButton.setAttribute("class", "btn btn-secondary btn-sm");
     removeButton.innerHTML = "Remove Rating";
-    var removeHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, 0); };
+    var removeHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, 0, renderActiveRating); };
     removeButton.addEventListener("click", removeHandler);
 
     var cancelButton = document.createElement("button");
@@ -317,24 +379,24 @@ function addFilmlistListener(elementId) {
 function addStarListeners(el, active) {
     var stars = el.getElementsByClassName("rating-star");
     for (i = 0; i < stars.length; i++) {
-        addStarListener(stars[i].getAttribute("id"), active);
+        addStarListener(stars[i], active);
     }
 }
 
-function addStarListener(elementId, active) {
-	var star = document.getElementById(elementId);
-	if (star != null) {
-		var filmId = star.getAttribute('data-film-id');
-		var uniqueName = star.getAttribute('data-uniquename');
-		var score = star.getAttribute('data-score');
+function addStarListener(starEl, active) {
+	if (starEl != null) {
+		const filmId = starEl.getAttribute('data-film-id');
+		const uniqueName = starEl.getAttribute('data-uniquename');
+		const score = starEl.getAttribute('data-score');
+        const ratingIndex = starEl.getAttribute("data-index");
 
-		var mouseoverHandler = function () { renderYourScore(uniqueName, score, 'new'); };
-		var mouseoutHandler = function () { renderYourScore(uniqueName, score, 'original'); };
-		var clickHandler = function () { clickStar(filmId, uniqueName, score, active); };
+		const mouseoverHandler = function () { renderYourScore(uniqueName, score, 'new', ratingIndex); };
+		const mouseoutHandler = function () { renderYourScore(uniqueName, score, 'original', ratingIndex); };
+		const clickHandler = function () { clickStar(filmId, uniqueName, score, active, ratingIndex); };
 
-        star.addEventListener("mouseover", mouseoverHandler);
-        star.addEventListener("mouseout", mouseoutHandler);
-        star.addEventListener("click", clickHandler);
+        starEl.addEventListener("mouseover", mouseoverHandler);
+        starEl.addEventListener("mouseout", mouseoutHandler);
+        starEl.addEventListener("click", clickHandler);
 	}
 }
 
@@ -443,7 +505,7 @@ function renderFilmDetail(film, dropdownEl) {
     dropdownEl.appendChild(buildFilmDetailElement(film));
     dropdownEl.style.display = "block";
 
-    renderStars(film);
+    renderStarsForOneRating(film);
     renderStreams(film, true);
     renderFilmlists(film.filmlists, film.filmId);
 }
@@ -466,6 +528,7 @@ function renderRatingHistory(filmId, rsSource) {
     const ratingHistoryEl = document.getElementById(`rating-history-${filmId}`);
     const ratingHistoryMenuEl = document.getElementById(`rating-history-menu-ref-${filmId}`);
 
+    ratingHistoryMenuEl.innerHTML = "";
     let ratingIndex = 0;
 
     if (activeRating.yourScore > 0) {

@@ -7,10 +7,11 @@ function buildRatingElement(film, ratingDate = null)
     }
 
     const rsUniqueName = rsSource.uniqueName;
+    const ratingIndex = -1;
 
     const starsEl = document.createElement("ratingStars");
     starsEl.setAttribute("class", "rating-stars");
-    starsEl.setAttribute("id", `rating-stars-${rsUniqueName}`);
+    starsEl.setAttribute("id", `rating-stars-${rsUniqueName}-${ratingIndex}`);
 
     return starsEl;
 }
@@ -86,38 +87,7 @@ function buildRatingHistoryElement(film)
     return historyEl;
 }
 
-function addListenersForEditStars(el)
-{
-    if (el == null) {
-        return;
-    }
-
-    const stars = el.getElementsByClassName("rating-star");
-    for (i = 0; i < stars.length; i++) {
-        addListenersForOneEditStar(stars[i]);
-    }
-}
-
-function addListenersForOneEditStar(starEl)
-{
-    if (starEl == null) {
-        return;
-    }
-
-    const filmId = starEl.getAttribute('data-film-id');
-    const uniqueName = starEl.getAttribute('data-uniquename');
-    const score = starEl.getAttribute('data-score');
-
-    const mouseoverHandler = function () { renderYourScore(uniqueName, score, 'new'); };
-    const mouseoutHandler = function () { renderYourScore(uniqueName, score, 'original'); };
-    const clickHandler = function () { clickStar(filmId, uniqueName, score, active); };
-
-    starEl.addEventListener("mouseover", mouseoverHandler);
-    starEl.addEventListener("mouseout", mouseoutHandler);
-    starEl.addEventListener("click", clickHandler);
-}
-
-function renderRatingDate(film) {
+function renderRatingDate(film, ratingIndex = -1) {
     const rsSource = getSourceJson(film, "RatingSync");
     if (!rsSource || rsSource == "undefined") {
         return null;
@@ -126,12 +96,21 @@ function renderRatingDate(film) {
     const uniqueName = rsSource.uniqueName;
     const yourRatingDate = rsSource.rating.yourRatingDate;
 
-    const ratingDateEl = document.getElementById("rating-date-" + uniqueName);
+    let dateElId = `rating-date-${uniqueName}-${ratingIndex}`;
+
+    const ratingDateEl = document.getElementById(dateElId);
     if (!ratingDateEl) {
         return;
     }
 
-    ratingDateEl.innerHTML = getRatingDateMessageText(yourRatingDate);
+    if ( pageId == SITE_PAGE.Edit ) {
+        // This is the film edit page. Just show the date.
+        ratingDateEl.innerHTML = formatRatingDate(yourRatingDate);
+    }
+    else {
+        // This is a page with film details (like detail, ratings and userlist). Show the date with some more text.
+        ratingDateEl.innerHTML = getRatingDateMessageText(yourRatingDate);
+    }
 }
 
 function getRatingDateMessageText(yourRatingDate) {
@@ -160,15 +139,41 @@ function formatRatingDate(date) {
     return dateStr;
 }
 
-function renderStars(film, active = true) {
-    const rsSource = getSourceJson(film, "RatingSync");
-    var uniqueName = rsSource.uniqueName;
-    var yourScore = rsSource.rating.yourScore;
+/**
+ * Used as a callback from rateFilm()
+ *
+ * @param film
+ * @param index Ignored
+ */
+function renderActiveRating(film, index) {
+    renderStarsForOneRating(film);
+    renderRatingDate(film);
+}
 
-    var ratingStarsEl = document.getElementById("rating-stars-" + uniqueName);
+function renderStarsForOneRating(film, ratingIndex = -1) {
+    const rsSource = getSourceJson(film, "RatingSync");
+    const uniqueName = rsSource.uniqueName;
+
+    let rating;
+    ratingIndex = parseInt(ratingIndex);
+    if ( ratingIndex == NaN || ratingIndex < 1 ) {
+        // Active rating
+        rating = rsSource?.rating;
+    }
+    else {
+        // Archived rating
+        rating = rsSource?.archive[ratingIndex - 1];
+    }
+
+    const yourScore = rating?.yourScore;
+    const ratingDate = rating?.yourRatingDate;
+
+    const ratingStarsElId = `rating-stars-${uniqueName}-${ratingIndex}`;
+    let ratingStarsEl = document.getElementById(ratingStarsElId);
     if (!ratingStarsEl) {
         return;
     }
+    ratingStarsEl.innerHTML = "";
 
     // The score is shown backwards
     var showYourScore = yourScore;
@@ -178,32 +183,69 @@ function renderStars(film, active = true) {
         showYourScore = "-";
     }
 
-    var starsHtml = "";
+    const scoreEl = document.createElement("score");
+    const scoreInfoEl = document.createElement("div");
+    const dateInfoEl = document.createElement("div");
+
+    scoreEl.innerHTML = `<of-possible>01/</of-possible><your-score id="your-score-${uniqueName}-${ratingIndex}">${showYourScore}</your-score>\n`;
+    scoreInfoEl.setAttribute("id", `original-score-${uniqueName}-${ratingIndex}`);
+    scoreInfoEl.setAttribute("data-score", showYourScore);
+    scoreInfoEl.setAttribute("hidden", true);
+    dateInfoEl.setAttribute("id", `original-date-${uniqueName}-${ratingIndex}`);
+    dateInfoEl.setAttribute("data-date", ratingDate);
+    dateInfoEl.setAttribute("hidden", true);
+
+    ratingStarsEl.appendChild(scoreEl);
+    ratingStarsEl.appendChild(scoreInfoEl);
+    ratingStarsEl.appendChild(dateInfoEl);
+
     var fullStars = yourScore;
     var emptyStars = 10 - yourScore;
     var starScore = 10;
     while (emptyStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star fa-star far fa-xs' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'></span>";
+        const starEl = buildStarElement(film.filmId, uniqueName, ratingDate, starScore, ratingIndex);
+        starEl.setAttribute("class", "rating-star fa-star far fa-xs");
+        ratingStarsEl.appendChild(starEl);
         emptyStars = emptyStars - 1;
         starScore = starScore - 1;
     }
     while (fullStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star fa-star fas fa-xs' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'></span>";
+        const starEl = buildStarElement(film.filmId, uniqueName, ratingDate, starScore, ratingIndex);
+        starEl.setAttribute("class", "rating-star fa-star fas fa-xs");
+        ratingStarsEl.appendChild(starEl);
         fullStars = fullStars - 1;
         starScore = starScore - 1;
     }
 
-    var html = "";
-    html = html + "    <score>\n";
-    html = html + "      <of-possible>01/</of-possible><your-score id='your-score-" + uniqueName + "'>" + showYourScore + "</your-score>\n";
-    html = html + "    </score>\n";
-    html = html +      starsHtml + "\n";
-    html = html + "    <div id='original-score-" + uniqueName + "' data-score='" + showYourScore + "' hidden ></div>\n";
-
-    ratingStarsEl.innerHTML = html;
+    const active = ratingIndex < 0 ? true :  false;
     addStarListeners(ratingStarsEl, active);
 
-    if (film.filmId > 0) {
+    if ( pageId != SITE_PAGE.Edit && film.filmId > 0 ) {
         renderRatingHistory(film.filmId, rsSource);
     }
 }
+
+/**
+ * Used as a callback from rateFilm()
+ *
+ * @param film
+ * @param index
+ */
+function renderEditRating(film, index) {
+    renderStarsForOneRating(film, index);
+    renderRatingDate(film, index);
+}
+
+function buildStarElement(filmId, uniqueName, date, score, ratingIndex) {
+    const starEl = document.createElement("span");
+    starEl.setAttribute("data-film-id", filmId);
+    starEl.setAttribute("data-uniquename", uniqueName);
+    starEl.setAttribute("data-date", date);
+    starEl.setAttribute("data-index", ratingIndex);
+    starEl.setAttribute("class", "rating-star fa-star fas fa-xs");
+    starEl.setAttribute("id", `rate-${uniqueName}-${score}-${ratingIndex}`);
+    starEl.setAttribute("data-score", score);
+
+    return starEl;
+}
+

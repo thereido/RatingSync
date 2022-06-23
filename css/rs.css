@@ -400,6 +400,15 @@ detail-episode-rating {
   /* background-image is in the colors area in this file */
 }
 
+.alert-placeholder {
+    position: fixed;
+    top: 8px;
+    left: 50%;
+    width: 60%;
+    margin-left: -30%;
+    z-index: 5;
+}
+
 /* Small */
 @media (min-width:576px) {
 }

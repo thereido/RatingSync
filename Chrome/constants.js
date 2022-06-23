@@ -30,3 +30,14 @@ const SOURCE_NAME = {
     TMDb: "TMDb",
     OMDb: "OMDb"
 }
+
+const ALERT_LEVEL = {
+    primary: 'primary',
+    secondary: 'secondary',
+    success: 'success',
+    danger: 'danger',
+    warning: 'warning',
+    info: 'info',
+    light: 'light',
+    dark: 'dark'
+}

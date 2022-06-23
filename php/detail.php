@@ -58,7 +58,9 @@ $pageFooter = getPageFooter();
     <?php echo $pageHeader; ?>
     
     <div id="debug" class="container"></div>
-    
+
+    <div id="alert-placeholder" class="alert-placeholder"></div>
+
     <div class="row pt-3" id="detail-film">
         <div class="col-auto mr-auto">
             <div class="card">

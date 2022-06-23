@@ -49,11 +49,14 @@ $pageFooter = getPageFooter();
     <script src="../js/RatingView.js"></script>
 </head>
 
+<body>
+
 <div class="container">
   <?php echo $pageHeader; ?>
   <?php echo $filmlistHeader; ?>
 
     <div id="empty-list" class="alert alert-info" hidden></div>
+    <div id="alert-placeholder" class="alert-placeholder"></div>
     <div id="film-table"  class="mt-3"></div>
     
   <?php echo $filmlistPagination; ?>

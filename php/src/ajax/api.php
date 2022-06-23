@@ -105,10 +105,11 @@ function api_setRating($username)
     $uniqueName = array_value_by_key("un", $_GET);
     $score = array_value_by_key("s", $_GET);
     $dateStr = array_value_by_key("d", $_GET); // Format: 2000-02-28
-    logDebug("Params fid=$filmId, un=$uniqueName, s=$score, d=$dateStr", __FUNCTION__." ".__LINE__);
+    $originalDateStr = array_value_by_key("od", $_GET); // Format: 2000-02-28
+    logDebug("Params fid=$filmId, un=$uniqueName, s=$score, d=$dateStr, od=$originalDateStr", __FUNCTION__." ".__LINE__);
 
     if (!empty($username) && !empty($filmId) && (!empty($score) || $score == 0)) {
-        $film = setRating($filmId, $score, $dateStr);
+        $film = setRating($filmId, $score, $dateStr, $originalDateStr);
     }
 
     if (empty($film)) {

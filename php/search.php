@@ -46,6 +46,7 @@ $pageFooter = getPageFooter();
 
 <div class="container">
     <?php echo $pageHeader; ?>
+    <div id="alert-placeholder" class="alert-placeholder"></div>
 
     <div class='card mt-3'>
         <div class="card-body">
