@@ -1,42 +1,60 @@
 
-function getFilmForDetailPage(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum) {
+function getFilmForFilmPage(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum) {
     var xmlhttp = new XMLHttpRequest();
-    var callbackHandler = function () { detailPageCallback(xmlhttp); };
+    var callbackHandler = function () { filmPageCallback(xmlhttp); };
     getFilmFromRs(filmId, uniqueName, imdbId, contentType, parentId, seasonNum, episodeNum, xmlhttp, callbackHandler);
 }
 
-function detailPageCallback(xmlhttp) {
+function filmPageCallback(xmlhttp) {
 	if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-        var result = JSON.parse(xmlhttp.responseText);
+        const result = JSON.parse(xmlhttp.responseText);
         if (result.Success != "false" && result.filmId != "undefined") {
-            var film = result;
+            const film = result;
             contextData.films.push(film);
-            var filmEl = document.getElementById("detail-film");
-            renderRsFilmDetails(film, filmEl);
+            const filmEl = document.getElementById("detail-film");
 
-            if (film.contentType == "TvSeries" || film.contentType == "TvEpisode") {
-                // Set context data.  Series and Episode filmIds and film object.
-                if (film.contentType == "TvSeries") {
-                    // Series
-                    contextData.seriesFilmId = film.filmId;
-                    contextData.seriesFilm = film;
-                } else {
-                    // Episode
-                    contextData.seriesFilmId = film.parentId;
-                    contextData.episodeFilmId = film.filmId;
-                    contextData.episodeFilm = film;
+            // Set context data.  Series and Episode filmIds and film object.
+            populateTvContextData(film);
 
-                    // Made the series title be a link
-                    var titleEl = document.getElementsByClassName("film-title")[0];
-                    titleEl.innerHTML = "<a href='/php/detail.php?i=" + film.parentId + "&ct=" + CONTENT_TV_SERIES + "'>" + titleEl.innerHTML + "</a>";
-                }
-
-                if (pageId != SITE_PAGE.Edit) {
-                    getSeriesForDetailPage(film);
-                }
+            if (pageId == SITE_PAGE.Detail) {
+                renderRsFilmDetails(film, filmEl);
+                getSeriesForDetailPage(film);
             }
+            else if (pageId == SITE_PAGE.Edit) {
+                renderRsFilmEdit(film, filmEl);
+            }
+
+            seriesLinkForEpisode(film)
         }
 	}
+}
+
+function populateTvContextData(film) {
+    if (film.contentType != "TvSeries" && film.contentType != "TvEpisode") {
+        return;
+    }
+
+    // Set context data.  Series and Episode filmIds and film object.
+    if (film.contentType == "TvSeries") {
+        // Series
+        contextData.seriesFilmId = film.filmId;
+        contextData.seriesFilm = film;
+    } else {
+        // Episode
+        contextData.seriesFilmId = film.parentId;
+        contextData.episodeFilmId = film.filmId;
+        contextData.episodeFilm = film;
+    }
+}
+
+function seriesLinkForEpisode(film) {
+    if (film.contentType != "TvEpisode") {
+        return;
+    }
+
+    // Made the series title be a link
+    const titleEl = document.getElementsByClassName("film-title")[0];
+    titleEl.innerHTML = "<a href='/php/detail.php?i=" + getFilmParentId(film) + "&ct=" + CONTENT_TV_SERIES + "'>" + titleEl.innerHTML + "</a>";
 }
 
 function getSeriesForDetailPage() {

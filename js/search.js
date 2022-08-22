@@ -315,15 +315,15 @@ function getRatingSyncCallback(xmlhttp, filmEl, film) {
 	}
 }
 
-function renderRsFilmDetails(film, filmEl) {
-    var posterEl = filmEl.getElementsByTagName("poster")[0];
-    var imageEl = posterEl.getElementsByTagName("img")[0];
+function renderRsFilmPoster(film, filmEl) {
+    const posterEl = filmEl.getElementsByTagName("poster")[0];
+    const imageEl = posterEl.getElementsByTagName("img")[0];
     posterEl.removeChild(posterEl.getElementsByTagName("img")[0]);
 
-    var filmId = getFilmId(film);
-    var parentId = getFilmParentId(film);
-    var contentType = getFilmContentType(film);
-    
+    const filmId = getFilmId(film);
+    const parentId = getFilmParentId(film);
+    const contentType = getFilmContentType(film);
+
     if (film.image) {
         imageEl.setAttribute("src", RS_URL_BASE + film.image);
 
@@ -345,6 +345,10 @@ function renderRsFilmDetails(film, filmEl) {
     } else {
         posterEl.appendChild(imageEl);
     }
+}
+
+function renderRsFilmDetails(film, filmEl) {
+    renderRsFilmPoster(film, filmEl);
 
     var newDetailEl = buildFilmDetailElement(film);
     var detailEl = filmEl.getElementsByTagName("detail")[0];
@@ -354,13 +358,12 @@ function renderRsFilmDetails(film, filmEl) {
         filmEl.appendChild(newDetailEl);
     }
 
+    renderOneRatingStars(film);
+    renderStreams(film, true);
+    renderFilmlists(film.filmlists, film.filmId);
+
     if (pageId == SITE_PAGE.Edit) {
         renderEditRatings(filmId);
-    }
-    else {
-        renderStarsForOneRating(film);
-        renderStreams(film, true);
-        renderFilmlists(film.filmlists, film.filmId);
     }
 }
 

@@ -11,8 +11,8 @@
 .rating-stars,
 .rating-stars-noclick {
     unicode-bidi: bidi-override;
-    direction: rtl;
     font-size: 150%;
+    white-space: nowrap !important;  /* like the class "text-nowrap" */
 }
 .rating-stars > span,
 .rating-stars-noclick {
@@ -64,6 +64,11 @@ score.rating-history {
 }
 
 .btn-edit::before { box-sizing: unset; }
+
+.edit-rating-date {
+    width: 100px;
+    max-width: 100px;
+}
 
 .film-line {
     font-size: 125%;
@@ -475,13 +480,15 @@ select { background-color: var(--bg-input-text); color: var(--fg-surface-muted);
 .checkmark-off { color: var(--fg-surface-disabled); }
 .checkmark-on { color: var(--primary); }
 .dropdown-menu > .selected { background: var(--primary); color: var(--fg-surface); }
+.edit-rating-date { color: var(--fg)}
 .film-dropdown-content { background-color: var(--bg-surface); border-color: var(--border-surface); }
 .film-line > .film-title > a { color: var(--fg); }
 .footer { border-top-color: var(--footer-border); }
 .rating-history, .rating-history:disabled, .btn-rating-history, .btn-group > .btn-rating-history:not(:first-child) { color: var(--fg-surface-muted); }
 .rating-stars > span, .rating-stars-noclick, .rating-stars > score, .star { color: var(--star); }
-.rating-stars > span:hover:before, .rating-stars > span:hover ~ span:before { color: var(--primary); }
+.rating-stars > [star-highlight] { color: var(--primary); }
 .rating-stars > score > of-possible  { color: var(--fg-surface-muted); }
+.score-invisible  { color: var(--bg-surface-trans); }
 .search-suggestion-item { border-color: var(--border);}
 .stream-icon { background-color: transparent; }
 .suggestion-poster { border-color: var(--border); }

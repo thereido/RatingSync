@@ -94,7 +94,7 @@ $pageFooter = getPageFooter();
     var contextData = JSON.parse('{"films":[]}');
     var username = "<?php getUsername(); ?>";
     var seasonNumParam = "<?php echo $seasonNum; ?>";
-    getFilmForDetailPage("<?php echo $filmId; ?>", "<?php echo $uniqueName; ?>", "<?php echo $imdbId; ?>", "<?php echo $contentType; ?>", "<?php echo $parentId; ?>", "<?php echo $seasonNum; ?>", "<?php echo $episodeNum; ?>");
+    getFilmForFilmPage("<?php echo $filmId; ?>", "<?php echo $uniqueName; ?>", "<?php echo $imdbId; ?>", "<?php echo $contentType; ?>", "<?php echo $parentId; ?>", "<?php echo $seasonNum; ?>", "<?php echo $episodeNum; ?>");
 
 </script>
 

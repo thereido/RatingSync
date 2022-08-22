@@ -3,15 +3,6 @@ function buildFilmDetailElement(film) {
     const filmId = getFilmId(film);
     const title = getFilmTitle(film);
     const year = getFilmYear(film);
-    const episodeTitle = getFilmEpisodeTitle(film);
-    let season = "";
-    if (film.season) {
-        season = "Season " + film.season;
-    }
-    let episodeNumber = "";
-    if (film.episodeNumber) {
-        episodeNumber = " - Episode " + film.episodeNumber;
-    }
 
     let imdbRatingEl = null;
     const imdb = film.sources.find( function (findSource) { return findSource.name == "IMDb"; } );
@@ -109,19 +100,7 @@ function buildFilmDetailElement(film) {
         rsUniqueName = rsSource.uniqueName;
     }
 
-    let contentTypeText = "";
-    if (film.contentType && film.contentType == CONTENT_TV_SERIES) {
-        contentTypeText = " TV";
-    }
-
     const detailEl = document.createElement("detail");
-    const filmLineEl = document.createElement("div");
-    const filmTitleEl = document.createElement("span");
-    const filmYearEl = document.createElement("span");
-    const episodeTitleEl = document.createElement("episodeTitle");
-    const seasonEpisodeLineEl = document.createElement("div");
-    const seasonEl = document.createElement("season");
-    const episodeNumberEl = document.createElement("episodeNumber");
     const actionAreaEl = document.createElement("div");
     const starsContainerEl = document.createElement("div");
     const starsEl = buildRatingElement(film);
@@ -131,14 +110,8 @@ function buildFilmDetailElement(film) {
     const statusEl = document.createElement("status");
     const filmlistEl = document.createElement("filmlistContainer");
     const streamsEl = document.createElement("streams");
-    const editRatingsEl = document.createElement("div");
     const rateConfirmEl = document.createElement("div");
 
-    filmLineEl.setAttribute("class", "film-line");
-    filmTitleEl.setAttribute("class", "film-title");
-    episodeTitleEl.setAttribute("class", "tv-episode-title");
-    seasonEl.setAttribute("class", "tv-season");
-    episodeNumberEl.setAttribute("class", "tv-episodenum");
     starsContainerEl.setAttribute("class", "mt-n2 pt-2");
     thirdpartyBarEl.setAttribute("class", "thirdparty-bar pb-1");
     streamsEl.setAttribute("class", "streams");
@@ -154,42 +127,96 @@ function buildFilmDetailElement(film) {
     filmlistEl.setAttribute("id", `filmlist-container-${filmId}`);
     filmlistEl.setAttribute("align", "left");
     streamsEl.setAttribute("id", `streams-${filmId}`);
-    editRatingsEl.setAttribute("id", `edit-ratings-${filmId}`);
     rateConfirmEl.setAttribute("id", `rate-confirmation-${rsUniqueName}`);
     rateConfirmEl.setAttribute("hidden", "true");
 
+    detailEl.appendChild( buildTitleLineElement(film) );
+    detailEl.appendChild( buildEpisodeTitleLineElement(film) );
+    detailEl.appendChild( buildSeasonLineElement(film) );
+    detailEl.appendChild(actionAreaEl);
+    detailEl.appendChild(rateConfirmEl);
+    actionAreaEl.appendChild(starsContainerEl);
+    actionAreaEl.appendChild(historyEl);
+    actionAreaEl.appendChild(thirdpartyBarEl);
+    actionAreaEl.appendChild(statusEl);
+    actionAreaEl.appendChild(filmlistEl);
+    actionAreaEl.appendChild(streamsEl);
+    starsContainerEl.appendChild(starsEl);
+    thirdpartyBarEl.appendChild(justwatchLinkEl);
+    justwatchLinkEl.appendChild(justwatchImgEl);
+    // IMDb and TMDb are appended to thirdpartyBarEl above
+
+    return detailEl;
+}
+
+function buildFilmEditElement(film) {
+
+    const detailEl = document.createElement("detail");
+
+    detailEl.appendChild( buildTitleLineElement(film) );
+    detailEl.appendChild( buildEpisodeTitleLineElement(film) );
+    detailEl.appendChild( buildSeasonLineElement(film) );
+
+    return detailEl;
+}
+
+function buildTitleLineElement(film) {
+    const title = getFilmTitle(film);
+    const year = getFilmYear(film);
+
+    const filmLineEl = document.createElement("div");
+    const filmTitleEl = document.createElement("span");
+    const filmYearEl = document.createElement("span");
+
+    filmLineEl.setAttribute("class", "film-line");
+    filmTitleEl.setAttribute("class", "film-title");
+
+    let contentTypeText = "";
+    if (film.contentType && film.contentType == CONTENT_TV_SERIES) {
+        contentTypeText = " TV";
+    }
+
     filmTitleEl.innerText = title;
     filmYearEl.innerText = ` (${year})${contentTypeText}`;
-    episodeTitleEl.innerText = episodeTitle;
+
+    filmLineEl.appendChild(filmTitleEl);
+    filmLineEl.appendChild(filmYearEl);
+
+    return filmLineEl;
+}
+
+function buildEpisodeTitleLineElement(film) {
+    const episodeTitleEl = document.createElement("episodeTitle");
+    episodeTitleEl.setAttribute("class", "tv-episode-title");
+    episodeTitleEl.innerText = getFilmEpisodeTitle(film);
+
+    return episodeTitleEl;
+}
+
+function buildSeasonLineElement(film) {
+    let season = getFilmSeason(film)
+    if (season.length > 0) {
+        season = "Season " + season;
+    }
+    let episodeNumber = getFilmEpisodeNum(film);
+    if (episodeNumber) {
+        episodeNumber = " - Episode " + episodeNumber;
+    }
+
+    const seasonEpisodeLineEl = document.createElement("div");
+    const seasonEl = document.createElement("season");
+    const episodeNumberEl = document.createElement("episodeNumber");
+
+    seasonEl.setAttribute("class", "tv-season");
+    episodeNumberEl.setAttribute("class", "tv-episodenum");
+
     seasonEl.innerText = season;
     episodeNumberEl.innerText = episodeNumber;
 
-    detailEl.appendChild(filmLineEl);
-    detailEl.appendChild(episodeTitleEl);
-    detailEl.appendChild(seasonEpisodeLineEl);
-    detailEl.appendChild(actionAreaEl);
-    detailEl.appendChild(rateConfirmEl);
-    filmLineEl.appendChild(filmTitleEl);
-    filmLineEl.appendChild(filmYearEl);
     seasonEpisodeLineEl.appendChild(seasonEl);
     seasonEpisodeLineEl.appendChild(episodeNumberEl);
-    if (pageId == SITE_PAGE.Edit) {
-        actionAreaEl.appendChild(editRatingsEl);
-    }
-    else {
-        actionAreaEl.appendChild(starsContainerEl);
-        actionAreaEl.appendChild(historyEl);
-        actionAreaEl.appendChild(thirdpartyBarEl);
-        actionAreaEl.appendChild(statusEl);
-        actionAreaEl.appendChild(filmlistEl);
-        actionAreaEl.appendChild(streamsEl);
-        starsContainerEl.appendChild(starsEl);
-        thirdpartyBarEl.appendChild(justwatchLinkEl);
-        justwatchLinkEl.appendChild(justwatchImgEl);
-        // IMDb and TMDb are appended to thirdpartyBarEl above
-    }
 
-    return detailEl;
+    return seasonEpisodeLineEl;
 }
 
     function getFilmId(film) {
@@ -238,7 +265,7 @@ function buildFilmDetailElement(film) {
     }
 
     function getFilmSeason(film) {
-        var season = "";
+        let season = "";
         if (film.season) {
             season = film.season;
         }

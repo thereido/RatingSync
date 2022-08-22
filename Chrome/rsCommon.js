@@ -118,18 +118,6 @@ function rateFilmResponseTitle(film) {
     return film.title + seasonNumMsg + episodeNumMsg;
 }
 
-function renderYourScore(uniqueName, hoverScore, mousemove, ratingIndex = -1) {
-    let score = hoverScore;
-    if (mousemove == "original") {
-        score = document.getElementById(`original-score-${uniqueName}-${ratingIndex}`).getAttribute("data-score");
-    }
-
-    if (score == "10") {
-        score = "01";
-    }
-    document.getElementById(`your-score-${uniqueName}-${ratingIndex}`).innerHTML = score;
-}
-
 function renderStreams(film, displaySearch) {
     var rsSource = getSourceJson(film, SOURCE_NAME.Internal);
     var rsUniqueName = rsSource.uniqueName;
@@ -262,6 +250,28 @@ function clickStar(filmId, uniqueName, score, active, ratingIndex) {
     }
 }
 
+function mouseoverStar(score, uniqueName, ratingIndex) {
+    toggleHighlightStars(score, uniqueName, ratingIndex);
+    setYourScoreElementValue(score, uniqueName, ratingIndex);
+}
+
+function mouseoutStar(score, uniqueName, ratingIndex) {
+    toggleHighlightStars(score, uniqueName, ratingIndex);
+    resetYourScoreElementValue(uniqueName, ratingIndex);
+}
+
+function toggleHighlightStars(score, uniqueName, ratingIndex) {
+    const starsParent = document.getElementById(`rating-stars-${uniqueName}-${ratingIndex}`);
+
+    if (starsParent) {
+        const starEls = starsParent.children;
+
+        for (let i=0; i < score; i++) {
+            starEls[i].toggleAttribute("star-highlight");
+        }
+    }
+}
+
 function showConfirmationRating(filmId, uniqueName, score) {
     // Show confirmation dialog asking what to do
     
@@ -350,8 +360,8 @@ function getDefaultList() {
     return "Watchlist";
 }
 
-function toggleHideFilmlists(elementId) {
-	var el = document.getElementById(elementId);
+function toggleHidden(elementId) {
+    const el = document.getElementById(elementId);
     el.hidden = !el.hidden;
 }
 
@@ -390,8 +400,8 @@ function addStarListener(starEl, active) {
 		const score = starEl.getAttribute('data-score');
         const ratingIndex = starEl.getAttribute("data-index");
 
-		const mouseoverHandler = function () { renderYourScore(uniqueName, score, 'new', ratingIndex); };
-		const mouseoutHandler = function () { renderYourScore(uniqueName, score, 'original', ratingIndex); };
+		const mouseoverHandler = function () {  mouseoverStar(score, uniqueName, ratingIndex); };
+		const mouseoutHandler = function () { mouseoutStar(score, uniqueName, ratingIndex); };
 		const clickHandler = function () { clickStar(filmId, uniqueName, score, active, ratingIndex); };
 
         starEl.addEventListener("mouseover", mouseoverHandler);
@@ -505,7 +515,7 @@ function renderFilmDetail(film, dropdownEl) {
     dropdownEl.appendChild(buildFilmDetailElement(film));
     dropdownEl.style.display = "block";
 
-    renderStarsForOneRating(film);
+    renderOneRatingStars(film);
     renderStreams(film, true);
     renderFilmlists(film.filmlists, film.filmId);
 }
@@ -530,6 +540,17 @@ function renderRatingHistory(filmId, rsSource) {
 
     ratingHistoryMenuEl.innerHTML = "";
     let ratingIndex = 0;
+
+    const historyLineEl = document.createElement("div");
+    const historyEditBtnEl = document.createElement("button");
+
+    historyLineEl.setAttribute("class", "d-flex flex-row-reverse px-1");
+    historyEditBtnEl.setAttribute("class", "btn-edit btn far fa-solid fa-pencil fa-sm pr-0");
+    historyEditBtnEl.setAttribute("type", "submit");
+    historyEditBtnEl.setAttribute("id", `rating-history-edit-${filmId}`);
+
+    historyLineEl.appendChild(historyEditBtnEl);
+    ratingHistoryMenuEl.appendChild(historyLineEl);
 
     if (activeRating.yourScore > 0) {
         renderHistoryLine(ratingHistoryMenuEl, filmId, activeRating, ratingIndex);
@@ -569,18 +590,12 @@ function renderHistoryLine(parentEl, filmId, rating, ratingIndex) {
     const starsEl = document.createElement("div");
     const dateAndButtonEl = document.createElement("div");
     const dateEl = document.createElement("span");
-    const editButtonEl = document.createElement("button");
 
     historyLineEl.setAttribute("class", "container-flex py-1");
     flexContainerEl.setAttribute("class", "d-flex justify-content-between");
     starsEl.setAttribute("class", "px-1");
     dateAndButtonEl.setAttribute("class", "px-1");
     dateEl.setAttribute("class", "small");
-    editButtonEl.setAttribute("class", "btn-edit btn far fa-solid fa-pencil fa-sm pr-0");
-    editButtonEl.setAttribute("type", "submit");
-    editButtonEl.setAttribute("onclick", `submitRatingHistory(${filmId}, ${ratingIndex});`);
-    editButtonEl.setAttribute("id", `rating-history-${filmId}-${ratingIndex}`);
-    editButtonEl.setAttribute("data-history-index", `${ratingIndex}`);
 
     for (let i = 0; i < 5; i++) {
         const starEl = document.createElement("i");
@@ -606,13 +621,4 @@ function renderHistoryLine(parentEl, filmId, rating, ratingIndex) {
     flexContainerEl.appendChild(starsEl);
     flexContainerEl.appendChild(dateAndButtonEl);
     dateAndButtonEl.appendChild(dateEl);
-    dateAndButtonEl.appendChild(editButtonEl);
-}
-
-function submitRatingHistory(filmId, ratingIndex) {
-    const formEl = document.forms[`rating-history-form-${filmId}`];
-
-    formEl[`param-rating-history-index-${filmId}`].value = ratingIndex;
-
-    formEl.submit();
 }

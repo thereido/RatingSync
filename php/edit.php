@@ -50,6 +50,16 @@ $pageFooter = getPageFooter();
                         <detail id="detail"></detail>
                     </div>
                 </div>
+                <div class="mt-3 row mx-0">
+                    <div class="col-auto ml-auto">
+                        <a href="/php/managelists.php?nl=1">
+                            <button class="btn btn-primary fas fa-plus fa-xs" aria-hidden="true"></button>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="edit-ratings" class="mt-1">
+                </div>
             </div>
         </div>
     </div>
