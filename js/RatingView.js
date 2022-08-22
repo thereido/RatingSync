@@ -1,13 +1,13 @@
 
 function buildRatingElement(film, ratingDate = null)
 {
-    const rsSource = getSourceJson(film, "RatingSync");
-    if (!rsSource || rsSource == "undefined") {
-        return null;
-    }
-
-    const rsUniqueName = rsSource.uniqueName;
+    let rsUniqueName = "";
     const ratingIndex = -1;
+
+    const rsSource = getSourceJson(film, "RatingSync");
+    if (rsSource && rsSource != "undefined") {
+        rsUniqueName = rsSource.uniqueName;
+    }
 
     const starsEl = document.createElement("ratingStars");
     starsEl.setAttribute("class", "rating-stars");
@@ -18,16 +18,20 @@ function buildRatingElement(film, ratingDate = null)
 
 function buildRatingHistoryElement(film)
 {
+    const filmId = getFilmId(film);
+    const historyEl = document.createElement("div");
+    historyEl.setAttribute("class", "btn-group rating-history");
+    historyEl.setAttribute("id", `rating-history-${filmId}`);
+    historyEl.setAttribute("hidden", "true");
+
     const rsSource = getSourceJson(film, "RatingSync");
     if (!rsSource || rsSource == "undefined") {
-        return null;
+        return historyEl;
     }
 
-    const filmId = getFilmId(film);
     const rsUniqueName = rsSource.uniqueName;
     const dateStr = getRatingDateMessageText(rsSource.rating.yourRatingDate);
 
-    const historyEl = document.createElement("div");
     const historyFlexEl = document.createElement("div");
     const historyRatingDateBtnEl = document.createElement("button");
     const historyRatingDateEl = document.createElement("rating-date");
@@ -39,7 +43,6 @@ function buildRatingHistoryElement(film)
     const historyFormInputIndexEl = document.createElement("input");
     const historyMenuEl = document.createElement("div");
 
-    historyEl.setAttribute("class", "btn-group rating-history");
     historyFlexEl.setAttribute("class", "d-flex flex-row");
     historyRatingDateBtnEl.setAttribute("class", "rating-history btn pl-0 pr-1 py-0");
     historyRatingDateEl.setAttribute("class", "small");
@@ -48,8 +51,6 @@ function buildRatingHistoryElement(film)
     historyCaretEl.setAttribute("class", "fas fa-caret-down");
     historyMenuEl.setAttribute("class", "dropdown-menu");
 
-    historyEl.setAttribute("id", `rating-history-${filmId}`);
-    historyEl.setAttribute("hidden", "true");
     historyRatingDateBtnEl.setAttribute("type", "button");
     historyRatingDateBtnEl.setAttribute("disabled", "true");
     historyRatingDateEl.setAttribute("id", `rating-date-${rsUniqueName}`);
@@ -292,6 +293,7 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, ratingIndex) {
     dateEl.setAttribute("class", "fa-md");
     ratingStarsEl.setAttribute("id", `rating-stars-${uniqueName}-${ratingIndex}`);
     ratingStarsEl.setAttribute("class", "rating-stars");
+    deleteBtnEl.setAttribute("id", `rating-delete-${uniqueName}-${ratingIndex}`);
     deleteBtnEl.setAttribute("class", "btn btn-danger far fa-trash-alt fa-md");
 
     // Append elements
@@ -366,7 +368,7 @@ function setYourScoreElementValue(score, uniqueName, ratingIndex, yourScoreEl = 
 
     scoreDigit1.setAttribute("class", "score-invisible");
 
-    if (score == null || score == "") {
+    if ( isNaN(score) || score < 1 ) {
         score = "-";
     }
     else if (score == 10) {
@@ -391,7 +393,7 @@ function resetYourScoreElementValue(uniqueName, ratingIndex) {
 function getRatingFromSource(source, ratingIndex = -1) {
     let rating;
     ratingIndex = parseInt(ratingIndex);
-    if ( ratingIndex == NaN || ratingIndex < 1 ) {
+    if ( isNaN(ratingIndex) || ratingIndex < 1 ) {
         // Active rating
         rating = source?.rating;
     }
