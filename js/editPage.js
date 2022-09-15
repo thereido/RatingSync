@@ -18,3 +18,10 @@ function renderRsFilmEdit(film, filmEl) {
 
     renderEditRatings(filmId);
 }
+
+function createRating() {
+
+    alert("I pretended to create a rating");
+    $('#new-rating-modal').modal('hide');
+
+}

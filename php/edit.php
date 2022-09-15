@@ -13,6 +13,11 @@ $ratingIndex = array_value_by_key("ri", $_GET);
 
 $film = Film::getFilmFromDb($filmId, $username);
 
+$ratingTitle = $film->getEpisodeTitle();
+if ( empty($ratingTitle) ) {
+    $ratingTitle = $film->getTitle();
+}
+
 $pageHeader = getPageHeader();
 $pageFooter = getPageFooter();
 ?>
@@ -50,15 +55,34 @@ $pageFooter = getPageFooter();
                         <detail id="detail"></detail>
                     </div>
                 </div>
-                <div class="mt-3 row mx-0">
+                <div class="mt-3 row mx-0" id="add-rating-button">
                     <div class="col-auto ml-auto">
-                        <a href="/php/managelists.php?nl=1">
-                            <button class="btn btn-primary fas fa-plus fa-xs" aria-hidden="true"></button>
-                        </a>
+                        <button class="btn btn-primary fas fa-plus fa-xs" data-toggle="modal" data-target="#new-rating-modal" aria-hidden="true"></button>
                     </div>
                 </div>
 
                 <div id="edit-ratings" class="mt-1">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="new-rating-modal" tabindex="-1" role="dialog" aria-labelledby="new-rating-modal-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h5>Rate</h5>
+                    <h6><?php echo $ratingTitle; ?></h6>
+                    <input type="text" id="new-rating-filmid" value="<?php echo $filmId; ?>" hidden>
+                    <input type="text" id="new-rating-date" placeholder="m/d/yyyy" value="<?php echo date_create()->format('n/j/Y'); ?>">
+                    <input type="text" id="new-rating-score">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button id="new-rating-modal-submit" type="button" class="btn btn-primary" onClick="createRating()">Submit</button>
                 </div>
             </div>
         </div>
