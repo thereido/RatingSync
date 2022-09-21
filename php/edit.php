@@ -12,6 +12,7 @@ $filmId = array_value_by_key("i", $_GET);
 $ratingIndex = array_value_by_key("ri", $_GET);
 
 $film = Film::getFilmFromDb($filmId, $username);
+$internalUniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
 
 $ratingTitle = $film->getEpisodeTitle();
 if ( empty($ratingTitle) ) {
@@ -77,12 +78,22 @@ $pageFooter = getPageFooter();
                     <h5>Rate</h5>
                     <h6><?php echo $ratingTitle; ?></h6>
                     <input type="text" id="new-rating-filmid" value="<?php echo $filmId; ?>" hidden>
+                    <input type="text" id="new-rating-uniquename" value="<?php echo $internalUniqueName; ?>" hidden>
                     <input type="text" id="new-rating-date" placeholder="m/d/yyyy" value="<?php echo date_create()->format('n/j/Y'); ?>">
-                    <input type="text" id="new-rating-score">
+                    <input type="text" id="new-rating-score" value="0" hidden="true">
+                    <rating-stars id="new-rating-stars" class="rating-stars">
+                        <span class="rating-star fa-star far fa-xs" id="new-rating-star-1" data-score="1" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-2" data-score="2" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-3" data-score="3" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-4" data-score="4" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-5" data-score="5" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-6" data-score="6" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-7" data-score="7" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-8" data-score="8" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-9" data-score="9" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-10" data-score="10" aria-hidden="true"></span>
+                        <score class="pl-1">
+                            <yourscore id="new-rating-your-score">
+                                <span class="score-invisible">1</span><span>-</span>
+                            </yourscore>
+                            <of-possible>/10</of-possible>
+                        </score>
+                    </rating-stars>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button id="new-rating-modal-submit" type="button" class="btn btn-primary" onClick="createRating()">Submit</button>
+                    <button id="new-rating-modal-submit" type="button" class="btn btn-primary" onClick="editRatingCreate()">Submit</button>
                 </div>
             </div>
         </div>
@@ -97,6 +108,7 @@ $pageFooter = getPageFooter();
     var contextData = JSON.parse('{"films":[]}');
     var username = "<?php getUsername(); ?>";
     getFilmForEditPage("<?php echo $filmId; ?>", null, null, "<?php echo $film->getContentType(); ?>", "<?php echo $film->getParentId(); ?>", "<?php echo $film->getSeason(); ?>", "<?php echo $film->getEpisodeNumber(); ?>");
+    addNewRatingListeners();
 </script>
 
 </body>

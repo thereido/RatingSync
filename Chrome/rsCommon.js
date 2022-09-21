@@ -262,7 +262,10 @@ function mouseoutStar(score, uniqueName, ratingIndex) {
 
 function toggleHighlightStars(score, uniqueName, ratingIndex) {
     const starsParent = document.getElementById(`rating-stars-${uniqueName}-${ratingIndex}`);
+    toggleHighlightStars2(score, starsParent);
+}
 
+function toggleHighlightStars2(score, starsParent) {
     if (starsParent) {
         const starEls = starsParent.children;
 

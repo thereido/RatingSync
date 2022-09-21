@@ -219,7 +219,9 @@ function renderEditRatings(filmId) {
     const rsSource = film.sources.find(function (findSource) {  return findSource.name == "RatingSync"; });
     const uniqueName = rsSource.uniqueName;
 
-    renderOneRatingForEdit(editRatingsEl, film, uniqueName, -1);
+    if ( rsSource?.rating?.yourRatingDate?.length > 0 ) {
+        renderOneRatingForEdit(editRatingsEl, film, uniqueName, -1);
+    }
 
     let ratingIndex = 1;
     for (let i=0; i < rsSource.archiveCount; i++) {
@@ -271,7 +273,8 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, ratingIndex) {
     const rsSource = getSourceJson(film, "RatingSync");
     const rating = getRatingFromSource(rsSource, ratingIndex);
     const score = rating?.yourScore;
-    const ratingDate = formatRatingDate(rating?.yourRatingDate);
+    const ratingDate = rating?.yourRatingDate;
+    const ratingDateFormatted = formatRatingDate(ratingDate);
 
     // Setup hidden elements for original score & date
     const hiddenOriginalScoreEl = document.createElement("div");
@@ -295,6 +298,7 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, ratingIndex) {
     ratingStarsEl.setAttribute("class", "rating-stars");
     deleteBtnEl.setAttribute("id", `rating-delete-${uniqueName}-${ratingIndex}`);
     deleteBtnEl.setAttribute("class", "btn btn-danger far fa-trash-alt fa-md");
+    deleteBtnEl.setAttribute("onclick", `editRatingDelete(${film.filmId}, "${uniqueName}", "${ratingDate}")`);
 
     // Append elements
     parentEl.appendChild(level1RowEl);
@@ -311,7 +315,7 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, ratingIndex) {
     buttonsColEl.appendChild(deleteBtnEl);
 
     // Values
-    dateEl.innerHTML = ratingDate;
+    dateEl.innerHTML = ratingDateFormatted;
 
     renderOneRatingStars(film, ratingIndex);
 }
@@ -361,6 +365,14 @@ function buildScoreElement(score, uniqueName, ratingIndex) {
 function setYourScoreElementValue(score, uniqueName, ratingIndex, yourScoreEl = null) {
     if (yourScoreEl == null) {
         yourScoreEl = document.getElementById(`your-score-${uniqueName}-${ratingIndex}`);
+    }
+
+    setYourScoreElementValue2(score, yourScoreEl);
+}
+
+function setYourScoreElementValue2(score, yourScoreEl) {
+    if (yourScoreEl == null) {
+        return;
     }
 
     const scoreDigit1 = document.createElement("span");
