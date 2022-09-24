@@ -16,7 +16,73 @@ function renderRsFilmEdit(film, filmEl) {
 
     const filmId = getFilmId(film);
 
+    renderOneRatingStars(film);
     renderEditRatings(filmId);
+
+    addActiveButtonListeners(film);
+}
+
+function buildFilmEditElement(film) {
+
+    const detailEl = document.createElement("detail");
+
+    detailEl.appendChild( buildTitleLineElement(film) );
+    detailEl.appendChild( buildEpisodeTitleLineElement(film) );
+    detailEl.appendChild( buildSeasonLineElement(film) );
+    detailEl.appendChild( buildEditActiveRatingElement(film) );
+
+    return detailEl;
+}
+
+function buildEditActiveRatingElement(film) {
+
+    const rsSource = getSourceJson(film, "RatingSync");
+    const uniqueName = rsSource.uniqueName;
+    const activeRating = rsSource.rating;
+    const ratingScore = activeRating.yourScore;
+    const ratingDate = activeRating.yourRatingDate;
+
+    if ( ratingScore == null ) {
+        return document.createElement("div");
+    }
+
+    const starsContainerEl = document.createElement("div");
+    const starsEl = buildRatingElement(film);
+    const ratingDateLineEl = document.createElement("div")
+    const ratingDateEl = document.createElement("rating-date");
+    const dateStr = getRatingDateMessageText(ratingDate);
+    const inputDateStr = formatDateInput(ratingDate);
+    const editBtnEl = document.createElement("button");
+    const buttonsEl = document.createElement("div");
+    const deleteBtnEl = document.createElement("button");
+
+    starsContainerEl.setAttribute("class", "mt-n2 pt-2");
+    starsContainerEl.setAttribute("style", "line-height: 1");
+    ratingDateLineEl.setAttribute("class", "rating-history")
+    ratingDateEl.setAttribute("class", "small");
+    ratingDateEl.setAttribute("id", `rating-date-${uniqueName}`);
+    editBtnEl.setAttribute("class", "btn-edit btn far fa-solid fa-pencil fa-sm");
+    editBtnEl.setAttribute("id", "active-rating-edit");
+    editBtnEl.setAttribute("data-toggle", "modal");
+    editBtnEl.setAttribute("data-target", "#new-rating-modal");
+    editBtnEl.setAttribute("onclick", `populateNewRatingModal(${ratingScore}, "${inputDateStr}")`);
+    buttonsEl.setAttribute("class", "my-2");
+    deleteBtnEl.setAttribute("id", `rating-delete-${film.filmId}`);
+    deleteBtnEl.setAttribute("type", "button");
+    deleteBtnEl.setAttribute("class", "btn btn-danger btn-sm mr-1");
+
+    ratingDateEl.innerHTML = dateStr;
+    deleteBtnEl.innerHTML = "Delete";
+
+    starsContainerEl.appendChild(starsEl);
+    starsContainerEl.appendChild(ratingDateLineEl);
+    starsContainerEl.appendChild(buttonsEl);
+    ratingDateLineEl.appendChild(ratingDateEl);
+    ratingDateLineEl.appendChild(editBtnEl);
+    buttonsEl.appendChild( buildArchiveRatingButton(film.filmId, activeRating));
+    buttonsEl.appendChild(deleteBtnEl);
+
+    return starsContainerEl;
 }
 
 function addNewRatingListeners() {
@@ -84,22 +150,28 @@ function editRatingCreate() {
     const uniqueName = document.getElementById("new-rating-uniquename").value;
     const score = document.getElementById("new-rating-score").value;
     const date = document.getElementById("new-rating-date").value;
+    const originalDate = document.getElementById("new-rating-original-date").value;
 
-    rateFilm(filmId, uniqueName, score, renderNewRating, date);
-
+    rateFilm(filmId, uniqueName, score, renderNewRating, date, originalDate);
 }
 
 function renderNewRating(filmId, index) {
 
     $('#new-rating-modal').modal('hide');
-    location.reload(true);
+
+    $( document ).ready(function() {
+        setTimeout(function () {
+                location.reload(true);
+            },
+            2000);
+    });
 
 }
 
-function editRatingDelete(filmId, uniqueName, ratingDate) {
+function editRatingDelete(filmId, ratingDate, force = false) {
     const ratingDateEncoded = encodeURIComponent(ratingDate);
     const operaterId = `deleteRating-${filmId}-${ratingDateEncoded}`;
-    var xmlhttp = new XMLHttpRequest();
+    const xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             let film;
@@ -115,15 +187,121 @@ function editRatingDelete(filmId, uniqueName, ratingDate) {
                 updateContextDataFilmByFilmId(film);
                 renderAlert(`<strong>Rating deleted</strong>.`, ALERT_LEVEL.success, operaterId);
             }
-            location.reload();
+
+            $( document ).ready(function() {
+                setTimeout(function () {
+                        location.reload(true);
+                    },
+                    2000);
+            });
         }
     }
+
+    let forceParam = "false";
+    if ( force ) {
+        forceParam = "true";
+    }
+
     let params = "";
     params += `&fid=${filmId}`;
-    params += `&un=${uniqueName}`;
     params += `&s=0`;
     params += ratingDateEncoded ? `&d=${ratingDateEncoded}` : "";
     params += ratingDateEncoded ? `&od=${ratingDateEncoded}` : "";
+    params += `&force=${forceParam}`;
     xmlhttp.open("GET", RS_URL_API + "?action=setRating" + params, true);
     xmlhttp.send();
+}
+
+function showConfirmationDeleteRating(filmId, uniqueName, ratingDate, active, ratingIndex) {
+
+    // Hide the delete button
+    const deleteBtnEl = document.getElementById(`rating-delete-${uniqueName}-${ratingIndex}`)
+    deleteBtnEl.setAttribute("hidden", true);
+
+    const cancelButton = document.createElement("button");
+    const archiveButton = document.createElement("button");
+    const confirmButton = document.createElement("button");
+    const buttonParentEl = deleteBtnEl.parentElement;
+
+    // A function to undo the dialog content and show the action area
+    const undoDialogFunc = function () {
+        cancelButton.setAttribute("hidden", true);
+        archiveButton.setAttribute("hidden", true);
+        confirmButton.setAttribute("hidden", true);
+        deleteBtnEl.removeAttribute("hidden");
+    }
+
+    cancelButton.setAttribute("id", `rating-cancel-${uniqueName}-${ratingIndex}`);
+    cancelButton.setAttribute("type", "button");
+    cancelButton.setAttribute("class", "btn btn-outline-secondary btn-sm mr-1");
+    cancelButton.innerHTML = "Cancel";
+    const cancelHandler = function () { undoDialogFunc(); };
+    cancelButton.addEventListener("click", cancelHandler);
+
+    archiveButton.setAttribute("id", `rating-archive-${uniqueName}-${ratingIndex}`);
+    archiveButton.setAttribute("type", "button");
+    archiveButton.setAttribute("class", "btn btn-sm btn-warning mr-1");
+    archiveButton.innerHTML = "Archive";
+    const archiveHandler = function () { undoDialogFunc(); editRatingDelete(filmId, `${ratingDate}`, false); };
+    archiveButton.addEventListener("click", archiveHandler);
+
+    confirmButton.setAttribute("id", `rating-confirm-${uniqueName}-${ratingIndex}`);
+    confirmButton.setAttribute("type", "button");
+    confirmButton.setAttribute("class", "btn btn-danger btn-sm");
+    confirmButton.innerHTML = "Delete";
+    const confirmHandler = function () { undoDialogFunc(); editRatingDelete(filmId, `${ratingDate}`, true); };
+    confirmButton.addEventListener("click", confirmHandler);
+
+    buttonParentEl.append(cancelButton);
+    if ( active ) {
+        buttonParentEl.append(archiveButton);
+    }
+    buttonParentEl.append(confirmButton);
+}
+
+function buildArchiveRatingButton(filmId, rating) {
+
+    const btnEl = document.createElement("button");
+    btnEl.setAttribute("id", `rating-archive-${filmId}`);
+    btnEl.setAttribute("type", "button");
+    btnEl.setAttribute("class", "btn btn-info btn-sm mr-1");
+    btnEl.innerHTML = "Archive";
+
+    return btnEl;
+}
+
+function buildUnarchiveRatingButton(filmId, rating, ratingIndex = -1) {
+
+    const btnEl = document.createElement("button");
+    btnEl.setAttribute("id", `rating-activate-${filmId}-${ratingIndex}`);
+    btnEl.setAttribute("type", "button");
+    btnEl.setAttribute("class", "btn btn-info btn-sm mr-1");
+    btnEl.innerHTML = "Un-Archive";
+    const archiveHandler = function () { archiveRating(filmId, renderNewRating, rating.yourRatingDate, false, ratingIndex); };
+    btnEl.addEventListener("click", archiveHandler);
+
+    return btnEl;
+}
+
+function addActiveButtonListeners(film) {
+
+    const filmId = film?.filmId;
+    const rsSource = getSourceJson(film, "RatingSync");
+    const activeRating = rsSource?.rating;
+    const ratingDate = activeRating?.yourRatingDate;
+
+    if ( ratingDate == null || ratingDate == "undefined" ) {
+        return;
+    }
+
+    const archiveBtnEl = document.getElementById(`rating-archive-${filmId}`);
+    const deleteBtnEl = document.getElementById(`rating-delete-${filmId}`);
+
+    const archiveHandler = function () { archiveRating(filmId, renderNewRating, `${ratingDate}`, true); };
+    archiveBtnEl.addEventListener("click", archiveHandler);
+
+    const deleteHandler = function () { editRatingDelete(filmId, `${ratingDate}`, true); };
+    deleteBtnEl.addEventListener("click", deleteHandler);
+
+
 }

@@ -467,7 +467,7 @@ select { background-color: var(--bg-input-text); color: var(--fg-surface-muted);
 #header-search-suggestion { border-color: var(--border); background-color: var(--bg-input-text); }
 #header-search-suggestion a { color: var(--fg-surface-muted); }
 #header-search-suggestion a.suggestion-selected > div { background-color: var(--bg-input-text-active); color: var(--fg-surface) }
-.btn-edit { background-color: transparent; color: var(--fg-primary-alt); }
+.btn-edit { background-color: transparent; color: var(--fg-surface-muted); }
 .btn-edit:hover, .btn-edit:active, .btn-edit:focus, .btn-edit:not(:disabled):not(.disabled):active, .show > .btn-edit.dropdown-toggle, .show > .btn-edit.dropdown-toggle:focus { color: var(--primary); }
 .btn-primary > .checkmark-off { color: var(--fg-primary-disabled); }
 .btn-primary > .checkmark-on { color: var(--fg-primary-green); }

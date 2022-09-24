@@ -141,7 +141,7 @@ function formatRatingDate(date) {
  */
 function renderActiveRating(film, index) {
     renderOneRatingStars(film);
-    renderRatingDate(film);
+    renderRatingDate(film, index);
 }
 
 function renderOneRatingStars(film, ratingIndex = -1) {
@@ -200,7 +200,9 @@ function renderOneRatingStars(film, ratingIndex = -1) {
     ratingStarsEl.appendChild(originalDateEl);
 
     const active = ratingIndex < 0 ? true :  false;
-    addStarListeners(ratingStarsEl, active);
+    if ( ( pageId != SITE_PAGE.Edit || ! active ) && film.filmId > 0 ) {
+        addStarListeners(ratingStarsEl, active);
+    }
 
     if ( pageId != SITE_PAGE.Edit && film.filmId > 0 ) {
         renderRatingHistory(film.filmId, rsSource);
@@ -219,44 +221,15 @@ function renderEditRatings(filmId) {
     const rsSource = film.sources.find(function (findSource) {  return findSource.name == "RatingSync"; });
     const uniqueName = rsSource.uniqueName;
 
-    if ( rsSource?.rating?.yourRatingDate?.length > 0 ) {
-        renderOneRatingForEdit(editRatingsEl, film, uniqueName, -1);
-    }
-
     let ratingIndex = 1;
     for (let i=0; i < rsSource.archiveCount; i++) {
-        renderOneRatingForEdit(editRatingsEl, film, uniqueName, ratingIndex);
+        renderOneRatingForEdit(editRatingsEl, film, uniqueName, false, ratingIndex);
         ratingIndex++;
     }
 }
 
-function renderOneRatingForEdit1(film, uniqueName, ratingIndex) {
-    const editStarsEl = document.getElementById(`edit-stars`);
-    const editDatesEl = document.getElementById(`edit-dates`);
-    const starsDivEl = document.createElement("div");
-    const starsEl = document.createElement("ratingStars");
-    const dateDivEl = document.createElement("div");
-    const dateEl = document.createElement("small");
+function renderOneRatingForEdit(parentEl, film, uniqueName, active, ratingIndex) {
 
-    starsDivEl.setAttribute("class", "mt-n2 pt-2");
-    starsDivEl.setAttribute("style", "line-height: 1");
-    starsDivEl.setAttribute("data-index", ratingIndex);
-    starsEl.setAttribute("id", `rating-stars-${uniqueName}-${ratingIndex}`);
-    starsEl.setAttribute("class", "rating-stars");
-
-    const rsSource = getSourceJson(film, "RatingSync");
-    const rating = getRatingFromSource(rsSource, ratingIndex);
-    dateEl.innerHTML = formatRatingDate(rating?.yourRatingDate);
-
-    editStarsEl.appendChild(starsDivEl);
-    editDatesEl.appendChild(dateDivEl);
-    starsDivEl.appendChild(starsEl);
-    dateDivEl.appendChild(dateEl);
-
-    renderOneRatingStars(film, ratingIndex);
-}
-
-function renderOneRatingForEdit(parentEl, film, uniqueName, ratingIndex) {
     // Create elements
     const level1RowEl = document.createElement("div");
     const level2ColEl = document.createElement("div");
@@ -298,7 +271,17 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, ratingIndex) {
     ratingStarsEl.setAttribute("class", "rating-stars");
     deleteBtnEl.setAttribute("id", `rating-delete-${uniqueName}-${ratingIndex}`);
     deleteBtnEl.setAttribute("class", "btn btn-danger far fa-trash-alt fa-md");
-    deleteBtnEl.setAttribute("onclick", `editRatingDelete(${film.filmId}, "${uniqueName}", "${ratingDate}")`);
+    deleteBtnEl.setAttribute("onclick", `showConfirmationDeleteRating(${film.filmId}, "${uniqueName}", "${ratingDate}", ${active}, ${ratingIndex})`);
+
+    // Setup archive button
+    let archiveBtnEl = null;
+    if ( parentEl.childElementCount == 0 && ! active ) {
+        // This is the first rating and it is not active. If there is no active rating offer to activate/un-archive it.
+        const activeRating = rsSource?.rating;
+        if ( activeRating?.yourScore < 1 ) {
+            archiveBtnEl = buildUnarchiveRatingButton(film.filmId, rating, ratingIndex);
+        }
+    }
 
     // Append elements
     parentEl.appendChild(level1RowEl);
@@ -312,6 +295,9 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, ratingIndex) {
     dateColEl.appendChild(dateEl);
     ratingInfoColEl.appendChild(ratingStarsEl);
     ratingInfoColEl.appendChild(scoreEl);
+    if ( archiveBtnEl ) {
+        buttonsColEl.appendChild( archiveBtnEl );
+    }
     buttonsColEl.appendChild(deleteBtnEl);
 
     // Values
@@ -415,5 +401,17 @@ function getRatingFromSource(source, ratingIndex = -1) {
     }
 
     return rating;
+}
+
+// date format: YYYY-MM-DD
+function populateNewRatingModal(score, date) {
+
+    const scoreInputEl = document.getElementById("new-rating-score");
+    const dateInputEl = document.getElementById("new-rating-date");
+    const yourScoreEl = document.getElementById("new-rating-your-score");
+
+    scoreInputEl.value = score;
+    dateInputEl.value = date;
+    setYourScoreElementValue2(score, yourScoreEl)
 }
 

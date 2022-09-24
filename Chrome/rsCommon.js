@@ -79,7 +79,7 @@ function clearAlert(el)
     }
 }
 
-function rateFilm(filmId, uniqueName, score, callback, originalDate = null, index = null) {
+function rateFilm(filmId, uniqueName, score, callback, newDate = null, originalDate = null, index = null) {
     const operaterId = `rateFilm-${filmId}`;
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
@@ -100,14 +100,54 @@ function rateFilm(filmId, uniqueName, score, callback, originalDate = null, inde
             callback(film, index);
         }
     }
-    var params = "";
+
+    let params = "";
     params += "&json=1";
     params += `&fid=${filmId}`;
     params += `&un=${uniqueName}`;
     params += `&s=${score}`;
-    params += originalDate ? `&d=${originalDate}` : "";
+    params += newDate ? `&d=${newDate}` : "";
     params += originalDate ? `&od=${originalDate}` : "";
     xmlhttp.open("GET", RS_URL_API + "?action=setRating" + params, true);
+    xmlhttp.send();
+    renderAlert('Saving...', ALERT_LEVEL.info, operaterId, 0);
+}
+
+function archiveRating(filmId, callback, date, archiveIt = true, ratingIndex = null) {
+    const operaterId = `archiveRating-${filmId}-${ratingIndex}`;
+    const xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            let film;
+            let actionName = "archive";
+            if ( ! archiveIt ) actionName = "activate"
+            const response = JSON.parse(xmlhttp.responseText);
+            if (response.Success && response.Success == "false") {
+                film = getContextDataFilm(filmId);
+                const filmMsg = rateFilmResponseTitle(film);
+                const msg = `<strong>Unable to ${actionName} your rating</strong>.<br>"${filmMsg}"`;
+                renderAlert(msg, ALERT_LEVEL.warning, operaterId);
+            } else {
+                film = response;
+                const filmMsg = rateFilmResponseTitle(film);
+                updateContextDataFilmByFilmId(film);
+                renderAlert(`<strong>Rating ${actionName}d</strong>.<br>"${filmMsg}"`, ALERT_LEVEL.success, operaterId);
+            }
+            callback(film, ratingIndex);
+        }
+    }
+
+    let archiveParam = "0";
+    if ( archiveIt ) {
+        archiveParam = "1";
+    }
+
+    let params = "";
+    params += "&json=1";
+    params += `&fid=${filmId}`;
+    params += date ? `&d=${date}` : "";
+    params += `&archive=${archiveParam}`;
+    xmlhttp.open("GET", RS_URL_API + "?action=archiveRating" + params, true);
     xmlhttp.send();
     renderAlert('Saving...', ALERT_LEVEL.info, operaterId, 0);
 }
@@ -245,7 +285,8 @@ function clickStar(filmId, uniqueName, score, active, ratingIndex) {
     else {
         if (score != originalScore) {
             const originalDate = document.getElementById(`rate-${uniqueName}-${score}-${ratingIndex}`).getAttribute('data-date');
-            rateFilm(filmId, uniqueName, score, renderEditRating, originalDate, ratingIndex);
+            const newDate = originalDate;
+            rateFilm(filmId, uniqueName, score, renderEditRating, newDate, originalDate, ratingIndex);
         }
     }
 }
@@ -624,4 +665,26 @@ function renderHistoryLine(parentEl, filmId, rating, ratingIndex) {
     flexContainerEl.appendChild(starsEl);
     flexContainerEl.appendChild(dateAndButtonEl);
     dateAndButtonEl.appendChild(dateEl);
+}
+
+function formatDateInput(date) {
+    let dateStr = new String();
+    if (date && date != "undefined") {
+        const reDate = new RegExp("([0-9]+)-([0-9]+)-([0-9]+)");
+        const ratingYear = reDate.exec(date)[1];
+        let month = reDate.exec(date)[2];
+        let day = reDate.exec(date)[3];
+
+        if (month.length == 1) {
+            month = "0" + month;
+        }
+
+        if (day.length == 1) {
+            day = "0" + day;
+        }
+
+        dateStr = ratingYear + "-" + month + "-" + day;
+    }
+
+    return dateStr;
 }

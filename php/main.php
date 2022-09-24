@@ -297,10 +297,11 @@ function array_value_by_key($key, $a, $nullValue = null) {
  * @param $score int
  * @param $dateStr string | null
  * @param $originalDateStr string | null
+ * @param $forceDelete bool
  *
  * @return Film|null
  */
-function setRating(int $filmId, int $score, ?string $dateStr = null, ?string $originalDateStr = null) : ?Film
+function setRating(int $filmId, int $score, ?string $dateStr = null, ?string $originalDateStr = null, bool $forceDelete = false) : ?Film
 {
     if (empty($filmId)) {
         return null;
@@ -311,7 +312,7 @@ function setRating(int $filmId, int $score, ?string $dateStr = null, ?string $or
     try {
         $date = $dateStr ? new \DateTime($dateStr) : null;
         $originalDate = $originalDateStr ? new \DateTime($originalDateStr) : null;
-        Rating::saveRatingToDb($filmId, $username, $score, $date, $originalDate);
+        Rating::saveRatingToDb($filmId, $username, $score, $date, $originalDate, $forceDelete);
     }
     catch (\Exception) {
         return null;

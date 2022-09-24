@@ -1106,11 +1106,11 @@ class TmdbApiTest extends RatingSyncTestCase
                     // TMDb API source-specific
         $this->assertEquals(self::TESTFILM_PRIMARY_IMAGE, $film->getImage($sourceName), "source image");
         $this->assertEquals(self::TESTFILM_PRIMARY_TMDBID, $film->getUniqueName($sourceName), "uniqueName");
-        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, $film->getUserScore($sourceName), "user score");
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, round($film->getUserScore($sourceName), 1), "user score");
         $this->assertNull($film->getParentUniqueName($sourceName), "parent uniqueName should be null for a movie");    
                     // IMDb source-specific
         $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), "IMDb ID");
-        $this->assertEquals(round(self::TESTFILM_PRIMARY_USER_SCORE), round($film->getUserScore(Constants::SOURCE_IMDB)), "IMDb user score");    
+        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, round($film->getUserScore(Constants::SOURCE_IMDB), 1), "IMDb user score");
                     // Not available in the detail request
         $rating = $film->getRating($sourceName);
         $this->assertNull($rating->getYourScore(), 'Your Score');

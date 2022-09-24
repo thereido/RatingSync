@@ -149,17 +149,6 @@ function buildFilmDetailElement(film) {
     return detailEl;
 }
 
-function buildFilmEditElement(film) {
-
-    const detailEl = document.createElement("detail");
-
-    detailEl.appendChild( buildTitleLineElement(film) );
-    detailEl.appendChild( buildEpisodeTitleLineElement(film) );
-    detailEl.appendChild( buildSeasonLineElement(film) );
-
-    return detailEl;
-}
-
 function buildTitleLineElement(film) {
     const title = getFilmTitle(film);
     const year = getFilmYear(film);

@@ -15,6 +15,8 @@ use JetBrains\PhpStorm\Pure;
 
 require_once "Source.php";
 
+define("RATING_DATE_DB_FORMAT", "Y-m-d");
+
 /**
  * Store and retrieve rating data for one piece of content (film, tv show...)
  * on one source.  Sources like IMDb, RottenTomatoes, Jinni, etc. or a local
@@ -132,6 +134,16 @@ class Rating
     public function getYourRatingDate()
     {
         return $this->yourRatingDate;
+    }
+
+    public function getYourRatingDateString()
+    {
+        if ( empty($this->yourRatingDate) ) {
+            return null;
+        }
+
+        $format = RATING_DATE_DB_FORMAT;
+        return $this->yourRatingDate->format($format);
     }
 
     /**
@@ -328,14 +340,14 @@ class Rating
         $ratingDate = $rating->getYourRatingDate();
         $ratingDateStr = null;
         if (!empty($ratingDate)) {
-            $ratingDateStr = $ratingDate->format("Y-m-d");
+            $ratingDateStr = $ratingDate->format(RATING_DATE_DB_FORMAT);
         }
 
         // If these values are empty then use the previous rating's values
         // - score, date, suggested score
         $yourScore = !empty($yourScore) ? $yourScore : $previousRating?->getYourScore();
         $suggestedScore = !empty($suggestedScore) ? $suggestedScore : $previousRating?->getSuggestedScore();
-        $ratingDateStr = !empty($ratingDateStr) ? $ratingDateStr : $previousRating?->getYourRatingDate()?->format("Y-m-d");
+        $ratingDateStr = !empty($ratingDateStr) ? $ratingDateStr : $previousRating?->getYourRatingDate()?->format(RATING_DATE_DB_FORMAT);
         
         $columns = "user_name, source_name, film_id, active";
         $values = "'$username', '$sourceName', $filmId, $active";
@@ -375,7 +387,7 @@ class Rating
             if ( is_null($date) ) {
                 return false;
             }
-            $dateStr = $date->format("Y-m-d");
+            $dateStr = $date->format(RATING_DATE_DB_FORMAT);
 
             $whereClause = " AND active=0 AND yourRatingDate='$dateStr'";
         }
@@ -513,11 +525,17 @@ class Rating
      *
      * Delete Use cases (score 0):
      *   9) No matching date and no existing active rating: do nothing
-     *   10) newDate is null OR newDate is the same or newer than the existing active rating: Archive the existing active rating
+     *   10) newDate is null
+     *       OR newDate is the same or newer than the existing active rating and forceDelete is null/false
+     *       OR forceDelete is true and same date as the existing active rating and original date is null: Archive the existing active rating
      *     10a) newDate is null
      *     10b) newDate is the same as the existing active rating
      *     10c) Newer than the existing active rating
-     *   11) Same date as an existing archived rating: Delete
+     *     10d) forceDelete is true and same date as the existing active rating and original date is null: do nothing
+     *   11) Same date as an existing archived rating OR forceDelete is true and same date as original date and the same as the existing active rating: Delete
+     *     11a) Same date as an existing archived rating
+     *     11b) forceDelete is true and same date as original date and the same as the existing active rating
+     *     11c) forceDelete is true and same date as original date and the same as the existing active rating
      *
      * 12) Create/Update Use cases (newDate non-null, scores 1 through 10, originalDate non-null does not match any ratings): return false without doing anything
      *
@@ -526,9 +544,10 @@ class Rating
      * @param int $newScore
      * @param DateTime | null $newDate
      * @param DateTime | null $originalDate
+     * @param bool | null $forceDelete default is false
      * @return bool
      */
-    public static function saveRatingToDb(int $filmId, string $username, int $newScore, ?DateTime $newDate = null, ?DateTime $originalDate = null): bool
+    public static function saveRatingToDb(int $filmId, string $username, int $newScore, ?DateTime $newDate = null, ?DateTime $originalDate = null, bool $forceDelete = false): bool
     {
         try {
 
@@ -551,9 +570,9 @@ class Rating
         $isRatingActive = !empty($activeDate);
         $archive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
 
-        $activeDateStr = $activeDate?->format("Y-m-d");
-        $originalDateStr = $originalDate?->format("Y-m-d");
-        $newDateStr = $newDate?->format("Y-m-d");
+        $activeDateStr = $activeDate?->format(RATING_DATE_DB_FORMAT);
+        $originalDateStr = $originalDate?->format(RATING_DATE_DB_FORMAT);
+        $newDateStr = $newDate?->format(RATING_DATE_DB_FORMAT);
 
         // If using originalDate, delete the matching existing rating
         if ( $newScore != 0 && $newDate != null && $originalDateStr != null && $originalDateStr != $newDateStr ) {
@@ -567,7 +586,7 @@ class Rating
             }
             else {
                 foreach ( $archive as $archivedRating ) {
-                    if ( $archivedRating->getYourRatingDate()?->format("Y-m-d") == $originalDateStr ) {
+                    if ( $archivedRating->getYourRatingDate()?->format(RATING_DATE_DB_FORMAT) == $originalDateStr ) {
                         $originalRating = $archivedRating;
                         break;
                     }
@@ -589,7 +608,7 @@ class Rating
                 if ( $originalIsActive && count($archive) > 0 ) {
                     // Activate the newest archived rating now that the active rating was deleted.
                     // If it fails ignore it (a message would be nice).
-                    $newestArchivedDateStr = $archive[0]->getYourRatingDate()->format("Y-m-d");
+                    $newestArchivedDateStr = $archive[0]->getYourRatingDate()->format(RATING_DATE_DB_FORMAT);
                     $stmt = "UPDATE rating SET active=true WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId' AND yourRatingDate='$newestArchivedDateStr'";
                     logDebug($query, __CLASS__."::".__FUNCTION__." ".__LINE__);
                     $success = $db->exec($stmt) !== false;
@@ -613,9 +632,11 @@ class Rating
         // Delete (score 0)
         if ($newScore == 0) {
 
-            // Delete Use case - newDate is null OR newDate is the same or newer than the existing active rating: Archive the existing active rating
             if ( $isRatingActive ) {
-                if ( empty($newDate) || $newDate >= $activeRating->getYourRatingDate() ) {
+                if ( $forceDelete && $newDateStr == $originalDateStr && $originalDateStr == $activeDateStr ) {
+                    return $activeRating->deleteToDb($username, $filmId, true);
+                }
+                elseif ( empty($newDate) || $newDate >= $activeRating->getYourRatingDate() ) {
                     return $activeRating->archiveToDb($username, $filmId);
                 }
             }
@@ -670,7 +691,7 @@ class Rating
 
             $newestArchiveDateStr = "";
             foreach ( $archive as $oneArchived ) {
-                $oneDateStr = $oneArchived->getYourRatingDate()->format("Y-m-d");
+                $oneDateStr = $oneArchived->getYourRatingDate()->format(RATING_DATE_DB_FORMAT);
                 if ( $newDateStr == $oneDateStr ) {
 
                     //   - newDate same as an archived rating: Change the score
@@ -726,6 +747,79 @@ class Rating
         }
 
         return false;
+    }
+
+    /**
+     * Archive a rating or un-archive/activate it. Nothing is done unless the date
+     * matches the active rating (with archiveIt=true) or the newest archived
+     * rating (with archiveIt=false).
+     *
+     * @param int $filmId
+     * @param string $username
+     * @param int $newScore
+     * @param DateTime | null $newDate
+     * @param DateTime | null $originalDate
+     * @return bool
+     */
+    public static function archiveRatingToDb(int $filmId, string $username, DateTime $date, bool $archiveIt = true): bool
+    {
+        $activateIt = ! $archiveIt;
+
+        try {
+
+            $film = Film::getFilmFromDb($filmId, $username);
+
+        } catch (\Exception $e) {
+            logError("Error getting a Film for id=$filmId.\n" . $e->getMessage(), __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__);
+            return false;
+        }
+
+        $db = getDatabase();
+        $stmt = null;
+        $sourceName = Constants::SOURCE_RATINGSYNC;
+        $activeRating = $film->getRating($sourceName);
+        $activeDateStr = $activeRating->getYourRatingDateString();
+        $dateStr = $date->format(RATING_DATE_DB_FORMAT);
+
+        if ( $archiveIt && $activeDateStr == $dateStr ) {
+            // Archive the active rating
+
+            $stmt = "UPDATE rating SET active=false WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId' AND yourRatingDate='$activeDateStr'";
+
+        }
+        elseif ( $activateIt && empty($activeDateStr) && !empty($dateStr) ) {
+
+            $archive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
+            if ( !empty($archive) ) {
+
+                $newestArchivedRating = $archive[0];
+                $newestArchivedDateStr = $newestArchivedRating->getYourRatingDateString();
+                if ( $newestArchivedDateStr == $dateStr ) {
+
+                    $stmt = "UPDATE rating SET active=true WHERE user_name='$username' AND source_name='$sourceName' AND film_id='$filmId' AND yourRatingDate='$newestArchivedDateStr'";
+
+                }
+
+            }
+
+        }
+        else {
+            return false;
+        }
+
+        if ( empty($stmt) ) {
+            return false;
+        }
+
+        logDebug($stmt, __CLASS__."::".__FUNCTION__." ".__LINE__);
+        $success = $db->exec($stmt) !== false;
+        if (!$success) {
+            $msg = "Failed to archive or activate a rating: username=$username, filmId=$filmId, date=$dateStr";
+            logDebug($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError($msg);
+        }
+
+        return $success;
     }
 
     private static function createAndSaveToDb($sourceName, $username, $filmId, $score, $date, $archiveIt = false): bool
