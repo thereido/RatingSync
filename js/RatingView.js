@@ -412,6 +412,21 @@ function populateNewRatingModal(score, date) {
 
     scoreInputEl.value = score;
     dateInputEl.value = date;
-    setYourScoreElementValue2(score, yourScoreEl)
+    setYourScoreElementValue2(score, yourScoreEl);
+
+    for (let i = 0; i < 10; i++) {
+
+        const starScore = i + 1;
+        const starEl = document.getElementById("new-rating-star-" + starScore);
+
+        starEl.classList.remove("fas", "far");
+
+        let starClass = "far";
+        if ( i < score ) {
+            starClass = "fas";
+        }
+
+        starEl.classList.add(starClass);
+    }
 }
 
