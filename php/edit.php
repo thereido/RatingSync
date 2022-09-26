@@ -14,7 +14,7 @@ $film = Film::getFilmFromDb($filmId, $username);
 $internalUniqueName = $film->getUniqueName(Constants::SOURCE_RATINGSYNC);
 $currentRating = $film->getRating(Constants::SOURCE_RATINGSYNC);
 $currentRatingDate = $currentRating?->getYourRatingDate();
-$defaultNewRatingScore = 0;
+$defaultNewRatingScore = "6";
 if ( $currentRatingDate?->format('Ymd') == date_create()->format('Ymd') ) {
     $defaultNewRatingScore = $currentRating->getYourScore();
 }
@@ -68,7 +68,7 @@ $pageFooter = getPageFooter();
                         <h4>Rating Archive</h4>
                     </div>
                     <div class="col-auto ml-auto my-auto">
-                        <button class="btn btn-primary fas fa-plus fa-xs" data-toggle="modal" data-target="#new-rating-modal" onclick="javascript: populateNewRatingModal(<?php echo $defaultNewRatingScore; ?>, '<?php echo $defaultNewRatingDate; ?>')" aria-hidden="true"></button>
+                        <button id="edit-rating-plus-btn" class="btn btn-primary fas fa-plus fa-xs disableable" data-toggle="modal" data-target="#new-rating-modal" onclick="javascript: populateNewRatingModal(<?php echo $defaultNewRatingScore; ?>, '<?php echo $defaultNewRatingDate; ?>')" aria-hidden="true"></button>
                     </div>
                 </div>
 
@@ -92,7 +92,7 @@ $pageFooter = getPageFooter();
                         <input type="text" id="new-rating-original-date" value="<?php echo $originalRatingDateStr; ?>" hidden>
                         <input type="text" id="new-rating-uniquename" value="<?php echo $internalUniqueName; ?>" hidden>
                         <input type="date" id="new-rating-date" value="<?php echo $defaultNewRatingDate; ?>" required max="<?php echo date_create()->format('Y-m-d') ?>" min="1850-01-01">
-                        <input type="text" id="new-rating-score" value="<?php echo $defaultNewRatingScore; ?>" hidden="true">
+                        <input type="text" id="new-rating-score" value="<?php echo $defaultNewRatingScore; ?>" required" hidden>
                         <rating-stars id="new-rating-stars" class="rating-stars">
                             <span class="rating-star fa-star far fa-xs" id="new-rating-star-1" data-score="1" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-2" data-score="2" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-3" data-score="3" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-4" data-score="4" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-5" data-score="5" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-6" data-score="6" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-7" data-score="7" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-8" data-score="8" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-9" data-score="9" aria-hidden="true"></span><span class="rating-star fa-star far fa-xs" id="new-rating-star-10" data-score="10" aria-hidden="true"></span>
                             <score class="pl-1">
@@ -120,7 +120,7 @@ $pageFooter = getPageFooter();
     let pageId = SITE_PAGE.Edit;
     var contextData = JSON.parse('{"films":[]}');
     var username = "<?php getUsername(); ?>";
-    const defaultNewRatingScore = <?php echo $defaultNewRatingScore; ?>;
+    const defaultNewRatingScore = "<?php echo $defaultNewRatingScore; ?>";
     const defaultNewRatingDate = "<?php echo date_create()->format('Y-m-d'); ?>";
     getFilmForEditPage("<?php echo $filmId; ?>", null, null, "<?php echo $film->getContentType(); ?>", "<?php echo $film->getParentId(); ?>", "<?php echo $film->getSeason(); ?>", "<?php echo $film->getEpisodeNumber(); ?>");
     addNewRatingListeners();

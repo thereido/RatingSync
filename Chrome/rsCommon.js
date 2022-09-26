@@ -113,45 +113,6 @@ function rateFilm(filmId, uniqueName, score, callback, newDate = null, originalD
     renderAlert('Saving...', ALERT_LEVEL.info, operaterId, 0);
 }
 
-function archiveRating(filmId, callback, date, archiveIt = true, ratingIndex = null) {
-    const operaterId = `archiveRating-${filmId}-${ratingIndex}`;
-    const xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            let film;
-            let actionName = "archive";
-            if ( ! archiveIt ) actionName = "activate"
-            const response = JSON.parse(xmlhttp.responseText);
-            if (response.Success && response.Success == "false") {
-                film = getContextDataFilm(filmId);
-                const filmMsg = rateFilmResponseTitle(film);
-                const msg = `<strong>Unable to ${actionName} your rating</strong>.<br>"${filmMsg}"`;
-                renderAlert(msg, ALERT_LEVEL.warning, operaterId);
-            } else {
-                film = response;
-                const filmMsg = rateFilmResponseTitle(film);
-                updateContextDataFilmByFilmId(film);
-                renderAlert(`<strong>Rating ${actionName}d</strong>.<br>"${filmMsg}"`, ALERT_LEVEL.success, operaterId);
-            }
-            callback(film, ratingIndex);
-        }
-    }
-
-    let archiveParam = "0";
-    if ( archiveIt ) {
-        archiveParam = "1";
-    }
-
-    let params = "";
-    params += "&json=1";
-    params += `&fid=${filmId}`;
-    params += date ? `&d=${date}` : "";
-    params += `&archive=${archiveParam}`;
-    xmlhttp.open("GET", RS_URL_API + "?action=archiveRating" + params, true);
-    xmlhttp.send();
-    renderAlert('Saving...', ALERT_LEVEL.info, operaterId, 0);
-}
-
 function rateFilmResponseTitle(film) {
     const seasonNumMsg = film.season ? ` S${film.season}` : "";
     const episodeNumMsg = film.episodeNumber ? ` E${film.episodeNumber}` : "";
@@ -688,3 +649,18 @@ function formatDateInput(date) {
 
     return dateStr;
 }
+
+// If enable is false then the elements get disabled. Otherwise they get enabled.
+function enableElements(elements, enable = true) {
+    for (const elementsKey in elements) {
+        enableElement(elements[elementsKey], enable);
+    }
+}
+
+// If enable is false the element gets disabled. Otherwise it gets enabled.
+function enableElement(element, enable = true) {
+    if ( element ) {
+        element.disabled = ! enable;
+    }
+}
+

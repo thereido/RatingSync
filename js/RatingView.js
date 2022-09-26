@@ -243,6 +243,7 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, active, ratingIndex)
     const deleteBtnEl = document.createElement("button");
 
     // Get rating info
+    const filmId = film.filmId;
     const rsSource = getSourceJson(film, "RatingSync");
     const rating = getRatingFromSource(rsSource, ratingIndex);
     const score = rating?.yourScore;
@@ -269,8 +270,8 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, active, ratingIndex)
     dateEl.setAttribute("class", "fa-md");
     ratingStarsEl.setAttribute("id", `rating-stars-${uniqueName}-${ratingIndex}`);
     ratingStarsEl.setAttribute("class", "rating-stars");
-    deleteBtnEl.setAttribute("id", `rating-delete-${uniqueName}-${ratingIndex}`);
-    deleteBtnEl.setAttribute("class", "btn btn-danger far fa-trash-alt fa-md");
+    deleteBtnEl.setAttribute("id", `rating-delete-${filmId}-${ratingIndex}`);
+    deleteBtnEl.setAttribute("class", "btn btn-danger far fa-trash-alt fa-md disableable");
     deleteBtnEl.setAttribute("onclick", `showConfirmationDeleteRating(${film.filmId}, "${uniqueName}", "${ratingDate}", ${active}, ${ratingIndex})`);
 
     // Setup archive button
@@ -404,14 +405,16 @@ function getRatingFromSource(source, ratingIndex = -1) {
 }
 
 // date format: YYYY-MM-DD
-function populateNewRatingModal(score, date) {
+function populateNewRatingModal(score, date, originalDate = "") {
 
     const scoreInputEl = document.getElementById("new-rating-score");
     const dateInputEl = document.getElementById("new-rating-date");
+    const originalDateInputEl = document.getElementById("new-rating-original-date");
     const yourScoreEl = document.getElementById("new-rating-your-score");
 
     scoreInputEl.value = score;
     dateInputEl.value = date;
+    originalDateInputEl.value = originalDate;
     setYourScoreElementValue2(score, yourScoreEl);
 
     for (let i = 0; i < 10; i++) {

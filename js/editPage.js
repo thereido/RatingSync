@@ -61,15 +61,16 @@ function buildEditActiveRatingElement(film) {
     ratingDateLineEl.setAttribute("class", "rating-history")
     ratingDateEl.setAttribute("class", "small");
     ratingDateEl.setAttribute("id", `rating-date-${uniqueName}`);
-    editBtnEl.setAttribute("class", "btn-edit btn far fa-solid fa-pencil fa-sm");
+    editBtnEl.setAttribute("class", "btn-edit btn far fa-solid fa-pencil fa-sm disableable");
     editBtnEl.setAttribute("id", "active-rating-edit");
     editBtnEl.setAttribute("data-toggle", "modal");
     editBtnEl.setAttribute("data-target", "#new-rating-modal");
-    editBtnEl.setAttribute("onclick", `populateNewRatingModal(${ratingScore}, "${inputDateStr}")`);
+    editBtnEl.setAttribute("onclick", `populateNewRatingModal(${ratingScore}, "${inputDateStr}", "${inputDateStr}")`);
     buttonsEl.setAttribute("class", "my-2");
     deleteBtnEl.setAttribute("id", `rating-delete-${film.filmId}`);
     deleteBtnEl.setAttribute("type", "button");
-    deleteBtnEl.setAttribute("class", "btn btn-danger btn-sm mr-1");
+    deleteBtnEl.setAttribute("class", "btn btn-danger btn-sm mr-1 disableable");
+    deleteBtnEl.hidden = true;
 
     ratingDateEl.innerHTML = dateStr;
     deleteBtnEl.innerHTML = "Delete";
@@ -152,7 +153,18 @@ function editRatingCreate() {
     const date = document.getElementById("new-rating-date").value;
     const originalDate = document.getElementById("new-rating-original-date").value;
 
+    if ( score == "" || score < 1 || score > 10 || date < "1850-01-01" ) {
+        return;
+    }
+
+    disableEditPageButtons();
     rateFilm(filmId, uniqueName, score, renderNewRating, date, originalDate);
+}
+
+function disableEditPageButtons() {
+    const buttonEls = document.getElementsByClassName("disableable");
+
+    enableElements(buttonEls, false);
 }
 
 function renderNewRating(filmId, index) {
@@ -168,7 +180,7 @@ function renderNewRating(filmId, index) {
 
 }
 
-function editRatingDelete(filmId, ratingDate, force = false) {
+function editRatingDelete(filmId, ratingDate, force = false, ratingIndex = null) {
     const ratingDateEncoded = encodeURIComponent(ratingDate);
     const operaterId = `deleteRating-${filmId}-${ratingDateEncoded}`;
     const xmlhttp = new XMLHttpRequest();
@@ -209,13 +221,14 @@ function editRatingDelete(filmId, ratingDate, force = false) {
     params += ratingDateEncoded ? `&od=${ratingDateEncoded}` : "";
     params += `&force=${forceParam}`;
     xmlhttp.open("GET", RS_URL_API + "?action=setRating" + params, true);
+    disableEditPageButtons(filmId, ratingIndex);
     xmlhttp.send();
 }
 
 function showConfirmationDeleteRating(filmId, uniqueName, ratingDate, active, ratingIndex) {
 
     // Hide the delete button
-    const deleteBtnEl = document.getElementById(`rating-delete-${uniqueName}-${ratingIndex}`)
+    const deleteBtnEl = document.getElementById(`rating-delete-${filmId}-${ratingIndex}`)
     deleteBtnEl.setAttribute("hidden", true);
 
     const cancelButton = document.createElement("button");
@@ -233,23 +246,23 @@ function showConfirmationDeleteRating(filmId, uniqueName, ratingDate, active, ra
 
     cancelButton.setAttribute("id", `rating-cancel-${uniqueName}-${ratingIndex}`);
     cancelButton.setAttribute("type", "button");
-    cancelButton.setAttribute("class", "btn btn-outline-secondary btn-sm mr-1");
+    cancelButton.setAttribute("class", "btn btn-outline-secondary btn-sm mr-1 disableable");
     cancelButton.innerHTML = "Cancel";
     const cancelHandler = function () { undoDialogFunc(); };
     cancelButton.addEventListener("click", cancelHandler);
 
     archiveButton.setAttribute("id", `rating-archive-${uniqueName}-${ratingIndex}`);
     archiveButton.setAttribute("type", "button");
-    archiveButton.setAttribute("class", "btn btn-sm btn-warning mr-1");
+    archiveButton.setAttribute("class", "btn btn-sm btn-warning mr-1 disableable");
     archiveButton.innerHTML = "Archive";
-    const archiveHandler = function () { undoDialogFunc(); editRatingDelete(filmId, `${ratingDate}`, false); };
+    const archiveHandler = function () { undoDialogFunc(); editRatingDelete(filmId, `${ratingDate}`, false, `${ratingIndex}`); };
     archiveButton.addEventListener("click", archiveHandler);
 
     confirmButton.setAttribute("id", `rating-confirm-${uniqueName}-${ratingIndex}`);
     confirmButton.setAttribute("type", "button");
-    confirmButton.setAttribute("class", "btn btn-danger btn-sm");
+    confirmButton.setAttribute("class", "btn btn-danger btn-sm disableable");
     confirmButton.innerHTML = "Delete";
-    const confirmHandler = function () { undoDialogFunc(); editRatingDelete(filmId, `${ratingDate}`, true); };
+    const confirmHandler = function () { undoDialogFunc(); editRatingDelete(filmId, `${ratingDate}`, true, `${ratingIndex}`); };
     confirmButton.addEventListener("click", confirmHandler);
 
     buttonParentEl.append(cancelButton);
@@ -264,7 +277,7 @@ function buildArchiveRatingButton(filmId, rating) {
     const btnEl = document.createElement("button");
     btnEl.setAttribute("id", `rating-archive-${filmId}`);
     btnEl.setAttribute("type", "button");
-    btnEl.setAttribute("class", "btn btn-info btn-sm mr-1");
+    btnEl.setAttribute("class", "btn btn-info btn-sm mr-1 disableable");
     btnEl.innerHTML = "Archive";
 
     return btnEl;
@@ -302,6 +315,45 @@ function addActiveButtonListeners(film) {
 
     const deleteHandler = function () { editRatingDelete(filmId, `${ratingDate}`, true); };
     deleteBtnEl.addEventListener("click", deleteHandler);
+}
 
+function archiveRating(filmId, callback, date, archiveIt = true, ratingIndex = null) {
+    const operaterId = `archiveRating-${filmId}-${ratingIndex}`;
+    const xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            let film;
+            let actionName = "archive";
+            if ( ! archiveIt ) actionName = "activate"
+            const response = JSON.parse(xmlhttp.responseText);
+            if (response.Success && response.Success == "false") {
+                film = getContextDataFilm(filmId);
+                const filmMsg = rateFilmResponseTitle(film);
+                const msg = `<strong>Unable to ${actionName} your rating</strong>.<br>"${filmMsg}"`;
+                renderAlert(msg, ALERT_LEVEL.warning, operaterId);
+            } else {
+                film = response;
+                const filmMsg = rateFilmResponseTitle(film);
+                updateContextDataFilmByFilmId(film);
+                renderAlert(`<strong>Rating ${actionName}d</strong>.<br>"${filmMsg}"`, ALERT_LEVEL.success, operaterId);
+            }
+            callback(film, ratingIndex);
+        }
+    }
 
+    let archiveParam = "0";
+    if ( archiveIt ) {
+        archiveParam = "1";
+    }
+
+    let params = "";
+    params += "&json=1";
+    params += `&fid=${filmId}`;
+    params += date ? `&d=${date}` : "";
+    params += `&archive=${archiveParam}`;
+    xmlhttp.open("GET", RS_URL_API + "?action=archiveRating" + params, true);
+    disableEditPageButtons(filmId, ratingIndex);
+
+    xmlhttp.send();
+    renderAlert('Saving...', ALERT_LEVEL.info, operaterId, 0);
 }
