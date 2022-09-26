@@ -1,0 +1,5 @@
+<phpunit>
+    <php>
+        <cookie name="XDEBUG" value="PHPSTORM"/>
+    </php>
+</phpunit>

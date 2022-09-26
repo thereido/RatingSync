@@ -11,8 +11,8 @@
 .rating-stars,
 .rating-stars-noclick {
     unicode-bidi: bidi-override;
-    direction: rtl;
     font-size: 150%;
+    white-space: nowrap !important;  /* like the class "text-nowrap" */
 }
 .rating-stars > span,
 .rating-stars-noclick {
@@ -22,26 +22,52 @@
 }
 .rating-stars > span:hover:before,
 .rating-stars > span:hover ~ span:before {
-    content: "\2605";
-    position: absolute;
     /* color is in the colors area of this file */
 }
-.rating-stars > score {
+.rating-stars > score,
+score.rating-history {
     font-weight: bold;
     /* color is in the colors area of this file */
 }
-.rating-stars > score > of-possible  {
+.rating-stars > score > of-possible,
+score.rating-history {
     font-size: 75%;
     font-weight: lighter;
     /* color is in the colors area of this file */
 }
-.rating-star {
-    font-size: 110%;
+
+.rating-history {
+    line-height: .75;
 }
 
-ratingDate {
-    display:inline-block;
-    padding-top: 7px;
+.rating-history.btn-group {
+    width: 100%;
+    vertical-align: top;
+    horiz-align: left;
+}
+
+.rating-history,
+.rating-history:disabled,
+.btn-rating-history,
+.btn-group > .btn-rating-history:not(:first-child) {
+    border: none;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    /* color is in the colors area of this file */
+}
+
+.btn-rating-history:not(:disabled):not(.disabled):focus,
+.btn-rating-history:not(:disabled):not(.disabled):hover {
+    border: none;
+    box-shadow: none;
+    /* color is in the colors area of this file */
+}
+
+.btn-edit::before { box-sizing: unset; }
+
+.edit-rating-date {
+    width: 100px;
+    max-width: 100px;
 }
 
 .film-line {
@@ -379,6 +405,15 @@ detail-episode-rating {
   /* background-image is in the colors area in this file */
 }
 
+.alert-placeholder {
+    position: fixed;
+    top: 8px;
+    left: 50%;
+    width: 60%;
+    margin-left: -30%;
+    z-index: 5;
+}
+
 /* Small */
 @media (min-width:576px) {
 }
@@ -432,22 +467,28 @@ select { background-color: var(--bg-input-text); color: var(--fg-surface-muted);
 #header-search-suggestion { border-color: var(--border); background-color: var(--bg-input-text); }
 #header-search-suggestion a { color: var(--fg-surface-muted); }
 #header-search-suggestion a.suggestion-selected > div { background-color: var(--bg-input-text-active); color: var(--fg-surface) }
+.btn-edit { background-color: transparent; color: var(--fg-surface-muted); }
+.btn-edit:hover, .btn-edit:active, .btn-edit:focus, .btn-edit:not(:disabled):not(.disabled):active, .show > .btn-edit.dropdown-toggle, .show > .btn-edit.dropdown-toggle:focus { color: var(--primary); }
 .btn-primary > .checkmark-off { color: var(--fg-primary-disabled); }
 .btn-primary > .checkmark-on { color: var(--fg-primary-green); }
 .btn-primary:hover > .checkmark-off, .btn-primary:active > .checkmark-off, .btn-primary:focus > .checkmark-off { color: var(--fg-primary-alt-disabled); }
 .btn-primary:hover > .checkmark-on, .btn-primary:active > .checkmark-on, .btn-primary:focus > .checkmark-on { color: var(--fg-primary-alt-green); }
+.btn-rating-history:not(:disabled):not(.disabled):focus, .btn-rating-history:not(:disabled):not(.disabled):hover { background-color: var(--primary-alt); color: var(--fg-primary-alt); }
 .card-login { box-shadow: 0px 2px 3px 0px var(--shadow-primary); }
 .card-login > .card-header { color: var(--fg-surface); }
 .card-login > .card-header hr { background-image: -webkit-linear-gradient(left,rgba(255, 255, 255, 0),rgba(141, 104, 187),rgba(255, 255, 255, 0)); background-image: -moz-linear-gradient(left,rgba(255,255,255,0),var(--primary-alt),rgba(255,255,255,0)); background-image: -ms-linear-gradient(left,rgba(255,255,255,0),rgba(141, 104, 187),rgba(255,255,255,0)); background-image: -o-linear-gradient(left,rgba(255,255,255,0),rgba(141, 104, 187),rgba(255,255,255,0)); }
 .checkmark-off { color: var(--fg-surface-disabled); }
 .checkmark-on { color: var(--primary); }
 .dropdown-menu > .selected { background: var(--primary); color: var(--fg-surface); }
+.edit-rating-date { color: var(--fg)}
 .film-dropdown-content { background-color: var(--bg-surface); border-color: var(--border-surface); }
 .film-line > .film-title > a { color: var(--fg); }
 .footer { border-top-color: var(--footer-border); }
-.rating-stars > span, .rating-stars-noclick, .rating-stars > score { color: var(--star); }
-.rating-stars > span:hover:before, .rating-stars > span:hover ~ span:before { color: var(--primary); }
+.rating-history, .rating-history:disabled, .btn-rating-history, .btn-group > .btn-rating-history:not(:first-child) { color: var(--fg-surface-muted); }
+.rating-stars > span, .rating-stars-noclick, .rating-stars > score, .star { color: var(--star); }
+.rating-stars > [star-highlight] { color: var(--primary); }
 .rating-stars > score > of-possible  { color: var(--fg-surface-muted); }
+.score-invisible  { color: var(--bg-surface-trans); }
 .search-suggestion-item { border-color: var(--border);}
 .stream-icon { background-color: transparent; }
 .suggestion-poster { border-color: var(--border); }

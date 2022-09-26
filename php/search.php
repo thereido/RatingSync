@@ -39,12 +39,14 @@ $pageFooter = getPageFooter();
     <?php if (empty($username)) { echo '<script type="text/javascript">window.location.href = "/php/Login"</script>'; } ?>
     <script src="../js/ratings.js"></script>
     <script src="../js/film.js"></script>
+    <script src="../js/RatingView.js"></script>
 </head>
 
 <body>
 
 <div class="container">
     <?php echo $pageHeader; ?>
+    <div id="alert-placeholder" class="alert-placeholder"></div>
 
     <div class='card mt-3'>
         <div class="card-body">
@@ -62,13 +64,9 @@ $pageFooter = getPageFooter();
 </div>
 
 <script>
+    <?php echo Constants::echoJavascriptConstants(); ?>
+    let pageId = SITE_PAGE.Search;
     var contextData = JSON.parse('{"films":[]}');
-    var RS_URL_BASE = "<?php echo Constants::RS_HOST; ?>";
-    var RS_URL_API = RS_URL_BASE + "/php/src/ajax/api.php";
-    var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
-    var TMDB_API_KEY = "<?php echo Constants::TMDB_API_KEY; ?>";
-    var IMAGE_PATH_TMDBAPI = "<?php echo Constants::IMAGE_PATH_TMDBAPI; ?>";
-    var DATA_API_DEFAULT = "<?php echo Constants::DATA_API_DEFAULT; ?>";
     var username = "<?php getUsername(); ?>";
     var oldSearchQuery = "";
     var pageParamSearchDomain = "<?php echo $searchDomain; ?>";

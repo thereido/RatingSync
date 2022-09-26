@@ -21,9 +21,9 @@ function searchFilms(query, xmlhttp, callback) {
         // Search from the default data API
         var searchUrl = "";
         var searchParams = "";
-        if (DATA_API_DEFAULT == SOURCE_OMDBAPI) {
+        if (DATA_API_DEFAULT == SOURCE_NAME.OMDb) {
 
-            searchUrl = URL_SEARCH_OMDB + "&apikey=" + OMDB_API_KEY;
+            searchUrl = SEARCH_URL.OMBb + "&apikey=" + OMDB_API_KEY;
             searchParams = "&s=" + encodeURIComponent(query);
             var imdbIdIndex = query.trim().search(/^tt\d{7}\d*$/i); // "tt" followed by at least 7 digits
             if (imdbIdIndex > -1) {
@@ -32,7 +32,7 @@ function searchFilms(query, xmlhttp, callback) {
             searchUrl = searchUrl + searchParams;
 
         }
-        else if (DATA_API_DEFAULT == SOURCE_TMDBAPI) {
+        else if (DATA_API_DEFAULT == SOURCE_NAME.TMDb) {
             
             var imdbIdIndex = query.trim().search(/^tt\d{7}\d*$/i); // "tt" followed by at least 7 digits
             if (imdbIdIndex > -1) {
@@ -41,7 +41,7 @@ function searchFilms(query, xmlhttp, callback) {
                 searchUrl = URL_FIND_TMDB + "/" + imdbId + "?external_source=imdb_id";
             } else {
                 // Mulit Search
-                searchUrl = URL_SEARCH_TMDB + "&query=" + encodeURIComponent(query);
+                searchUrl = SEARCH_URL.TMDb + "&query=" + encodeURIComponent(query);
             }
 
             searchUrl = searchUrl + "&api_key=" + TMDB_API_KEY;
@@ -213,7 +213,7 @@ function renderSuggestionFilm(film, suggestionEl) {
 }
 
 function renderSuggestionRatings(film, ratingsLineEl) {
-    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+    const rsSource = getSourceJson(film, SOURCE_NAME.Internal);
     if (rsSource && rsSource != "undefined") {
         var score = null;
         if (rsSource.rating && rsSource.rating != "undefined") {
@@ -315,15 +315,15 @@ function getRatingSyncCallback(xmlhttp, filmEl, film) {
 	}
 }
 
-function renderRsFilmDetails(film, filmEl) {
-    var posterEl = filmEl.getElementsByTagName("poster")[0];
-    var imageEl = posterEl.getElementsByTagName("img")[0];
+function renderRsFilmPoster(film, filmEl) {
+    const posterEl = filmEl.getElementsByTagName("poster")[0];
+    const imageEl = posterEl.getElementsByTagName("img")[0];
     posterEl.removeChild(posterEl.getElementsByTagName("img")[0]);
 
-    var filmId = getFilmId(film);
-    var parentId = getFilmParentId(film);
-    var contentType = getFilmContentType(film);
-    
+    const filmId = getFilmId(film);
+    const parentId = getFilmParentId(film);
+    const contentType = getFilmContentType(film);
+
     if (film.image) {
         imageEl.setAttribute("src", RS_URL_BASE + film.image);
 
@@ -345,6 +345,10 @@ function renderRsFilmDetails(film, filmEl) {
     } else {
         posterEl.appendChild(imageEl);
     }
+}
+
+function renderRsFilmDetails(film, filmEl) {
+    renderRsFilmPoster(film, filmEl);
 
     var newDetailEl = buildFilmDetailElement(film);
     var detailEl = filmEl.getElementsByTagName("detail")[0];
@@ -353,10 +357,14 @@ function renderRsFilmDetails(film, filmEl) {
     } else {
         filmEl.appendChild(newDetailEl);
     }
-    
-    renderStars(film);
+
+    renderOneRatingStars(film);
     renderStreams(film, true);
     renderFilmlists(film.filmlists, film.filmId);
+
+    if (pageId == SITE_PAGE.Edit) {
+        renderEditRatings(filmId);
+    }
 }
 
 function renderNoRsFilmDetails(filmEl, film) {
@@ -385,7 +393,7 @@ function onClickSeeMore(film, filmEl, seeMoreEl) {
 
 function convertSourceDataListToRs(sourceSearchResult, sourceName, limit) {
     var films = { "films":[] }.films;
-    if (sourceName == SOURCE_OMDBAPI) {
+    if (sourceName == SOURCE_NAME.OMDb) {
         while (films.length < limit && sourceSearchResult.Search && sourceSearchResult.Search.length > films.length) {
             var sourceFilm = sourceSearchResult.Search[films.length];
             films[films.length] = convertSourceDataItemToRs(sourceFilm, sourceName);
@@ -396,7 +404,7 @@ function convertSourceDataListToRs(sourceSearchResult, sourceName, limit) {
             films[films.length] = convertSourceDataItemToRs(sourceSearchResult, sourceName);
         }
     }
-    else if (sourceName == SOURCE_TMDBAPI) {
+    else if (sourceName == SOURCE_NAME.TMDb) {
         var results = [];
         var contentType = null;
         var searchResults = sourceSearchResult.results;
@@ -428,7 +436,7 @@ function convertSourceDataListToRs(sourceSearchResult, sourceName, limit) {
 
 function convertSourceDataItemToRs(sourceFilm, sourceName) {
     var rsFilm = {};
-    if (sourceName == SOURCE_OMDBAPI) {
+    if (sourceName == SOURCE_NAME.OMDb) {
 
         // Film attrs all contentTypes use the same name
         var imdbId = sourceFilm.imdbID;
@@ -456,7 +464,7 @@ function convertSourceDataItemToRs(sourceFilm, sourceName) {
                           }
                          ];
     }
-    else if (sourceName == SOURCE_TMDBAPI) {
+    else if (sourceName == SOURCE_NAME.TMDb) {
 
         // Film attrs all contentTypes use the same name
         var sourceId = sourceFilm.id;

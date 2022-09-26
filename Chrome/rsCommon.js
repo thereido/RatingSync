@@ -1,6 +1,6 @@
 /**
  * A html file sourcing this javascript must...
- *   - Have element with id='status'
+ *   - Have element with id='alert-placeholder'
  *   - Have a javascript var contextData as JSON with films[]
  */
 var userlistsJson;
@@ -8,102 +8,119 @@ var userlistsCallbacks = [];
 var waitingForFilmlists = false;
 var contextData = JSON.parse('{"films":[]}');
 
-function renderStatus(statusText) {
-    var statusEl = document.getElementById('status');
-    if (statusEl) {
-        statusEl.textContent = statusText;
+/**
+ * renderAlert
+ *
+ * @param message
+ * @param level Use ALERT_LEVEL enum
+ * @param operationId If there will be multiple alerts as the operation progress (saving, done, etc), use a unique id for clear each stage.
+ * @param timer in milliseconds. Zero means no timer. Default is 3 seconds, or 15 seconds for a warning, and no timer for a danger level.
+ */
+function renderAlert(message, level, operationId = null, timer = null) {
+    const alertPlaceholder = document.getElementById('alert-placeholder');
+
+    if (!alertPlaceholder) {
+        return;
+    }
+
+    const wrapper = document.createElement('alert-wrapper');
+
+    if (operationId) {
+        const previousAlerts = document.getElementsByTagName('alert-wrapper');
+        for (let i=0; i < previousAlerts.length; i++) {
+            const alertEl = previousAlerts[i];
+            if (operationId == alertEl.getAttribute("data-op-id")) {
+                alertEl.remove();
+            }
+        }
+
+        wrapper.setAttribute("data-op-id", operationId);
+    }
+
+    const newAlertEl = document.createElement("div");
+    const messageEl = document.createElement("span");
+    const closeBtnEl = document.createElement("button");
+    const xEl = document.createElement("span");
+
+    newAlertEl.setAttribute("class", `alert alert-${level} alert-dismissible fade in show`);
+    newAlertEl.setAttribute("role", "alert");
+    closeBtnEl.setAttribute("type", "button");
+    closeBtnEl.setAttribute("class", "close");
+    closeBtnEl.setAttribute("data-dismiss", "alert");
+    closeBtnEl.setAttribute("aria-label", "Close");
+    xEl.setAttribute("aria-hidden", "true");
+
+    messageEl.innerHTML = message;
+    xEl.innerHTML = "&times;";
+
+    alertPlaceholder.append(wrapper);
+    wrapper.appendChild(newAlertEl);
+    newAlertEl.appendChild(messageEl);
+    newAlertEl.appendChild(closeBtnEl);
+    closeBtnEl.appendChild(xEl);
+
+    if (timer == 0 || level == ALERT_LEVEL.danger) {
+        return;
+    }
+
+    const defaultTimer = 3000;
+    const defaultWarningTimer = 15000;
+    if (!timer || timer < 0) {
+        timer = level == ALERT_LEVEL.warning ? defaultWarningTimer : defaultTimer;
+    }
+
+    setTimeout(function () { clearAlert(newAlertEl); }, timer);
+}
+
+function clearAlert(el)
+{
+    if (el) {
+        el.remove();
     }
 }
 
-function rateFilm(filmId, uniqueName, score, titleNum) {
+function rateFilm(filmId, uniqueName, score, callback, newDate = null, originalDate = null, index = null) {
+    const operaterId = `rateFilm-${filmId}`;
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            var film;
-            var response = JSON.parse(xmlhttp.responseText);
+            let film;
+            const response = JSON.parse(xmlhttp.responseText);
             if (response.Success && response.Success == "false") {
                 film = getContextDataFilm(filmId);
-                renderStatus('Error saving your rating');
+                const filmMsg = rateFilmResponseTitle(film);
+                const msg = `<strong>Unable to save your rating</strong>.<br>"${filmMsg}"`;
+                renderAlert(msg, ALERT_LEVEL.warning, operaterId);
             } else {
                 film = response;
+                const filmMsg = rateFilmResponseTitle(film);
                 updateContextDataFilmByFilmId(film);
-                renderStatus('Rating Saved');
+                renderAlert(`<strong>Rating Saved</strong>.<br>"${filmMsg}"`, ALERT_LEVEL.success, operaterId);
             }
-            renderStars(film);
-            renderRatingDate(film);
+            callback(film, index);
         }
     }
-    var params = "";
-    params = params + "&json=1";
-    params = params + "&fid=" + filmId;
-    params = params + "&un=" + uniqueName;
-    params = params + "&s=" + score;
-    if (titleNum && titleNum != "undefined") {
-        params = params + "&tn=" + titleNum;
-    }
+
+    let params = "";
+    params += "&json=1";
+    params += `&fid=${filmId}`;
+    params += `&un=${uniqueName}`;
+    params += `&s=${score}`;
+    params += newDate ? `&d=${newDate}` : "";
+    params += originalDate ? `&od=${originalDate}` : "";
     xmlhttp.open("GET", RS_URL_API + "?action=setRating" + params, true);
     xmlhttp.send();
-    renderStatus('Saving...');
+    renderAlert('Saving...', ALERT_LEVEL.info, operaterId, 0);
 }
 
-function renderYourScore(uniqueName, hoverScore, mousemove) {
-    var score = hoverScore;
-    if (mousemove == "original") {
-        score = document.getElementById("original-score-" + uniqueName).getAttribute("data-score");
-    }
-
-    if (score == "10") {
-        score = "01";
-    }
-    document.getElementById("your-score-" + uniqueName).innerHTML = score;
-}
-
-function renderStars(film) {
-    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
-    var uniqueName = rsSource.uniqueName;
-    var yourScore = rsSource.rating.yourScore;
-
-    var ratingStarsEl = document.getElementById("rating-stars-" + uniqueName);
-    if (!ratingStarsEl) {
-        return;
-    }
-    
-    // The score is shown backwards
-    var showYourScore = yourScore;
-    if (showYourScore == "10") {
-        showYourScore = "01";
-    } else if (showYourScore == null || showYourScore == "") {
-        showYourScore = "-";
-    }
-    
-    var starsHtml = "";
-    var fullStars = yourScore;
-    var emptyStars = 10 - yourScore;
-    var starScore = 10;
-    while (emptyStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'>☆</span>";
-        emptyStars = emptyStars - 1;
-        starScore = starScore - 1;
-    }
-    while (fullStars > 0) {
-        starsHtml = starsHtml + "<span class='rating-star' id='rate-" + uniqueName + "-" + starScore + "' data-film-id='" + film.filmId + "' data-uniquename='" + uniqueName + "' data-score='" + starScore + "'>★</span>";
-        fullStars = fullStars - 1;
-        starScore = starScore - 1;
-    }
-
-    var html = "";
-    html = html + "    <score>\n";
-    html = html + "      <of-possible>01/</of-possible><your-score id='your-score-" + uniqueName + "'>" + showYourScore + "</your-score>\n";
-    html = html + "    </score>\n";
-    html = html + "    " + starsHtml + "\n";
-    html = html + "    <div id='original-score-" + uniqueName + "' data-score='" + showYourScore + "' hidden ></div>\n";
-
-    ratingStarsEl.innerHTML = html;
-    addStarListeners(ratingStarsEl);
+function rateFilmResponseTitle(film) {
+    const seasonNumMsg = film.season ? ` S${film.season}` : "";
+    const episodeNumMsg = film.episodeNumber ? ` E${film.episodeNumber}` : "";
+    return film.title + seasonNumMsg + episodeNumMsg;
 }
 
 function renderStreams(film, displaySearch) {
-    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
+    var rsSource = getSourceJson(film, SOURCE_NAME.Internal);
     var rsUniqueName = rsSource.uniqueName;
 
     var streamsEl = document.getElementById("streams-"+film.filmId);
@@ -175,32 +192,6 @@ function renderStreams(film, displaySearch) {
     }
 }
 
-function renderRatingDate(film) {
-    var rsSource = film.sources.find( function (findSource) { return findSource.name == "RatingSync"; } );
-    var uniqueName = rsSource.uniqueName;
-    var yourRatingDate = rsSource.rating.yourRatingDate;
-    
-    var ratingDateEl = document.getElementById("rating-date-" + uniqueName);
-    if (!ratingDateEl) {
-        return;
-    }
-    
-    ratingDateEl.innerHTML = getRatingDateText(yourRatingDate);
-}
-
-function getRatingDateText(yourRatingDate) {
-    var dateStr = "";
-    if (yourRatingDate && yourRatingDate != "undefined") {
-        var reDate = new RegExp("([0-9]+)-([0-9]+)-([0-9]+)");
-        var ratingYear = reDate.exec(yourRatingDate)[1];
-        var month = reDate.exec(yourRatingDate)[2];
-        var day = reDate.exec(yourRatingDate)[3];
-        dateStr = "You rated this " + month + "/" + day + "/" + ratingYear;
-    }
-    
-    return dateStr;
-}
-
 function toggleFilmlist(listname, filmId, activeBtnId) {
     var defaultBtn = document.getElementById("filmlist-btn-default-" + filmId);
     var otherListsBtn = document.getElementById("filmlist-btn-others-" + filmId);
@@ -241,16 +232,52 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
     xmlhttp.send();
 }
 
-function clickStar(filmId, uniqueName, score, titleNum) {
-    var originalScore = document.getElementById("original-score-" + uniqueName).getAttribute('data-score');
-    if (score == originalScore || (score == 10 && originalScore == "01")) {
-        showConfirmationRating(filmId, uniqueName, score, titleNum);
-    } else {
-        rateFilm(filmId, uniqueName, score, titleNum);
+function clickStar(filmId, uniqueName, score, active, ratingIndex) {
+    const originalScoreEl = document.getElementById(`original-score-${uniqueName}-${ratingIndex}`);
+    const originalScore = originalScoreEl.getAttribute('data-score');
+
+    if (active) {
+        if (score == originalScore) {
+            showConfirmationRating(filmId, uniqueName, score);
+        } else {
+            rateFilm(filmId, uniqueName, score, renderActiveRating);
+        }
+    }
+    else {
+        if (score != originalScore) {
+            const originalDate = document.getElementById(`rate-${uniqueName}-${score}-${ratingIndex}`).getAttribute('data-date');
+            const newDate = originalDate;
+            rateFilm(filmId, uniqueName, score, renderEditRating, newDate, originalDate, ratingIndex);
+        }
     }
 }
 
-function showConfirmationRating(filmId, uniqueName, score, titleNum) {
+function mouseoverStar(score, uniqueName, ratingIndex) {
+    toggleHighlightStars(score, uniqueName, ratingIndex);
+    setYourScoreElementValue(score, uniqueName, ratingIndex);
+}
+
+function mouseoutStar(score, uniqueName, ratingIndex) {
+    toggleHighlightStars(score, uniqueName, ratingIndex);
+    resetYourScoreElementValue(uniqueName, ratingIndex);
+}
+
+function toggleHighlightStars(score, uniqueName, ratingIndex) {
+    const starsParent = document.getElementById(`rating-stars-${uniqueName}-${ratingIndex}`);
+    toggleHighlightStars2(score, starsParent);
+}
+
+function toggleHighlightStars2(score, starsParent) {
+    if (starsParent) {
+        const starEls = starsParent.children;
+
+        for (let i=0; i < score; i++) {
+            starEls[i].toggleAttribute("star-highlight");
+        }
+    }
+}
+
+function showConfirmationRating(filmId, uniqueName, score) {
     // Show confirmation dialog asking what to do
     
     // Hide the action area & show the dialog
@@ -270,14 +297,14 @@ function showConfirmationRating(filmId, uniqueName, score, titleNum) {
     rateButton.setAttribute("type", "button");
     rateButton.setAttribute("class", "btn btn-primary");
     rateButton.innerHTML = "Rate " + score + " Again";
-    var rateHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, score, titleNum); };
+    var rateHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, score, renderActiveRating); };
     rateButton.addEventListener("click", rateHandler);
 
     var removeButton = document.createElement("button");
     removeButton.setAttribute("type", "button");
     removeButton.setAttribute("class", "btn btn-secondary btn-sm");
     removeButton.innerHTML = "Remove Rating";
-    var removeHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, 0, titleNum); };
+    var removeHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, 0, renderActiveRating); };
     removeButton.addEventListener("click", removeHandler);
 
     var cancelButton = document.createElement("button");
@@ -338,8 +365,8 @@ function getDefaultList() {
     return "Watchlist";
 }
 
-function toggleHideFilmlists(elementId) {
-	var el = document.getElementById(elementId);
+function toggleHidden(elementId) {
+    const el = document.getElementById(elementId);
     el.hidden = !el.hidden;
 }
 
@@ -364,28 +391,27 @@ function addFilmlistListener(elementId) {
 	}
 }
 
-function addStarListeners(el) {
+function addStarListeners(el, active) {
     var stars = el.getElementsByClassName("rating-star");
     for (i = 0; i < stars.length; i++) {
-        addStarListener(stars[i].getAttribute("id"));
+        addStarListener(stars[i], active);
     }
 }
 
-function addStarListener(elementId) {    
-	var star = document.getElementById(elementId);
-	if (star != null) {
-		var filmId = star.getAttribute('data-film-id');
-		var uniqueName = star.getAttribute('data-uniquename');
-		var score = star.getAttribute('data-score');
-		var titleNum = star.getAttribute('data-title-num');
+function addStarListener(starEl, active) {
+	if (starEl != null) {
+		const filmId = starEl.getAttribute('data-film-id');
+		const uniqueName = starEl.getAttribute('data-uniquename');
+		const score = starEl.getAttribute('data-score');
+        const ratingIndex = starEl.getAttribute("data-index");
 
-		var mouseoverHandler = function () { renderYourScore(uniqueName, score, 'new'); };
-		var mouseoutHandler = function () { renderYourScore(uniqueName, score, 'original'); };
-		var clickHandler = function () { clickStar(filmId, uniqueName, score, titleNum); };
+		const mouseoverHandler = function () {  mouseoverStar(score, uniqueName, ratingIndex); };
+		const mouseoutHandler = function () { mouseoutStar(score, uniqueName, ratingIndex); };
+		const clickHandler = function () { clickStar(filmId, uniqueName, score, active, ratingIndex); };
 
-        star.addEventListener("mouseover", mouseoverHandler);
-        star.addEventListener("mouseout", mouseoutHandler);
-        star.addEventListener("click", clickHandler);
+        starEl.addEventListener("mouseover", mouseoverHandler);
+        starEl.addEventListener("mouseout", mouseoutHandler);
+        starEl.addEventListener("click", clickHandler);
 	}
 }
 
@@ -458,7 +484,7 @@ function getFilmForDropdown(film) {
         uniqueName = defaultSource.uniqueName;
     }
     var imdbId;
-    var imdbSource = film.sources.find( function (findSource) { return findSource.name == SOURCE_IMDB; } );
+    var imdbSource = film.sources.find( function (findSource) { return findSource.name == SOURCE_NAME.IMDb; } );
     if (imdbSource && imdbSource != "undefined") {
         imdbId = imdbSource.uniqueName;
     }
@@ -494,7 +520,7 @@ function renderFilmDetail(film, dropdownEl) {
     dropdownEl.appendChild(buildFilmDetailElement(film));
     dropdownEl.style.display = "block";
 
-    renderStars(film);
+    renderOneRatingStars(film);
     renderStreams(film, true);
     renderFilmlists(film.filmlists, film.filmId);
 }
@@ -509,3 +535,132 @@ function renderMsg(message, element) {
         }
     }
 }
+
+function renderRatingHistory(filmId, rsSource) {
+    const uniqueName = rsSource.uniqueName;
+    const activeRating = rsSource.rating;
+    const archive = rsSource.archive;
+    const ratingHistoryEl = document.getElementById(`rating-history-${filmId}`);
+    const ratingHistoryMenuEl = document.getElementById(`rating-history-menu-ref-${filmId}`);
+
+    ratingHistoryMenuEl.innerHTML = "";
+    let ratingIndex = 0;
+
+    const historyLineEl = document.createElement("div");
+    const historyEditBtnEl = document.createElement("button");
+
+    historyLineEl.setAttribute("class", "d-flex flex-row-reverse px-1");
+    historyEditBtnEl.setAttribute("class", "btn-edit btn far fa-solid fa-pencil fa-sm pr-0");
+    historyEditBtnEl.setAttribute("type", "submit");
+    historyEditBtnEl.setAttribute("id", `rating-history-edit-${filmId}`);
+
+    historyLineEl.appendChild(historyEditBtnEl);
+    ratingHistoryMenuEl.appendChild(historyLineEl);
+
+    if (activeRating.yourScore > 0) {
+        renderHistoryLine(ratingHistoryMenuEl, filmId, activeRating, ratingIndex);
+        ratingIndex++;
+    }
+
+    for (let i = 0; i < rsSource.archiveCount; i++) {
+        const archivedRating = archive[i];
+        renderHistoryLine(ratingHistoryMenuEl, filmId, archivedRating, ratingIndex);
+        ratingIndex++;
+    }
+
+    if (ratingIndex > 0) {
+        ratingHistoryEl.removeAttribute("hidden");
+    }
+    else {
+        // When there is no rating history shown the view looks better with the thirdparty bar with a top margin
+        let thirdpartybarEl = document.getElementById(`thirdparty-bar-${uniqueName}`);
+        const barClass = thirdpartybarEl.getAttribute("class");
+        thirdpartybarEl.setAttribute("class", `${barClass} mt-2`);
+    }
+}
+
+function renderHistoryLine(parentEl, filmId, rating, ratingIndex) {
+    const score = rating.yourScore;
+    const date = rating.yourRatingDate;
+
+    const fullStarClass =  "star fas fa-xs align-middle fa-star";
+    const halfStarClass =  "star far fa-xs align-middle fa-star-half-stroke";
+    const emptyStarClass = "star far fa-xs align-middle fa-star";
+
+    const fullStarCount = Math.round(score / -2) * -1;
+    const halfStarCount = score % 2;
+
+    const historyLineEl = document.createElement("div");
+    const flexContainerEl = document.createElement("div");
+    const starsEl = document.createElement("div");
+    const dateAndButtonEl = document.createElement("div");
+    const dateEl = document.createElement("span");
+
+    historyLineEl.setAttribute("class", "container-flex py-1");
+    flexContainerEl.setAttribute("class", "d-flex justify-content-between");
+    starsEl.setAttribute("class", "px-1");
+    dateAndButtonEl.setAttribute("class", "px-1");
+    dateEl.setAttribute("class", "small");
+
+    for (let i = 0; i < 5; i++) {
+        const starEl = document.createElement("i");
+        let starClass = fullStarClass;
+
+        if (i >= fullStarCount) {
+            if (i >= fullStarCount + halfStarCount) {
+                starClass = emptyStarClass;
+            }
+            else {
+                starClass = halfStarClass;
+            }
+        }
+
+        starEl.setAttribute("class", starClass);
+        starsEl.appendChild(starEl);
+    }
+
+    dateEl.innerHTML = formatRatingDate(date);
+
+    parentEl.appendChild(historyLineEl);
+    historyLineEl.appendChild(flexContainerEl);
+    flexContainerEl.appendChild(starsEl);
+    flexContainerEl.appendChild(dateAndButtonEl);
+    dateAndButtonEl.appendChild(dateEl);
+}
+
+function formatDateInput(date) {
+    let dateStr = new String();
+    if (date && date != "undefined") {
+        const reDate = new RegExp("([0-9]+)-([0-9]+)-([0-9]+)");
+        const ratingYear = reDate.exec(date)[1];
+        let month = reDate.exec(date)[2];
+        let day = reDate.exec(date)[3];
+
+        if (month.length == 1) {
+            month = "0" + month;
+        }
+
+        if (day.length == 1) {
+            day = "0" + day;
+        }
+
+        dateStr = ratingYear + "-" + month + "-" + day;
+    }
+
+    return dateStr;
+}
+
+// If enable is false then the elements get disabled. Otherwise they get enabled.
+function enableElements(elements, enable = true) {
+    for (const elementsKey in elements) {
+        enableElement(elements[elementsKey], enable);
+    }
+}
+
+// If enable is false the element gets disabled. Otherwise it gets enabled.
+function enableElement(element, enable = true) {
+    if ( element ) {
+        element.disabled = ! enable;
+    }
+}
+

@@ -63,6 +63,9 @@ elseif ($action == "deleteFilmlist") {
 elseif ($action == "renameFilmlist") {
     $response = api_renameFilmlist($username);
 }
+elseif ($action == "archiveRating") {
+    $response = api_archiveRating($username);
+}
 
 if (empty($response)) {
     $response = "{}";
@@ -101,15 +104,20 @@ function api_getSearchFilm($username, $get)
 function api_setRating($username)
 {
     $film = null;
-    $titleNum = array_value_by_key("tn", $_GET);
     $filmId = array_value_by_key("fid", $_GET);
-    $uniqueName = array_value_by_key("un", $_GET);
     $score = array_value_by_key("s", $_GET);
     $dateStr = array_value_by_key("d", $_GET); // Format: 2000-02-28
-    logDebug("Params fid=$filmId, un=$uniqueName, s=$score, d=$dateStr, tn=$titleNum", __FUNCTION__." ".__LINE__);
+    $originalDateStr = array_value_by_key("od", $_GET); // Format: 2000-02-28
+    $force = array_value_by_key("force", $_GET);
+    logDebug("Params fid=$filmId, s=$score, d=$dateStr, od=$originalDateStr, force=$force", __FUNCTION__." ".__LINE__);
+
+    $forceDelete = false;
+    if ( $force == 1 || $force == "true") {
+        $forceDelete = true;
+    }
 
     if (!empty($username) && !empty($filmId) && (!empty($score) || $score == 0)) {
-        $film = setRating($filmId, $score, $dateStr);
+        $film = setRating($filmId, $score, $dateStr, $originalDateStr, $forceDelete);
     }
 
     if (empty($film)) {
@@ -790,6 +798,42 @@ function api_renameFilmlist($username)
         $response = '{"Success":"true"}';
     } else {
         $response = '{"Success":"false"}';
+    }
+
+    return $response;
+}
+
+function api_archiveRating($username)
+{
+    $film = null;
+    $filmId = array_value_by_key("fid", $_GET);
+    $dateStr = array_value_by_key("d", $_GET); // Format: 2000-02-28
+    $archiveNum = array_value_by_key("archive", $_GET);
+    logDebug("Params fid=$filmId, d=$dateStr, archive=$archiveNum", __FUNCTION__." ".__LINE__);
+
+    $archiveIt = true;
+    if ( $archiveNum == 0 ) {
+        $archiveIt = false;
+    }
+
+    if ( !empty($username) && !empty($filmId) && !empty($dateStr) ) {
+        try {
+            $date = new \DateTime($dateStr);
+            $success = Rating::archiveRatingToDb($filmId, $username, $date, $archiveIt);
+
+            if ( $success ) {
+                $film =  Film::getFilmFromDb($filmId, $username);
+            }
+        }
+        catch (\Exception $e) {
+            logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$date, archiveIt=$archiveIt\n)" . $e->getMessage() . "\n" . $e->getTraceAsString());
+        }
+    }
+
+    if (empty($film)) {
+        $response = '{"Success":"false"}';
+    } else {
+        $response = $film->json_encode();
     }
 
     return $response;

@@ -18,4 +18,6 @@
 /.vscode/*
 /.project
 /.idea
+/.phpunit.result.cache
+/php/tests/.phpunit.result.cache
 php/sandbox.php

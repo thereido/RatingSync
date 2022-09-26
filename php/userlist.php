@@ -55,6 +55,7 @@ $pageFooter = getPageFooter();
     <script src="../js/userlist.js"></script>
     <script src="../js/filmlistHeader.js"></script>
     <script src="../js/film.js"></script>
+    <script src="../js/RatingView.js"></script>
 </head>
 
 <body>
@@ -64,6 +65,7 @@ $pageFooter = getPageFooter();
   <?php echo $pageHeader; ?>
   <?php echo $filmlistHeader; ?>
   <div><p><span id="debug"></span></p></div>
+  <div id="alert-placeholder" class="alert-placeholder"></div>
 
     <div id="film-table" class="mt-3"></div>
 
@@ -73,14 +75,12 @@ $pageFooter = getPageFooter();
 </div>
 
 <script>
+    <?php echo Constants::echoJavascriptConstants(); ?>
+    let pageId = SITE_PAGE.Userlist;
     var contextData;
     var listname = "<?php echo $listname; ?>";
     var currentPageNum = <?php echo $pageNum; ?>;
     var defaultPageSize = 90;
-    var OMDB_API_KEY = "<?php echo Constants::OMDB_API_KEY; ?>";
-    var TMDB_API_KEY = "<?php echo Constants::TMDB_API_KEY; ?>";
-    var IMAGE_PATH_TMDBAPI = "<?php echo Constants::IMAGE_PATH_TMDBAPI; ?>";
-    var DATA_API_DEFAULT = "<?php echo Constants::DATA_API_DEFAULT; ?>";
     if (listname) {
         getFilmsForFilmlist(defaultPageSize, currentPageNum);
     }
