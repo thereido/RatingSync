@@ -22,6 +22,25 @@ function renderRsFilmEdit(film, filmEl) {
     addActiveButtonListeners(film);
 }
 
+function renderEditRatings(filmId) {
+    const film = getContextDataFilm(filmId);
+    const editRatingsEl = document.getElementById(`edit-ratings`);
+
+    if (film == null) {
+        editRatingsEl.innerHTML = "<H3>Cannot edit because the data is missing.</H3>";
+        return;
+    }
+
+    const rsSource = film.sources.find(function (findSource) {  return findSource.name == "RatingSync"; });
+    const uniqueName = rsSource.uniqueName;
+
+    let ratingIndex = 1;
+    for (let i=0; i < rsSource.archiveCount; i++) {
+        renderOneRatingForEdit(editRatingsEl, film, uniqueName, false, ratingIndex);
+        ratingIndex++;
+    }
+}
+
 function buildFilmEditElement(film) {
 
     const detailEl = document.createElement("detail");
