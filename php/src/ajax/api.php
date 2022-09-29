@@ -475,7 +475,7 @@ function api_getRatings($username)
     $response .= ', "films":[';
     $delimeter = "";
     foreach($films as $film) {
-        $response .= $delimeter . $film->json_encode(true);
+        $response .= $delimeter . $film->json_encode(false);
         $delimeter = ",";
     }
     $response .= ']}';
