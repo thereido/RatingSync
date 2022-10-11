@@ -40,6 +40,10 @@ score.rating-history {
     line-height: .75;
 }
 
+.viewing-history {
+    line-height: 1;
+}
+
 .rating-history.btn-group {
     width: 100%;
     vertical-align: top;
@@ -496,6 +500,20 @@ select { background-color: var(--bg-input-text); color: var(--fg-surface-muted);
 .thirdparty-bar > .source-logo-1 > a > imdbScore, .thirdparty-bar > .source-logo-1 > a > tmdbScore { color: var(--fg); }
 .thirdparty-bar > .source-logo-2 > a > imdbScore, .thirdparty-bar > .source-logo-2 > a > tmdbScore { color: var(--fg); }
 .userlist-film { background-color: var(--bg-surface); border-color: var(--border-surface); }
+
+
+
+.watchit-buttons { background-color: transparent; color: var(--fg-surface-muted); padding: 0; border: none; box-sizing: unset; border-radius: 0; }
+
+.btn-toggle { color: var(--toggle-icon-primary-off); }
+.btn-toggle:hover { color: var(--border-primary-alt); }
+.btn-toggle-on { color: var(--toggle-icon-primary-on); }
+
+/* watchit-buttons:hover, .watchit-buttons > .seen-film, .watchit-buttons > .never-see { color: var(--primary); } */
+
+
+
+
 detail-episode { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border-surface); box-shadow: 0 2px 5px var(--shadow-primary); }
 detail-episode-rating { color: var(--star); }
 
@@ -516,6 +534,7 @@ detail-episode-rating { color: var(--star); }
     --fg: rgba(255, 255, 255, 0.87);
     --fg-surface: rgba(255, 255, 255, 0.87);
     --fg-surface-muted: rgba(255, 255, 255, 0.60);
+    --fg-surface-muted-more: rgba(255, 255, 255, 0.40);
     --fg-surface-disabled: rgba(255, 255, 255, 0.38);
     --fg-primary: rgba(0, 0, 0, 0.87);
     --fg-primary-disabled: rgba(0, 0, 0, 0.38);
@@ -542,8 +561,17 @@ detail-episode-rating { color: var(--star); }
     --footer-border: #777;
     --star: orange;
 
+    --highlight: rgba(76, 54, 137); /* primary-alt - 50 */
+
+    --toggle-icon-primary-off: var(--fg-surface-muted-more);
+    --toggle-icon-primary-on: var(--primary);
+
     background-color: var(--bg);
     color: var(--fg);
+}
+
+::selection {
+    background: var(--highlight);
 }
 
 @media (prefers-color-scheme: disabled) {

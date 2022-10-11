@@ -79,7 +79,7 @@ function clearAlert(el)
     }
 }
 
-function rateFilm(filmId, uniqueName, score, callback, newDate = null, originalDate = null, index = null) {
+function rateFilm(filmId, uniqueName, score, callback, newDate = null, originalDate = null, index = -1) {
     const operaterId = `rateFilm-${filmId}`;
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
@@ -240,15 +240,13 @@ function clickStar(filmId, uniqueName, score, active, ratingIndex) {
         if (score == originalScore) {
             showConfirmationRating(filmId, uniqueName, score);
         } else {
-            rateFilm(filmId, uniqueName, score, renderActiveRating);
+            rateFilm(filmId, uniqueName, score, renderActiveRating, null, null, ratingIndex);
         }
     }
-    else {
-        if (score != originalScore) {
-            const originalDate = document.getElementById(`rate-${uniqueName}-${score}-${ratingIndex}`).getAttribute('data-date');
-            const newDate = originalDate;
-            rateFilm(filmId, uniqueName, score, renderEditRating, newDate, originalDate, ratingIndex);
-        }
+    else if (score != originalScore) {
+        const originalDate = document.getElementById(`rate-${uniqueName}-${score}-${ratingIndex}`).getAttribute('data-date');
+        const newDate = originalDate;
+        rateFilm(filmId, uniqueName, score, renderEditRating, newDate, originalDate, ratingIndex);
     }
 }
 
@@ -415,6 +413,24 @@ function addStarListener(starEl, active) {
 	}
 }
 
+function addWatchItButtonListeners(filmId) {
+    const seenBtnId = `seen-btn-${filmId}`;
+    const neverBtnId = `never-watch-btn-${filmId}`;
+
+    const seenBtnEl = document.getElementById(seenBtnId);
+    const neverBtnEl = document.getElementById(neverBtnId);
+
+    if ( seenBtnEl ) {
+        const seenBtnHandler = function () { toggleSeen(seenBtnEl, filmId); };
+        seenBtnEl.addEventListener("click", seenBtnHandler);
+    }
+
+    if ( neverBtnEl ) {
+        const neverWatchBtnHandler = function () { toggleNeverWatchIt(neverBtnEl, filmId); };
+        neverBtnEl.addEventListener("click", neverWatchBtnHandler);
+    }
+}
+
 function validStreamProviders() {
     return [];
 }
@@ -522,7 +538,8 @@ function renderFilmDetail(film, dropdownEl) {
 
     renderOneRatingStars(film);
     renderStreams(film, true);
-    renderFilmlists(film.filmlists, film.filmId);
+    renderFilmlists(film.filmlists, film?.filmId);
+    addWatchItButtonListeners(film?.filmId);
 }
 
 function renderMsg(message, element) {
@@ -536,12 +553,28 @@ function renderMsg(message, element) {
     }
 }
 
-function renderRatingHistory(filmId, rsSource) {
-    const uniqueName = rsSource.uniqueName;
+function renderRatingHistory(film, rsSource) {
+    const filmId = film.filmId;
+    let ratingHistoryEl = document.getElementById(`rating-history-${filmId}`);
+
     const activeRating = rsSource.rating;
+    if ( ! validRatingScore(activeRating) && rsSource?.archiveCount < 1 ) {
+        return;
+    }
+
+    const uniqueName = rsSource.uniqueName;
     const archive = rsSource.archive;
-    const ratingHistoryEl = document.getElementById(`rating-history-${filmId}`);
-    const ratingHistoryMenuEl = document.getElementById(`rating-history-menu-ref-${filmId}`);
+    let ratingHistoryMenuEl = document.getElementById(`rating-history-menu-ref-${filmId}`);
+
+    if ( ! ratingHistoryMenuEl ) {
+        const newRatingHistoryEl = buildRatingHistoryElement(film);
+
+        const viewingHistoryEl = document.getElementById(`viewing-history-${filmId}`);
+        viewingHistoryEl.replaceChild( newRatingHistoryEl, ratingHistoryEl );
+
+        ratingHistoryEl = document.getElementById(`rating-history-${filmId}`);
+        ratingHistoryMenuEl = document.getElementById(`rating-history-menu-ref-${filmId}`);
+    }
 
     ratingHistoryMenuEl.innerHTML = "";
     let ratingIndex = 0;

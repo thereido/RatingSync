@@ -1771,6 +1771,11 @@ class RatingTest extends RatingSyncTestCase
         $this->assertFalse($isEmpty);
     }
 
+    /**
+     * Test getRatingFromDb($username, $sourceName, $filmId)
+     * including a user/source/film combo with multiple archived ratings
+     */
+
 }
 
 ?>

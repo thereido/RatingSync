@@ -20,6 +20,7 @@ function renderRsFilmEdit(film, filmEl) {
     renderEditRatings(filmId);
 
     addActiveButtonListeners(film);
+//*RT*    addWatchItButtonListeners(film?.filmId);
 }
 
 function renderEditRatings(filmId) {
@@ -69,7 +70,7 @@ function buildEditActiveRatingElement(film) {
     const starsEl = buildRatingElement(film);
     const ratingDateLineEl = document.createElement("div")
     const ratingDateEl = document.createElement("rating-date");
-    const dateStr = getRatingDateMessageText(ratingDate);
+    const dateStr = getRatingDateMessageText(ratingDate, film);
     const inputDateStr = formatDateInput(ratingDate);
     const editBtnEl = document.createElement("button");
     const buttonsEl = document.createElement("div");

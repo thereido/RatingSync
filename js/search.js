@@ -361,6 +361,7 @@ function renderRsFilmDetails(film, filmEl) {
     renderOneRatingStars(film);
     renderStreams(film, true);
     renderFilmlists(film.filmlists, film.filmId);
+    addWatchItButtonListeners(film?.filmId);
 
     if (pageId == SITE_PAGE.Edit) {
         renderEditRatings(filmId);
