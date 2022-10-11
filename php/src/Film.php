@@ -1282,13 +1282,15 @@ class Film {
         }
 
         // User-Specific Film Info
-        try {
-            $userInfo = UserSpecificFilmInfo::getFromDb($username, $filmId);
+        if ( !empty($username) && !empty($filmId) ) {
+            try {
+                $userInfo = UserSpecificFilmInfo::getFromDb($username, $filmId);
+            }
+            catch (\Exception $e) {
+                $userInfo = null;
+            }
+            $film->setUserInfo( $userInfo );
         }
-        catch (\Exception $e) {
-            $userInfo = null;
-        }
-        $film->setUserInfo( $userInfo );
 
         return $film;
     }
