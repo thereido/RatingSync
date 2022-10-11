@@ -478,6 +478,9 @@ select { background-color: var(--bg-input-text); color: var(--fg-surface-muted);
 .btn-primary:hover > .checkmark-off, .btn-primary:active > .checkmark-off, .btn-primary:focus > .checkmark-off { color: var(--fg-primary-alt-disabled); }
 .btn-primary:hover > .checkmark-on, .btn-primary:active > .checkmark-on, .btn-primary:focus > .checkmark-on { color: var(--fg-primary-alt-green); }
 .btn-rating-history:not(:disabled):not(.disabled):focus, .btn-rating-history:not(:disabled):not(.disabled):hover { background-color: var(--primary-alt); color: var(--fg-primary-alt); }
+.btn-toggle { color: var(--toggle-icon-primary-off); }
+.btn-toggle:hover { color: var(--toggle-icon-primary-on); }
+.btn-toggle-on { color: var(--toggle-icon-primary-on); }
 .card-login { box-shadow: 0px 2px 3px 0px var(--shadow-primary); }
 .card-login > .card-header { color: var(--fg-surface); }
 .card-login > .card-header hr { background-image: -webkit-linear-gradient(left,rgba(255, 255, 255, 0),rgba(141, 104, 187),rgba(255, 255, 255, 0)); background-image: -moz-linear-gradient(left,rgba(255,255,255,0),var(--primary-alt),rgba(255,255,255,0)); background-image: -ms-linear-gradient(left,rgba(255,255,255,0),rgba(141, 104, 187),rgba(255,255,255,0)); background-image: -o-linear-gradient(left,rgba(255,255,255,0),rgba(141, 104, 187),rgba(255,255,255,0)); }
@@ -495,24 +498,13 @@ select { background-color: var(--bg-input-text); color: var(--fg-surface-muted);
 .score-invisible  { color: var(--bg-surface-trans); }
 .search-suggestion-item { border-color: var(--border);}
 .stream-icon { background-color: transparent; }
+.suggestion-icon { color: var(--primary); }
 .suggestion-poster { border-color: var(--border); }
 .suggestion-rating { color: var(--star); }
 .thirdparty-bar > .source-logo-1 > a > imdbScore, .thirdparty-bar > .source-logo-1 > a > tmdbScore { color: var(--fg); }
 .thirdparty-bar > .source-logo-2 > a > imdbScore, .thirdparty-bar > .source-logo-2 > a > tmdbScore { color: var(--fg); }
 .userlist-film { background-color: var(--bg-surface); border-color: var(--border-surface); }
-
-
-
-.watchit-buttons { background-color: transparent; color: var(--fg-surface-muted); padding: 0; border: none; box-sizing: unset; border-radius: 0; }
-
-.btn-toggle { color: var(--toggle-icon-primary-off); }
-.btn-toggle:hover { color: var(--border-primary-alt); }
-.btn-toggle-on { color: var(--toggle-icon-primary-on); }
-
-/* watchit-buttons:hover, .watchit-buttons > .seen-film, .watchit-buttons > .never-see { color: var(--primary); } */
-
-
-
+.watchit-buttons { background-color: transparent; padding: 0; border: none; box-sizing: unset; border-radius: 0; }
 
 detail-episode { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border-surface); box-shadow: 0 2px 5px var(--shadow-primary); }
 detail-episode-rating { color: var(--star); }
@@ -534,7 +526,7 @@ detail-episode-rating { color: var(--star); }
     --fg: rgba(255, 255, 255, 0.87);
     --fg-surface: rgba(255, 255, 255, 0.87);
     --fg-surface-muted: rgba(255, 255, 255, 0.60);
-    --fg-surface-muted-more: rgba(255, 255, 255, 0.40);
+    --fg-surface-muted-more: rgba(255, 255, 255, 0.30);
     --fg-surface-disabled: rgba(255, 255, 255, 0.38);
     --fg-primary: rgba(0, 0, 0, 0.87);
     --fg-primary-disabled: rgba(0, 0, 0, 0.38);
