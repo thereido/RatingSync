@@ -214,14 +214,26 @@ function renderSuggestionFilm(film, suggestionEl) {
 
 function renderSuggestionRatings(film, ratingsLineEl) {
     const rsSource = getSourceJson(film, SOURCE_NAME.Internal);
+    let score = null;
     if (rsSource && rsSource != "undefined") {
-        var score = null;
         if (rsSource.rating && rsSource.rating != "undefined") {
             score = rsSource.rating.yourScore;
         }
         if (score != null) {
-            ratingsLineEl.innerHTML = '<span class="rating-star">★</span>' + score;
+            ratingsLineEl.innerHTML = `<span class="rating-star mr-2">★ ${score}</span>`;
         }
+    }
+
+    const userInfo = film?.user;
+    const seen = userInfo ? userInfo.seen : false;
+    const neverWatch = userInfo ? userInfo.neverWatch : false;
+
+    if ( score == null && seen ) {
+        ratingsLineEl.innerHTML = ratingsLineEl.innerHTML + `<i class="suggestion-icon far fa-eye fa-sm mr-2"/>`;
+    }
+
+    if ( neverWatch ) {
+        ratingsLineEl.innerHTML = ratingsLineEl.innerHTML + `<i class="suggestion-icon fas fa-ban fa-sm"/>`;
     }
 }
 
