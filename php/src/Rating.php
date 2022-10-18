@@ -37,7 +37,7 @@ class Rating
     protected $yourScore;       // Rating (or score) from you - 1 to 10
     protected $yourRatingDate;  // The day you rated it
     protected $suggestedScore;  // How much they think you would like. Suggested by the source.
-    protected $watched = true;
+    protected $watched = false;
 
     /**
      * Rating data from one source
@@ -359,6 +359,11 @@ class Rating
         $suggestedScore = $rating->getSuggestedScore();
         $ratingDate = $rating->getYourRatingDate();
         $watched = $rating->getWatched();
+        if ( $watched ) {
+            $watched = 1;
+        } else {
+            $watched = 0;
+        }
         $ratingDateStr = null;
         if (!empty($ratingDate)) {
             $ratingDateStr = $ratingDate->format(RATING_DATE_DB_FORMAT);
@@ -524,19 +529,19 @@ class Rating
      * - Rating: A rating is any Scored/Scoreless/Viewing/Active/Inactive/Archived rating.
      * - Scored Rating: A rating with score 1-10
      * - Viewing: A rating with score 0. Also called a Scoreless rating.
-     * - Active Rating: The active rating is the newest scored rating. A viewing can not be the active rating.
+     * - Active Rating: The active rating is the newest rating.
      * - Inactive Rating: Any rating that is not the active rating. Also called a Archived rating.
-     * - Delete: To delete a rating, send a rating with score -1 and a date that matches an existing rating
+     * - Delete: To delete a rating, send a rating with score -1 and a date that matches an existing rating.
      *
      * USE CASES
      *
-     * Create/Update Use cases (newDate non-null, scores 1 through 10):
-     *   1) Same date as the active rating: Change the score
+     * Create/Update Use cases (newDate non-null, scores 0 through 10):
+     *   1) Same date as the active rating: Change the score and watched
      *     1a) originalDate matches an archived rating: also delete original rating
-     *   2) Same date as an archived rating: Change the score
+     *   2) Same date as an archived rating: Change the score and watched
      *     2a) originalDate matches active rating: also delete the original active rating, activate the newest archived scored rating
      *       2a.1) newDate is newest archived rating: 2a results
-     *       2a.2) newDate is not newest archived rating 2a results
+     *       2a.2) newDate is not newest archived rating: 2a results
      *     2b) originalDate matches another archived rating: also delete original rating
      *   3) No existing active rating and newer than existing archived ratings: Create the new active rating
      *     3a) originalDate matches another archived rating: also delete original rating
@@ -549,11 +554,11 @@ class Rating
      *     6a) originalDate matches active rating: Delete the original rating, then do use case 3 or 4 (no existing active rating)
      *     6b) originalDate matches another archived rating: also delete original rating
      *
-     * Create/Update Use cases (newDate=null, scores 1 through 10):
+     * Create/Update Use cases (newDate=null, scores 0 through 10):
      *   7) No existing active rating, but archived rating is the current date: Delete the archived rating and create the active with current date
-     *   8) For all other cases with newDate=null and score range 1-10: Archive the existing and create the new active rating with current date
-     *     8a) With an active rating newDate=null and score range 1-10
-     *     8b) Without an active rating newDate=null and score range 1-10
+     *   8) For all other cases with newDate=null and score range 0-10: Create the new active rating with current date
+     *     8a) With an active rating newDate=null and score range 0-10: First, archive the existing active rating
+     *     8b) Without an active rating newDate=null and score range 0-10
      *
      * Delete Use cases (score -1):
      *   9) No matching date and no existing active rating: do nothing
@@ -571,22 +576,21 @@ class Rating
      *
      * 12) Create/Update Use cases (newDate non-null, scores 1 through 10, originalDate non-null does not match any ratings): return false without doing anything
      *
-     * Viewing without rating it Use cases (score 0, newDate non-null)
-     *   13)
-     *
-     * Viewing without rating it Use cases (score 0, newDate=null)
-     *   14..?)
-     *
      * @param int $filmId
      * @param string $username
-     * @param int $newScore
+     * @param SetRatingScoreValue $newScore
      * @param DateTime | null $newDate
      * @param DateTime | null $originalDate
      * @param bool | null $forceDelete default is false
      * @return bool
      */
-    public static function saveRatingToDb(int $filmId, string $username, int $newScore, ?DateTime $newDate = null, ?DateTime $originalDate = null, bool $forceDelete = false): bool
+    public static function saveRatingToDb(int $filmId, string $username, SetRatingScoreValue $newScore, bool $watched = true, ?DateTime $newDate = null, ?DateTime $originalDate = null, bool $forceDelete = false): bool
     {
+        if ( $newScore == SetRatingScoreValue::View && !$watched ) {
+            logError("Tried to set rating to score=".$newScore->getScore()." (".$newScore->name.") and watched=false, which is not valid. You can use score=SetRatingScoreValue::Delete to delete a rating.");
+            return false;
+        }
+
         try {
 
             $film = Film::getFilmFromDb($filmId, $username);
@@ -613,7 +617,7 @@ class Rating
         $newDateStr = $newDate?->format(RATING_DATE_DB_FORMAT);
 
         // If using originalDate, delete the matching existing rating
-        if ( $newScore != 0 && $newDate != null && $originalDateStr != null && $originalDateStr != $newDateStr ) {
+        if ( $newScore != SetRatingScoreValue::Delete && $newDate != null && $originalDateStr != null && $originalDateStr != $newDateStr ) {
             // Validate originalDate and delete it from the db
 
             $originalRating = null;
@@ -657,7 +661,7 @@ class Rating
                     }
                 }
 
-                $saveSuccess = self::saveRatingToDb($filmId, $username, $newScore, $newDate);
+                $saveSuccess = self::saveRatingToDb($filmId, $username, $newScore, $watched, $newDate);
                 if ( ! $saveSuccess ) {
                     // Undo the delete (original rating)
                     $originalRating->saveToDb($username, $filmId, false);
@@ -667,8 +671,8 @@ class Rating
             }
         }
 
-        // Delete (score 0)
-        if ($newScore == 0) {
+        // Delete
+        if ( $newScore == SetRatingScoreValue::Delete ) {
 
             if ( $isRatingActive ) {
                 if ( $forceDelete && $newDateStr == $originalDateStr && $originalDateStr == $activeDateStr ) {
@@ -697,7 +701,7 @@ class Rating
             if ( !$isRatingActive && count($archive) > 0 && $archive[0]?->getYourRatingDate() == today() ) {
                 $deleted = $archive[0]->deleteToDb($username, $filmId, false);
                 if ( $deleted ) {
-                    return self::createAndSaveToDb($sourceName, $username, $filmId, $newScore, $newDate, false);
+                    return self::createAndSaveToDb($sourceName, $username, $filmId, $newScore, $watched, $newDate, false);
                 }
                 else {
                     return false;
@@ -713,7 +717,7 @@ class Rating
                 }
             }
 
-            return self::createAndSaveToDb($sourceName, $username, $filmId, $newScore, $newDate, false);
+            return self::createAndSaveToDb($sourceName, $username, $filmId, $newScore, $watched, $newDate, false);
 
         }
         // Create/Update Use cases (newDate non-null, scores 1 through 10)
@@ -723,7 +727,7 @@ class Rating
 
                 //   - newDate same as the active rating: Change the score
 
-                return self::createAndSaveToDb($sourceName, $username, $filmId, $newScore, $newDate, false);
+                return self::createAndSaveToDb($sourceName, $username, $filmId, $newScore, $watched, $newDate, false);
 
             }
 
@@ -734,7 +738,7 @@ class Rating
 
                     //   - newDate same as an archived rating: Change the score
 
-                    return self::createAndSaveToDb($sourceName, $username, $filmId, $newScore, $newDate, true);
+                    return self::createAndSaveToDb($sourceName, $username, $filmId, $newScore, $watched, $newDate, true);
 
                 }
 
@@ -780,7 +784,15 @@ class Rating
 
             }
 
-            return self::createAndSaveToDb($sourceName, $username, $filmId, $newScore, $newDate, $archiveIt);
+            $saved = self::createAndSaveToDb($sourceName, $username, $filmId, $newScore, $watched, $newDate, $archiveIt);
+
+            /*RT* TODO
+            if ( $thereWasAtLeastOneWatchedRating && $thereAreNoWatchedRatingsNow ) {
+                update film_user.seen and film_user.seenDate
+            }
+            *RT*/
+
+            return $saved;
 
         }
 
@@ -860,11 +872,12 @@ class Rating
         return $success;
     }
 
-    private static function createAndSaveToDb($sourceName, $username, $filmId, $score, $date, $archiveIt = false): bool
+    private static function createAndSaveToDb($sourceName, $username, $filmId, SetRatingScoreValue $score, bool $watched, $date, $archiveIt = false): bool
     {
         $rating = new Rating($sourceName);
-        $rating->setYourScore($score);
+        $rating->setYourScore($score->getScore());
         $rating->setYourRatingDate($date);
+        $rating->setWatched($watched);
 
         if ( $archiveIt ) {
             return $rating->archiveToDb($username, $filmId);

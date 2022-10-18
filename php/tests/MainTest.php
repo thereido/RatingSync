@@ -588,6 +588,7 @@ class MainTest extends RatingSyncTestCase
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $filmId = 1;
         $currentScore = 4;
+        $watched = true;
         $today = new \DateTime();
         $todayStr = $today->format("Y-m-d");
 
@@ -595,12 +596,13 @@ class MainTest extends RatingSyncTestCase
         $this->assertTrue($deleteSuccess, "Error deleting ratings for $username, $sourceName, $filmId");
 
         // Test
-        $filmReturned = setRating($filmId, $currentScore, $todayStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($currentScore), $watched, $todayStr);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
         $this->assertFalse(empty($rating), "Rating should not be empty");
         $this->assertEquals($currentScore, $rating->getYourScore(), "score");
+        $this->assertEquals($watched, $rating->getWatched(), "watched");
         $this->assertEquals($today->format("Y-m-d"), $rating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
         // Verify film from the database
@@ -608,6 +610,7 @@ class MainTest extends RatingSyncTestCase
         $rating = $dbFilm->getRating($sourceName);
         $this->assertFalse(empty($rating), "Rating should not be empty");
         $this->assertEquals($currentScore, $rating->getYourScore(), "score");
+        $this->assertEquals($watched, $rating->getWatched(), "watched");
         $this->assertEquals($today->format("Y-m-d"), $rating->getYourRatingDate()->format("Y-m-d"), "rating date");
     }
 
@@ -632,13 +635,14 @@ class MainTest extends RatingSyncTestCase
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $filmId = 1;
         $newScore = 6;
+        $watched = true;
         $today = new \DateTime();
         $todayStr = $today->format("Y-m-d");
 
         $originalArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
 
         // Test
-        $filmReturned = setRating($filmId, $newScore, $todayStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $todayStr);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
@@ -649,6 +653,7 @@ class MainTest extends RatingSyncTestCase
         $dbFilm = Film::getFilmFromDb($filmId, $username);
         $dbRating = $dbFilm->getRating($sourceName);
         $this->assertEquals($newScore, $dbRating->getYourScore(), "score should be $newScore");
+        $this->assertEquals($watched, $dbRating->getWatched(), "watched");
         $this->assertEquals($today->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
         // Verify archive from the database
@@ -679,7 +684,9 @@ class MainTest extends RatingSyncTestCase
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $filmId = 1;
         $originalScore = 4;
+        $originalWatched = true;
         $newScore = 6;
+        $newWatched = false;
         $today = new \DateTime();
         $todayStr = $today->format("Y-m-d");
         $originalDateStr = "2022-03-15";
@@ -687,21 +694,23 @@ class MainTest extends RatingSyncTestCase
         $deleteSuccess = $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         $this->assertTrue($deleteSuccess, "Error deleting ratings for $username, $sourceName, $filmId");
 
-        setRating($filmId, $originalScore, $originalDateStr);
+        setRating($filmId, SetRatingScoreValue::create($originalScore), $originalWatched, $originalDateStr);
         $originalArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
 
         // Test
-        $filmReturned = setRating($filmId, $newScore, $todayStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $newWatched, $todayStr);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
         $this->assertEquals($newScore, $rating->getYourScore(), "score should be $newScore");
+        $this->assertEquals($newWatched, $rating->getWatched(), "watched should be " . $newWatched ? "true" : "false");
         $this->assertEquals($today->format("Y-m-d"), $rating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
         // Verify film from the database
         $dbFilm = Film::getFilmFromDb($filmId, $username);
         $dbRating = $dbFilm->getRating($sourceName);
         $this->assertEquals($newScore, $dbRating->getYourScore(), "score should be $newScore");
+        $this->assertEquals($newWatched, $dbRating->getWatched(), "watched should be " . $newWatched ? "true" : "false");
         $this->assertEquals($today->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
         // Verify archive from the database
@@ -710,6 +719,7 @@ class MainTest extends RatingSyncTestCase
         $this->assertCount(1, $dbArchive, "Archive should have 1 rating");
         $dbArchivedRating = $dbArchive[0];
         $this->assertEquals($originalScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($originalWatched, $dbArchivedRating->getWatched(), "archived watched should be " . $originalWatched ? "true" : "false");
         $this->assertEquals($originalDateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
     }
 
@@ -733,7 +743,9 @@ class MainTest extends RatingSyncTestCase
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $filmId = 1;
         $originalScore = 4;
+        $originalWatched = true;
         $newScore = 4;
+        $newWatched = false;
         $today = new \DateTime();
         $todayStr = $today->format("Y-m-d");
         $originalDateStr = "2022-03-15";
@@ -741,21 +753,23 @@ class MainTest extends RatingSyncTestCase
         $deleteSuccess = $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         $this->assertTrue($deleteSuccess, "Error deleting ratings for $username, $sourceName, $filmId");
 
-        setRating($filmId, $originalScore, $originalDateStr);
+        setRating($filmId, SetRatingScoreValue::create($originalScore), $originalWatched, $originalDateStr);
         $originalArchive = Rating::getInactiveRatingsFromDb($username, $sourceName, $filmId);
 
         // Test
-        $filmReturned = setRating($filmId, $newScore, $todayStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $newWatched, $todayStr);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
         $this->assertEquals($newScore, $rating->getYourScore(), "score should be $newScore");
+        $this->assertEquals($newWatched, $rating->getWatched(), "watched should be " . $newWatched ? "true" : "false");
         $this->assertEquals($today->format("Y-m-d"), $rating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
         // Verify film from the database
         $dbFilm = Film::getFilmFromDb($filmId, $username);
         $dbRating = $dbFilm->getRating($sourceName);
         $this->assertEquals($newScore, $dbRating->getYourScore(), "score should be $newScore");
+        $this->assertEquals($newWatched, $dbRating->getWatched(), "watched shoud be " . $newWatched ? "true" : "false");
         $this->assertEquals($today->format("Y-m-d"), $dbRating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
         // Verify archive from the database
@@ -764,6 +778,7 @@ class MainTest extends RatingSyncTestCase
         $this->assertCount(1, $dbArchive, "Archive should have 1 rating");
         $dbArchivedRating = $dbArchive[0];
         $this->assertEquals($originalScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($originalWatched, $dbArchivedRating->getWatched(), "archived watched should be " . $originalWatched ? "true" : "false");
         $this->assertEquals($originalDateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
 
     }
@@ -788,23 +803,26 @@ class MainTest extends RatingSyncTestCase
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $filmId = 1;
         $newScore = 7;
+        $watched = true;
         $pastDateStr = "2022-02-01";
 
         $deleteSuccess = $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         $this->assertTrue($deleteSuccess, "Error deleting ratings for $username, $sourceName, $filmId");
 
         // Test
-        $filmReturned = setRating($filmId, $newScore, $pastDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $pastDateStr);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
         $this->assertEquals($newScore, $rating->getYourScore(), "score should be $newScore");
+        $this->assertEquals($watched, $rating->getWatched(), "watched should be " . $watched ? "true" : "false");
         $this->assertEquals($pastDateStr, $rating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
         // Verify film from the database
         $dbFilm = Film::getFilmFromDb($filmId, $username);
         $dbRating = $dbFilm->getRating($sourceName);
         $this->assertEquals($newScore, $dbRating->getYourScore(), "score should be $newScore");
+        $this->assertEquals($watched, $dbRating->getWatched(), "watched should be " . $watched ? "true" : "false");
         $this->assertEquals($pastDateStr, $dbRating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
     }
@@ -830,20 +848,23 @@ class MainTest extends RatingSyncTestCase
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $filmId = 1;
         $currentScore = 7;
+        $watched = true;
         $currentDateStr = "2022-02-01";
 
         // Test
-        $filmReturned = setRating($filmId, $currentScore, $currentDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($currentScore), $watched, $currentDateStr);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
         $this->assertEquals($currentScore, $rating->getYourScore(), "score should be $currentScore");
+        $this->assertEquals($watched, $rating->getWatched(), "watched should be " . $watched ? "true" : "false");
         $this->assertEquals($currentDateStr, $rating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
         // Verify film from the database
         $dbFilm = Film::getFilmFromDb($filmId, $username);
         $dbRating = $dbFilm->getRating($sourceName);
         $this->assertEquals($currentScore, $dbRating->getYourScore(), "score should be $currentScore");
+        $this->assertEquals($watched, $dbRating->getWatched(), "watched should be " . $watched ? "true" : "false");
         $this->assertEquals($currentDateStr, $dbRating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
         // Verify archive from the database
@@ -854,7 +875,7 @@ class MainTest extends RatingSyncTestCase
 
     /**
      * - The user has an archived rating
-     * - Change the score of the archived rating
+     * - Change the score and watched of the archived rating
      * - The user has an active rating
      *
      * Expect
@@ -876,25 +897,30 @@ class MainTest extends RatingSyncTestCase
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $filmId = 1;
         $activeScore = 7; // From testSetRatingWithDate
+        $activeWatched = true;
         $activeDateStr = "2022-02-01"; // From testSetRatingWithDate
         $originalArchiveScore = 4;
+        $originalArchivedWatched = true;
         $newArchiveScore = 5;
+        $newArchiveWatched = !$originalArchivedWatched;
         $ArchiveDateStr = "2022-01-15";
 
-        setRating($filmId, $originalArchiveScore, $ArchiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($originalArchiveScore), $originalArchivedWatched, $ArchiveDateStr);
 
         // Test
-        $filmReturned = setRating($filmId, $newArchiveScore, $ArchiveDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newArchiveScore), $newArchiveWatched, $ArchiveDateStr);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
         $this->assertEquals($activeScore, $rating->getYourScore(), "score should be $activeScore");
+        $this->assertEquals($activeWatched, $rating->getWatched(), "watched should be " . $activeWatched ? "true" : "false");
         $this->assertEquals($activeDateStr, $rating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
         // Verify film from the database
         $dbFilm = Film::getFilmFromDb($filmId, $username);
         $dbRating = $dbFilm->getRating($sourceName);
         $this->assertEquals($activeScore, $dbRating->getYourScore(), "score should be $activeScore");
+        $this->assertEquals($activeWatched, $dbRating->getWatched(), "watched should be " . $activeWatched ? "true" : "false");
         $this->assertEquals($activeDateStr, $dbRating->getYourRatingDate()->format("Y-m-d"), "rating date");
 
         // Verify archive from the database
@@ -902,6 +928,7 @@ class MainTest extends RatingSyncTestCase
         $this->assertCount(1, $dbArchive, "Archive should have 1 rating");
         $dbArchivedRating = $dbArchive[0];
         $this->assertEquals($newArchiveScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($newArchiveWatched, $dbArchivedRating->getWatched(), "archive watched should be " . $newArchiveWatched ? "true" : "false");
         $this->assertEquals($ArchiveDateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
 
     }
@@ -927,15 +954,17 @@ class MainTest extends RatingSyncTestCase
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $filmId = 1;
         $score = 7;
+        $watched = true;
         $dateStr = "2022-03-08";
+        $ignoredWatched = false;
 
         $deleteSuccess = $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         $this->assertTrue($deleteSuccess, "Error deleting ratings for $username, $sourceName, $filmId");
 
-        setRating($filmId, $score, $dateStr);
+        setRating($filmId, SetRatingScoreValue::create($score), $watched, $dateStr);
 
         // Test
-        $filmReturned = setRating($filmId, 0, $dateStr);
+        $filmReturned = setRating($filmId,SetRatingScoreValue::Delete, $ignoredWatched, $dateStr);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
@@ -953,6 +982,7 @@ class MainTest extends RatingSyncTestCase
         $this->assertCount(1, $dbArchive, "Archive should have 1 rating");
         $dbArchivedRating = $dbArchive[0];
         $this->assertEquals($score, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($watched, $dbArchivedRating->getWatched(), "watched should be " . $watched ? "true" : "false");
         $this->assertEquals($dateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
 
     }
@@ -983,6 +1013,10 @@ class MainTest extends RatingSyncTestCase
         $activeScore = 2;
         $archive1Score = 3;
         $archive2Score = 5;
+        $activeWatched = false;
+        $archive1Watched = false;
+        $archive2Watched = false;
+        $ignoredWatched = true;
         $activeDateStr = "2022-02-04";
         $archive1DateStr = "2022-01-16";
         $archive2DateStr = "2022-01-15";
@@ -990,12 +1024,12 @@ class MainTest extends RatingSyncTestCase
         $deleteSuccess = $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         $this->assertTrue($deleteSuccess, "Error deleting ratings for $username, $sourceName, $filmId");
 
-        setRating($filmId, $activeScore, $activeDateStr);
-        setRating($filmId, $archive2Score, $archive2DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($activeScore), $activeWatched, $activeDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive2Score), $archive2Watched, $archive2DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $archive1Watched, $archive1DateStr);
 
         // Test
-        $filmReturned = setRating($filmId, 0, $activeDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $ignoredWatched, $activeDateStr);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
@@ -1013,12 +1047,15 @@ class MainTest extends RatingSyncTestCase
         $this->assertCount(3, $dbArchive, "Archive should have 3 ratings");
         $dbArchivedRating = $dbArchive[0];
         $this->assertEquals($activeScore, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($activeWatched, $dbArchivedRating->getWatched(), "watched should be " . $activeWatched ? "true" : "false");
         $this->assertEquals($activeDateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
         $dbArchivedRating = $dbArchive[1];
         $this->assertEquals($archive1Score, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($archive1Watched, $dbArchivedRating->getWatched(), "archived watched should be " . $archive1Watched ? "true" : "false");
         $this->assertEquals($archive1DateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
         $dbArchivedRating = $dbArchive[2];
         $this->assertEquals($archive2Score, $dbArchivedRating->getYourScore(), "archived score");
+        $this->assertEquals($archive2Watched, $dbArchivedRating->getWatched(), "archived watched should be " . $archive2Watched ? "true" : "false");
         $this->assertEquals($archive2DateStr, $dbArchivedRating->getYourRatingDate()->format("Y-m-d"), "archived rating date");
 
     }
@@ -1050,16 +1087,17 @@ class MainTest extends RatingSyncTestCase
         $activeDateStr = "2022-02-04";
         $archive1DateStr = "2022-01-15";
         $archive2DateStr = "2022-01-16";
+        $watched = true;
 
         $deleteSuccess = $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         $this->assertTrue($deleteSuccess, "Error deleting ratings for $username, $sourceName, $filmId");
 
-        setRating($filmId, $activeScore, $activeDateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
-        setRating($filmId, $archive2Score, $archive2DateStr);
+        setRating($filmId, SetRatingScoreValue::create($activeScore), $watched, $activeDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive2Score), $watched, $archive2DateStr);
 
         // Test
-        $filmReturned = setRating($filmId, 0, $archive1DateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $watched, $archive1DateStr);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
@@ -1106,14 +1144,15 @@ class MainTest extends RatingSyncTestCase
         $score = 7;
         $dateStr = "2022-03-08";
         $laterDateStr = "2022-03-10";
+        $watched = true;
 
         $deleteSuccess = $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         $this->assertTrue($deleteSuccess, "Error deleting ratings for $username, $sourceName, $filmId");
 
-        setRating($filmId, $score, $dateStr);
+        setRating($filmId, SetRatingScoreValue::create($score), $watched, $dateStr);
 
         // Test
-        $filmReturned = setRating($filmId, 0, $laterDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $watched, $laterDateStr);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
@@ -1157,14 +1196,15 @@ class MainTest extends RatingSyncTestCase
         $filmId = 1;
         $score = 7;
         $dateStr = "2022-03-08";
+        $watched = true;
 
         $deleteSuccess = $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
         $this->assertTrue($deleteSuccess, "Error deleting ratings for $username, $sourceName, $filmId");
 
-        setRating($filmId, $score, $dateStr);
+        setRating($filmId, SetRatingScoreValue::create($score), $watched, $dateStr);
 
         // Test
-        $filmReturned = setRating($filmId, 0, null);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $watched, null);
 
         // Verify film returned
         $rating = $filmReturned->getRating($sourceName);
@@ -1256,6 +1296,7 @@ class MainTest extends RatingSyncTestCase
         $filmId = 1;
         $today = new \DateTime();
         $todayStr = $today->format("Y-m-d");
+        $watched = true;
 
         $defaultActiveScore = 5;
         $archive0Score = 6;
@@ -1280,12 +1321,12 @@ class MainTest extends RatingSyncTestCase
         $newDate = $defaultActiveDateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 1)
-        $filmReturned = setRating($filmId, $newScore, $newDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate);
 
         // Verify (case 1)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1316,12 +1357,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr =$archive1DateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 1a)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 1a)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1347,12 +1388,12 @@ class MainTest extends RatingSyncTestCase
         $newDate = $archive0DateStr; // Same as the newest archived rating
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 2)
-        $filmReturned = setRating($filmId, $newScore, $newDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate);
 
         // Verify (case 2)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1384,12 +1425,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $existingActiveDateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 2a.1)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 2a.1)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1418,12 +1459,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $existingActiveDateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 2a.2)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 2a.2)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1451,12 +1492,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $archive0DateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 2b)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 2b)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1482,13 +1523,13 @@ class MainTest extends RatingSyncTestCase
         $newDate = $todayStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be archived before the test)
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
-        setRating($filmId, 0, $existingActiveDateStr); // Delete active rating (which will be archived)
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr); // active rating (to be archived before the test)
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::Delete, $watched, $existingActiveDateStr); // Delete active rating (which will be archived)
 
         // Test (case 3)
-        $filmReturned = setRating($filmId, $newScore, $newDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate);
 
         // Verify (case 3)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1522,13 +1563,13 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $archive0DateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be archived before the test)
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
-        setRating($filmId, 0, $existingActiveDateStr); // Delete active rating (which will be archived)
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr); // active rating (to be archived before the test)
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::Delete, $watched, $existingActiveDateStr); // Delete active rating (which will be archived)
 
         // Test (case 3a)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 3a)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1557,14 +1598,14 @@ class MainTest extends RatingSyncTestCase
         $newDate = $olderThanOldestArchiveDateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be deleted before the test)
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr); // active rating (to be deleted before the test)
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
         $deleteSuccess = $this->deleteOneRating($username, $sourceName, $filmId, $existingActiveDateStr); // The active rating
         $this->assertTrue($deleteSuccess, "Failed delete the active rating before testing case 4");
 
         // Test (case 4)
-        $filmReturned = setRating($filmId, $newScore, $newDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate);
 
         // Verify (case 4)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1599,14 +1640,14 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $archive0DateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be deleted before the test)
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr); // active rating (to be deleted before the test)
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
         $deleteSuccess = $this->deleteOneRating($username, $sourceName, $filmId, $existingActiveDateStr); // The active rating
         $this->assertTrue($deleteSuccess, "Failed delete the active rating before testing case 4");
 
         // Test (case 4a.1)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 4a.1)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1638,14 +1679,14 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $archive1DateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be deleted before the test)
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr); // active rating (to be deleted before the test)
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
         $deleteSuccess = $this->deleteOneRating($username, $sourceName, $filmId, $existingActiveDateStr); // The active rating
         $this->assertTrue($deleteSuccess, "Failed delete the active rating before testing case 4");
 
         // Test (case 4a.2)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 4a.2)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1674,12 +1715,12 @@ class MainTest extends RatingSyncTestCase
         $newDate = $todayStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 5)
-        $filmReturned = setRating($filmId, $newScore, $newDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate);
 
         // Verify (case 5)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1713,12 +1754,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $existingActiveDateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 5a)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 5a)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1750,12 +1791,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $archive0DateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 5b.1)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 5b.1)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1787,12 +1828,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $archive1DateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 5b.2)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 5b.2)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1821,12 +1862,12 @@ class MainTest extends RatingSyncTestCase
         $newDate = $newerThanNewestArchiveDateStr; // Between the active and the lasted archive
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 6)
-        $filmReturned = setRating($filmId, $newScore, $newDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate);
 
         // Verify (case 6)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1860,12 +1901,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $existingActiveDateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 6a)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 6a)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1898,12 +1939,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $archive0DateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 6b.1.a)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 6b.1.a)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1936,12 +1977,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $archive0DateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 6b.1.b)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 6b.1.b)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -1974,12 +2015,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $archive1DateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 6b.2.a)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 6b.2.a)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2012,12 +2053,12 @@ class MainTest extends RatingSyncTestCase
         $originalDateStr = $archive1DateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 6b.2.b)
-        $filmReturned = setRating($filmId, $newScore, $newDate, $originalDateStr);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate, $originalDateStr);
 
         // Verify (case 6b.2.b)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2047,14 +2088,14 @@ class MainTest extends RatingSyncTestCase
         $newDate = null;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be deleted before the test)
-        setRating($filmId, $archive0Score, $todayStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr); // active rating (to be deleted before the test)
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $todayStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
         $deleteSuccess = $this->deleteOneRating($username, $sourceName, $filmId, $existingActiveDateStr); // The active rating
         $this->assertTrue($deleteSuccess, "Failed delete the active rating before testing case 7");
 
         // Test (case 7)
-        $filmReturned = setRating($filmId, $newScore, $newDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate);
 
         // Verify (case 7)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2081,12 +2122,12 @@ class MainTest extends RatingSyncTestCase
         $newDate = null;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 8a)
-        $filmReturned = setRating($filmId, $newScore, $newDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate);
 
         // Verify (case 8a)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2119,14 +2160,14 @@ class MainTest extends RatingSyncTestCase
         $newDate = null;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr); // active rating (to be deleted before the test)
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr); // active rating (to be deleted before the test)
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
         $deleteSuccess = $this->deleteOneRating($username, $sourceName, $filmId, $existingActiveDateStr); // The active rating
         $this->assertTrue($deleteSuccess, "Failed delete the active rating before testing case 8b");
 
         // Test (case 8b)
-        $filmReturned = setRating($filmId, $newScore, $newDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::create($newScore), $watched, $newDate);
 
         // Verify (case 8b)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2151,16 +2192,15 @@ class MainTest extends RatingSyncTestCase
         $existingActiveScore = $defaultActiveScore;
         $existingActiveDateStr = $defaultActiveDateStr;
         $existingArchive = $defaultArchive;
-        $deleteScore = 0;
         $deleteDate = "2021-06-01"; // Should not match any existing ratings
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 9)
-        $filmReturned = setRating($filmId, $deleteScore, $deleteDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $watched, $deleteDate);
 
         // Verify (case 9)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2188,16 +2228,15 @@ class MainTest extends RatingSyncTestCase
         $existingActiveScore = $defaultActiveScore;
         $existingActiveDateStr = $defaultActiveDateStr;
         $existingArchive = $defaultArchive;
-        $deleteScore = 0;
         $deleteDate = null;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 10a)
-        $filmReturned = setRating($filmId, $deleteScore, $deleteDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $watched, $deleteDate);
 
         // Verify (case 10a)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2228,16 +2267,15 @@ class MainTest extends RatingSyncTestCase
         $existingActiveScore = $defaultActiveScore;
         $existingActiveDateStr = $defaultActiveDateStr;
         $existingArchive = $defaultArchive;
-        $deleteScore = 0;
         $deleteDate = $defaultActiveDateStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 10b)
-        $filmReturned = setRating($filmId, $deleteScore, $deleteDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $watched, $deleteDate);
 
         // Verify (case 10b)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2268,16 +2306,15 @@ class MainTest extends RatingSyncTestCase
         $existingActiveScore = $defaultActiveScore;
         $existingActiveDateStr = $defaultActiveDateStr;
         $existingArchive = $defaultArchive;
-        $deleteScore = 0;
         $deleteDate = $todayStr;
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Test (case 10c)
-        $filmReturned = setRating($filmId, $deleteScore, $deleteDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $watched, $deleteDate);
 
         // Verify (case 10c)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2307,13 +2344,13 @@ class MainTest extends RatingSyncTestCase
 
         // Setup (case 10d)
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
         $deleteDate = $existingActiveDateStr;
 
         // Test (case 10d)
-        $filmReturned = setRating($filmId, $deleteScore, $deleteDate, null, true);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $watched, $deleteDate, null, true);
 
         // Verify (case 10d)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2344,20 +2381,19 @@ class MainTest extends RatingSyncTestCase
         $existingActiveScore = $defaultActiveScore;
         $existingActiveDateStr = $defaultActiveDateStr;
         $existingArchive = $defaultArchive;
-        $deleteScore = 0;
         $deleteDate = $existingArchive[1]["date"];
 
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
 
         // Delete Use cases (score 0):
         // 11) Same date as an existing archived rating OR forceDelete is true and same date as original date and the same as the existing active rating: Delete
         //   11a) Same date as an existing archived rating (default forceDelete=false)
 
         // Test (case 11a)
-        $filmReturned = setRating($filmId, $deleteScore, $deleteDate);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $watched, $deleteDate);
 
         // Verify (case 11a)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2379,13 +2415,13 @@ class MainTest extends RatingSyncTestCase
 
         // Setup (cast 11b)
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
         $deleteDate = $existingArchive[1]["date"];
 
         // Test (case 11b)
-        $filmReturned = setRating($filmId, $deleteScore, $deleteDate, $deleteDate, false);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $watched, $deleteDate, $deleteDate, false);
 
         // Verify (case 11b)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");
@@ -2407,13 +2443,13 @@ class MainTest extends RatingSyncTestCase
 
         // 11c) Setup
         $this->deleteAllRatingsForUserFilm($username, $sourceName, $filmId);
-        setRating($filmId, $existingActiveScore, $existingActiveDateStr);
-        setRating($filmId, $archive0Score, $archive0DateStr);
-        setRating($filmId, $archive1Score, $archive1DateStr);
+        setRating($filmId, SetRatingScoreValue::create($existingActiveScore), $watched, $existingActiveDateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive0Score), $watched, $archive0DateStr);
+        setRating($filmId, SetRatingScoreValue::create($archive1Score), $watched, $archive1DateStr);
         $deleteDate = $existingActiveDateStr;
 
         // Test (case 11c)
-        $filmReturned = setRating($filmId, $deleteScore, $deleteDate, $deleteDate, true);
+        $filmReturned = setRating($filmId, SetRatingScoreValue::Delete, $watched, $deleteDate, $deleteDate, true);
 
         // Verify (case 11c)
         $this->assertTrue($filmReturned instanceof Film, "Successful call from setRating should return a Film object");

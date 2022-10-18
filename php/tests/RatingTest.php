@@ -1772,6 +1772,170 @@ class RatingTest extends RatingSyncTestCase
     }
 
     /**
+     * - No ratings (user/film) newer than 2022/10/16 in the DB
+     * - Create rating on 2022/10/17 with watched=true
+     *
+     * Expect
+     *   - New active rating in the DB with watched=true
+     *
+     * @covers \RatingSync\Rating::saveRatingToDb
+     * @depends testSaveToDb
+     */
+    public function testWatched()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
+        $filmId = 1;
+        $newScore = 5;
+        $watched = true;
+        $newDate = new \DateTime('2022-10-17');
+
+        // Test
+        $success = Rating::saveRatingToDb($filmId, $username, SetRatingScoreValue::create($newScore), $watched, $newDate);
+
+        // Verify
+        $this->assertTrue($success, "Rating::saveRatingToDb should succeed");
+        $dbRating = Rating::getRatingFromDb($username, Constants::SOURCE_RATINGSYNC, $filmId);
+        $this->assertEquals($newScore, $dbRating->getYourScore(), 'Your score');
+        $this->assertEquals(date_format($newDate, 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
+        $this->assertEquals($watched, $dbRating->getWatched(), 'Watched');
+    }
+
+    /**
+     * - No ratings (user/film) on the current date in the DB
+     * - Create rating with without setting watched or date
+     *
+     * Expect
+     *   - New active rating in the DB with watched=true
+     *
+     * @covers \RatingSync\Rating::saveRatingToDb
+     * @depends testSaveToDb
+     */
+    public function testWatchedDefault()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
+        $filmId = 1;
+        $newScore = 6;
+        $watched = true;
+        $today = new \DateTime();
+
+        // Test
+        $success = Rating::saveRatingToDb($filmId, $username, SetRatingScoreValue::create($newScore));
+
+        // Verify
+        $this->assertTrue($success, "Rating::saveRatingToDb should succeed");
+        $dbRating = Rating::getRatingFromDb($username, Constants::SOURCE_RATINGSYNC, $filmId);
+        $this->assertEquals($newScore, $dbRating->getYourScore(), 'Your score');
+        $this->assertEquals(date_format($today, 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
+        $this->assertEquals($watched, $dbRating->getWatched(), 'Watched');
+    }
+
+    /**
+     * - Create rating with watched=false and the date older than the active rating
+     *
+     * Expect
+     *   - New rating in the DB with watched=false
+     *
+     * @covers \RatingSync\Rating::saveRatingToDb
+     * @depends testSaveToDb
+     */
+    public function testWatchedFalse()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
+        $filmId = 1;
+        $newScore = 4;
+        $watched = false;
+        $newDate = new \DateTime('1957-05-17');
+
+        // Test
+        $success = Rating::saveRatingToDb($filmId, $username, SetRatingScoreValue::create($newScore), $watched, $newDate);
+
+        // Verify
+        $this->assertTrue($success, "Rating::saveRatingToDb should succeed");
+        $archive = Rating::getInactiveRatingsFromDb($username, Constants::SOURCE_RATINGSYNC, $filmId);
+        $dbRating = $this->getRatingByDate($newDate, $archive);
+        $this->assertEquals($newScore, $dbRating->getYourScore(), 'Your score');
+        $this->assertEquals(date_format($newDate, 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
+        $this->assertEquals($watched, $dbRating->getWatched(), 'Watched');
+    }
+
+    /**
+     * - Create rating watched=true and a "viewing" score and the date older than the active rating
+     *
+     * Expect
+     *   - New active rating in the DB with watched=true
+     *
+     * @covers \RatingSync\Rating::saveRatingToDb
+     * @depends testSaveToDb
+     */
+    public function testWatchedViewing()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
+        $filmId = 1;
+        $watched = true;
+        $newDate = new \DateTime('1957-05-18');
+
+        // Test
+        $success = Rating::saveRatingToDb($filmId, $username, SetRatingScoreValue::View, $watched, $newDate);
+
+        // Verify
+        $this->assertTrue($success, "Rating::saveRatingToDb should succeed");
+        $archive = Rating::getInactiveRatingsFromDb($username, Constants::SOURCE_RATINGSYNC, $filmId);
+        $dbRating = $this->getRatingByDate($newDate, $archive);
+        $this->assertEquals(SetRatingScoreValue::View->getScore(), $dbRating->getYourScore(), 'Your score');
+        $this->assertEquals(date_format($newDate, 'Y-m-d'), date_format($dbRating->getYourRatingDate(), 'Y-m-d'), "Your rating date");
+        $this->assertEquals($watched, $dbRating->getWatched(), 'Watched');
+    }
+
+    /**
+     * - Create rating watched=false and a "viewing" score
+     *
+     * Expect
+     *   - Failure. A viewing without watching is invalid.
+     *
+     * @covers \RatingSync\Rating::saveRatingToDb
+     * @depends testSaveToDb
+     */
+    public function testWatchedViewingFalse()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Setup
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
+        $filmId = 1;
+        $watched = false;
+        $newDate = new \DateTime('1957-05-19');
+
+        // Test
+        $success = Rating::saveRatingToDb($filmId, $username, SetRatingScoreValue::View, $watched, $newDate);
+
+        // Verify
+        $this->assertFalse($success, "Rating::saveRatingToDb should fail");
+        $archive = Rating::getInactiveRatingsFromDb($username, Constants::SOURCE_RATINGSYNC, $filmId);
+        $dbRating = $this->getRatingByDate($newDate, $archive);
+        $this->assertNull($dbRating, "No rating should have been created");
+    }
+
+    private function getRatingByDate( \DateTime $date, array $ratings ): Rating | null
+    {
+        $rating = null;
+        foreach ($ratings as $oneRating) {
+            if ( date_format($date, 'Y-m-d') == date_format($oneRating->getYourRatingDate(), 'Y-m-d') ) {
+                $rating = $oneRating;
+                break;
+            }
+        }
+
+        return $rating;
+    }
+
+    /**
      * Test getRatingFromDb($username, $sourceName, $filmId)
      * including a user/source/film combo with multiple archived ratings
      */

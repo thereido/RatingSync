@@ -207,9 +207,15 @@ function renderOneRatingStars(film, ratingIndex = -1) {
     }
     ratingStarsEl.innerHTML = "";
 
+    let toggleOn = "";
+    if ( rating.watched ) {
+        toggleOn = "toggle-on";
+    }
+
     // Create Elements
     const originalScoreEl = document.createElement("div");
     const originalDateEl = document.createElement("div");
+    const watchedEl = document.createElement("span");
 
     // Set Attributes
     originalScoreEl.setAttribute("id", `original-score-${uniqueName}-${ratingIndex}`);
@@ -218,6 +224,8 @@ function renderOneRatingStars(film, ratingIndex = -1) {
     originalDateEl.setAttribute("id", `original-date-${uniqueName}-${ratingIndex}`);
     originalDateEl.setAttribute("data-date", ratingDate);
     originalDateEl.setAttribute("hidden", true);
+    watchedEl.setAttribute("id", `watched-${film.filmId}-${ratingIndex}`);
+    watchedEl.setAttribute("class", `rating-watched ${toggleOn} far fa-eye fa-xs mr-1`);
 
     // Star Values
     var fullStars = yourScore;
@@ -242,6 +250,7 @@ function renderOneRatingStars(film, ratingIndex = -1) {
     const scoreEl = buildScoreElement(yourScore, uniqueName, ratingIndex);
 
     // Append Elements
+    ratingStarsEl.insertBefore(watchedEl, ratingStarsEl.children[0]);
     ratingStarsEl.appendChild(scoreEl);
     ratingStarsEl.appendChild(originalScoreEl);
     ratingStarsEl.appendChild(originalDateEl);

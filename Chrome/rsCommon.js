@@ -267,12 +267,38 @@ function toggleHighlightStars(score, uniqueName, ratingIndex) {
 
 function toggleHighlightStars2(score, starsParent) {
     if (starsParent) {
-        const starEls = starsParent.children;
+        const starEls = starsParent.getElementsByClassName("rating-star");
+
 
         for (let i=0; i < score; i++) {
             starEls[i].toggleAttribute("star-highlight");
         }
     }
+}
+
+/*RT* TODO
+function mouseoverWatched(watchedEl) {
+    if ( watchedEl == null ) {
+        return;
+    }
+
+    toggleButtonOnClass( watchedEl.getAttribute("id") );
+}
+ */
+
+function clickWatched(filmId, active, ratingIndex) {
+    const watchedEl = document.getElementById(`rating-watched-${filmId}-${ratingIndex}`);
+
+    if ( watchedEl == null ) {
+        return;
+    }
+
+    toggleButtonOnClass( watchedEl.getAttribute("id") );
+
+    const turnOn = watchedEl.classList.contains("btn-toggle-on");
+    const originalDate = watchedEl.getAttribute("data-date");
+
+    rateFilm(filmId, null, 0, callback, null, originalDate, ratingIndex)
 }
 
 function showConfirmationRating(filmId, uniqueName, score) {
@@ -368,6 +394,15 @@ function toggleHidden(elementId) {
     el.hidden = !el.hidden;
 }
 
+function toggleButtonOnClass(elementId) {
+    const el = document.getElementById(elementId);
+    if ( el == null ) {
+        return;
+    }
+
+    el.toggleAttribute("btn-toggle-on");
+}
+
 function addFilmlistListeners(el, filmId) {
     // Default list button
 	var defaultListBtn = document.getElementById("filmlist-btn-default-"+filmId);
@@ -390,10 +425,22 @@ function addFilmlistListener(elementId) {
 }
 
 function addStarListeners(el, active) {
-    var stars = el.getElementsByClassName("rating-star");
+    const stars = el.getElementsByClassName("rating-star");
     for (i = 0; i < stars.length; i++) {
         addStarListener(stars[i], active);
     }
+
+    addWatchedListeners(el, active);
+}
+
+function addWatchedListeners(ratingStarsEl, active) {
+
+    const eyes = ratingStarsEl.getElementsByClassName("rating-watched");
+    if ( eyes.length > 0 ) {
+        const watchedEl = eyes[0];
+        addWatchedListener(watchedEl, active);
+    }
+
 }
 
 function addStarListener(starEl, active) {
@@ -411,6 +458,25 @@ function addStarListener(starEl, active) {
         starEl.addEventListener("mouseout", mouseoutHandler);
         starEl.addEventListener("click", clickHandler);
 	}
+}
+
+function addWatchedListener(watchedEl, active) {
+    if ( watchedEl == null ) {
+        return;
+    }
+
+    const filmId = watchedEl.getAttribute('data-film-id');
+    const ratingIndex = watchedEl.getAttribute("data-index");
+
+//*RT* TODO    const mouseoverHandler = function () {  mouseoverWatched(watchedEl); };
+//*RT*    const mouseoutHandler = function () { mouseoutWatched(watchedEl); };
+    const clickHandler = function () { clickWatched(filmId, active, ratingIndex); };
+
+    /*RT*
+    watchedEl.addEventListener("mouseover", mouseoverHandler);
+    watchedEl.addEventListener("mouseout", mouseoutHandler);
+     */
+    watchedEl.addEventListener("click", clickHandler);
 }
 
 function addWatchItButtonListeners(filmId) {

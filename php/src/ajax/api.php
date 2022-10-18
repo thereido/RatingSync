@@ -112,18 +112,31 @@ function api_setRating($username)
     $film = null;
     $filmId = array_value_by_key("fid", $_GET);
     $score = array_value_by_key("s", $_GET);
+    $watchedParam = array_value_by_key("w", $_GET);
     $dateStr = array_value_by_key("d", $_GET); // Format: 2000-02-28
     $originalDateStr = array_value_by_key("od", $_GET); // Format: 2000-02-28
     $force = array_value_by_key("force", $_GET);
-    logDebug("Params fid=$filmId, s=$score, d=$dateStr, od=$originalDateStr, force=$force", __FUNCTION__." ".__LINE__);
+    logDebug("Params fid=$filmId, s=$score, w=$watchedParam, d=$dateStr, od=$originalDateStr, force=$force", __FUNCTION__." ".__LINE__);
+
+    try {
+        $score = SetRatingScoreValue::create($score);
+    }
+    catch (\Exception $e) {
+        $score = null;
+    }
+
+    $watched = false;
+    if ( $watchedParam == 1 || $watchedParam == "true") {
+        $watched = true;
+    }
 
     $forceDelete = false;
     if ( $force == 1 || $force == "true") {
         $forceDelete = true;
     }
 
-    if (!empty($username) && !empty($filmId) && (!empty($score) || $score == 0)) {
-        $film = setRating($filmId, $score, $dateStr, $originalDateStr, $forceDelete);
+    if (!empty($username) && !empty($filmId) && $score instanceof SetRatingScoreValue) {
+        $film = setRating($filmId, $score, $watched, $dateStr, $originalDateStr, $forceDelete);
     }
 
     if (empty($film)) {

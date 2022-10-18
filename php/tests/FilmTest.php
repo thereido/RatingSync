@@ -3038,6 +3038,8 @@ class FilmTest extends RatingSyncTestCase
 
         $score1 = 1;
         $score2 = 2;
+        $watched1 = true;
+        $watched2 = false;
         $date1 = new \DateTime("2022-03-05");
         $date2 = new \DateTime("2022-03-06");
         $rating1 = new Rating($sourceName);
@@ -3048,7 +3050,7 @@ class FilmTest extends RatingSyncTestCase
         $rating2->setYourRatingDate($date2);
         $archive = array($rating1, $rating2);
 
-        $film = setRating($filmId, $score1, $date1->format("Y-m-d"));
+        $film = setRating($filmId, $score1, $watched1, $date1->format("Y-m-d"));
 
         $film = Film::getFilmFromDb($filmId, $username);
         $currentRating = $film->getRating($sourceName);
@@ -3074,6 +3076,7 @@ class FilmTest extends RatingSyncTestCase
         $this->assertEquals($arrSource["archiveCount"], count($arrArchive), "archiveCount should match the length of the archive");
         for ($i = 0; $i < $arrSource["archiveCount"]; $i++) {
             $this->assertEquals($archive[$i]->getYourScore(), $arrArchive[$i]["yourScore"], "yourScore");
+            $this->assertEquals($archive[$i]->getWatched(), $arrArchive[$i]["watched"], "watched");
             $this->assertEquals($archive[$i]->getYourRatingDate()->format("Y-n-j"), $arrArchive[$i]["yourRatingDate"], "yourRatingDate");
         }
 
@@ -3087,6 +3090,7 @@ class FilmTest extends RatingSyncTestCase
                 $this->assertEquals($arrSource["archiveCount"], $count, "archiveCount should match the length of the archive in json");
                 for ($i = 0; $i < $count; $i++) {
                     $this->assertEquals($archive[$i]->getYourScore(), $objSource->archive[$i]->yourScore, "yourScore in json");
+                    $this->assertEquals($archive[$i]->getWatched(), $objSource->archive[$i]->watched, "watched in json");
                     $this->assertEquals($archive[$i]->getYourRatingDate()->format("Y-n-j"), $objSource->archive[$i]->yourRatingDate, "yourRatingDate in json");
                 }
             }
