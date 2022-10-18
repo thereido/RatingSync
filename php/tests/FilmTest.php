@@ -3050,7 +3050,7 @@ class FilmTest extends RatingSyncTestCase
         $rating2->setYourRatingDate($date2);
         $archive = array($rating1, $rating2);
 
-        $film = setRating($filmId, $score1, $watched1, $date1->format("Y-m-d"));
+        $film = setRating($filmId, SetRatingScoreValue::create($score1), $watched1, $date1->format("Y-m-d"));
 
         $film = Film::getFilmFromDb($filmId, $username);
         $currentRating = $film->getRating($sourceName);

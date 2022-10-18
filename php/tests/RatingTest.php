@@ -1811,6 +1811,7 @@ class RatingTest extends RatingSyncTestCase
      *
      * @covers \RatingSync\Rating::saveRatingToDb
      * @depends testSaveToDb
+     * @depends testWatched
      */
     public function testWatchedDefault()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1841,6 +1842,7 @@ class RatingTest extends RatingSyncTestCase
      *
      * @covers \RatingSync\Rating::saveRatingToDb
      * @depends testSaveToDb
+     * @depends testWatched
      */
     public function testWatchedFalse()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1872,6 +1874,7 @@ class RatingTest extends RatingSyncTestCase
      *
      * @covers \RatingSync\Rating::saveRatingToDb
      * @depends testSaveToDb
+     * @depends testWatched
      */
     public function testWatchedViewing()
     {$this->start(__CLASS__, __FUNCTION__);
@@ -1902,6 +1905,7 @@ class RatingTest extends RatingSyncTestCase
      *
      * @covers \RatingSync\Rating::saveRatingToDb
      * @depends testSaveToDb
+     * @depends testWatchedViewing
      */
     public function testWatchedViewingFalse()
     {$this->start(__CLASS__, __FUNCTION__);
