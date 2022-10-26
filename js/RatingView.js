@@ -209,13 +209,13 @@ function renderOneRatingStars(film, ratingIndex = -1) {
 
     let toggleOn = "";
     if ( rating.watched ) {
-        toggleOn = "toggle-on";
+        toggleOn = "watched-on";
     }
 
     // Create Elements
     const originalScoreEl = document.createElement("div");
     const originalDateEl = document.createElement("div");
-    const watchedEl = document.createElement("span");
+    const watchedEl = document.createElement("rating-watched");
 
     // Set Attributes
     originalScoreEl.setAttribute("id", `original-score-${uniqueName}-${ratingIndex}`);
@@ -224,8 +224,11 @@ function renderOneRatingStars(film, ratingIndex = -1) {
     originalDateEl.setAttribute("id", `original-date-${uniqueName}-${ratingIndex}`);
     originalDateEl.setAttribute("data-date", ratingDate);
     originalDateEl.setAttribute("hidden", true);
-    watchedEl.setAttribute("id", `watched-${film.filmId}-${ratingIndex}`);
+    watchedEl.setAttribute("id", `rating-watched-${film.filmId}-${ratingIndex}`);
     watchedEl.setAttribute("class", `rating-watched ${toggleOn} far fa-eye fa-xs mr-1`);
+    watchedEl.setAttribute("data-film-id", `${film.filmId}`);
+    watchedEl.setAttribute("data-uniquename", `${uniqueName}`);
+    watchedEl.setAttribute("data-index", `${ratingIndex}`);
 
     // Star Values
     var fullStars = yourScore;
@@ -241,6 +244,9 @@ function renderOneRatingStars(film, ratingIndex = -1) {
     while (emptyStars > 0) {
         const starEl = buildStarElement(film.filmId, uniqueName, ratingDate, starScore, ratingIndex);
         starEl.setAttribute("class", "rating-star fa-star far fa-xs");
+        if ( yourScore == null && rating.watched ) {
+            starEl.classList.add("no-score");
+        }
         ratingStarsEl.appendChild(starEl);
         emptyStars = emptyStars - 1;
         starScore++;
@@ -316,7 +322,8 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, active, ratingIndex)
     if ( parentEl.childElementCount == 0 && ! active ) {
         // This is the first rating and it is not active. If there is no active rating offer to activate/un-archive it.
         const activeRating = rsSource?.rating;
-        if ( activeRating?.yourScore < 1 ) {
+        const thereIsAnActiveRating = activeRating?.yourRatingDate;
+        if ( ! thereIsAnActiveRating ) {
             archiveBtnEl = buildUnarchiveRatingButton(film.filmId, rating, ratingIndex);
         }
     }

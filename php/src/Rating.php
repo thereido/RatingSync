@@ -191,7 +191,7 @@ class Rating
     /**
      * Valid scores are numbers 1 to 10.  Strings can be casted.
      *
-     * @param float $score 1 to 10
+     * @param float $score 0 to 10
      *
      * @return true=valid, false=invalid
      */
@@ -371,7 +371,7 @@ class Rating
 
         // If these values are empty then use the previous rating's values
         // - score, date, suggested score
-        $yourScore = !empty($yourScore) ? $yourScore : $previousRating?->getYourScore();
+        $yourScore = self::validRatingScore($yourScore) ? $yourScore : $previousRating?->getYourScore();
         $suggestedScore = !empty($suggestedScore) ? $suggestedScore : $previousRating?->getSuggestedScore();
         $ratingDateStr = !empty($ratingDateStr) ? $ratingDateStr : $previousRating?->getYourRatingDate()?->format(RATING_DATE_DB_FORMAT);
         
@@ -785,12 +785,6 @@ class Rating
             }
 
             $saved = self::createAndSaveToDb($sourceName, $username, $filmId, $newScore, $watched, $newDate, $archiveIt);
-
-            /*RT* TODO
-            if ( $thereWasAtLeastOneWatchedRating && $thereAreNoWatchedRatingsNow ) {
-                update film_user.seen and film_user.seenDate
-            }
-            *RT*/
 
             return $saved;
 

@@ -8,7 +8,7 @@ $username = getUsername();
 $response = "";
 
 $action = array_value_by_key("action", $_GET);
-logDebug("API action: $action, username: $username", "api.php ".__LINE__);
+logDebug("API action: $action, username: $username  " . api_getFullUri(), "");
 if ($action == "getSearchFilm") {
     $response = api_getSearchFilm($username, $_GET);
 }
@@ -118,11 +118,21 @@ function api_setRating($username)
     $force = array_value_by_key("force", $_GET);
     logDebug("Params fid=$filmId, s=$score, w=$watchedParam, d=$dateStr, od=$originalDateStr, force=$force", __FUNCTION__." ".__LINE__);
 
-    try {
-        $score = SetRatingScoreValue::create($score);
-    }
-    catch (\Exception $e) {
+    if ( $score == "null" ) {
         $score = null;
+    }
+    else {
+        try {
+            $score = intval($score); // On failure it returns 0
+            $score = SetRatingScoreValue::create($score);
+        }
+        catch (\Exception $e) {
+            $score = null;
+        }
+    }
+
+    if ( $dateStr == "null" ) {
+        $dateStr = null;
     }
 
     $watched = false;
@@ -922,6 +932,16 @@ function api_setNeverWatch($username): string
     }
 
     return $response;
+}
+
+function api_getFullUri()
+{
+    $protocol = "http";
+    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+        $protocol = "https";
+    }
+
+    return "$protocol://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 }
 
 ?>

@@ -11,6 +11,7 @@ function includeHeadHtmlForAllPages() {
     $html .= includeFontAwesomeDependencies();
     $html .= includeJavascriptFiles();
     $html .= '<link href="/css/rs.css" rel="stylesheet">' . "\n";
+    $html .= '<link href="/css/switches.css" rel="stylesheet">' . "\n";
 
     return $html;
 }

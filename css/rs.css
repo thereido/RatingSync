@@ -456,6 +456,7 @@ detail-episode-rating {
 .input-group-text { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border-surface-input); }
 .input-group-text:hover { color: var(--primary); }
 .modal-body input { background-color: var(--bg-input-text); color: var(--fg-input-text); border-color: var(--border-surface-input); }
+input[type="checkbox"] { background: var(--primary) }
 .modal-content { background-color: var(--bg-surface); color: var(--fg-surface); border-color: var(--border-surface); }
 .modal-header, .modal-footer { border-color: var(--border-surface); }
 .navbar-toggler-icon { border: 1px solid var(--border-surface); border-radius: 3px; }
@@ -496,12 +497,13 @@ select { background-color: var(--bg-input-text); color: var(--fg-surface-muted);
 .film-line > .film-title > a { color: var(--fg); }
 .footer { border-top-color: var(--footer-border); }
 .rating-history, .rating-history:disabled, .btn-rating-history, .btn-group > .btn-rating-history:not(:first-child) { color: var(--fg-surface-muted); }
+.rating-star.no-score { color: var(--fg-surface-muted); }
 .rating-stars > span, .rating-stars-noclick, .rating-stars > score, .star { color: var(--star); }
 .rating-stars > [star-highlight] { color: var(--primary); }
 .rating-stars > score > of-possible  { color: var(--fg-surface-muted); }
-.rating-watched { color: var(--fg-surface-muted); }
-.rating-watched > btn-toggle > btn-toggle-on { color: var(--star); }
-.rating-watched:hover { color: var(--primary); }
+rating-watched { color: var(--fg-surface-muted); }
+rating-watched.watched-on { color: var(--star); }
+rating-watched.highlight, rating-watched.watched-on.highlight { color: var(--primary) }
 .score-invisible  { color: var(--bg-surface-trans); }
 .search-suggestion-item { border-color: var(--border);}
 .stream-icon { background-color: transparent; }
@@ -532,6 +534,7 @@ detail-episode-rating { color: var(--star); }
     
     --fg: rgba(255, 255, 255, 0.87);
     --fg-surface: rgba(255, 255, 255, 0.87);
+    --fg-surface-switch: rgba(233, 215, 215);
     --fg-surface-muted: rgba(255, 255, 255, 0.60);
     --fg-surface-muted-more: rgba(255, 255, 255, 0.30);
     --fg-surface-disabled: rgba(255, 255, 255, 0.38);

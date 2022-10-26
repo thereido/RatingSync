@@ -20,7 +20,6 @@ function renderRsFilmEdit(film, filmEl) {
     renderEditRatings(filmId);
 
     addActiveButtonListeners(film);
-//*RT*    addWatchItButtonListeners(film?.filmId);
 }
 
 function renderEditRatings(filmId) {
@@ -62,7 +61,7 @@ function buildEditActiveRatingElement(film) {
     const ratingScore = activeRating.yourScore;
     const ratingDate = activeRating.yourRatingDate;
 
-    if ( ratingScore == null ) {
+    if ( ratingDate == null ) {
         return document.createElement("div");
     }
 
@@ -147,6 +146,16 @@ function clickNewStar(score, ratingStarsEl) {
     const stars = ratingStarsEl.getElementsByClassName("rating-star");
     const yourScoreEl = document.getElementById("new-rating-your-score");
 
+    const originalScore = newRatingScoreEl.value;
+
+    if ( score == originalScore ) {
+        score = 0;
+        const watchedEl = document.getElementById(`new-rating-watched`);
+        if ( watchedEl ) {
+            watchedEl.checked = true;
+        }
+    }
+
     for (let starsIndex = 0; starsIndex < stars.length; starsIndex++) {
         const star = stars[starsIndex];
         let starScore = star.getAttribute("data-score");
@@ -172,13 +181,19 @@ function editRatingCreate() {
     const score = document.getElementById("new-rating-score").value;
     const date = document.getElementById("new-rating-date").value;
     const originalDate = document.getElementById("new-rating-original-date").value;
+    const watchedEl = document.getElementById(`new-rating-watched`);
 
-    if ( score == "" || score < 1 || score > 10 || date < "1850-01-01" ) {
+    const watched = watchedEl.checked;
+
+    if ( score == "" || score < 0 || score > 10 || date < "1850-01-01" ) {
+        return;
+    }
+    else if ( score == 0 && !watched ) {
         return;
     }
 
     disableEditPageButtons();
-    rateFilm(filmId, uniqueName, score, renderNewRating, date, originalDate);
+    rateFilm(filmId, uniqueName, score, watched, renderNewRating, date, originalDate);
 }
 
 function disableEditPageButtons() {
@@ -236,7 +251,7 @@ function editRatingDelete(filmId, ratingDate, force = false, ratingIndex = null)
 
     let params = "";
     params += `&fid=${filmId}`;
-    params += `&s=0`;
+    params += `&s=-1`;
     params += ratingDateEncoded ? `&d=${ratingDateEncoded}` : "";
     params += ratingDateEncoded ? `&od=${ratingDateEncoded}` : "";
     params += `&force=${forceParam}`;

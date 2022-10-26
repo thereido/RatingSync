@@ -111,7 +111,7 @@ function getDatabase($mode = Constants::DB_MODE)
 }
 
 function debugMessage($input, $prefix = null, $showTime = true, $printArray = null) {
-    if (!empty($prefix)) {
+    if (!is_null($prefix)) {
         $time = "";
         if ($showTime) {
             $time = date_format(new \DateTime(), 'Y-m-d H:i:s');

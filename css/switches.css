@@ -1,0 +1,46 @@
+
+input[type="checkbox"].switch {
+    font-size: .6em;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 3em;
+    height: 1em;
+    background: var(--bg-switch);
+    border-radius: 3em;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    -webkit-transition: all .1s ease-in-out;
+    transition: all .1s ease-in-out;
+    vertical-align: middle;
+}
+
+input[type="checkbox"].switch:checked{
+    background: var(--primary);
+}
+
+input[type="checkbox"].switch:after{
+    position: absolute;
+    content: "";
+    width: 1.5em;
+    height: 1.5em;
+    border-radius: 50%;
+    background: var(--fg-switch);
+    -webkit-box-shadow: 0 0 .25em rgba(0,0,0,.3);
+    box-shadow: 0 0 .25em rgba(0,0,0,.3);
+    left: 0;
+    top: calc(-25%);
+    -webkit-transition: all .1s ease-in-out;
+    transition: all .1s ease-in-out;
+}
+
+input[type="checkbox"].switch:checked:after{
+    left: calc(100% - 1.5em);
+}
+
+:root {
+    --bg-switch: grey;
+
+    --fg-switch: var(--fg-surface-switch);
+}
