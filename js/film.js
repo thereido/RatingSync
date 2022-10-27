@@ -104,7 +104,7 @@ function buildFilmDetailElement(film) {
     const actionAreaEl = document.createElement("div");
     const starsContainerEl = document.createElement("div");
     const starsEl = buildRatingElement(film);
-    const historyEl = buildRatingHistoryElement(film);
+    const historyEl = buildViewingHistoryElement(film);
     const justwatchLinkEl = document.createElement("a");
     const justwatchImgEl = document.createElement("img");
     const statusEl = document.createElement("status");

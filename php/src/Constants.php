@@ -89,4 +89,43 @@ class Constants
     }
 
 }
+
+enum SetRatingScoreValue {
+    case Delete;
+    case View;
+    case One;
+    case Two;
+    case Three;
+    case Four;
+    case Five;
+    case Six;
+    case Seven;
+    case Eight;
+    case Nine;
+    case Ten;
+
+    private static function asArray(): array {
+        return array(-1 => self::Delete, self::View, self::One, self::Two, self::Three, self::Four, self::Five, self::Six, self::Seven, self::Eight, self::Nine, self::Ten);
+    }
+
+    public function getScore(): int {
+
+        $arr = self::asArray();
+        return array_search( $this, $arr );
+
+    }
+
+    public static function create(?int $score): SetRatingScoreValue {
+
+        $values = self::asArray();
+
+        if ( ! array_key_exists($score, $values) ) {
+            throw new \Exception("Invalid RatingScore");
+        }
+
+        return $values[$score];
+
+    }
+}
+
 ?>

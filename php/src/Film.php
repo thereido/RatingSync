@@ -4,8 +4,11 @@
  */
 namespace RatingSync;
 
+use DateTime;
+
 require_once "Http.php";
 require_once "Filmlist.php";
+require_once "UserSpecificFilmInfo.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 
 class Film {
@@ -44,6 +47,7 @@ class Film {
     protected $genres = array();
     protected $directors = array();
     protected $filmlists = array();
+    private $userInfo;
 
     public function __construct()
     {
@@ -64,43 +68,49 @@ class Film {
     }
 
     /**
-     * <film title="">
-           <parentId/>
-           <title/>
-           <year/>
-           <contentType/>
-           <seasonCount/>
-           <season/>
-           <episodeNumber/>
-           <episodeTitle/>
-           <image/>
-           <refreshDate/>
-           <directors>
-               <director/>
-           </directors>
-           <genres>
-               <genre/>
-           </genres>
-           <source name="">
-               <image/>
-               <uniqueName/>
-               <parentUniqueName/>
-               <uniqueEpisode/>
-               <uniqueAlt/>
-               <streamUrl/>
-               <streamDate/>
-               <criticScore/>
-               <userScore/>
-               <rating>
-                   <yourScore/>
-                   <yourRatingDate/>
-                   <suggestedScore/>
-               </rating>
-           </source>
-           <filmlists>
-               <listname/>
-           </filmlists>
-       </film>
+    <film title="">
+        <parentId/>
+        <title/>
+        <year/>
+        <contentType/>
+        <seasonCount/>
+        <season/>
+        <episodeNumber/>
+        <episodeTitle/>
+        <image/>
+        <refreshDate/>
+        <directors>
+            <director/>
+        </directors>
+        <genres>
+            <genre/>
+        </genres>
+        <source name="">
+            <image/>
+            <uniqueName/>
+            <parentUniqueName/>
+            <uniqueEpisode/>
+            <uniqueAlt/>
+            <streamUrl/>
+            <streamDate/>
+            <criticScore/>
+            <userScore/>
+            <rating>
+                <yourScore/>
+                <yourRatingDate/>
+                <suggestedScore/>
+            </rating>
+        </source>
+        <filmlists>
+            <listname/>
+        </filmlists>
+        <user>
+            <seen/>
+            <seenDate/>
+            <neverWatch/>
+            <neverWatchDate/>
+        </user>
+    </film>
      *
      * @param SimpleXMLElement $xml Add new <film> into this param
      *
@@ -186,6 +196,14 @@ class Film {
                 $listsXml->addChild('listname', htmlentities($listname, ENT_COMPAT, "utf-8"));
             }
         }
+
+        if ( ! is_null($this->userInfo) ) {
+            $userXml = $filmXml->addChild("user");
+            $userXml->addChild("seen", $this->userInfo?->getSeen());
+            $userXml->addChild("seenDate", $this->userInfo?->getSeenDate());
+            $userXml->addChild("neverWatch", $this->userInfo?->getNeverWatch());
+            $userXml->addChild("neverWatchDate", $this->userInfo?->getNeverWatchDate());
+        }
     }
 
     public function asArray($encodeTitles = false)
@@ -257,6 +275,15 @@ class Film {
         if (count($arrFilmlists) > 0) {
             $arr['filmlists'] = $arrFilmlists;
         }
+
+        if ( ! is_null($this->userInfo) ) {
+            $arrUser = array();
+            $arrUser['seen'] = $this->getSeen();
+            $arrUser['seenDate'] = $this->getSeenDate();
+            $arrUser['neverWatch'] = $this->getNeverWatch();
+            $arrUser['neverWatchDate'] = $this->getNeverWatchDate();
+            $arr['user'] = $arrUser;
+        }
         
         return $arr;
     }
@@ -294,7 +321,7 @@ class Film {
         $film->setImage(Self::xmlStringByKey('image', $filmSxe));
         $refreshDateStr = Self::xmlStringByKey('refreshDate', $filmSxe);
         if (!empty($refreshDateStr)) {
-            $film->setRefreshDate(new \DateTime($refreshDateStr));
+            $film->setRefreshDate(new DateTime($refreshDateStr));
         }
 
         foreach ($filmSxe->xpath('directors') as $directorsSxe) {
@@ -344,7 +371,7 @@ class Film {
             }
             $yourRatingDateStr = Self::xmlStringByKey('yourRatingDate', $ratingSxe);
             if (!empty($yourRatingDateStr)) {
-                $rating->setYourRatingDate(\DateTime::createFromFormat("Y-n-j", $yourRatingDateStr));
+                $rating->setYourRatingDate(DateTime::createFromFormat("Y-n-j", $yourRatingDateStr));
             }
             $suggestedScore = Self::xmlStringByKey('suggestedScore', $ratingSxe);
             if (Rating::validRatingScore($suggestedScore)) {
@@ -359,6 +386,26 @@ class Film {
                 if (!empty($listnameSxe->__toString())) {
                     $film->addFilmlist($listnameSxe->__toString());
                 }
+            }
+        }
+
+        $userSxe = $filmSxe->xpath('user');
+        if ( $userSxe ) {
+            $filmId = Self::xmlStringByKey('filmId', $sourceSxe);
+            $userInfo = UserSpecificFilmInfo::newDbObject(getUsername(), $filmId);
+            if ( ! is_null($userInfo) ) {
+                $userInfo->setSeen(Self::xmlStringByKey('seen', $userSxe));
+                $seenDateStr = Self::xmlStringByKey('seenDate', $userSxe);
+                if ( ! empty($seenDateStr) ) {
+                    $userInfo->setSeenDate(DateTime::createFromFormat("Y-n-j", $seenDateStr));
+                }
+                $userInfo->setNeverWatch(Self::xmlStringByKey('neverWatch', $userSxe));
+                $neverDateStr = Self::xmlStringByKey('neverDate', $userSxe);
+                if ( ! empty($neverDateStr) ) {
+                    $userInfo->setNeverWatchDate(DateTime::createFromFormat("Y-n-j", $neverDateStr));
+                }
+
+                $film->setUserInfo($userInfo);
             }
         }
         
@@ -865,6 +912,56 @@ class Film {
         return in_array($listname, $this->filmlists);
     }
 
+    public function setUserInfo(?UserSpecificFilmInfo $userInfo): void
+    {
+        $this->userInfo = $userInfo;
+    }
+
+    public function getUserInfo(): ?UserSpecificFilmInfo
+    {
+        return $this->userInfo;
+    }
+
+    public function setSeen(bool $seen): void
+    {
+        $this->userInfo->setSeen($seen);
+    }
+
+    public function getSeen(): bool
+    {
+        return $this->userInfo->getSeen();
+    }
+
+    public function setSeenDate(?DateTime $seenDate): void
+    {
+        $this->userInfo->setSeenDate($seenDate);
+    }
+
+    public function getSeenDate(): ?DateTime
+    {
+        return $this->userInfo->getSeenDate();
+    }
+
+    public function setNeverWatch(bool $neverWatch): void
+    {
+        $this->userInfo->setNeverWatch($neverWatch);
+    }
+
+    public function getNeverWatch(): bool
+    {
+        return $this->userInfo->getNeverWatch();
+    }
+
+    public function setNeverWatchDate(?DateTime $neverWatchDate): void
+    {
+        $this->userInfo->setNeverWatchDate($neverWatchDate);
+    }
+
+    public function getNeverWatchDate(): ?DateTime
+    {
+        return $this->userInfo->getNeverWatchDate();
+    }
+
     /**
      * Return only streams with a URL
      *
@@ -896,11 +993,11 @@ class Film {
         $errorFree = true;
 
         $filmId = $this->id;
-        $parentId = $this->parentId;
+        $parentId = $this->parentId ?: "NULL";
         $title = $db->quote($this->getTitle());
         $year = $this->getYear();
         $contentType = $this->getContentType();
-        $seasonCount = $this->getSeasonCount();
+        $seasonCount = $this->getSeasonCount() ?: "NULL";
         $season = $db->quote($this->getSeason());
         $episodeNumber = $this->getEpisodeNumber();
         $episodeTitle = $db->quote($this->getEpisodeTitle());
@@ -910,17 +1007,11 @@ class Film {
         if (!empty($refreshDate)) {
             $refreshDateUpdate = ", refreshDate='" . $refreshDate->format('Y-m-d H:i:s') . "'";
         }
-        
-        if (is_null($parentId)) {
-            $parentId = "NULL";
-        }
+
         $selectYear = "year=$year";
         if (is_null($year)) {
             $selectYear = "year IS NULL";
             $year = "NULL";
-        }
-        if (is_null($seasonCount)) {
-            $seasonCount = "NULL";
         }
         $selectEpisodeNumber = "episodeNumber=$episodeNumber";
         if (is_null($episodeNumber)) {
@@ -1075,6 +1166,12 @@ class Film {
                 }
             }
         }
+
+        // User-specific Info
+        if ( ! empty($username) ) {
+            $userInfo = $this->getUserInfo();
+            $userInfo?->saveToDb();
+        }
         
         // Update Film row. If this is a new film then this update is
         // only for setting an image.
@@ -1108,7 +1205,7 @@ class Film {
         return self::getFilmFromDbRow($row, $username);
     }
 
-    public static function getFilmFromDbRow($row, $username = null)
+    private static function getFilmFromDbRow($row, $username = null)
     {
         $db = getDatabase();
         $filmId = $row["id"];
@@ -1126,8 +1223,7 @@ class Film {
         $film->setImage($row["image"]);
         $refreshDateStr = $row['refreshDate'];
         if (!empty($refreshDateStr) && $refreshDateStr >= Constants::DATE_MIN_STR) {
-            $refreshDate = new \DateTime($refreshDateStr);
-            $film->setRefreshDate(new \DateTime($refreshDateStr));
+            $film->setRefreshDate(new DateTime($refreshDateStr));
         }
 
         // Sources
@@ -1184,7 +1280,18 @@ class Film {
                 $film->addFilmlist($row['listname']);
             }
         }
-        
+
+        // User-Specific Film Info
+        if ( !empty($username) && !empty($filmId) ) {
+            try {
+                $userInfo = UserSpecificFilmInfo::getFromDb($username, $filmId);
+            }
+            catch (\Exception $e) {
+                $userInfo = null;
+            }
+            $film->setUserInfo( $userInfo );
+        }
+
         return $film;
     }
 
@@ -1473,9 +1580,9 @@ class Film {
         $currentImageValid = $this->validateImage();
         $currentSeasonCount = $this->getSeasonCount();
         $currentRefreshDate = $this->getRefreshDate();
-        $now = new \DateTime();
+        $now = new DateTime();
         $staleDay = $now->sub(new \DateInterval('P30D')); // 30 days ago
-        $now = new \DateTime();
+        $now = new DateTime();
     
         // Refresh now if it has been too long or if the image is not valid
         if (empty($currentRefreshDate) || $currentRefreshDate <= $staleDay || !($currentImageValid)) {
@@ -1532,4 +1639,5 @@ class Film {
         
         return $isValid;
     }
+
 }

@@ -79,7 +79,14 @@ function clearAlert(el)
     }
 }
 
-function rateFilm(filmId, uniqueName, score, callback, newDate = null, originalDate = null, index = null) {
+function rateChangedScore(filmId, uniqueName, score, callback) {
+    const watchedCheckboxEl = document.getElementById(`confirm-watched-${filmId}`);
+    const watched = watchedCheckboxEl.checked;
+
+    rateFilm(filmId, uniqueName, score, watched, callback);
+}
+
+function rateFilm(filmId, uniqueName, score, watched, callback, newDate = null, originalDate = null, index = -1) {
     const operaterId = `rateFilm-${filmId}`;
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
@@ -101,11 +108,17 @@ function rateFilm(filmId, uniqueName, score, callback, newDate = null, originalD
         }
     }
 
+    let watchedParam = 0;
+    if (watched) {
+        watchedParam = 1;
+    }
+
     let params = "";
     params += "&json=1";
     params += `&fid=${filmId}`;
-    params += `&un=${uniqueName}`;
+    params += uniqueName ? `&un=${uniqueName}` : "";
     params += `&s=${score}`;
+    params += `&w=${watchedParam}`;
     params += newDate ? `&d=${newDate}` : "";
     params += originalDate ? `&od=${originalDate}` : "";
     xmlhttp.open("GET", RS_URL_API + "?action=setRating" + params, true);
@@ -235,29 +248,36 @@ function toggleFilmlist(listname, filmId, activeBtnId) {
 function clickStar(filmId, uniqueName, score, active, ratingIndex) {
     const originalScoreEl = document.getElementById(`original-score-${uniqueName}-${ratingIndex}`);
     const originalScore = originalScoreEl.getAttribute('data-score');
+    const watchedEl = document.getElementById(`rating-watched-${filmId}-${ratingIndex}`);
+    let watched = watchedEl.classList.contains("watched-on");
+
+    if ( ! (originalScore >= 0 || originalScore <= 10) ) {
+        // There is no original rating. New ratings always get set to watched.
+        watched = true;
+    }
 
     if (active) {
-        if (score == originalScore) {
-            showConfirmationRating(filmId, uniqueName, score);
-        } else {
-            rateFilm(filmId, uniqueName, score, renderActiveRating);
-        }
+        confirmRating(filmId, uniqueName, score, watched, originalScore);
     }
-    else {
-        if (score != originalScore) {
-            const originalDate = document.getElementById(`rate-${uniqueName}-${score}-${ratingIndex}`).getAttribute('data-date');
-            const newDate = originalDate;
-            rateFilm(filmId, uniqueName, score, renderEditRating, newDate, originalDate, ratingIndex);
-        }
+    else if (score != originalScore) {
+        const originalDate = document.getElementById(`rate-${uniqueName}-${score}-${ratingIndex}`).getAttribute('data-date');
+        const newDate = originalDate;
+        rateFilm(filmId, uniqueName, score, watched, renderEditRating, newDate, originalDate, ratingIndex);
     }
 }
 
-function mouseoverStar(score, uniqueName, ratingIndex) {
+function mouseoverStar(score, filmId, uniqueName, ratingIndex) {
+    if ( ratingIndex && ratingIndex == -1 ) {
+        highlightWatched(true, filmId, ratingIndex);
+    }
     toggleHighlightStars(score, uniqueName, ratingIndex);
     setYourScoreElementValue(score, uniqueName, ratingIndex);
 }
 
-function mouseoutStar(score, uniqueName, ratingIndex) {
+function mouseoutStar(score, filmId, uniqueName, ratingIndex) {
+    if ( ratingIndex && ratingIndex == -1 ) {
+        highlightWatched(false, filmId, ratingIndex);
+    }
     toggleHighlightStars(score, uniqueName, ratingIndex);
     resetYourScoreElementValue(uniqueName, ratingIndex);
 }
@@ -269,7 +289,8 @@ function toggleHighlightStars(score, uniqueName, ratingIndex) {
 
 function toggleHighlightStars2(score, starsParent) {
     if (starsParent) {
-        const starEls = starsParent.children;
+        const starEls = starsParent.getElementsByClassName("rating-star");
+
 
         for (let i=0; i < score; i++) {
             starEls[i].toggleAttribute("star-highlight");
@@ -277,52 +298,246 @@ function toggleHighlightStars2(score, starsParent) {
     }
 }
 
-function showConfirmationRating(filmId, uniqueName, score) {
-    // Show confirmation dialog asking what to do
-    
+function highlightWatched(on, filmId, ratingIndex) {
+
+    const watchedEl = document.getElementById(`rating-watched-${filmId}-${ratingIndex}`);
+
+    if (on) {
+        watchedEl.classList.add("highlight");
+    }
+    else {
+        watchedEl.classList.remove("highlight");
+    }
+}
+
+function clickWatched(filmId, active, ratingIndex) {
+    const watchedEl = document.getElementById(`rating-watched-${filmId}-${ratingIndex}`);
+    const uniqueName = watchedEl.getAttribute("data-uniquename");
+    const originalScoreEl = document.getElementById(`original-score-${uniqueName}-${ratingIndex}`);
+    const originalScore = originalScoreEl.getAttribute('data-score');
+    const originalDateEl = document.getElementById(`original-date-${uniqueName}-${ratingIndex}`);
+    const originalDate = originalDateEl.getAttribute('data-date');
+
+    if ( watchedEl == null ) {
+        return;
+    }
+
+    toggleButtonOnClass( watchedEl.getAttribute("id") );
+
+    const turnOn = ! watchedEl.classList.contains("watched-on");
+    const hasScore = originalScore > 0 || originalScore <= 10
+
+    let callback = renderActiveRating;
+    if ( ! active ) {
+        callback = renderEditRating;
+    }
+
+    if ( !hasScore && turnOn ) {
+        // This is new rating
+        rateFilm(filmId, null, 0, turnOn, callback, null, null, ratingIndex);
+    }
+    else {
+        // Clicked the eye on an existing rating
+        if ( active ) {
+            confirmWatchedActiveRating(filmId, uniqueName, turnOn, originalScore, originalDate);
+        }
+        else {
+            rateFilm(filmId, null, originalScore, turnOn, callback, originalDate, originalDate, ratingIndex);
+        }
+    }
+}
+
+function showRatingConfirmationDialog(uniqueName) {
+
     // Hide the action area & show the dialog
-    var actionAreaEl = document.getElementById("action-area-" + uniqueName);
+    const actionAreaEl = document.getElementById("action-area-" + uniqueName);
+    const confirmationEl = document.getElementById("rate-confirmation-" + uniqueName);
+
     actionAreaEl.setAttribute("hidden", true);
-    var confirmationEl = document.getElementById("rate-confirmation-" + uniqueName);
     confirmationEl.removeAttribute("hidden");
 
-    // A function to undo the dialog content and show the action area
-    var undoDialogFunc = function () {
-            confirmationEl.setAttribute("hidden", true);
-            confirmationEl.innerHTML = "";
-            actionAreaEl.removeAttribute("hidden");
-        }
-    
-    var rateButton = document.createElement("button");
-    rateButton.setAttribute("type", "button");
-    rateButton.setAttribute("class", "btn btn-primary");
-    rateButton.innerHTML = "Rate " + score + " Again";
-    var rateHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, score, renderActiveRating); };
-    rateButton.addEventListener("click", rateHandler);
+}
 
-    var removeButton = document.createElement("button");
-    removeButton.setAttribute("type", "button");
-    removeButton.setAttribute("class", "btn btn-secondary btn-sm");
-    removeButton.innerHTML = "Remove Rating";
-    var removeHandler = function () { undoDialogFunc(); rateFilm(filmId, uniqueName, 0, renderActiveRating); };
-    removeButton.addEventListener("click", removeHandler);
+function hideRatingConfirmationDialog(uniqueName) {
 
-    var cancelButton = document.createElement("button");
-    cancelButton.setAttribute("type", "button");
-    cancelButton.setAttribute("class", "btn btn-link btn-sm");
-    cancelButton.innerHTML = "Cancel";
-    var cancelHandler = function () { undoDialogFunc(); };
-    cancelButton.addEventListener("click", cancelHandler);
+    const actionAreaEl = document.getElementById("action-area-" + uniqueName);
+    const confirmationEl = document.getElementById("rate-confirmation-" + uniqueName);
 
-    var row1El = document.createElement("div");
-    var row2El = document.createElement("div");
+    confirmationEl.setAttribute("hidden", true);
+    confirmationEl.innerHTML = "";
+    actionAreaEl.removeAttribute("hidden");
+}
+
+function createButton(text, type = "primary", clickHandler = null) {
+
+    const buttonEl = document.createElement("button");
+    buttonEl.setAttribute("type", "button");
+    buttonEl.setAttribute("class", "btn btn-" + type);
+
+    if ( text ) {
+        buttonEl.innerHTML = text;
+    }
+
+    if ( clickHandler ) {
+        buttonEl.addEventListener("click", clickHandler);
+    }
+
+    return buttonEl;
+
+}
+
+function confirmRating(filmId, uniqueName, score, watched, originalScore) {
+
+    const row1El = document.createElement("div");
+    const row2El = document.createElement("div");
     row2El.setAttribute("class", "pt-1");
 
-    row1El.append(rateButton);
-    row2El.append(removeButton);
-    row2El.append(cancelButton);
+    const cancelHandler = function () { hideRatingConfirmationDialog(uniqueName); };
+    const cancelButtonEl = createButton("Cancel", "link", cancelHandler);
+    cancelButtonEl.classList.add("btn-sm");
+
+    const confirmationEl = document.getElementById("rate-confirmation-" + uniqueName);
+    const ratingHasScore = originalScore > 0;
+
+    if ( score == originalScore ) {
+        // Button - Rate score Again
+        // Button - Remove
+        // Button - Cancel
+
+        showRatingConfirmationDialog(uniqueName);
+
+        const rateHandler = function () { rateFilm(filmId, uniqueName, score, watched, renderActiveRating); hideRatingConfirmationDialog(uniqueName); };
+        const rateButtonEl = createButton("Rate " + score + " Again", "primary", rateHandler);
+
+        const removeHandler = function () { rateFilm(filmId, uniqueName, -1, watched, renderActiveRating); hideRatingConfirmationDialog(uniqueName); };
+        const removeButtonEl = createButton("Remove Rating", "secondary", removeHandler);
+        removeButtonEl.classList.add("btn-sm");
+
+        row1El.append(rateButtonEl);
+        row2El.append(removeButtonEl);
+        row2El.append(cancelButtonEl);
+
+    }
+    else if ( ratingHasScore && !watched ) {
+        // Checkbox - I watched it today
+        // Button - Rate score
+
+        showRatingConfirmationDialog(uniqueName);
+
+        const watchedChxEl = document.createElement("input");
+        const watchedChxLabelEl = document.createElement("label");
+
+        watchedChxEl.setAttribute("id", `confirm-watched-${filmId}`);
+        watchedChxEl.setAttribute("type", "checkbox");
+        watchedChxEl.setAttribute("class", "switch");
+        watchedChxEl.checked = true;
+        watchedChxLabelEl.setAttribute("for", `confirm-watched-${filmId}`);
+        watchedChxLabelEl.setAttribute("class", "ml-1");
+        watchedChxLabelEl.innerHTML = "Watched it today";
+
+        const rateHandler = function () { rateChangedScore(filmId, uniqueName, score, renderActiveRating); hideRatingConfirmationDialog(uniqueName); };
+        const rateButtonEl = createButton("Rate " + score, "primary", rateHandler);
+
+        row1El.append(watchedChxEl);
+        row1El.append(watchedChxLabelEl);
+        row2El.append(rateButtonEl);
+        row2El.append(cancelButtonEl);
+
+    }
+    else {
+
+        // No need to confirm. A new score and by default set watched to true.
+        // The user can change to rating to not-watched later if they want to.
+        rateFilm(filmId, uniqueName, score, true, renderActiveRating);
+        return;
+
+    }
+
     confirmationEl.append(row1El);
     confirmationEl.append(row2El);
+
+}
+
+function confirmWatchedActiveRating(filmId, uniqueName, turnOnWatched, originalScore, originalDate) {
+
+    const row1El = document.createElement("div");
+    const row2El = document.createElement("div");
+    row2El.setAttribute("class", "pt-1");
+
+    const cancelHandler = function () { hideRatingConfirmationDialog(uniqueName); };
+    const cancelButtonEl = createButton("Cancel", "link", cancelHandler);
+    cancelButtonEl.classList.add("btn-sm");
+
+    const confirmationEl = document.getElementById("rate-confirmation-" + uniqueName);
+
+    const ratingHasScore = originalScore > 0;
+
+    if ( turnOnWatched && !ratingHasScore ) {
+        // New rating with no score. No need to confirm.
+        rateFilm(filmId, uniqueName, 0, turnOnWatched, renderActiveRating);
+        return;
+    }
+
+    showRatingConfirmationDialog(uniqueName);
+
+    if ( turnOnWatched ) {
+        // Button - Rate Without A Score
+        // Button - Mark Rating As Watched
+        // Button - Cancel
+
+        const rateNoScoreHandler = function () { rateFilm(filmId, uniqueName, 0, turnOnWatched, renderActiveRating); hideRatingConfirmationDialog(uniqueName); };
+        const rateNoScoreButtonEl = createButton(`Rate Without A Score`, "primary", rateNoScoreHandler);
+
+        const markRatingAsWatchedHandler = function () { rateFilm(filmId, uniqueName, originalScore, turnOnWatched, renderActiveRating, originalDate, originalDate); hideRatingConfirmationDialog(uniqueName); };
+        const markRatingAsWatchedButtonEl = createButton(`Mark Rating As Watched`, "primary", markRatingAsWatchedHandler);
+
+        row1El.append(rateNoScoreButtonEl);
+        row2El.append(markRatingAsWatchedButtonEl);
+        row2El.append(cancelButtonEl);
+
+    }
+    else {
+        // Turn Off Watched
+
+        if ( ratingHasScore ) {
+            // Button - Rate Without A Score
+            // Button - Mark Rating As Unwatched
+            // Button - Cancel
+
+            const rateNoScoreHandler = function () { rateFilm(filmId, uniqueName, 0, true, renderActiveRating); hideRatingConfirmationDialog(uniqueName); };
+            const rateNoScoreButtonEl = createButton(`Rate Without A Score`, "primary", rateNoScoreHandler);
+
+            const turnOffWatchedHandler = function () { rateFilm(filmId, uniqueName, originalScore, false, renderActiveRating, originalDate, originalDate); hideRatingConfirmationDialog(uniqueName); };
+            const turnOffWatchedButtonEl = createButton(`Unwatched Rating`, "primary", turnOffWatchedHandler);
+
+            row1El.append(rateNoScoreButtonEl);
+            row2El.append(turnOffWatchedButtonEl);
+
+        }
+        else {
+            // Button - Watched Again
+            // Button - Remove Viewing
+            // Button - Cancel
+
+            const watchedAgainHandler = function () { rateFilm(filmId, uniqueName, 0, true, renderActiveRating); hideRatingConfirmationDialog(uniqueName); };
+            const watchedAgainButtonEl = createButton(`Watched Again`, "primary", watchedAgainHandler);
+
+            const removeHandler = function () { rateFilm(filmId, uniqueName, -1, turnOnWatched, renderActiveRating, originalDate, originalDate); hideRatingConfirmationDialog(uniqueName); };
+            const removeButtonEl = createButton("Remove Viewing", "secondary", removeHandler);
+            removeButtonEl.classList.add("btn-sm");
+
+            row1El.append(watchedAgainButtonEl);
+            row2El.append(removeButtonEl);
+
+        }
+
+        row2El.append(cancelButtonEl);
+
+    }
+
+    confirmationEl.append(row1El);
+    confirmationEl.append(row2El);
+
 }
 
 function getFilmlists(callback) {
@@ -370,6 +585,15 @@ function toggleHidden(elementId) {
     el.hidden = !el.hidden;
 }
 
+function toggleButtonOnClass(elementId) {
+    const el = document.getElementById(elementId);
+    if ( el == null ) {
+        return;
+    }
+
+    el.toggleAttribute("btn-toggle-on");
+}
+
 function addFilmlistListeners(el, filmId) {
     // Default list button
 	var defaultListBtn = document.getElementById("filmlist-btn-default-"+filmId);
@@ -392,10 +616,22 @@ function addFilmlistListener(elementId) {
 }
 
 function addStarListeners(el, active) {
-    var stars = el.getElementsByClassName("rating-star");
+    const stars = el.getElementsByClassName("rating-star");
     for (i = 0; i < stars.length; i++) {
         addStarListener(stars[i], active);
     }
+
+    addWatchedListeners(el, active);
+}
+
+function addWatchedListeners(ratingStarsEl, active) {
+
+    const eyes = ratingStarsEl.getElementsByClassName("rating-watched");
+    if ( eyes.length > 0 ) {
+        const watchedEl = eyes[0];
+        addWatchedListener(watchedEl, active);
+    }
+
 }
 
 function addStarListener(starEl, active) {
@@ -405,14 +641,49 @@ function addStarListener(starEl, active) {
 		const score = starEl.getAttribute('data-score');
         const ratingIndex = starEl.getAttribute("data-index");
 
-		const mouseoverHandler = function () {  mouseoverStar(score, uniqueName, ratingIndex); };
-		const mouseoutHandler = function () { mouseoutStar(score, uniqueName, ratingIndex); };
+		const mouseoverHandler = function () {  mouseoverStar(score, filmId, uniqueName, ratingIndex); };
+		const mouseoutHandler = function () { mouseoutStar(score, filmId, uniqueName, ratingIndex); };
 		const clickHandler = function () { clickStar(filmId, uniqueName, score, active, ratingIndex); };
 
         starEl.addEventListener("mouseover", mouseoverHandler);
         starEl.addEventListener("mouseout", mouseoutHandler);
         starEl.addEventListener("click", clickHandler);
 	}
+}
+
+function addWatchedListener(watchedEl, active) {
+    if ( watchedEl == null ) {
+        return;
+    }
+
+    const filmId = watchedEl.getAttribute('data-film-id');
+    const ratingIndex = watchedEl.getAttribute("data-index");
+
+    const mouseoverHandler = function () { highlightWatched(true, filmId, ratingIndex); };
+    const mouseoutHandler = function () { highlightWatched(false, filmId, ratingIndex); };
+    const clickHandler = function () { clickWatched(filmId, active, ratingIndex); };
+
+    watchedEl.addEventListener("mouseover", mouseoverHandler);
+    watchedEl.addEventListener("mouseout", mouseoutHandler);
+    watchedEl.addEventListener("click", clickHandler);
+}
+
+function addWatchItButtonListeners(filmId) {
+    const seenBtnId = `seen-btn-${filmId}`;
+    const neverBtnId = `never-watch-btn-${filmId}`;
+
+    const seenBtnEl = document.getElementById(seenBtnId);
+    const neverBtnEl = document.getElementById(neverBtnId);
+
+    if ( seenBtnEl ) {
+        const seenBtnHandler = function () { toggleSeen(seenBtnEl, filmId); };
+        seenBtnEl.addEventListener("click", seenBtnHandler);
+    }
+
+    if ( neverBtnEl ) {
+        const neverWatchBtnHandler = function () { toggleNeverWatchIt(neverBtnEl, filmId); };
+        neverBtnEl.addEventListener("click", neverWatchBtnHandler);
+    }
 }
 
 function validStreamProviders() {
@@ -522,7 +793,8 @@ function renderFilmDetail(film, dropdownEl) {
 
     renderOneRatingStars(film);
     renderStreams(film, true);
-    renderFilmlists(film.filmlists, film.filmId);
+    renderFilmlists(film.filmlists, film?.filmId);
+    addWatchItButtonListeners(film?.filmId);
 }
 
 function renderMsg(message, element) {
@@ -536,12 +808,28 @@ function renderMsg(message, element) {
     }
 }
 
-function renderRatingHistory(filmId, rsSource) {
-    const uniqueName = rsSource.uniqueName;
+function renderRatingHistory(film, rsSource) {
+    const filmId = film.filmId;
+    let ratingHistoryEl = document.getElementById(`rating-history-${filmId}`);
+
     const activeRating = rsSource.rating;
+    if ( ! validRatingScore(activeRating) && rsSource?.archiveCount < 1 ) {
+        return;
+    }
+
+    const uniqueName = rsSource.uniqueName;
     const archive = rsSource.archive;
-    const ratingHistoryEl = document.getElementById(`rating-history-${filmId}`);
-    const ratingHistoryMenuEl = document.getElementById(`rating-history-menu-ref-${filmId}`);
+    let ratingHistoryMenuEl = document.getElementById(`rating-history-menu-ref-${filmId}`);
+
+    if ( ! ratingHistoryMenuEl ) {
+        const newRatingHistoryEl = buildRatingHistoryElement(film);
+
+        const viewingHistoryEl = document.getElementById(`viewing-history-${filmId}`);
+        viewingHistoryEl.replaceChild( newRatingHistoryEl, ratingHistoryEl );
+
+        ratingHistoryEl = document.getElementById(`rating-history-${filmId}`);
+        ratingHistoryMenuEl = document.getElementById(`rating-history-menu-ref-${filmId}`);
+    }
 
     ratingHistoryMenuEl.innerHTML = "";
     let ratingIndex = 0;

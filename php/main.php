@@ -111,7 +111,7 @@ function getDatabase($mode = Constants::DB_MODE)
 }
 
 function debugMessage($input, $prefix = null, $showTime = true, $printArray = null) {
-    if (!empty($prefix)) {
+    if (!is_null($prefix)) {
         $time = "";
         if ($showTime) {
             $time = date_format(new \DateTime(), 'Y-m-d H:i:s');
@@ -301,7 +301,7 @@ function array_value_by_key($key, $a, $nullValue = null) {
  *
  * @return Film|null
  */
-function setRating(int $filmId, int $score, ?string $dateStr = null, ?string $originalDateStr = null, bool $forceDelete = false) : ?Film
+function setRating(int $filmId, SetRatingScoreValue $score, bool $watched = true, ?string $dateStr = null, ?string $originalDateStr = null, bool $forceDelete = false) : ?Film
 {
     if (empty($filmId)) {
         return null;
@@ -312,7 +312,7 @@ function setRating(int $filmId, int $score, ?string $dateStr = null, ?string $or
     try {
         $date = $dateStr ? new \DateTime($dateStr) : null;
         $originalDate = $originalDateStr ? new \DateTime($originalDateStr) : null;
-        Rating::saveRatingToDb($filmId, $username, $score, $date, $originalDate, $forceDelete);
+        Rating::saveRatingToDb($filmId, $username, $score, $watched, $date, $originalDate, $forceDelete);
     }
     catch (\Exception) {
         return null;

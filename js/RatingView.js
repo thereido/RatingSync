@@ -16,23 +16,40 @@ function buildRatingElement(film, ratingDate = null)
     return starsEl;
 }
 
+function buildViewingHistoryElement(film)
+{
+    const filmId = getFilmId(film);
+
+    const viewingHistoryEl = document.createElement("div");
+
+    viewingHistoryEl.setAttribute("class", "viewing-history d-flex flex-row pb-2");
+    viewingHistoryEl.setAttribute("id", `viewing-history-${filmId}`);
+
+    viewingHistoryEl.appendChild( buildRatingHistoryElement(film) );
+    viewingHistoryEl.appendChild( buildViewingButtonsElement(film) );
+
+    return viewingHistoryEl;
+}
+
 function buildRatingHistoryElement(film)
 {
     const filmId = getFilmId(film);
-    const historyEl = document.createElement("div");
-    historyEl.setAttribute("class", "btn-group rating-history");
-    historyEl.setAttribute("id", `rating-history-${filmId}`);
-    historyEl.setAttribute("hidden", "true");
+    const ratingHistoryEl = document.createElement("div");
+    ratingHistoryEl.setAttribute("class", "mr-2");
+    ratingHistoryEl.setAttribute("id", `rating-history-${filmId}`);
+    ratingHistoryEl.hidden = true;
 
     const rsSource = getSourceJson(film, "RatingSync");
-    if (!rsSource || rsSource == "undefined") {
-        return historyEl;
+    const rsUniqueName = rsSource?.uniqueName;
+    const activeRating = rsSource?.rating;
+    const activeRatingDate = activeRating?.yourRatingDate;
+
+    if ( ! validRatingScore(activeRating) && rsSource?.archiveCount < 1 ) {
+        return ratingHistoryEl;
     }
 
-    const rsUniqueName = rsSource.uniqueName;
-    const dateStr = getRatingDateMessageText(rsSource.rating.yourRatingDate);
+    const dateStr = getRatingDateMessageText(activeRatingDate, film);
 
-    const historyFlexEl = document.createElement("div");
     const historyRatingDateBtnEl = document.createElement("button");
     const historyRatingDateEl = document.createElement("rating-date");
     const historyDropBtnEl = document.createElement("button");
@@ -43,10 +60,9 @@ function buildRatingHistoryElement(film)
     const historyFormInputIndexEl = document.createElement("input");
     const historyMenuEl = document.createElement("div");
 
-    historyFlexEl.setAttribute("class", "d-flex flex-row");
     historyRatingDateBtnEl.setAttribute("class", "rating-history btn pl-0 pr-1 py-0");
     historyRatingDateEl.setAttribute("class", "small");
-    historyDropBtnEl.setAttribute("class", "rating-history btn-rating-history btn dropdown-toggle-split py-0 px-1 align-middle");
+    historyDropBtnEl.setAttribute("class", "rating-history btn-rating-history btn dropdown-toggle-split p-0 align-middle");
     historyToggleEl.setAttribute("class", "sr-only");
     historyCaretEl.setAttribute("class", "fas fa-caret-down");
     historyMenuEl.setAttribute("class", "dropdown-menu");
@@ -74,10 +90,9 @@ function buildRatingHistoryElement(film)
     historyToggleEl.innerText = "Toogle Dropdown";
     historyFormInputFilmIdEl.setAttribute("value", filmId);
 
-    historyEl.appendChild(historyFlexEl);
-    historyFlexEl.appendChild(historyRatingDateBtnEl);
-    historyFlexEl.appendChild(historyDropBtnEl);
-    historyFlexEl.appendChild(historyFormEl);
+    ratingHistoryEl.appendChild(historyRatingDateBtnEl);
+    ratingHistoryEl.appendChild(historyDropBtnEl);
+    ratingHistoryEl.appendChild(historyFormEl);
     historyRatingDateBtnEl.appendChild(historyRatingDateEl);
     historyDropBtnEl.appendChild(historyToggleEl);
     historyDropBtnEl.appendChild(historyCaretEl);
@@ -85,10 +100,35 @@ function buildRatingHistoryElement(film)
     historyFormEl.appendChild(historyFormInputIndexEl);
     historyFormEl.appendChild(historyMenuEl);
 
-    return historyEl;
+    return ratingHistoryEl;
 }
 
-function renderRatingDate(film, ratingIndex = -1) {
+function buildViewingButtonsElement(film) {
+    const filmId = film?.filmId;
+    const watchItOptionsEl = document.createElement("span");
+    const seenBtnEl = document.createElement("button");
+    const neverBtnEl = document.createElement("button");
+
+    seenBtnEl.setAttribute("id", `seen-btn-${filmId}`);
+    seenBtnEl.setAttribute("class", "watchit-buttons btn-toggle far fa-eye fa-sm");
+    neverBtnEl.setAttribute("id", `never-watch-btn-${filmId}`);
+    neverBtnEl.setAttribute("class", "watchit-buttons btn-toggle fas fa-ban fa-sm ml-2");
+
+    if ( film?.user?.seen ) {
+        seenBtnEl.classList.add("btn-toggle-on");
+    }
+
+    if ( film?.user?.neverWatch ) {
+        neverBtnEl.classList.add("btn-toggle-on");
+    }
+
+    watchItOptionsEl.appendChild(seenBtnEl);
+    watchItOptionsEl.appendChild(neverBtnEl);
+
+    return watchItOptionsEl;
+}
+
+function renderRatingDate(film) {
     const rsSource = getSourceJson(film, "RatingSync");
     if (!rsSource || rsSource == "undefined") {
         return null;
@@ -97,24 +137,30 @@ function renderRatingDate(film, ratingIndex = -1) {
     const uniqueName = rsSource.uniqueName;
     const yourRatingDate = rsSource.rating.yourRatingDate;
 
-    let dateElId = `rating-date-${uniqueName}-${ratingIndex}`;
+    let dateElId = `rating-date-${uniqueName}`;
 
     const ratingDateEl = document.getElementById(dateElId);
     if (!ratingDateEl) {
         return;
     }
 
-    ratingDateEl.innerHTML = getRatingDateMessageText(yourRatingDate);
+    ratingDateEl.innerHTML = getRatingDateMessageText(yourRatingDate, film);
 }
 
-function getRatingDateMessageText(yourRatingDate) {
+function getRatingDateMessageText(yourRatingDate, film) {
     let dateMsgText;
 
+    const seen = film?.user?.seen;
+    const seenDate = film?.user?.seenDate;
+
     if (yourRatingDate && yourRatingDate != "undefined") {
-        dateMsgText = "You rated this " + formatRatingDate(yourRatingDate);
+        dateMsgText = "Rated on " + formatRatingDate(yourRatingDate);
+    }
+    else if (seen && seen == true && seenDate?.length > 0) {
+        dateMsgText = `Watched on ${seenDate}`;
     }
     else {
-        dateMsgText = "Past ratings";
+        dateMsgText = "Past viewings";
     }
 
     return dateMsgText;
@@ -141,7 +187,8 @@ function formatRatingDate(date) {
  */
 function renderActiveRating(film, index) {
     renderOneRatingStars(film);
-    renderRatingDate(film, index);
+    renderRatingDate(film);
+    renderWatchItButtons(film, index);
 }
 
 function renderOneRatingStars(film, ratingIndex = -1) {
@@ -160,9 +207,15 @@ function renderOneRatingStars(film, ratingIndex = -1) {
     }
     ratingStarsEl.innerHTML = "";
 
+    let toggleOn = "";
+    if ( rating.watched ) {
+        toggleOn = "watched-on";
+    }
+
     // Create Elements
     const originalScoreEl = document.createElement("div");
     const originalDateEl = document.createElement("div");
+    const watchedEl = document.createElement("rating-watched");
 
     // Set Attributes
     originalScoreEl.setAttribute("id", `original-score-${uniqueName}-${ratingIndex}`);
@@ -171,6 +224,11 @@ function renderOneRatingStars(film, ratingIndex = -1) {
     originalDateEl.setAttribute("id", `original-date-${uniqueName}-${ratingIndex}`);
     originalDateEl.setAttribute("data-date", ratingDate);
     originalDateEl.setAttribute("hidden", true);
+    watchedEl.setAttribute("id", `rating-watched-${film.filmId}-${ratingIndex}`);
+    watchedEl.setAttribute("class", `rating-watched ${toggleOn} far fa-eye fa-xs mr-1`);
+    watchedEl.setAttribute("data-film-id", `${film.filmId}`);
+    watchedEl.setAttribute("data-uniquename", `${uniqueName}`);
+    watchedEl.setAttribute("data-index", `${ratingIndex}`);
 
     // Star Values
     var fullStars = yourScore;
@@ -186,6 +244,9 @@ function renderOneRatingStars(film, ratingIndex = -1) {
     while (emptyStars > 0) {
         const starEl = buildStarElement(film.filmId, uniqueName, ratingDate, starScore, ratingIndex);
         starEl.setAttribute("class", "rating-star fa-star far fa-xs");
+        if ( yourScore == null && rating.watched ) {
+            starEl.classList.add("no-score");
+        }
         ratingStarsEl.appendChild(starEl);
         emptyStars = emptyStars - 1;
         starScore++;
@@ -195,6 +256,7 @@ function renderOneRatingStars(film, ratingIndex = -1) {
     const scoreEl = buildScoreElement(yourScore, uniqueName, ratingIndex);
 
     // Append Elements
+    ratingStarsEl.insertBefore(watchedEl, ratingStarsEl.children[0]);
     ratingStarsEl.appendChild(scoreEl);
     ratingStarsEl.appendChild(originalScoreEl);
     ratingStarsEl.appendChild(originalDateEl);
@@ -205,7 +267,7 @@ function renderOneRatingStars(film, ratingIndex = -1) {
     }
 
     if ( pageId != SITE_PAGE.Edit && film.filmId > 0 ) {
-        renderRatingHistory(film.filmId, rsSource);
+        renderRatingHistory(film, rsSource);
     }
 }
 
@@ -260,7 +322,8 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, active, ratingIndex)
     if ( parentEl.childElementCount == 0 && ! active ) {
         // This is the first rating and it is not active. If there is no active rating offer to activate/un-archive it.
         const activeRating = rsSource?.rating;
-        if ( activeRating?.yourScore < 1 ) {
+        const thereIsAnActiveRating = activeRating?.yourRatingDate;
+        if ( ! thereIsAnActiveRating ) {
             archiveBtnEl = buildUnarchiveRatingButton(film.filmId, rating, ratingIndex);
         }
     }
@@ -286,6 +349,7 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, active, ratingIndex)
     dateEl.innerHTML = ratingDateFormatted;
 
     renderOneRatingStars(film, ratingIndex);
+    addWatchItButtonListeners(film?.filmId);
 }
 
 /**
@@ -296,7 +360,8 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, active, ratingIndex)
  */
 function renderEditRating(film, index) {
     renderOneRatingStars(film, index);
-    renderRatingDate(film, index);
+    renderRatingDate(film);
+    addWatchItButtonListeners(film?.filmId);
 }
 
 function buildStarElement(filmId, uniqueName, date, score, ratingIndex) {
@@ -411,6 +476,100 @@ function populateNewRatingModal(score, date, originalDate = "") {
         }
 
         starEl.classList.add(starClass);
+    }
+}
+
+function toggleSeen(btnEl, filmId) {
+    if ( ! btnEl )  {
+        return;
+    }
+
+    const turnOn = ! btnEl.classList.contains("btn-toggle-on");
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            const response = JSON.parse(xmlhttp.responseText);
+            if ( response?.Success != "false" ) {
+                const film = response;
+                updateContextDataFilmByFilmId(film);
+            } else {
+                renderAlert("Unable to toggle the \"watched\" button.", ALERT_LEVEL.warning);
+                btnEl.classList.toggle("btn-toggle-on");
+            }
+        }
+    }
+
+    let params = "";
+    params += `&fid=${filmId}`;
+    params += `&seen=${turnOn}`;
+    xmlhttp.open("GET", RS_URL_API + "?action=setSeen" + params, true);
+    xmlhttp.send();
+
+    btnEl.classList.toggle("btn-toggle-on");
+}
+
+function toggleNeverWatchIt(btnEl, filmId) {
+    if ( ! btnEl )  {
+        return;
+    }
+
+    const turnOn = ! btnEl.classList.contains("btn-toggle-on");
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            const response = JSON.parse(xmlhttp.responseText);
+            if ( response?.Success != "false" ) {
+                const film = response;
+                updateContextDataFilmByFilmId(film);
+            } else {
+                renderAlert("Unable to toggle the \"do not watch it\" button.", ALERT_LEVEL.warning);
+                btnEl.classList.toggle("btn-toggle-on");
+            }
+        }
+    }
+
+    let params = "";
+    params += `&fid=${filmId}`;
+    params += `&never=${turnOn}`;
+    xmlhttp.open("GET", RS_URL_API + "?action=setNeverWatch" + params, true);
+    xmlhttp.send();
+
+    btnEl.classList.toggle("btn-toggle-on");
+}
+
+function validRatingScore(rating)
+{
+    if ( rating?.yourScore > 0 ) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function renderWatchItButtons(film) {
+    if (!film || !film.filmId) {
+        return null;
+    }
+
+    const filmId = film.filmId;
+    const seenBtnEl = document.getElementById(`seen-btn-${filmId}`);
+    const neverWatchBtnEl = document.getElementById(`never-watch-btn-${filmId}`);
+
+    if ( film.user?.seen && film.user?.seen == true ) {
+        seenBtnEl?.classList.add("btn-toggle-on");
+    }
+    else {
+        seenBtnEl?.classList.remove("btn-toggle-on");
+    }
+
+    if ( film.user?.neverWatch && film.user?.neverWatch == true ) {
+        neverWatchBtnEl?.classList.add("btn-toggle-on");
+    }
+    else {
+        neverWatchBtnEl?.classList.remove("btn-toggle-on");
     }
 }
 

@@ -8,7 +8,7 @@ $username = getUsername();
 $response = "";
 
 $action = array_value_by_key("action", $_GET);
-logDebug("API action: $action, username: $username", "api.php ".__LINE__);
+logDebug("API action: $action, username: $username  " . api_getFullUri(), "");
 if ($action == "getSearchFilm") {
     $response = api_getSearchFilm($username, $_GET);
 }
@@ -66,6 +66,12 @@ elseif ($action == "renameFilmlist") {
 elseif ($action == "archiveRating") {
     $response = api_archiveRating($username);
 }
+elseif ($action == "setSeen") {
+    $response = api_setSeen($username);
+}
+elseif ($action == "setNeverWatch") {
+    $response = api_setNeverWatch($username);
+}
 
 if (empty($response)) {
     $response = "{}";
@@ -106,18 +112,41 @@ function api_setRating($username)
     $film = null;
     $filmId = array_value_by_key("fid", $_GET);
     $score = array_value_by_key("s", $_GET);
+    $watchedParam = array_value_by_key("w", $_GET);
     $dateStr = array_value_by_key("d", $_GET); // Format: 2000-02-28
     $originalDateStr = array_value_by_key("od", $_GET); // Format: 2000-02-28
     $force = array_value_by_key("force", $_GET);
-    logDebug("Params fid=$filmId, s=$score, d=$dateStr, od=$originalDateStr, force=$force", __FUNCTION__." ".__LINE__);
+    logDebug("Params fid=$filmId, s=$score, w=$watchedParam, d=$dateStr, od=$originalDateStr, force=$force", __FUNCTION__." ".__LINE__);
+
+    if ( $score == "null" ) {
+        $score = null;
+    }
+    else {
+        try {
+            $score = intval($score); // On failure it returns 0
+            $score = SetRatingScoreValue::create($score);
+        }
+        catch (\Exception $e) {
+            $score = null;
+        }
+    }
+
+    if ( $dateStr == "null" ) {
+        $dateStr = null;
+    }
+
+    $watched = false;
+    if ( $watchedParam == 1 || $watchedParam == "true") {
+        $watched = true;
+    }
 
     $forceDelete = false;
     if ( $force == 1 || $force == "true") {
         $forceDelete = true;
     }
 
-    if (!empty($username) && !empty($filmId) && (!empty($score) || $score == 0)) {
-        $film = setRating($filmId, $score, $dateStr, $originalDateStr, $forceDelete);
+    if (!empty($username) && !empty($filmId) && $score instanceof SetRatingScoreValue) {
+        $film = setRating($filmId, $score, $watched, $dateStr, $originalDateStr, $forceDelete);
     }
 
     if (empty($film)) {
@@ -837,6 +866,82 @@ function api_archiveRating($username)
     }
 
     return $response;
+}
+
+function api_setSeen($username): string
+{
+    $film = null;
+    $filmId = array_value_by_key("fid", $_GET);
+    $seen = array_value_by_key("seen", $_GET);
+    logDebug("Params fid=$filmId, seen=$seen", __FUNCTION__." ".__LINE__);
+
+    $seenBool = false;
+    if ( $seen == 1 || $seen == "true") {
+        $seenBool = true;
+    }
+
+    if ( !empty($username) && !empty($filmId) && !empty($seen) ) {
+        try {
+
+            $filmInfo = UserSpecificFilmInfo::getFromDb($username, $filmId);
+            $film = $filmInfo?->setSeenToDb($seenBool, new \DateTime());
+
+        }
+        catch (\Exception $e) {
+            logError("Exception setting whether the user has seen this title (filmId=$filmId, username=$username, seen=$seen\n)" . $e->getMessage() . "\n" . $e->getTraceAsString());
+        }
+    }
+
+    if ( empty($film) ) {
+        $response = '{"Success":"false"}';
+    } else {
+        $response = $film->json_encode();
+    }
+
+    return $response;
+}
+
+function api_setNeverWatch($username): string
+{
+    $film = null;
+    $filmId = array_value_by_key("fid", $_GET);
+    $neverWatch = array_value_by_key("never", $_GET);
+    logDebug("Params fid=$filmId, never=$neverWatch", __FUNCTION__." ".__LINE__);
+
+    $neverWatchBool = false;
+    if ( $neverWatch == 1 || $neverWatch == "true") {
+        $neverWatchBool = true;
+    }
+
+    if ( !empty($username) && !empty($filmId) && !empty($neverWatch) ) {
+        try {
+
+            $filmInfo = UserSpecificFilmInfo::getFromDb($username, $filmId);
+            $film = $filmInfo?->setNeverWatchToDb($neverWatchBool, new \DateTime());
+
+        }
+        catch (\Exception $e) {
+            logError("Exception setting whether the user never plans to watch the title (filmId=$filmId, username=$username, never=$neverWatch\n)" . $e->getMessage() . "\n" . $e->getTraceAsString());
+        }
+    }
+
+    if ( empty($film) ) {
+        $response = '{"Success":"false"}';
+    } else {
+        $response = $film->json_encode();
+    }
+
+    return $response;
+}
+
+function api_getFullUri()
+{
+    $protocol = "http";
+    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+        $protocol = "https";
+    }
+
+    return "$protocol://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 }
 
 ?>

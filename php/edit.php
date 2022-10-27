@@ -102,6 +102,10 @@ $pageFooter = getPageFooter();
                                 <of-possible>/10</of-possible>
                             </score>
                         </rating-stars>
+                        <div>
+                            <input type="checkbox" id="new-rating-watched" class="switch" checked/>
+                            <label for="new-rating-watched">I watched it</label>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
