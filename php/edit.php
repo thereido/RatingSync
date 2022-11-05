@@ -55,15 +55,13 @@ $pageFooter = getPageFooter();
     <div class="row pt-3" id="detail-film">
         <div class="col-auto mr-auto">
             <div class="card">
-                <div class="row p-3" id="detail-film">
-                    <div class="col-auto">
-                        <poster><img></poster>
-                    </div>
+                <div class="row pl-3 pt-3 pr-3" id="detail-film">
+                    <div id="detail-poster-container" class="col-auto"></div>
                     <div class="col pl-0">
                         <detail id="detail"></detail>
                     </div>
                 </div>
-                <div class="mt-3 row mx-0" id="edit-ratings-header">
+                <div class="mt-1 row mx-0" id="edit-ratings-header">
                     <div class="col">
                         <h4>Rating Archive</h4>
                     </div>

@@ -69,58 +69,45 @@ function renderUserlistFilms() {
         renderEmptyList();
     }
 
-    var row = 0;
-    var html = "\n";
-    html = html + "<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 row-cols-xl-6' id='userlist-row'>\n";
+    const filmTableEl = document.getElementById("film-table");
+    const userlistRowEl = document.createElement("div");
+    userlistRowEl.id = "userlist-row";
+    userlistRowEl.setAttribute("class", "row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 row-cols-xl-6");
+
+    filmTableEl.appendChild(userlistRowEl);
+
     for (var filmIndex = 0; filmIndex < films.length; filmIndex++) {
-        var film = films[filmIndex];
-        var filmId = film.filmId;
-        var rsSource = film.sources.find(function (findSource) { return findSource.name == "RatingSync"; });
-        var uniqueName = rsSource.uniqueName;
-
-        // Title
-        var title = film.title;
-        var titleNoQuotes = title.replace(/\"/g, '\\\"').replace(/\'/g, "\\\'");
-
-        // ContentType
-        var contentTypeParam = "";
-        if (film.contentType != "undefined") { contentTypeParam = "&ct=" + film.contentType; }
-
-        // Image
-        var image = "";
-        if (rsSource.image) {
-            var image = RS_URL_BASE + rsSource.image;
-        }
+        const film = films[filmIndex];
+        const filmId = film.filmId;
+        const rsSource = film.sources.find(function (findSource) { return findSource.name == "RatingSync"; });
+        const uniqueName = rsSource.uniqueName;
 
         // Episode style classes
-        var episodeClass = {image:"", userlistfilm:""};
-        var isEpisode = "false";
-        if (film.contentType == CONTENT_TV_EPISODE) {
-            isEpisode = "true";
-        }
+        const episodeClass = {image:"", userlistfilm:""};
+        const isEpisode = film.contentType == CONTENT_TV_EPISODE ? "true" : "false";
 
-        // Parent
-        var parentIdParam = "";
-        if (film.parentId != "undefined") { parentIdParam = "&pid=" + film.parentId; }
-        
-        // JavaScript
-        var showFilmDropdownForUserlistJS = "showFilmDetail(" + filmId + ")";
-        var onMouseEnter = "onMouseEnter='detailTimer = setTimeout(function () { showFilmDropdownForUserlist(" + filmId + "); }, 500)'";
-        var onMouseLeave = "onMouseLeave='hideFilmDropdownForUserlist(" + filmId + ", detailTimer)'";
-        
-        html = html + '  <filmItem class="col" id="' + uniqueName + '" data-film-id="' + filmId + '">' + '\n';
-        html = html + '    <div class="userlist-film '+episodeClass["userlistfilm"]+'" id="userlist-film-'+filmId+'" data-episode="'+isEpisode+'" ' + onMouseEnter + ' ' + onMouseLeave + '>' + '\n';
-        html = html + '      <poster id="poster-' + uniqueName + '" data-filmId="' + filmId + '">' + '\n';
-        html = html + '        <a href="/php/detail.php?i=' + filmId + parentIdParam + contentTypeParam + '">' + '\n';
-        html = html + '          <img src="' + image + '" alt="' + titleNoQuotes + '" class="'+episodeClass["image"]+'" />' + '\n';
-        html = html + '        </a>' + '\n';
-        html = html + '        <div id="film-dropdown-' + filmId + '" class="film-dropdown-content"></div>' + '\n';
-        html = html + '      </poster>' + '\n';
-        html = html + '    </div>' + '\n';
-        html = html + '  </filmItem>' + '\n';
+        const filmItemEl = document.createElement("filmItem");
+        const userlistFilmEl = document.createElement("div");
+        const dropdownEl = document.createElement("div");
+
+        filmItemEl.id = uniqueName;
+        filmItemEl.classList.add("col");
+        filmItemEl.setAttribute("data-film-id", filmId);
+        userlistFilmEl.id = `userlist-film-${filmId}`;
+        userlistFilmEl.setAttribute("class", `userlist-film ${episodeClass["userlistfilm"]}`);
+        userlistFilmEl.setAttribute("data-episode", isEpisode);
+        userlistFilmEl.setAttribute("onMouseEnter", `detailTimer = setTimeout(function () { showFilmDropdownForUserlist(${filmId}); }, 500)`);
+        userlistFilmEl.setAttribute("onMouseLeave", `hideFilmDropdownForUserlist(${filmId}, detailTimer)`);
+        dropdownEl.id = `film-dropdown-${filmId}`;
+        dropdownEl.classList.add("film-dropdown-content");
+
+        filmItemEl.appendChild(userlistFilmEl);
+        userlistRowEl.appendChild(filmItemEl);
+
+        const posterEl = renderPoster(film, true, userlistFilmEl);
+        posterEl.appendChild(dropdownEl);
+
     }
-    html = html + '</div>' + '\n';
-    document.getElementById("film-table").innerHTML = html;
     
     sizeBreakpointCallback();
 
@@ -128,61 +115,72 @@ function renderUserlistFilms() {
 }
 
 // Needs "contextData" JSON in the page
-function showFilmDropdownForUserlist(filmId) {    
-    var filmIndex = contextData.films.findIndex( function (findFilm) { return findFilm.filmId == filmId; } );
-    if (filmIndex != -1) {
-        var film = contextData.films[filmIndex];
-        var dropdownEl = document.getElementById("film-dropdown-" + filmId);
-        renderFilmDetail(film, dropdownEl);
+function showFilmDropdownForUserlist(filmId) {
+    const filmIndex = contextData.films.findIndex( function (findFilm) { return findFilm.filmId == filmId; } );
 
-        // If the default source has no data for this film get it now
-        var defaultSource = film.sources.find( function (findSource) { return findSource.name == DATA_API_DEFAULT; } );
-        if (!defaultSource || defaultSource == "undefined") {
-            getFilmForDropdown(film);
-        }
+    if ( filmIndex == -1 ) {
+        return;
+    }
 
-        // Change the style classes on posters for episodes
-        var filmEl = document.getElementById("userlist-film-" + filmId);
-        var posterEl = document.getElementById("poster-rs" + filmId);
-        if (film.contentType == CONTENT_TV_EPISODE) {
-            var posterImgEl = posterEl.getElementsByTagName("img")[0];
-            filmEl.setAttribute("class", "userlist-film userlist-film-episode");
-            posterImgEl.setAttribute("class", "img-episode");
-        }
+    const film = contextData.films[filmIndex];
 
-        // Resize the poster to match the dropdown. Sometimes the dropdown is taller
-        // than the poster.
-        var posterHeight = posterEl.getBoundingClientRect().height;
-        var dropdownHeight = dropdownEl.getBoundingClientRect().height;
-        if (dropdownHeight - 10 > posterHeight) {
-            var newPosterHeight = dropdownHeight - 10;
-            posterEl.setAttribute("style", "height: " + newPosterHeight + "px");
+    const filmEl = document.getElementById(`userlist-film-${filmId}`);
+    let posterEl = filmEl.getElementsByTagName("poster")[0];
+    if (film.contentType == CONTENT_TV_EPISODE) {
+        setPosterMode(film, false);
+    }
 
-            // The film element for episodes are rounded, so the dropdown border
-            // would not match the border. Temporarily use a regular class while
-            // the dropdown is shown.
-            if (filmEl.getAttribute("data-episode") == "true") {
-                filmEl.setAttribute("class", "userlist-film");
-            }
+    // This line must be after the call to reRenderPoster()
+    let dropdownEl = document.getElementById("film-dropdown-" + filmId);
+
+    renderFilmDetail(film, dropdownEl);
+
+    // If the default source has no data for this film get it now
+    const defaultSource = film.sources.find( function (findSource) { return findSource.name == DATA_API_DEFAULT; } );
+    if (!defaultSource || defaultSource == "undefined") {
+        getFilmForDropdown(film);
+    }
+
+    // Resize the poster to match the dropdown. Sometimes the dropdown is taller
+    // than the poster.
+    const posterHeight = posterEl.getBoundingClientRect().height;
+    const dropdownHeight = dropdownEl.getBoundingClientRect().height;
+    if (dropdownHeight - 10 > posterHeight) {
+        const newPosterHeight = dropdownHeight - 10;
+        posterEl.setAttribute("style", "height: " + newPosterHeight + "px");
+
+        // The film element for episodes are rounded, so the dropdown border
+        // would not match the border. Temporarily use a regular class while
+        // the dropdown is shown.
+        if (filmEl.getAttribute("data-episode") == "true") {
+            filmEl.setAttribute("class", "userlist-film");
         }
     }
 }
 
 function hideFilmDropdownForUserlist(filmId, detailTimer) {
+    const filmIndex = contextData.films.findIndex( function (findFilm) { return findFilm.filmId == filmId; } );
+
+    if ( filmIndex == -1 ) {
+        return;
+    }
+
+    const film = contextData.films[filmIndex];
+
     el = document.getElementById("film-dropdown-" + filmId);
     el.style.display = "none";
     clearTimeout(detailTimer);
 
-    var filmEl = document.getElementById("userlist-film-" + filmId);
-    var posterEl = document.getElementById("poster-rs" + filmId);
+    const filmEl = document.getElementById(`userlist-film-${filmId}`);
 
     // Change the style classes on posters for episodes (put it back to normal,
     // because it was changed while hovering)
-    if (filmEl.getAttribute("data-episode") == "true") {
-        var posterImgEl = posterEl.getElementsByTagName("img")[0];
-        filmEl.setAttribute("class", "userlist-film");
-        posterImgEl.setAttribute("class", "");
+    if (film.contentType == CONTENT_TV_EPISODE) {
+        setPosterMode(film, true);
     }
+
+    // This line must be after the call to reRenderPoster()
+    let posterEl = filmEl.getElementsByTagName("poster")[0];
 
     // Poster might have been resized to match the dropdown. Put it back the
     // default height

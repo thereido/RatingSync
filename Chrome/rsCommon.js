@@ -794,7 +794,6 @@ function renderFilmDetail(film, dropdownEl) {
     renderOneRatingStars(film);
     renderStreams(film, true);
     renderFilmlists(film.filmlists, film?.filmId);
-    addWatchItButtonListeners(film?.filmId);
 }
 
 function renderMsg(message, element) {
@@ -950,5 +949,165 @@ function enableElement(element, enable = true) {
     if ( element ) {
         element.disabled = ! enable;
     }
+}
+
+function getPosterParentElement(film) {
+    if ( pageId == SITE_PAGE.Detail ) {
+        return document.getElementById("detail-poster-container");
+    }
+    else if ( pageId == SITE_PAGE.Edit ) {
+        return document.getElementById("detail-poster-container");
+    }
+    else if ( pageId == SITE_PAGE.Search ) {
+        const searchUniqueName = getUniqueName(film, DATA_API_DEFAULT);
+        return document.getElementById(`search-poster-${searchUniqueName}`);
+    }
+    else {
+        return null;
+    }
+}
+
+function renderPosterWrapper(film, overlay) {
+    const posterParentEl = getPosterParentElement(film);
+
+    if ( posterParentEl ) {
+        if ( film?.filmId ) {
+            renderPoster(film, overlay, posterParentEl);
+        }
+        else {
+            renderNoRsPoster(film, posterParentEl);
+        }
+    }
+}
+
+function renderPoster(film, overlay, parentEl) {
+    const filmId = film?.filmId;
+    if ( ! filmId || filmId == "undefined") {
+        return;
+    }
+
+    const isEpisode = film.contentType == CONTENT_TV_EPISODE;
+    const posterClass = overlay ? "watchit-overlay" : "watchit-normal";
+    const internalUniqueName = getUniqueName(film, SOURCE_NAME.Internal);
+    let href = `/php/detail.php?i=${filmId}&ct=${film.contentType}`;
+    const imageUrl = RS_URL_BASE + film.image;
+
+    if ( isEpisode ) {
+        href += `pid=${film.parentId}`;
+    }
+
+    const seenToggled = film.user?.seen ? "btn-toggle-on" : "";
+    const neverWatchToggled = film.user?.neverWatch ? "btn-toggle-on" : "";
+
+    let imageAltText = film.episodeTitle ? film.episodeTitle : film.title;
+    imageAltText = imageAltText.replace(/\"/g, '\\\"').replace(/\'/g, "\\\'");
+
+    const posterEl = document.createElement("poster");
+    const innerWrapperEl = document.createElement("div");
+    const linkEl = document.createElement("a");
+    const imageEl = document.createElement("img");
+    const foolishEl = document.createElement("span"); // This only needed for spacing between the image and the bottom border
+    const watchItContainerEl = document.createElement("watchit-btn-container");
+    const flexWrapperEl = document.createElement("div");
+    const buttonContainerEl = document.createElement("div");
+    const seenBtnEl = document.createElement("i");
+    const neverWatchBtnEl = document.createElement("i");
+
+    posterEl.id = `poster-${internalUniqueName}`;
+    posterEl.setAttribute("class", posterClass);
+    posterEl.setAttribute("data-filmid", filmId);
+    linkEl.id = `poster-image-${filmId}`;
+    linkEl.href = href;
+    linkEl.style = `background-image: url('${imageUrl}');`;
+    imageEl.src = imageUrl;
+    imageEl.alt = imageAltText;
+    foolishEl.setAttribute("class", "px-1");
+    watchItContainerEl.id = `watchit-btn-container-${filmId}`;
+    watchItContainerEl.setAttribute("class", posterClass);
+    flexWrapperEl.setAttribute("class", "d-flex");
+    buttonContainerEl.id = `poster-btn-container-${filmId}`;
+    seenBtnEl.id = `seen-btn-${filmId}`;
+    seenBtnEl.setAttribute("class", `fas fa-eye fa-xs ${seenToggled}`);
+    neverWatchBtnEl.id = `never-watch-btn-${filmId}`;
+    neverWatchBtnEl.setAttribute("class", `fas fa-ban fa-xs pl-1 ${neverWatchToggled}`);
+
+    if ( overlay ) {
+        imageEl.hidden = true;
+    }
+    else {
+        foolishEl.hidden = true;
+    }
+
+    if ( isEpisode ) {
+        imageEl.setAttribute("class", "img-episode");
+    }
+
+    posterEl.appendChild(innerWrapperEl);
+    innerWrapperEl.appendChild(linkEl);
+    innerWrapperEl.appendChild(watchItContainerEl);
+    linkEl.appendChild(imageEl);
+    linkEl.appendChild(foolishEl);
+    watchItContainerEl.appendChild(flexWrapperEl);
+    flexWrapperEl.appendChild(buttonContainerEl);
+    buttonContainerEl.appendChild(seenBtnEl);
+    buttonContainerEl.appendChild(neverWatchBtnEl);
+
+    const existingPosterEls = parentEl.getElementsByTagName("poster");
+    if ( existingPosterEls.length > 0 ) {
+        parentEl.removeChild( existingPosterEls[0] );
+    }
+    parentEl.appendChild(posterEl);
+
+    addWatchItButtonListeners(film?.filmId);
+
+    return posterEl;
+}
+
+function renderNoRsPoster(film, parentEl) {
+    const sourceJson = getSourceJson(film, DATA_API_DEFAULT);
+    const imageUrl = sourceJson?.image;
+
+    const posterEl = document.createElement("poster");
+    const imageEl = document.createElement("img");
+
+    imageEl.src = imageUrl;
+    imageEl.alt = film.episodeTitle ? film.episodeTitle : film.title;
+
+    posterEl.appendChild(imageEl);
+    parentEl.appendChild(posterEl);
+}
+
+function setPosterMode(film, overlay) {
+
+    const filmId = film.filmId;
+    const internalUniqueName = getUniqueName(film, SOURCE_NAME.Internal);
+    const posterEl = document.getElementById(`poster-${internalUniqueName}`);
+    const linkEl = document.getElementById(`poster-image-${filmId}`);
+    const imageEl = linkEl.getElementsByTagName("img")[0];
+    const foolishEl = linkEl.getElementsByTagName("span")[0];
+    const watchItContainerEl = document.getElementById(`watchit-btn-container-${filmId}`);
+
+    if ( overlay ) {
+
+        imageEl.hidden = true;
+        foolishEl.removeAttribute("hidden");
+
+    }
+    else {
+
+        imageEl.removeAttribute("hidden");
+        foolishEl.hidden = true;
+
+    }
+
+    const watchItClass = overlay ? "watchit-overlay" : "watchit-normal";
+
+    posterEl.classList.remove("watchit-normal");
+    posterEl.classList.remove("watchit-overlay");
+    posterEl.classList.add(watchItClass);
+    watchItContainerEl.classList.remove("watchit-normal");
+    watchItContainerEl.classList.remove("watchit-overlay");
+    watchItContainerEl.classList.add(watchItClass);
+
 }
 

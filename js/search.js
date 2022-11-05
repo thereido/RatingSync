@@ -81,8 +81,13 @@ function searchPageCallback(query, xmlhttp) {
     var suggestionCount = 0;
 	while (suggestionCount < 50 && films && films.length > suggestionCount) {
 	    var film = films[suggestionCount];
+        suggestionCount++;
 
         var uniqueName = getUniqueName(film, DATA_API_DEFAULT);
+
+        if ( ! uniqueName ) {
+            continue;
+        }
 
         var rowEl = document.createElement("DIV");
         rowEl.setAttribute("class", "row mt-3");
@@ -92,10 +97,9 @@ function searchPageCallback(query, xmlhttp) {
         if (fromOtherSource) {
             getRatingSync(film, rowEl, true);
         } else {
+            renderPosterWrapper(film, false);
             renderRsFilmDetails(film, rowEl);
         }
-
-        suggestionCount = suggestionCount + 1;
     }
 }
 
@@ -259,25 +263,27 @@ function renderSearchResultFilm(film, filmRowEl) {
     var contentRow = document.createElement("DIV");
     var posterColEl = document.createElement("DIV");
     var detailColEl = document.createElement("DIV");
-    var posterEl = document.createElement("poster");
     var detailEl = buildFilmDetailElement(film);
 
     filmRowEl.appendChild(cardCol);
     cardCol.appendChild(cardEl);
     cardEl.appendChild(contentRow);
+
+    // Poster
     contentRow.appendChild(posterColEl);
+    const searchUniqueName = getUniqueName(film, DATA_API_DEFAULT);
+    posterColEl.id = `search-poster-${searchUniqueName}`;
+    posterColEl.setAttribute("class", "col-auto");
+    renderPoster(film, true, posterColEl);
+
+    // Detail
     contentRow.appendChild(detailColEl);
-    posterColEl.appendChild(posterEl);
     detailColEl.appendChild(detailEl);
 
     // Layout elements attrs
     cardCol.setAttribute("class", "col");
     cardEl.setAttribute("class", "card");
     contentRow.setAttribute("class", "row px-1");
-
-    // Poster column attrs & html
-    posterColEl.setAttribute("class", "col-auto");
-    posterEl.innerHTML = '<img src="'+film.image+'" alt="'+film.title+'"/>';
 
     // Detail column attrs
     detailColEl.setAttribute("class", "col pl-0");    
@@ -320,47 +326,16 @@ function getRatingSyncCallback(xmlhttp, filmEl, film) {
         if (result.Success != "false" && result.filmId != "undefined") {
             var film = result;
             updateContextDataFilmByUniqueName(film, DATA_API_DEFAULT);
+            renderPosterWrapper(film, false);
             renderRsFilmDetails(film, filmEl);
         } else {
+            renderPosterWrapper(film, false);
             renderNoRsFilmDetails(filmEl, film);
         }
 	}
 }
 
-function renderRsFilmPoster(film, filmEl) {
-    const posterEl = filmEl.getElementsByTagName("poster")[0];
-    const imageEl = posterEl.getElementsByTagName("img")[0];
-    posterEl.removeChild(posterEl.getElementsByTagName("img")[0]);
-
-    const filmId = getFilmId(film);
-    const parentId = getFilmParentId(film);
-    const contentType = getFilmContentType(film);
-
-    if (film.image) {
-        imageEl.setAttribute("src", RS_URL_BASE + film.image);
-
-        if (contentType == CONTENT_TV_EPISODE) {
-            imageEl.setAttribute("class", "img-episode");
-        }
-    }
-
-    if (filmId != "") {
-        var linkEl = document.createElement("a");
-        var contentTypeParam = "";
-        if (contentType != "undefined") { contentTypeParam = "&ct=" + contentType; }
-        var parentIdParam = "";
-        if (parentId != "") { parentIdParam = "&pid=" + parentId; }
-
-        linkEl.setAttribute("href", "/php/detail.php?i=" + filmId + parentIdParam + contentTypeParam);
-        linkEl.appendChild(imageEl);
-        posterEl.appendChild(linkEl);
-    } else {
-        posterEl.appendChild(imageEl);
-    }
-}
-
 function renderRsFilmDetails(film, filmEl) {
-    renderRsFilmPoster(film, filmEl);
 
     var newDetailEl = buildFilmDetailElement(film);
     var detailEl = filmEl.getElementsByTagName("detail")[0];
@@ -373,7 +348,6 @@ function renderRsFilmDetails(film, filmEl) {
     renderOneRatingStars(film);
     renderStreams(film, true);
     renderFilmlists(film.filmlists, film.filmId);
-    addWatchItButtonListeners(film?.filmId);
 
     if (pageId == SITE_PAGE.Edit) {
         renderEditRatings(filmId);
