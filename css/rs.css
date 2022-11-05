@@ -101,22 +101,45 @@ poster {
     display: inline-flex;
 }
 
-poster > a {
-    margin: auto;
+poster > div > a {
+    width: 150px;
+    display: inline-block;
+    border-radius: .3rem;
 }
 
-poster > img,
-poster > a > img {
+poster.watchit-overlay > div > a {
+    background-size: cover;
+    background-position: center;
+    min-height: 221px;
+}
+
+poster.watchit-normal > div > a > img {
     width: 150px;
-    height: 221px;
     object-fit: cover;
     object-position: center;
     border-radius: .3rem;
 }
 
+watchit-btn-container > div > div {
+    padding-left: .25rem !important;
+    padding-right: .25rem !important;
+    border-radius: .3rem;
+    height: fit-content;
+    /* color is in the colors area of this file */
+}
+
+watchit-btn-container.watchit-normal > div {
+    justify-content: center !important;
+    margin: .25rem !important;
+}
+
+watchit-btn-container.watchit-overlay > div > div {
+    margin-top: -1.7rem !important;
+    margin-left: .25rem !important;
+}
+
 .img-episode {
-    max-height: 221px;
-    height: auto;
+    max-height: 85px;
     border-radius: 25%;
 }
 
@@ -171,6 +194,7 @@ detail-episodeNumber {
 .film-filmlists {
     float: left;
     padding-right: 15px;
+    padding-bottom: .25rem;
 }
 
 .streams {
@@ -513,7 +537,7 @@ rating-watched.highlight, rating-watched.watched-on.highlight { color: var(--pri
 .thirdparty-bar > .source-logo-1 > a > imdbScore, .thirdparty-bar > .source-logo-1 > a > tmdbScore { color: var(--fg); }
 .thirdparty-bar > .source-logo-2 > a > imdbScore, .thirdparty-bar > .source-logo-2 > a > tmdbScore { color: var(--fg); }
 .userlist-film { background-color: var(--bg-surface); border-color: var(--border-surface); }
-.watchit-buttons { background-color: transparent; padding: 0; border: none; box-sizing: unset; border-radius: 0; }
+watchit-btn-container > div > div { background-color: var(--bg-poster-text); color: rgba(120, 120, 120); }
 
 detail-episode { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border-surface); box-shadow: 0 2px 5px var(--shadow-primary); }
 detail-episode-rating { color: var(--star); }
@@ -531,6 +555,7 @@ detail-episode-rating { color: var(--star); }
     --danger: #cf6679;
     --bg-input-text: rgba(56, 56, 56); /* rgba(255, 255, 255, .1) over bg-surface */
     --bg-input-text-active: rgba(141, 104, 187, 0.25); /* primary .25 trans */
+    --bg-poster-text: rgba(0, 0, 0, 0.7); /* primary .70 trans */
     
     --fg: rgba(255, 255, 255, 0.87);
     --fg-surface: rgba(255, 255, 255, 0.87);

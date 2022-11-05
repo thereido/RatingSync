@@ -4,7 +4,7 @@ function getFilmForEditPage(filmId, uniqueName, imdbId, contentType, parentId, s
 }
 
 function renderRsFilmEdit(film, filmEl) {
-    renderRsFilmPoster(film, filmEl);
+    renderPosterWrapper(film, false);
 
     const editEl = buildFilmEditElement(film);
     let detailEl = filmEl.getElementsByTagName("detail")[0];

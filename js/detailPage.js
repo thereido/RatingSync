@@ -17,6 +17,7 @@ function filmPageCallback(xmlhttp) {
             populateTvContextData(film);
 
             if (pageId == SITE_PAGE.Detail) {
+                renderPosterWrapper(film, false);
                 renderRsFilmDetails(film, filmEl);
                 getSeriesForDetailPage(film);
             }

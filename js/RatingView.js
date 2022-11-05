@@ -26,7 +26,6 @@ function buildViewingHistoryElement(film)
     viewingHistoryEl.setAttribute("id", `viewing-history-${filmId}`);
 
     viewingHistoryEl.appendChild( buildRatingHistoryElement(film) );
-    viewingHistoryEl.appendChild( buildViewingButtonsElement(film) );
 
     return viewingHistoryEl;
 }
@@ -103,31 +102,6 @@ function buildRatingHistoryElement(film)
     return ratingHistoryEl;
 }
 
-function buildViewingButtonsElement(film) {
-    const filmId = film?.filmId;
-    const watchItOptionsEl = document.createElement("span");
-    const seenBtnEl = document.createElement("button");
-    const neverBtnEl = document.createElement("button");
-
-    seenBtnEl.setAttribute("id", `seen-btn-${filmId}`);
-    seenBtnEl.setAttribute("class", "watchit-buttons btn-toggle far fa-eye fa-sm");
-    neverBtnEl.setAttribute("id", `never-watch-btn-${filmId}`);
-    neverBtnEl.setAttribute("class", "watchit-buttons btn-toggle fas fa-ban fa-sm ml-2");
-
-    if ( film?.user?.seen ) {
-        seenBtnEl.classList.add("btn-toggle-on");
-    }
-
-    if ( film?.user?.neverWatch ) {
-        neverBtnEl.classList.add("btn-toggle-on");
-    }
-
-    watchItOptionsEl.appendChild(seenBtnEl);
-    watchItOptionsEl.appendChild(neverBtnEl);
-
-    return watchItOptionsEl;
-}
-
 function renderRatingDate(film) {
     const rsSource = getSourceJson(film, "RatingSync");
     if (!rsSource || rsSource == "undefined") {
@@ -188,7 +162,6 @@ function formatRatingDate(date) {
 function renderActiveRating(film, index) {
     renderOneRatingStars(film);
     renderRatingDate(film);
-    renderWatchItButtons(film, index);
 }
 
 function renderOneRatingStars(film, ratingIndex = -1) {
@@ -349,7 +322,6 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, active, ratingIndex)
     dateEl.innerHTML = ratingDateFormatted;
 
     renderOneRatingStars(film, ratingIndex);
-    addWatchItButtonListeners(film?.filmId);
 }
 
 /**
@@ -361,7 +333,6 @@ function renderOneRatingForEdit(parentEl, film, uniqueName, active, ratingIndex)
 function renderEditRating(film, index) {
     renderOneRatingStars(film, index);
     renderRatingDate(film);
-    addWatchItButtonListeners(film?.filmId);
 }
 
 function buildStarElement(filmId, uniqueName, date, score, ratingIndex) {
@@ -546,30 +517,6 @@ function validRatingScore(rating)
     }
     else {
         return false;
-    }
-}
-
-function renderWatchItButtons(film) {
-    if (!film || !film.filmId) {
-        return null;
-    }
-
-    const filmId = film.filmId;
-    const seenBtnEl = document.getElementById(`seen-btn-${filmId}`);
-    const neverWatchBtnEl = document.getElementById(`never-watch-btn-${filmId}`);
-
-    if ( film.user?.seen && film.user?.seen == true ) {
-        seenBtnEl?.classList.add("btn-toggle-on");
-    }
-    else {
-        seenBtnEl?.classList.remove("btn-toggle-on");
-    }
-
-    if ( film.user?.neverWatch && film.user?.neverWatch == true ) {
-        neverWatchBtnEl?.classList.add("btn-toggle-on");
-    }
-    else {
-        neverWatchBtnEl?.classList.remove("btn-toggle-on");
     }
 }
 
