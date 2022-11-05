@@ -105,6 +105,7 @@ function rateFilm(filmId, uniqueName, score, watched, callback, newDate = null, 
                 renderAlert(`<strong>Rating Saved</strong>.<br>"${filmMsg}"`, ALERT_LEVEL.success, operaterId);
             }
             callback(film, index);
+            renderUpdatedSeenValue(film);
         }
     }
 
@@ -1108,6 +1109,26 @@ function setPosterMode(film, overlay) {
     watchItContainerEl.classList.remove("watchit-normal");
     watchItContainerEl.classList.remove("watchit-overlay");
     watchItContainerEl.classList.add(watchItClass);
+
+}
+
+function renderUpdatedSeenValue(film) {
+    const filmId = film?.filmId;
+
+    if ( ! filmId ) {
+        return;
+    }
+
+    const seenBtnEl = document.getElementById(`seen-btn-${filmId}`);
+
+    if ( seenBtnEl ) {
+        const toggleClass = "btn-toggle-on";
+        seenBtnEl.classList.remove(toggleClass);
+
+        if ( film?.user?.seen ) {
+            seenBtnEl.classList.add(toggleClass);
+        }
+    }
 
 }
 
