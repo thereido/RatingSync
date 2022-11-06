@@ -65,11 +65,14 @@ function getFilmsForFilmlistCallback(xmlhttp) {
 function renderUserlistFilms() {
     let films = contextData.films;
 
+    // Clear the table
+    const filmTableEl = document.getElementById("film-table");
+    filmTableEl.innerHTML = "";
+
     if (!films || (films.length < 1)) {
         renderEmptyList();
     }
 
-    const filmTableEl = document.getElementById("film-table");
     const userlistRowEl = document.createElement("div");
     userlistRowEl.id = "userlist-row";
     userlistRowEl.setAttribute("class", "row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 row-cols-xl-6");
@@ -125,9 +128,16 @@ function showFilmDropdownForUserlist(filmId) {
     const film = contextData.films[filmIndex];
 
     const filmEl = document.getElementById(`userlist-film-${filmId}`);
-    let posterEl = filmEl.getElementsByTagName("poster")[0];
+    const posterEl = filmEl.getElementsByTagName("poster")[0];
     if (film.contentType == CONTENT_TV_EPISODE) {
         setPosterMode(film, false);
+    }
+
+    // Undo hovering for the WatchIt buttons
+    const watchItContainerEl = document.getElementById(`watchit-btn-container-${filmId}`);
+    if ( watchItContainerEl ) {
+        watchItContainerEl.onmouseenter = null;
+        watchItContainerEl.onmouseleave = null;
     }
 
     // This line must be after the call to reRenderPoster()
@@ -177,6 +187,13 @@ function hideFilmDropdownForUserlist(filmId, detailTimer) {
     // because it was changed while hovering)
     if (film.contentType == CONTENT_TV_EPISODE) {
         setPosterMode(film, true);
+    }
+
+    // Disable the film element's hover feature while the user is hovering on the WatchIt buttons
+    const watchItContainerEl = document.getElementById(`watchit-btn-container-${filmId}`);
+    if ( watchItContainerEl ) {
+        watchItContainerEl.onmouseenter = filmEl.onmouseleave;
+        watchItContainerEl.onmouseleave = filmEl.onmouseenter;
     }
 
     // This line must be after the call to reRenderPoster()
