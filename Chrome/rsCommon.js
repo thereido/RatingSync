@@ -1032,6 +1032,10 @@ function renderPoster(film, overlay, parentEl) {
     neverWatchBtnEl.id = `never-watch-btn-${filmId}`;
     neverWatchBtnEl.setAttribute("class", `fas fa-ban fa-xs pl-1 ${neverWatchToggled}`);
 
+    // Disable the parent element's hover feature while the user is hovering on the WatchIt buttons
+    watchItContainerEl.onmouseenter = parentEl.onmouseleave;
+    watchItContainerEl.onmouseleave = parentEl.onmouseenter;
+
     if ( overlay ) {
         imageEl.hidden = true;
     }
