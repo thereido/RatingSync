@@ -65,11 +65,14 @@ function getFilmsForFilmlistCallback(xmlhttp) {
 function renderUserlistFilms() {
     let films = contextData.films;
 
+    // Clear the table
+    const filmTableEl = document.getElementById("film-table");
+    filmTableEl.innerHTML = "";
+
     if (!films || (films.length < 1)) {
         renderEmptyList();
     }
 
-    const filmTableEl = document.getElementById("film-table");
     const userlistRowEl = document.createElement("div");
     userlistRowEl.id = "userlist-row";
     userlistRowEl.setAttribute("class", "row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 row-cols-xl-6");
