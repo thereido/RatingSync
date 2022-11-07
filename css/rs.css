@@ -107,6 +107,10 @@ poster > div > a {
     border-radius: .3rem;
 }
 
+poster.watchit-normal > div > a {
+    margin-top: 3.75rem;
+}
+
 poster.watchit-overlay > div > a {
     background-size: cover;
     background-position: center;
