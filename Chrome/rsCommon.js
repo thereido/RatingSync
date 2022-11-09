@@ -1004,7 +1004,10 @@ function renderPoster(film, overlay, parentEl) {
     imageAltText = imageAltText.replace(/\"/g, '\\\"').replace(/\'/g, "\\\'");
 
     const posterEl = document.createElement("poster");
-    const innerWrapperEl = document.createElement("div");
+    const tableEl = document.createElement("table");
+    const tableBodyEl = document.createElement("tbody");
+    const tableRowEl = document.createElement("tr");
+    const tableColumnEl = document.createElement("td");
     const linkEl = document.createElement("a");
     const imageEl = document.createElement("img");
     const foolishEl = document.createElement("span"); // This only needed for spacing between the image and the bottom border
@@ -1017,6 +1020,7 @@ function renderPoster(film, overlay, parentEl) {
     posterEl.id = `poster-${internalUniqueName}`;
     posterEl.setAttribute("class", posterClass);
     posterEl.setAttribute("data-filmid", filmId);
+    tableColumnEl.setAttribute("class", "align-middle"); // vertical centering
     linkEl.id = `poster-image-${filmId}`;
     linkEl.href = href;
     linkEl.style = `background-image: url('${imageUrl}');`;
@@ -1047,9 +1051,12 @@ function renderPoster(film, overlay, parentEl) {
         imageEl.setAttribute("class", "img-episode");
     }
 
-    posterEl.appendChild(innerWrapperEl);
-    innerWrapperEl.appendChild(linkEl);
-    innerWrapperEl.appendChild(watchItContainerEl);
+    posterEl.appendChild(tableEl);
+    tableEl.appendChild(tableBodyEl);
+    tableBodyEl.appendChild(tableRowEl);
+    tableRowEl.appendChild(tableColumnEl);
+    tableColumnEl.appendChild(linkEl);
+    tableColumnEl.appendChild(watchItContainerEl);
     linkEl.appendChild(imageEl);
     linkEl.appendChild(foolishEl);
     watchItContainerEl.appendChild(flexWrapperEl);

@@ -101,23 +101,23 @@ poster {
     display: inline-flex;
 }
 
-poster > div > a {
+poster > table > tbody > tr > td > a {
     width: 150px;
     display: inline-block;
     border-radius: .3rem;
 }
 
-poster.watchit-normal > div > a {
-    margin-top: 3.75rem;
+poster > table {
+    min-height: 221px;
 }
 
-poster.watchit-overlay > div > a {
+poster.watchit-overlay > table > tbody > tr > td > a {
     background-size: cover;
     background-position: center;
     min-height: 221px;
 }
 
-poster.watchit-normal > div > a > img {
+poster.watchit-normal > table > tbody > tr > td > a > img {
     width: 150px;
     object-fit: cover;
     object-position: center;
@@ -142,7 +142,7 @@ watchit-btn-container.watchit-overlay > div > div {
     margin-left: .25rem !important;
 }
 
-.img-episode {
+img.img-episode {
     max-height: 85px;
     border-radius: 25%;
 }
