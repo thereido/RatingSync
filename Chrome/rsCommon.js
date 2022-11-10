@@ -1020,7 +1020,7 @@ function renderPoster(film, overlay, parentEl) {
     posterEl.id = `poster-${internalUniqueName}`;
     posterEl.setAttribute("class", posterClass);
     posterEl.setAttribute("data-filmid", filmId);
-    tableColumnEl.setAttribute("class", "align-middle"); // vertical centering
+    tableColumnEl.setAttribute("class", "align-middle p-0"); // vertical centering
     linkEl.id = `poster-image-${filmId}`;
     linkEl.href = href;
     linkEl.style = `background-image: url('${imageUrl}');`;

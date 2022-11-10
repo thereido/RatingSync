@@ -127,8 +127,6 @@ function showFilmDropdownForUserlist(filmId) {
 
     const film = contextData.films[filmIndex];
 
-    const filmEl = document.getElementById(`userlist-film-${filmId}`);
-    const posterEl = filmEl.getElementsByTagName("poster")[0];
     if (film.contentType == CONTENT_TV_EPISODE) {
         setPosterMode(film, false);
     }
@@ -140,8 +138,7 @@ function showFilmDropdownForUserlist(filmId) {
         watchItContainerEl.onmouseleave = null;
     }
 
-    // This line must be after the call to reRenderPoster()
-    let dropdownEl = document.getElementById("film-dropdown-" + filmId);
+    const dropdownEl = document.getElementById("film-dropdown-" + filmId);
 
     renderFilmDetail(film, dropdownEl);
 
@@ -151,21 +148,8 @@ function showFilmDropdownForUserlist(filmId) {
         getFilmForDropdown(film);
     }
 
-    // Resize the poster to match the dropdown. Sometimes the dropdown is taller
-    // than the poster.
-    const posterHeight = posterEl.getBoundingClientRect().height;
-    const dropdownHeight = dropdownEl.getBoundingClientRect().height;
-    if (dropdownHeight - 10 > posterHeight) {
-        const newPosterHeight = dropdownHeight - 10;
-        posterEl.setAttribute("style", "height: " + newPosterHeight + "px");
-
-        // The film element for episodes are rounded, so the dropdown border
-        // would not match the border. Temporarily use a regular class while
-        // the dropdown is shown.
-        if (filmEl.getAttribute("data-episode") == "true") {
-            filmEl.setAttribute("class", "userlist-film");
-        }
-    }
+    const outerBoxEl = document.getElementById(`userlist-film-${filmId}`);
+    resizeHeightToMatchElements(outerBoxEl, dropdownEl);
 }
 
 function hideFilmDropdownForUserlist(filmId, detailTimer) {
@@ -196,12 +180,29 @@ function hideFilmDropdownForUserlist(filmId, detailTimer) {
         watchItContainerEl.onmouseleave = filmEl.onmouseenter;
     }
 
-    // This line must be after the call to reRenderPoster()
-    let posterEl = filmEl.getElementsByTagName("poster")[0];
-
     // Poster might have been resized to match the dropdown. Put it back the
     // default height
-    posterEl.removeAttribute("style");
+    const outerBoxEl = document.getElementById(`userlist-film-${filmId}`);
+    outerBoxEl.removeAttribute("style");
+}
+
+function resizeHeightToMatchElements(a, b) {
+
+    // Resize the shorter element to match the height of the taller element
+    const heightA = a.getBoundingClientRect().height;
+    const heightB = b.getBoundingClientRect().height;
+
+    if ( heightA == heightB ) {
+        return;
+    }
+
+    let tallerEl  = heightA > heightB ? a : b;
+    let shorterEl = heightA < heightB ? a : b;
+
+    const newHeight = tallerEl.getBoundingClientRect().height;
+    let style = shorterEl.getAttribute("style") + "; height: " + newHeight + "px";
+    shorterEl.setAttribute("style", style);
+
 }
 
 function renderEmptyList() {
