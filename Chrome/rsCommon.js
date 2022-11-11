@@ -1143,3 +1143,26 @@ function renderUpdatedSeenValue(film) {
 
 }
 
+function resizeHeightToMatchElements(a, b) {
+
+    if ( ! ( a && b )) {
+        return;
+    }
+
+    // Resize the shorter element to match the height of the taller element
+    const heightA = a.getBoundingClientRect().height;
+    const heightB = b.getBoundingClientRect().height;
+
+    if ( heightA == heightB ) {
+        return;
+    }
+
+    let tallerEl  = heightA > heightB ? a : b;
+    let shorterEl = heightA < heightB ? a : b;
+
+    const newHeight = tallerEl.getBoundingClientRect().height;
+    let style = shorterEl.getAttribute("style") + "; height: " + newHeight + "px";
+    shorterEl.setAttribute("style", style);
+
+}
+

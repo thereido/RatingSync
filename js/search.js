@@ -269,12 +269,11 @@ function renderSearchResultFilm(film, filmRowEl) {
     cardCol.appendChild(cardEl);
     cardEl.appendChild(contentRow);
 
-    // Poster
+    // Poster parent element
     contentRow.appendChild(posterColEl);
     const searchUniqueName = getUniqueName(film, DATA_API_DEFAULT);
     posterColEl.id = `search-poster-${searchUniqueName}`;
-    posterColEl.setAttribute("class", "col-auto");
-    renderPoster(film, true, posterColEl);
+    posterColEl.setAttribute("class", "col-auto pt-1");
 
     // Detail
     contentRow.appendChild(detailColEl);
