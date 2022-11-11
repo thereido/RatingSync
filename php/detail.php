@@ -61,10 +61,10 @@ $pageFooter = getPageFooter();
 
     <div id="alert-placeholder" class="alert-placeholder"></div>
 
-    <div class="row pt-3" id="detail-film">
+    <div class="row pt-3">
         <div class="col-auto mr-auto">
             <div class="card">
-                <div class="row pl-3 pt-3 pr-3 pb-1" id="detail-film">
+                <div class="row px-3 pt-3 pb-1" id="detail-film">
                     <div id="detail-poster-container" class="col-auto">
                     </div>
                     <div class="col pl-0">

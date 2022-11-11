@@ -314,6 +314,14 @@ function buildSeasonLineElement(film) {
         var userlists = JSON.parse(userlistsJson);
         listItemsHtml = renderFilmlistItems(userlists, includedListnames, filmId, "");
 
+        // The filmlist buttons are in the detail dropdown element. Sometimes the dropdown
+        // has a height in the element's style attr. Before adding the buttons to the
+        // dropdown, remove the height so it will be automatically sized.
+        const dropdownEl = document.getElementById("film-dropdown-" + filmId);
+        if ( dropdownEl ) {
+            dropdownEl.style.height = "";
+        }
+
         var html = '';
         html = html + '<div class="btn-group-vertical film-filmlists">' + "\n";
         html = html + '  <button class="btn btn-sm btn-primary" onClick="toggleFilmlist(\''+defaultListHtmlSafe+'\', '+filmId+', \'filmlist-btn-default-'+filmId+'\')" id="filmlist-btn-default-'+filmId+'" data-listname="'+defaultList+'" type="button">' + "\n";
@@ -331,9 +339,13 @@ function buildSeasonLineElement(film) {
         html = html + '  </div>' + "\n";
         html = html + '</div>' + "\n";
 
-        var container = document.getElementById("filmlist-container-"+filmId);
+        const container = document.getElementById("filmlist-container-"+filmId);
         container.innerHTML = html;
         addFilmlistListeners(container, filmId);
+
+        // After adding more content make the heights of the dropdown and the poster
+        const outerBoxEl = document.getElementById(`userlist-film-${filmId}`);
+        resizeHeightToMatchElements(outerBoxEl, dropdownEl);
     }
 
     function renderFilmlistItems(userlists, includedListnames, filmId, prefix) {

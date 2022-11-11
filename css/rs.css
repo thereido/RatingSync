@@ -95,29 +95,50 @@ score.rating-history {
 }
 
 poster {
-    margin: 4px;
     border-radius: 3px;
     min-width: 150px;
     display: inline-flex;
 }
 
-poster > div > a {
+poster > table > tbody > tr > td > a {
     width: 150px;
     display: inline-block;
     border-radius: .3rem;
 }
 
-poster.watchit-normal > div > a {
-    margin-top: 3.75rem;
+#userlist-row.background .inactive-poster {
+    filter: blur(4px);
+    animation-name: poster-blur;
+    animation-duration: 2s;
 }
 
-poster.watchit-overlay > div > a {
+#userlist-row:not(background) .inactive-poster {
+    filter: blur(0px);
+    animation-name: poster-unblur;
+    animation-duration: 1s;
+}
+
+@keyframes poster-blur {
+    from { filter: blur(0px); }
+    to { filter: blur(4px); }
+}
+
+@keyframes poster-unblur {
+    from { filter: blur(4px); }
+    to { filter: blur(0px); }
+}
+
+poster > table {
+    min-height: 221px;
+}
+
+poster.watchit-overlay > table > tbody > tr > td > a {
     background-size: cover;
     background-position: center;
     min-height: 221px;
 }
 
-poster.watchit-normal > div > a > img {
+poster.watchit-normal > table > tbody > tr > td > a > img {
     width: 150px;
     object-fit: cover;
     object-position: center;
@@ -125,6 +146,7 @@ poster.watchit-normal > div > a > img {
 }
 
 watchit-btn-container > div > div {
+    filter: blur(0px);
     padding-left: .25rem !important;
     padding-right: .25rem !important;
     border-radius: .3rem;
@@ -142,7 +164,7 @@ watchit-btn-container.watchit-overlay > div > div {
     margin-left: .25rem !important;
 }
 
-.img-episode {
+img.img-episode {
     max-height: 85px;
     border-radius: 25%;
 }
@@ -228,15 +250,16 @@ detail-episodeNumber {
 .icon-YouTube { background-position: -625px -10px; }
 .icon-HBO { background-position: -625px -96px; }
 
+.inactive-poster {
+    margin-bottom: 15px;
+}
+
 .userlist-film {
-    min-height: 231px;
-    width: 160px;
     /* background-color is in the colors area of this file */
-    border-style: outset;
-    border-width: thin;
     border-radius: 3%;
     /* border-color is in the colors area of this file */
     margin-bottom: 15px;
+    height: 221px;
 }
 
 .userlist-film-episode {
@@ -250,10 +273,7 @@ detail-episodeNumber {
     top: 0;
     z-index: 1;
     width: 334px;
-    min-height: 231px;
     /* background-color is in the colors area of this file */
-    border-style: outset;
-    border-width: thin;
     /* border-color is in the colors area of this file */
     margin-bottom: 5px;
     padding-bottom: 3px;
@@ -262,8 +282,6 @@ detail-episodeNumber {
 
 .detail-right {
     left: 170px;
-    border-left-style: none;
-    border-right-style: outset;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     border-top-right-radius: 3%;
@@ -272,8 +290,6 @@ detail-episodeNumber {
 
 .detail-left {
     left: -314px;
-    border-left-style: outset;
-    border-right-style: none;
     border-top-left-radius: 3%;
     border-bottom-left-radius: 3%;
     border-top-right-radius: 0;
