@@ -103,16 +103,16 @@ poster {
 poster > table > tbody > tr > td > a {
     width: 150px;
     display: inline-block;
-    border-radius: .3rem;
+    border-radius: var(--radius-poster);
 }
 
-#userlist-row.background .inactive-poster {
+#userlist-row.background .poster-container.does-not-have-focus {
     filter: blur(4px);
     animation-name: poster-blur;
     animation-duration: 2s;
 }
 
-#userlist-row:not(background) .inactive-poster {
+#userlist-row:not(background) .poster-container.does-not-have-focus {
     filter: blur(0px);
     animation-name: poster-unblur;
     animation-duration: 1s;
@@ -139,10 +139,10 @@ poster.watchit-overlay > table > tbody > tr > td > a {
 }
 
 poster.watchit-normal > table > tbody > tr > td > a > img {
-    width: 150px;
+    width: inherit;
     object-fit: cover;
     object-position: center;
-    border-radius: .3rem;
+    border-radius: var(--radius-poster);
 }
 
 watchit-btn-container > div > div {
@@ -167,6 +167,10 @@ watchit-btn-container.watchit-overlay > div > div {
 img.img-episode {
     max-height: 85px;
     border-radius: 25%;
+}
+
+.poster-container.has-focus img.img-episode {
+    max-height: 221px;
 }
 
 episodeListPoster {
@@ -250,16 +254,17 @@ detail-episodeNumber {
 .icon-YouTube { background-position: -625px -10px; }
 .icon-HBO { background-position: -625px -96px; }
 
-.inactive-poster {
+.poster-container.does-not-have-focus {
     margin-bottom: 15px;
 }
 
-.userlist-film {
+.poster-container.has-focus {
     /* background-color is in the colors area of this file */
-    border-radius: 3%;
+    border-radius: var(--radius-poster);
     /* border-color is in the colors area of this file */
     margin-bottom: 15px;
     height: 221px;
+    width: fit-content;
 }
 
 .userlist-film-episode {
@@ -280,21 +285,34 @@ detail-episodeNumber {
     padding-left: 5px;
 }
 
-.detail-right {
-    left: 170px;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border-top-right-radius: 3%;
-    border-bottom-right-radius: 3%;
+.film-dropdown-content.detail-right,
+filmitem.episode .poster-container.detail-left {
+    left: 169px;
+    border-radius: 0 var(--radius-poster-dropdown) var(--radius-poster-dropdown) 0;
 }
 
-.detail-left {
+.film-dropdown-content.detail-left,
+filmitem.episode .poster-container.detail-right {
     left: -314px;
-    border-top-left-radius: 3%;
-    border-bottom-left-radius: 3%;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    border-radius: var(--radius-poster-dropdown) 0 0 var(--radius-poster-dropdown);
 }
+
+.poster-container:not(.resized).detail-left {
+    border-radius: 0 10% 10% 0;
+}
+
+.poster-container:not(.resized).detail-right {
+    border-radius: 10% 0 0 10%;
+}
+
+.poster-container.detail-right .pad-right { padding-left: 4px !important; }
+.poster-container.detail-left .pad-left { padding-left: 4px !important; }
+
+filmitem:not(.episode) .poster-container:not(.resized).detail-right .pad-left,
+filmitem:not(.episode) .poster-container:not(.resized).detail-left .pad-right {
+    background-color: var(--bg);
+}
+
 
 .search-status {
     font-weight: bold;
@@ -556,7 +574,7 @@ rating-watched.highlight, rating-watched.watched-on.highlight { color: var(--pri
 .suggestion-rating { color: var(--star); }
 .thirdparty-bar > .source-logo-1 > a > imdbScore, .thirdparty-bar > .source-logo-1 > a > tmdbScore { color: var(--fg); }
 .thirdparty-bar > .source-logo-2 > a > imdbScore, .thirdparty-bar > .source-logo-2 > a > tmdbScore { color: var(--fg); }
-.userlist-film { background-color: var(--bg-surface); border-color: var(--border-surface); }
+.poster-container.has-focus { background-color: var(--bg-surface); border-color: var(--border-surface); }
 watchit-btn-container > div > div { background-color: var(--bg-poster-text); color: rgba(120, 120, 120); }
 
 detail-episode { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border-surface); box-shadow: 0 2px 5px var(--shadow-primary); }
@@ -615,6 +633,9 @@ detail-episode-rating { color: var(--star); }
 
     background-color: var(--bg);
     color: var(--fg);
+
+    --radius-poster: 6%;
+    --radius-poster-dropdown: 3%;
 }
 
 ::selection {

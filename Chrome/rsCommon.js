@@ -1007,7 +1007,9 @@ function renderPoster(film, overlay, parentEl) {
     const tableEl = document.createElement("table");
     const tableBodyEl = document.createElement("tbody");
     const tableRowEl = document.createElement("tr");
-    const tableColumnEl = document.createElement("td");
+    const paddingColumnLeftEl = document.createElement("td");
+    const contentColumnEl = document.createElement("td");
+    const paddingColumnRightEl = document.createElement("td");
     const linkEl = document.createElement("a");
     const imageEl = document.createElement("img");
     const foolishEl = document.createElement("span"); // This only needed for spacing between the image and the bottom border
@@ -1020,7 +1022,9 @@ function renderPoster(film, overlay, parentEl) {
     posterEl.id = `poster-${internalUniqueName}`;
     posterEl.setAttribute("class", posterClass);
     posterEl.setAttribute("data-filmid", filmId);
-    tableColumnEl.setAttribute("class", "align-middle p-0"); // vertical centering
+    paddingColumnLeftEl.setAttribute("class", "pad-left pl-1 pr-0");
+    contentColumnEl.setAttribute("class", "align-middle p-0"); // vertical centering
+    paddingColumnRightEl.setAttribute("class", "pad-right pl-1 pr-0");
     linkEl.id = `poster-image-${filmId}`;
     linkEl.href = href;
     linkEl.style = `background-image: url('${imageUrl}');`;
@@ -1049,14 +1053,17 @@ function renderPoster(film, overlay, parentEl) {
 
     if ( isEpisode ) {
         imageEl.setAttribute("class", "img-episode");
+        linkEl.classList.add("img-episode");
     }
 
     posterEl.appendChild(tableEl);
     tableEl.appendChild(tableBodyEl);
     tableBodyEl.appendChild(tableRowEl);
-    tableRowEl.appendChild(tableColumnEl);
-    tableColumnEl.appendChild(linkEl);
-    tableColumnEl.appendChild(watchItContainerEl);
+    tableRowEl.appendChild(paddingColumnLeftEl);
+    tableRowEl.appendChild(contentColumnEl);
+    tableRowEl.appendChild(paddingColumnRightEl);
+    contentColumnEl.appendChild(linkEl);
+    contentColumnEl.appendChild(watchItContainerEl);
     linkEl.appendChild(imageEl);
     linkEl.appendChild(foolishEl);
     watchItContainerEl.appendChild(flexWrapperEl);
@@ -1146,7 +1153,7 @@ function renderUpdatedSeenValue(film) {
 function resizeHeightToMatchElements(a, b) {
 
     if ( ! ( a && b )) {
-        return;
+        return false;
     }
 
     // Resize the shorter element to match the height of the taller element
@@ -1154,7 +1161,7 @@ function resizeHeightToMatchElements(a, b) {
     const heightB = b.getBoundingClientRect().height;
 
     if ( heightA == heightB ) {
-        return;
+        return false;
     }
 
     let tallerEl  = heightA > heightB ? a : b;
@@ -1163,6 +1170,9 @@ function resizeHeightToMatchElements(a, b) {
     const newHeight = tallerEl.getBoundingClientRect().height;
     let style = shorterEl.getAttribute("style") + "; height: " + newHeight + "px";
     shorterEl.setAttribute("style", style);
+    shorterEl.classList.add("resized");
+
+    return true;
 
 }
 
