@@ -30,15 +30,24 @@ function sizeBreakpointCallback() {
         var dropdownEl = document.getElementById("film-dropdown-" + filmId);
         var dropdownClass = "detail-left";
 
-        var itemRect = document.getElementById("userlist-film-" + filmId).getBoundingClientRect();
+        const activePosterEl = document.getElementById("poster-focus-in-" + filmId);
+        const inactivePosterEl = document.getElementById("poster-focus-out-" + filmId);
+        const populatedPosterEl = activePosterEl?.hidden ? inactivePosterEl : activePosterEl;
+        const itemRect = populatedPosterEl.getBoundingClientRect();
         var spaceOnTheLeft = itemRect.right - leftEnd;
         var spaceOnTheRight = rightEnd - itemRect.left;
-        if (spaceOnTheRight > 504 || spaceOnTheRight > spaceOnTheLeft) {
+        const dropToTheRight = spaceOnTheRight > 484 || spaceOnTheRight > spaceOnTheLeft;
+
+        if (dropToTheRight) {
             // Dropdown to right
             dropdownClass = "detail-right";
         }
 
         dropdownEl.setAttribute("class", "film-dropdown-content " + dropdownClass);
+
+        activePosterEl.classList.remove("detail-left");
+        activePosterEl.classList.remove("detail-right");
+        activePosterEl.classList.add(dropdownClass);
     }
 }
 
@@ -87,7 +96,7 @@ function renderUserlistFilms() {
 
         // Episode style classes
         const episodeClass = {image:"", userlistfilm:""};
-        const isEpisode = film.contentType == CONTENT_TV_EPISODE ? "true" : "false";
+        const isEpisode = film.contentType == CONTENT_TV_EPISODE ? true : false;
 
         const filmItemEl = document.createElement("filmItem");
         const inactivePosterContainerEl = document.createElement("div");
@@ -97,17 +106,21 @@ function renderUserlistFilms() {
         filmItemEl.id = uniqueName;
         filmItemEl.classList.add("col");
         filmItemEl.setAttribute("data-film-id", filmId);
-        inactivePosterContainerEl.id = `inactive-poster-${filmId}`;
-        inactivePosterContainerEl.setAttribute("class", `inactive-poster`);
+        inactivePosterContainerEl.id = `poster-focus-out-${filmId}`;
+        inactivePosterContainerEl.setAttribute("class", `poster-container does-not-have-focus`);
         inactivePosterContainerEl.setAttribute("onMouseEnter", `detailTimer = setTimeout(function () { showFilmDropdownForUserlist(${filmId}); }, 500)`);
         inactivePosterContainerEl.setAttribute("onMouseLeave", `clearTimeout(detailTimer);`);
-        activePosterContainerEl.id = `userlist-film-${filmId}`;
-        activePosterContainerEl.setAttribute("class", `userlist-film ${episodeClass["userlistfilm"]}`);
-        activePosterContainerEl.setAttribute("data-episode", isEpisode);
+        activePosterContainerEl.id = `poster-focus-in-${filmId}`;
+        activePosterContainerEl.setAttribute("class", `poster-container has-focus ${episodeClass["userlistfilm"]}`);
         activePosterContainerEl.setAttribute("onMouseLeave", `hideFilmDropdownForUserlist(${filmId}, detailTimer)`);
         activePosterContainerEl.hidden = true;
         dropdownEl.id = `film-dropdown-${filmId}`;
         dropdownEl.classList.add("film-dropdown-content");
+
+        if ( isEpisode ) {
+            filmItemEl.classList.add("episode");
+            activePosterContainerEl.setAttribute("data-episode", isEpisode ? "true" : "false");
+        }
 
         filmItemEl.appendChild(inactivePosterContainerEl);
         filmItemEl.appendChild(activePosterContainerEl);
@@ -149,7 +162,7 @@ function showFilmDropdownForUserlist(filmId) {
 
     const dropdownEl = document.getElementById("film-dropdown-" + filmId);
 
-    const activePosterContainerEl = document.getElementById(`userlist-film-${filmId}`);
+    const activePosterContainerEl = document.getElementById(`poster-focus-in-${filmId}`);
     renderFilmDetail(film, dropdownEl);
 
     // If the default source has no data for this film get it now
@@ -187,8 +200,8 @@ function hideFilmDropdownForUserlist(filmId, detailTimer) {
         setPosterMode(film, true);
     }
 
-    const outerBoxEl = document.getElementById(`userlist-film-${filmId}`);
-    const inactivePosterEl = document.getElementById(`inactive-poster-${filmId}`);
+    const outerBoxEl = document.getElementById(`poster-focus-in-${filmId}`);
+    const inactivePosterEl = document.getElementById(`poster-focus-out-${filmId}`);
 
     // Disable the film element's hover feature while the user is hovering on the WatchIt buttons
     const watchItContainerEl = document.getElementById(`watchit-btn-container-${filmId}`);
@@ -221,12 +234,12 @@ function movePosterContainer(filmId, active) {
     let newContainerId = null;
     let oldContainerId = null;
     if ( active ) {
-        newContainerId = `userlist-film-${filmId}`;
-        oldContainerId = `inactive-poster-${filmId}`;
+        newContainerId = `poster-focus-in-${filmId}`;
+        oldContainerId = `poster-focus-out-${filmId}`;
     }
     else {
-        newContainerId = `inactive-poster-${filmId}`;
-        oldContainerId = `userlist-film-${filmId}`;
+        newContainerId = `poster-focus-out-${filmId}`;
+        oldContainerId = `poster-focus-in-${filmId}`;
     }
 
     const oldContainerEl = document.getElementById(oldContainerId);
