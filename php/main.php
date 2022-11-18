@@ -19,6 +19,7 @@ require_once "src/TmdbApi.php";
 require_once "src/Xfinity.php";
 require_once "src/RatingSyncSite.php";
 require_once "src/SessionUtility.php";
+require_once "EntityManagers" .DIRECTORY_SEPARATOR. "UserManager.php";
 
 /**
  * Import ratings from a file to the database
@@ -108,6 +109,13 @@ function getDatabase($mode = Constants::DB_MODE)
 
 
     return $db_conn;
+}
+
+function userMgr(): UserManager {
+
+    static $userMgr = new UserManager();
+    return $userMgr;
+
 }
 
 function debugMessage($input, $prefix = null, $showTime = true, $printArray = null) {

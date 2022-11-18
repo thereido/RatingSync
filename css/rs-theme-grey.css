@@ -1,0 +1,10 @@
+
+.card { border: none; }
+
+.rs-navbar { border: none; }
+
+:root {
+    --bg: #424242;
+    --bg-surface: #383838;
+    --bg-input-text: var(--bg);
+}

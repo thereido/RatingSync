@@ -566,7 +566,7 @@ select { background-color: var(--bg-input-text); color: var(--fg-surface-muted);
 rating-watched { color: var(--fg-surface-muted); }
 rating-watched.watched-on { color: var(--star); }
 rating-watched.highlight, rating-watched.watched-on.highlight { color: var(--primary) }
-.score-invisible  { color: var(--bg-surface-trans); }
+.score-invisible  { color: var(--bg-surface); }
 .search-suggestion-item { border-color: var(--border);}
 .stream-icon { background-color: transparent; }
 .suggestion-icon { color: var(--primary); }
