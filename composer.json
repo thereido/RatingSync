@@ -1,12 +1,13 @@
 {
-    "name": "thereido/RatingSync",
+    "name": "RatingSync",
     "description": "Keep ratings from movie websites in sync",
     "homepage": "https://github.com/thereido/RatingSync",
     "license": "GPL-3.0",
     "require": {
         "php": ">=8.1",
         "phpunit/phpunit": ">=9.5.12",
-      "ext-mysqli": "*"
+        "ext-mysqli": "*",
+        "ext-pdo": "*"
     },
     "autoload": {
         "classmap": [
