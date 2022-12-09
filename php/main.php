@@ -19,6 +19,7 @@ require_once "src/TmdbApi.php";
 require_once "src/Xfinity.php";
 require_once "src/RatingSyncSite.php";
 require_once "src/SessionUtility.php";
+require_once "EntityManagers" .DIRECTORY_SEPARATOR. "ThemeManager.php";
 require_once "EntityManagers" .DIRECTORY_SEPARATOR. "UserManager.php";
 
 /**
@@ -115,6 +116,13 @@ function userMgr(): UserManager {
 
     static $userMgr = new UserManager();
     return $userMgr;
+
+}
+
+function themeMgr(): ThemeManager {
+
+    static $themeMgr = new ThemeManager();
+    return $themeMgr;
 
 }
 

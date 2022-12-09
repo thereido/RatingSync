@@ -11,14 +11,19 @@ require_once __DIR__ .DIRECTORY_SEPARATOR. "EntityViews" .DIRECTORY_SEPARATOR. "
 
 function includeHeadHtmlForAllPages(): string {
 
+    $theme = Constants::THEME_DEFAULT;
+
     try {
-        $theme = Constants::THEME_DEFAULT;
 
         $username = getUsername();
         if ( ! empty($username) ) {
-            $userMgr = userMgr();
-            $user = $userMgr->findWithUsername( $username );
-            $theme = $user?->themeId ?: Constants::THEME_DEFAULT;
+
+            $userView = userMgr()->findViewWithUsername( $username );
+            if ( $userView ) {
+
+                $theme = $userView->getThemeName();
+
+            }
         }
     }
     catch (Exception) {

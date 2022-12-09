@@ -11,6 +11,7 @@ final class UserFactory
 
     public function __construct( UserView $view )
     {
+
         $this->_userView = $view;
 
     }

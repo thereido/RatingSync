@@ -23,6 +23,22 @@ final class UserManager extends EntityManager
 
     }
 
+    public function findViewWithUsername( string $username ): UserView|false {
+
+        if ( empty($username) ) {
+            return false;
+        }
+
+        $userEntity = $this->findWithUsername( $username );
+
+        if ( ! $userEntity ) {
+            return false;
+        }
+
+        return new UserView( $userEntity );
+
+    }
+
     public function findWithUsername( string $username ): User|false {
 
         if ( empty($username) ) {
