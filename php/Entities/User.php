@@ -4,14 +4,16 @@ namespace RatingSync;
 
 use Exception;
 
+require_once "EntityInterface.php";
 require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "Constants.php";
 require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "EntityViews" .DIRECTORY_SEPARATOR. "UserView.php";
 
 /**
  * Database User row
  */
-final class User
+final class User implements EntityInterface
 {
+    /** @var int Database ID. Use -1 for a new user. */
     public readonly int $id;
     public readonly string $username;
     public readonly string|null $email;
@@ -40,19 +42,37 @@ final class User
         $db = getDatabase();
         $id = $this->id;
         $username = $db->quote($this->username);
-        $email = is_null($this->email) ? NULL : $db->quote($this->email);
+        $email = is_null($this->email) ? "NULL" : $db->quote($this->email);
         $enabled = $this->enabled;
-        $themeId = is_null($this->themeId) ? NULL : $this->themeId;
+        $themeId = is_null($this->themeId) ? "NULL" : $this->themeId;
 
-        $stmt = "REPLACE user";
-        $stmt .= " (id, username, email, enabled, themeId)";
-        $stmt .= " VALUES (";
-        $stmt .= "$id";
-        $stmt .= ", $username)";
-        $stmt .= ", $email";
-        $stmt .= ", $enabled";
-        $stmt .= ", $themeId";
-        $stmt .= ")";
+        $insert = ($id == -1);
+
+        if ( $insert ) {
+            // Insert new user
+
+            $stmt = "INSERT INTO user";
+            $stmt .= " (id, username, email, enabled, theme_id)";
+            $stmt .= " VALUES (";
+            $stmt .= "$id";
+            $stmt .= ", $username";
+            $stmt .= ", $email";
+            $stmt .= ", $enabled";
+            $stmt .= ", $themeId";
+            $stmt .= ")";
+
+        }
+        else {
+            // Update
+
+            $stmt = "UPDATE user SET " .
+                        "username=$username" .
+                        ", email=$email" .
+                        ", enabled=$enabled" .
+                        ", theme_id=$themeId" .
+                        " WHERE id=$id";
+
+        }
 
         $success = $db->exec($stmt) !== false;
         if ( ! $success ) {
@@ -61,7 +81,11 @@ final class User
             throw new Exception($msg);
         }
 
-        return (int) $db->lastInsertId();
+        if ( $insert ) {
+            return (int) $db->lastInsertId();
+        }
+
+        return $id;
     }
 
 }

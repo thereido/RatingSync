@@ -2,8 +2,8 @@
 
 namespace RatingSync;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . "UserView.php";
-require_once __DIR__ . DIRECTORY_SEPARATOR;
+require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "User.php";
+require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "EntityViews" .DIRECTORY_SEPARATOR. "UserView.php";
 
 final class UserFactory
 {
@@ -16,14 +16,19 @@ final class UserFactory
 
     }
 
-    public function build() {
+    public function build(): User {
+
+        $userId = $this->_userView->getId();
+        if ( is_null($userId) ) {
+            $userId = -1;
+        }
 
         return new User(
-            -1,
+            $userId,
             $this->_userView->getUsername(),
             $this->_userView->getEmail(),
             $this->_userView->getEnabled(),
-            $this->_userView->getThemeId(),
+            $this->_userView->getTheme()?->getId(),
         );
 
     }

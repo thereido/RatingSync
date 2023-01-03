@@ -14,7 +14,19 @@ final class ThemeManager extends EntityManager
     public function __construct() {
     }
 
-    public function findWithId( int $id ): Theme|null {
+    public function findViewWithId( int $id ): ThemeView|false {
+
+        $entity = $this->findWithId( $id );
+
+        if ( ! $entity ) {
+            return false;
+        }
+
+        return new ThemeView( $entity );
+
+    }
+
+    public function findWithId( int $id ): ThemeEntity|false {
 
         $query = "SELECT * FROM theme WHERE id=" . $id;
 
@@ -65,6 +77,91 @@ final class ThemeManager extends EntityManager
 
     }
 
+    public function findViewWithName( string $name ): ThemeView|false {
+
+        if ( empty($name) ) {
+            return false;
+        }
+
+        $entity = $this->findWithName( $name );
+
+        if ( ! $entity ) {
+            return false;
+        }
+
+        return new ThemeView( $entity );
+
+    }
+
+    public function findWithName( string $name ): ThemeEntity|false {
+
+        if ( empty($name) ) {
+            return false;
+        }
+
+        $nameEscapedAndQuoted = $this->getDb()->quote($name);
+
+        $query =    "SELECT * FROM theme" .
+                    "  WHERE name=$nameEscapedAndQuoted" .
+                    "    AND enabled=TRUE";
+
+        try {
+            return $this->findWithQuery( $query );
+        }
+        catch (Exception) {
+            return false;
+        }
+
+    }
+
+    public function findViewAll( bool $onlyEnabled = true ): array|false {
+
+        $views = [];
+
+        $entities = $this->findAll( $onlyEnabled );
+
+        foreach ($entities as $entity) {
+            $entity = new ThemeView( $entity );
+            $views[$entity->getId()] = $entity;
+        }
+
+        return $views;
+
+    }
+
+    public function findAll( bool $onlyEnabled = true ): array|false {
+
+        $entities = [];
+
+        $query = "SELECT * FROM theme";
+
+        if ( $onlyEnabled ) {
+            $query .= " WHERE enabled=TRUE";
+        }
+
+        try {
+
+            $result = $this->findMultipleDbResult( $query );
+
+        }
+        catch (Exception) {
+            return false;
+        }
+
+        $rows = $result->fetchAll();
+
+        if ( ! $rows ) {
+            return false;
+        }
+
+        foreach ($rows as $row) {
+            $entities[] = $this->entityFromRow( $row );
+        }
+
+        return $entities;
+
+    }
+
     /**
      * @throws Exception
      */
@@ -94,12 +191,8 @@ final class ThemeManager extends EntityManager
         }
 
         $row = $result->fetch();
-        $id = $row["id"];
-        $name = $row["name"];
-        $enabled = $this->boolFromInt( $row["enabled"] );
-        $default = $this->boolFromInt( $row["default"] );
 
-        return new ThemeEntity($id, $name, $enabled, $default);
+        return $this->entityFromRow( $row );
 
     }
 
@@ -114,28 +207,14 @@ final class ThemeManager extends EntityManager
 
     }
 
-    /**
-     * @throws Exception
-     */
-    private function findWithQuery( string $query ): ThemeEntity|false
+    protected function entityFromRow( Array $row ): ThemeEntity
     {
-
-        $result = $this->findOneDbResult( $query );
-
-        if ( ! $result ) {
-
-            return false;
-
-        }
-
-        $row = $result->fetch();
         $id = $row["id"];
         $name = $row["name"];
         $enabled = $row["enabled"];
         $default = $row["default"];
 
         return new ThemeEntity($id, $name, $enabled, $default);
-
     }
 
 }

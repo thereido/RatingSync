@@ -6,6 +6,7 @@ use PDO;
 use PDOStatement;
 
 require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "Constants.php";
+require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "EntityInterface.php";
 
 abstract class EntityManager
 {
@@ -54,7 +55,7 @@ abstract class EntityManager
     /**
      * @throws Exception
      */
-    protected function findOneDbResult( string $query ): PDOStatement|false
+    protected function findWithQuery( string $query ): EntityInterface|false
     {
 
         try {
@@ -72,15 +73,42 @@ abstract class EntityManager
 
         if ( $result->rowCount() == 1 ) {
 
-            return $result;
+            $row = $result->fetch();
+
+            return $this->entityFromRow( $row );
 
         }
         else {
 
-            logDebug($result->rowCount() . " entity with query: $query");
+            logDebug($result->rowCount() . " entities with query: $query");
             return false;
 
         }
+
+    }
+
+    abstract protected function entityFromRow( Array $row ): EntityInterface;
+
+    /**
+     * @throws Exception
+     */
+    protected function findMultipleDbResult( string $query ): PDOStatement|false
+    {
+
+        try {
+
+            $result = $this->getDb()->query($query);
+
+        }
+        catch (Exception $e) {
+
+            logError("Exception with query: $query");
+            logError($e->getMessage() . "\n" . $e->getTraceAsString());
+            throw $e;
+
+        }
+
+        return $result;
 
     }
 

@@ -24,7 +24,7 @@ class UserView
         $this->enabled = $entity->enabled;
 
         $theme = themeMgr()->findViewWithUsername( $this->username );
-        if ( empty($theme) ) {
+        if ( ! $theme ) {
 
             try {
 
@@ -65,6 +65,20 @@ class UserView
 
     public function getThemeName(): string {
         return $this->theme?->getName() ?: Constants::THEME_DEFAULT;
+    }
+
+    public function setTheme( int $themeId ): bool {
+
+        $theme = themeMgr()->findViewWithId( $themeId );
+
+        if ( ! $theme ) {
+            return false;
+        }
+
+        $this->theme = $theme;
+
+        return true;
+
     }
 
 }

@@ -2,7 +2,12 @@
 
 namespace RatingSync;
 
+use Exception;
+
 require_once "EntityManager.php";
+require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "User.php";
+require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "EntityViews" .DIRECTORY_SEPARATOR. "UserView.php";
+require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "EntityFactories" .DIRECTORY_SEPARATOR. "UserFactory.php";
 
 final class UserManager extends EntityManager
 {
@@ -50,7 +55,8 @@ final class UserManager extends EntityManager
         $query = "SELECT * FROM user WHERE username=$usernameEscapedAndQuoted";
 
         try {
-            return $this->findWithQuery( $query );
+            $entity = $this->findWithQuery( $query );
+            return $entity;
         }
         catch (Exception) {
             return false;
@@ -58,44 +64,35 @@ final class UserManager extends EntityManager
 
     }
 
-    /**
-     * @throws Exception
-     */
-    private function findWithQuery( string $query ): User|false
+    protected function entityFromRow( Array $row ): User
     {
+        $id = $row["id"];
+        $username = $row["username"];
+        $email = $row["email"];
+        $enabled = $row["enabled"];
+        $themeId = $row["theme_id"];
+
+        $enabled = $this->boolFromInt($enabled);
+
+        return new User($id, $username, $email, $enabled, $themeId);
+    }
+
+    /**
+     * Create or replace to the db
+     *
+     * @return int|false User db ID or false on failure
+     */
+    public function save( UserView $view ): int|false
+    {
+        $userFactory = new UserFactory( $view );
+        $entity = $userFactory->build();
 
         try {
-
-            $result = $this->getDb()->query($query);
-
+            return $entity->save();
         }
-        catch (Exception $e) {
-
-            logError("Exception with query: $query");
-            logError($e->getMessage() . "\n" . $e->getTraceAsString());
-            throw $e;
-
-        }
-
-        if ( $result->rowCount() == 1 ) {
-
-            $row = $result->fetch();
-            $id = $row["id"];
-            $username = $row["username"];
-            $email = $row["email"];
-            $enabled = $row["enabled"];
-            $themeId = $row["theme_id"];
-
-            return new User($id, $username, $email, $enabled, $themeId);
-
-        }
-        else {
-
-            logDebug($result->rowCount() . " users with query: $query");
+        catch (Exception) {
             return false;
-
         }
-
     }
 
 }

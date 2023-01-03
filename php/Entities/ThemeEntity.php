@@ -4,13 +4,14 @@ namespace RatingSync;
 
 use Exception;
 
+require_once "EntityInterface.php";
 require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "Constants.php";
 require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "EntityViews" .DIRECTORY_SEPARATOR. "ThemeView.php";
 
 /**
  * Database Theme
  */
-final class ThemeEntity
+final class ThemeEntity implements EntityInterface
 {
     public readonly int $id;
     public readonly string $name;

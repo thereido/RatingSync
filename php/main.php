@@ -126,6 +126,26 @@ function themeMgr(): ThemeManager {
 
 }
 
+function userView( string $username = null ): UserView|null {
+
+    try {
+
+        $username = empty($username) ? getUsername() : $username;
+
+        if ( ! empty($username) ) {
+
+            return userMgr()->findViewWithUsername( $username );
+
+        }
+    }
+    catch (Exception $e) {
+        logError("Error getting a user view with username='$username'. An empty username should be okay.\n" . $e->getMessage());
+    }
+
+    return null;
+
+}
+
 function debugMessage($input, $prefix = null, $showTime = true, $printArray = null) {
     if (!is_null($prefix)) {
         $time = "";

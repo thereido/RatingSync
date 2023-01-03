@@ -9,26 +9,12 @@ require_once __DIR__ .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "Use
 require_once __DIR__ .DIRECTORY_SEPARATOR. "EntityManagers" .DIRECTORY_SEPARATOR. "UserManager.php";
 require_once __DIR__ .DIRECTORY_SEPARATOR. "EntityViews" .DIRECTORY_SEPARATOR. "UserView.php";
 
-function includeHeadHtmlForAllPages(): string {
+function includeHeadHtmlForAllPages( UserView $user = null ): string {
 
-    $theme = Constants::THEME_DEFAULT;
-
-    try {
-
-        $username = getUsername();
-        if ( ! empty($username) ) {
-
-            $userView = userMgr()->findViewWithUsername( $username );
-            if ( $userView ) {
-
-                $theme = $userView->getThemeName();
-
-            }
-        }
+    if ( empty( $user ) ) {
+        $user = userView();
     }
-    catch (Exception) {
-        //$theme = Constants::THEME_DEFAULT;
-    }
+    $themeName = $user?->getThemeName();
 
     $html  = '<meta charset="utf-8" />' . "\n";
     $html .= includeBootstrapDependencies();
@@ -36,7 +22,7 @@ function includeHeadHtmlForAllPages(): string {
     $html .= includeJavascriptFiles();
     $html .= '<link href="/css/rs.css" rel="stylesheet">' . "\n";
     $html .= '<link href="/css/switches.css" rel="stylesheet">' . "\n";
-    $html .= "<link href='/css/rs-theme-$theme.css' rel='stylesheet'>\n";
+    $html .= "<link href='/css/rs-theme-$themeName.css' rel='stylesheet'>\n";
 
     return $html;
 }

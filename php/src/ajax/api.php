@@ -72,6 +72,9 @@ elseif ($action == "setSeen") {
 elseif ($action == "setNeverWatch") {
     $response = api_setNeverWatch($username);
 }
+elseif ($action == "setTheme") {
+    $response = api_setTheme($username);
+}
 
 if (empty($response)) {
     $response = "{}";
@@ -942,6 +945,36 @@ function api_getFullUri()
     }
 
     return "$protocol://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+}
+
+function api_setTheme($username): string
+{
+    $themeId = array_value_by_key("i", $_GET);
+    logDebug("Params i=$themeId", __FUNCTION__." ".__LINE__);
+
+    $success = false;
+
+    try {
+
+        $user = userMgr()->findViewWithUsername( $username );
+        $user->setTheme( $themeId );
+        $userId = userMgr()->save( $user );
+
+        if ( $userId ) {
+            $success = true;
+        }
+
+    }
+    catch (\Exception) {
+        //$success = false;
+    }
+
+    if ( $success ) {
+        return '{"Success":"true"}';
+    }
+    else {
+        return '{"Success":"false"}';
+    }
 }
 
 ?>

@@ -477,28 +477,33 @@ detail-episode-rating {
 
 .alert-placeholder {
     position: fixed;
-    top: 8px;
-    left: 50%;
-    width: 60%;
-    margin-left: -30%;
     z-index: 5;
+    width: 100%;
+    margin-top: 10px;
+}
+
+alert-wrapper {
+    display: block;
+    width: fit-content;
+    max-width: 60%;
+    margin: auto;
 }
 
 /* Small */
-@media (min-width:576px) {
-}
+/*@media (min-width:576px) {
+}*/
 
 /* Medium */
-@media (min-width:768px) {
-}
+/*@media (min-width:768px) {
+}*/
 
 /* Large */
-@media (min-width:992px) {
-}
+/*@media (min-width:992px) {
+}*/
 
 /* X-Large */
-@media (min-width:1200px) {
-}
+/*@media (min-width:1200px) {
+}*/
 
 /* Colors overriding bootstrap */
 .border { border-color: var(--border) !important; }
@@ -581,65 +586,124 @@ detail-episode { background-color: var(--bg-surface); color: var(--fg-surface-mu
 detail-episode-rating { color: var(--star); }
 
 :root {
-    --bg: #121212;
-    --bg-surface: #212121;
-    --bg-surface-trans: rgba(33, 33, 33, 0.95);
-    --bg-surface-hover: #313131;
-    --bg-surface-primary: rgba(44, 32, 60); /* 24% primary */
-    --bg-surface-primary-trans: rgba(44, 32, 60, 0.95);
-    --primary: rgba(141, 104, 187);
-    --primary-alt: rgb(126, 104, 187);
-    --bg-secondary: #03dac6;
-    --danger: #cf6679;
-    --bg-input-text: rgba(56, 56, 56); /* rgba(255, 255, 255, .1) over bg-surface */
-    --bg-input-text-active: rgba(141, 104, 187, 0.25); /* primary .25 trans */
-    --bg-poster-text: rgba(0, 0, 0, 0.7); /* primary .70 trans */
+    --bg: var(--default--bg);
+    --bg-surface: var(--default--bg-surface);
+    --bg-surface-trans: var(--default--bg-surface-trans);
+    --bg-surface-hover: var(--default--bg-surface-hover);
+    --bg-surface-primary: var(--default--bg-surface-primary);
+    --bg-surface-primary-trans: var(--default--bg-surface-primary-trans);
+    --primary: var(--default--primary);
+    --primary-alt: var(--default--primary-alt);
+    --bg-secondary: var(--default--bg-secondary);
+    --danger: var(--default--danger);
+    --bg-input-text: var(--default--bg-input-text);
+    --bg-input-text-active: var(--default--bg-input-text-active);
+    --bg-poster-text: var(--default--bg-poster-text);
     
-    --fg: rgba(255, 255, 255, 0.87);
-    --fg-surface: rgba(255, 255, 255, 0.87);
-    --fg-surface-switch: rgba(233, 215, 215);
-    --fg-surface-muted: rgba(255, 255, 255, 0.60);
-    --fg-surface-muted-more: rgba(255, 255, 255, 0.30);
-    --fg-surface-disabled: rgba(255, 255, 255, 0.38);
-    --fg-primary: rgba(0, 0, 0, 0.87);
-    --fg-primary-disabled: rgba(0, 0, 0, 0.38);
-    --fg-primary-green: rgba(0, 168, 0, 0.75);
-    --fg-primary-alt: rgba(255, 255, 255, 0.87);
-    --fg-primary-alt-disabled: rgba(0, 0, 0, 0.38);
-    --fg-primary-alt-green: rgba(0, 168, 0, 0.75);
-    --fg-secondary: #000000;
-    --fg-danger: #000;
-    --fg-input-text: #eeeeee;
+    --fg: var(--default--fg);
+    --fg-surface: var(--default--fg-surface);
+    --fg-surface-switch: var(--default--fg-surface-switch);
+    --fg-surface-muted: var(--default--fg-surface-muted);
+    --fg-surface-muted-more: var(--default--fg-surface-muted-more);
+    --fg-surface-disabled: var(--default--fg-surface-disabled);
+    --fg-primary: var(--default--fg-primary);
+    --fg-primary-disabled: var(--default--fg-primary-disabled);
+    --fg-primary-green: var(--default--fg-primary-green);
+    --fg-primary-alt: var(--default--fg-primary-alt);
+    --fg-primary-alt-disabled: var(--default--fg-primary-alt-disabled);
+    --fg-primary-alt-green: var(--default--fg-primary-alt-green);
+    --fg-secondary: var(--default--fg-secondary);
+    --fg-danger: var(--default--fg-danger);
+    --fg-input-text: var(--default--fg-input-text);
 
-    --border: rgba(255, 255, 255, 0.15);
-    --border-primary: rgba(91, 54, 137); /* primary - 50 */
-    --border-primary-alt: rgba(76, 54, 137); /* primary-alt - 50 */
-    --border-danger: rgba(157, 52, 71); /* danger - 50 */
-    --border-surface: rgba(255, 255, 255, 0.15);
-    --border-surface-input: rgba(255, 255, 255, 0.25);
-    --border-surface-primary: rgba(64, 52, 80); /* bg-surface-primary + 20 */
+    --border: var(--default--border);
+    --border-primary: var(--default--border-primary);
+    --border-primary-alt: var(--default--border-primary-alt);
+    --border-danger: var(--default--border-danger);
+    --border-surface: var(--default--border-surface);
+    --border-surface-input: var(--default--border-surface-input);
+    --border-surface-primary: var(--default--border-surface-primary);
 
-    --shadow: rgba(255, 255, 255, 0.2);
-    --shadow-primary: rgba(141, 104, 187, 0.25); /* primary .25 trans */
+    --shadow: var(--default--shadow);
+    --shadow-primary: var(--default--shadow-primary);
 
-    --footer: #e5e5e5;
-    --footer-border: #777;
-    --star: orange;
+    --footer: var(--default--footer);
+    --footer-border: var(--default--footer-border);
+    --star: var(--default--star);
 
-    --highlight: rgba(76, 54, 137); /* primary-alt - 50 */
+    --highlight: var(--default--highlight);
 
-    --toggle-icon-primary-off: var(--fg-surface-muted-more);
-    --toggle-icon-primary-on: var(--primary);
+    --toggle-icon-primary-off: var(--default--toggle-icon-primary-off);
+    --toggle-icon-primary-on: var(--default--toggle-icon-primary-on);
 
-    background-color: var(--bg);
-    color: var(--fg);
+    background-color: var(--default-background-color);
+    color: var(--default-color);
 
-    --radius-poster: 6%;
-    --radius-poster-dropdown: 3%;
+    --radius-poster: var(--default--radius-poster);
+    --radius-poster-dropdown: var(--default--radius-poster-dropdown);
+
+
+    --default--bg: #121212;
+    --default--bg-surface: #212121;
+    --default--bg-surface-trans: rgba(33, 33, 33, 0.95);
+    --default--bg-surface-hover: #313131;
+    --default--bg-surface-primary: rgba(44, 32, 60); /* 24% primary */
+    --default--bg-surface-primary-trans: rgba(44, 32, 60, 0.95);
+    --default--primary: rgba(141, 104, 187);
+    --default--primary-alt: rgb(126, 104, 187);
+    --default--bg-secondary: #03dac6;
+    --default--danger: #cf6679;
+    --default--bg-input-text: rgba(56, 56, 56); /* rgba(255, 255, 255, .1) over bg-surface */
+    --default--bg-input-text-active: rgba(141, 104, 187, 0.25); /* primary .25 trans */
+    --default--bg-poster-text: rgba(0, 0, 0, 0.7); /* primary .70 trans */
+
+    --default--fg: rgba(255, 255, 255, 0.87);
+    --default--fg-surface: rgba(255, 255, 255, 0.87);
+    --default--fg-surface-switch: rgba(233, 215, 215);
+    --default--fg-surface-muted: rgba(255, 255, 255, 0.60);
+    --default--fg-surface-muted-more: rgba(255, 255, 255, 0.30);
+    --default--fg-surface-disabled: rgba(255, 255, 255, 0.38);
+    --default--fg-primary: rgba(0, 0, 0, 0.87);
+    --default--fg-primary-disabled: rgba(0, 0, 0, 0.38);
+    --default--fg-primary-green: rgba(0, 168, 0, 0.75);
+    --default--fg-primary-alt: rgba(255, 255, 255, 0.87);
+    --default--fg-primary-alt-disabled: rgba(0, 0, 0, 0.38);
+    --default--fg-primary-alt-green: rgba(0, 168, 0, 0.75);
+    --default--fg-secondary: #000000;
+    --default--fg-danger: #000;
+    --default--fg-input-text: #eeeeee;
+
+    --default--border: rgba(255, 255, 255, 0.15);
+    --default--border-primary: rgba(91, 54, 137); /* primary - 50 */
+    --default--border-primary-alt: rgba(76, 54, 137); /* primary-alt - 50 */
+    --default--border-danger: rgba(157, 52, 71); /* danger - 50 */
+    --default--border-surface: rgba(255, 255, 255, 0.15);
+    --default--border-surface-input: rgba(255, 255, 255, 0.25);
+    --default--border-surface-primary: rgba(64, 52, 80); /* bg-surface-primary + 20 */
+
+    --default--shadow: rgba(255, 255, 255, 0.2);
+    --default--shadow-primary: rgba(141, 104, 187, 0.25); /* primary .25 trans */
+
+    --default--footer: #e5e5e5;
+    --default--footer-border: #777;
+    --default--star: orange;
+
+    --default--highlight: rgba(76, 54, 137); /* primary-alt - 50 */
+
+    --default--toggle-icon-primary-off: var(--fg-surface-muted-more);
+    --default--toggle-icon-primary-on: var(--primary);
+
+    --default-background-color: var(--bg);
+    --default-color: var(--fg);
+
+    --default--radius-poster: 6%;
+    --default--radius-poster-dropdown: 3%;
 }
 
 ::selection {
-    background: var(--highlight);
+    background: var(--default-background);
+
+    --default-background: var(--highlight);
 }
 
 @media (prefers-color-scheme: disabled) {
