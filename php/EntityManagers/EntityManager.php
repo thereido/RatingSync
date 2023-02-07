@@ -2,6 +2,7 @@
 
 namespace RatingSync;
 
+use Exception;
 use PDO;
 use PDOStatement;
 
@@ -11,9 +12,9 @@ require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entities" 
 abstract class EntityManager
 {
 
-    static protected PDO $db;
+    static protected PDO|null $db;
 
-    protected function getDb()
+    protected function getDb(): PDO
     {
 
         if ( ! empty( self::$db ) ) {
@@ -71,9 +72,22 @@ abstract class EntityManager
 
         }
 
+        if ( $result === false ) {
+            return false;
+        }
+
         if ( $result->rowCount() == 1 ) {
 
             $row = $result->fetch();
+
+            if ( ! $row ) {
+                return false;
+            }
+
+            $validColumns = $this->validateColumnNames( array_keys( $row ) );
+            if ( ! $validColumns ) {
+                return false;
+            }
 
             return $this->entityFromRow( $row );
 
@@ -87,12 +101,13 @@ abstract class EntityManager
 
     }
 
+    abstract protected function mandatoryColumns(): array;
     abstract protected function entityFromRow( Array $row ): EntityInterface;
 
     /**
      * @throws Exception
      */
-    protected function findMultipleDbResult( string $query ): PDOStatement|false
+    protected function findMultipleDbResult( string $query ): array|false
     {
 
         try {
@@ -108,18 +123,56 @@ abstract class EntityManager
 
         }
 
-        return $result;
+        if ( $result === false ) {
+            return false;
+        }
+
+        $entities = array();
+        $rows = $result->fetchAll();
+
+        foreach ($rows as $row) {
+
+            try {
+
+                $entity = $this->entityFromRow( $row );
+
+            }
+            catch (Exception $e) {
+
+                logError("Error constructing a Entity: " . $e->getMessage());
+                return false;
+
+            }
+
+            $entities[] = $entity;
+
+        }
+
+        return $entities;
 
     }
 
-    protected function boolFromInt( $int ) {
+    protected function boolFromInt( $int ): bool {
 
-        if ( is_int($int) && $int == 1 ) {
+        if ( is_int($int) && $int > 0 ) {
             return true;
+        }
+        elseif ( is_bool($int)  ) {
+            return $int;
         }
         else {
             return false;
         }
+
+    }
+
+    private function validateColumnNames( array $columns ): bool
+    {
+
+        $mandatoryKeys = $this->mandatoryColumns();
+        $intersection = array_intersect( $mandatoryKeys, $columns);
+
+        return count($mandatoryKeys) == count($intersection);
 
     }
 

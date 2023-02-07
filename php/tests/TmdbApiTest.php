@@ -42,7 +42,7 @@ class TmdbApiTest extends RatingSyncTestCase
     const TESTSERIES_TMDBID_SOURCEID = "1399";
     const TESTSERIES_USER_SCORE = 8.1;
     const TESTSERIES_CRITIC_SCORE = null;
-    const TESTSERIES_IMAGE = "/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg";
+    const TESTSERIES_IMAGE = "/7WUHnWGx5OO145IRxPDUkQSh4C7.jpg";
     const TESTSERIES_DIRECTORS = array();
     const TESTSERIES_GENRES = array("Sci-Fi & Fantasy", "Drama", "Action & Adventure");
     const TESTSERIES_SEASON_COUNT = 8;

@@ -5,7 +5,7 @@ use Exception;
 
 require_once "main.php";
 require_once "src/Constants.php";
-require_once __DIR__ .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "User.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "UserEntity.php";
 require_once __DIR__ .DIRECTORY_SEPARATOR. "EntityManagers" .DIRECTORY_SEPARATOR. "UserManager.php";
 require_once __DIR__ .DIRECTORY_SEPARATOR. "EntityViews" .DIRECTORY_SEPARATOR. "UserView.php";
 

@@ -16,15 +16,16 @@ class UserView
 
     private ThemeView|null      $theme;
 
-    public function __construct( User $entity ) {
+    public function __construct(UserEntity $entity ) {
 
         $this->id = $entity->id;
         $this->username = $entity->username;
         $this->email = $entity->email;
         $this->enabled = $entity->enabled;
+        $this->theme = null;
 
         $theme = themeMgr()->findViewWithUsername( $this->username );
-        if ( ! $theme ) {
+        if ( ! $theme instanceof ThemeView ) {
 
             try {
 
@@ -39,7 +40,9 @@ class UserView
 
         }
 
-        $this->theme = $theme;
+        if ( $theme ) {
+            $this->theme = $theme;
+        }
 
     }
 
@@ -55,8 +58,16 @@ class UserView
         return $this->email;
     }
 
-    public function getEnabled(): bool {
+    public function isEnabled(): bool {
         return $this->enabled;
+    }
+
+    /**
+     * @param bool $enabled default is true
+     * @throws Exception
+     */
+    public function enable( bool $enabled = true ): void {
+        $this->enabled = $enabled;
     }
 
     public function getTheme(): ThemeView|null {
@@ -71,7 +82,7 @@ class UserView
 
         $theme = themeMgr()->findViewWithId( $themeId );
 
-        if ( ! $theme ) {
+        if ( (! $theme instanceof ThemeView) || (! $theme->isEnabled()) ) {
             return false;
         }
 

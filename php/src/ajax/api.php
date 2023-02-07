@@ -1,6 +1,8 @@
 <?php
 namespace RatingSync;
 
+use Exception;
+
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 require_once "getHtmlFilmlists.php";
 
@@ -73,7 +75,7 @@ elseif ($action == "setNeverWatch") {
     $response = api_setNeverWatch($username);
 }
 elseif ($action == "setTheme") {
-    $response = api_setTheme($username);
+    $response = api_setTheme($username, $_GET);
 }
 
 if (empty($response)) {
@@ -90,7 +92,7 @@ function api_getSearchFilm($username, $get)
         $resultFilms = search($searchTerms, $username);
         $matchFilm = array_value_by_key('match', $resultFilms);
         $parentFilm = array_value_by_key('parent', $resultFilms);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         $errorMsg = "Error \RatingSync\search()" . 
                     "\nsearchTerms keys: " . implode(",", array_keys($searchTerms)) .
                     "\nsearchTerms values: " . implode(",", $searchTerms) .
@@ -129,7 +131,7 @@ function api_setRating($username)
             $score = intval($score); // On failure it returns 0
             $score = SetRatingScoreValue::create($score);
         }
-        catch (\Exception $e) {
+        catch (Exception $e) {
             $score = null;
         }
     }
@@ -219,7 +221,7 @@ function api_addFilmBySearch($username, $get)
     $searchFilm = null;
     try {
         $resultFilms = search($searchTerms, $username);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         $errorMsg = "Error \RatingSync\search()" . 
                     "\nsearchTerms keys: " . implode(",", array_keys($searchTerms)) .
                     "\nsearchTerms values: " . implode(",", $searchTerms) .
@@ -683,7 +685,7 @@ function api_getFilms($username, $params)
         $film = null;
         try {
             $film = getFilmApi($username, $filmId, null, null, $getFromRsDbOnly);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $errorMsg = "Error api.php::getFilmApi(\$username, $filmId, null, $getFromRsDbOnly) Called from api_getFilms()" . 
                         "\nException (" . $e->getCode() . ") " . $e->getMessage();
             logDebug($errorMsg, __FUNCTION__." ".__LINE__);
@@ -720,7 +722,7 @@ function api_getFilms($username, $params)
         $film = null;
         try {
             $film = getFilmApi($username, null, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $errorMsg = "Error api.php::getFilmApi($username, null, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType) Called from api_getFilms()" . 
                         "\nException (" . $e->getCode() . ") " . $e->getMessage();
             logDebug($errorMsg, __FUNCTION__." ".__LINE__);
@@ -735,7 +737,7 @@ function api_getFilms($username, $params)
         $film = null;
         try {
             $film = $api->getEpisodeFromDb($seriesFilmId, $seasonNum, $episodeNum, $username);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $errorMsg = "Error getEpisodeFromDb($seriesFilmId, $seasonNum, $episodeNum, \$username) Called from api_getFilms()" . 
                         "\nException (" . $e->getCode() . ") " . $e->getMessage();
             logDebug($errorMsg, __FUNCTION__." ".__LINE__);
@@ -782,7 +784,7 @@ function api_getSeason($username)
     try {
         $season = $dataApi->getSeasonFromApi($filmId, $seasonNum);
     }
-    catch (\Exception $e) {
+    catch (Exception $e) {
         $errorMsg = "Error getSeasonFromApi(filmId=$filmId, seasonNum=$seasonNum)" . 
                     "\nException " . $e->getCode() . " " . $e->getMessage() .
                     "\n$e";
@@ -857,7 +859,7 @@ function api_archiveRating($username)
                 $film =  Film::getFilmFromDb($filmId, $username);
             }
         }
-        catch (\Exception $e) {
+        catch (Exception $e) {
             logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$date, archiveIt=$archiveIt\n)" . $e->getMessage() . "\n" . $e->getTraceAsString());
         }
     }
@@ -890,7 +892,7 @@ function api_setSeen($username): string
             $film = $filmInfo?->setSeenToDb($seenBool, new \DateTime());
 
         }
-        catch (\Exception $e) {
+        catch (Exception $e) {
             logError("Exception setting whether the user has seen this title (filmId=$filmId, username=$username, seen=$seen\n)" . $e->getMessage() . "\n" . $e->getTraceAsString());
         }
     }
@@ -923,7 +925,7 @@ function api_setNeverWatch($username): string
             $film = $filmInfo?->setNeverWatchToDb($neverWatchBool, new \DateTime());
 
         }
-        catch (\Exception $e) {
+        catch (Exception $e) {
             logError("Exception setting whether the user never plans to watch the title (filmId=$filmId, username=$username, never=$neverWatch\n)" . $e->getMessage() . "\n" . $e->getTraceAsString());
         }
     }
@@ -947,9 +949,9 @@ function api_getFullUri()
     return "$protocol://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 }
 
-function api_setTheme($username): string
+function api_setTheme($username, $params): string
 {
-    $themeId = array_value_by_key("i", $_GET);
+    $themeId = array_value_by_key("i", $params);
     logDebug("Params i=$themeId", __FUNCTION__." ".__LINE__);
 
     $success = false;
@@ -957,15 +959,21 @@ function api_setTheme($username): string
     try {
 
         $user = userMgr()->findViewWithUsername( $username );
-        $user->setTheme( $themeId );
-        $userId = userMgr()->save( $user );
+        if ( $user === false ) throw new Exception("Invalid user username ($username)");
+
+        $userViewIsSet = $user->setTheme( $themeId );
+
+        $userId = false;
+        if ( $userViewIsSet ) {
+            $userId = userMgr()->save( $user );
+        }
 
         if ( $userId ) {
             $success = true;
         }
 
     }
-    catch (\Exception) {
+    catch (Exception) {
         //$success = false;
     }
 

@@ -5,7 +5,7 @@ namespace RatingSync;
 use Exception;
 
 require_once "EntityManager.php";
-require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "User.php";
+require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "UserEntity.php";
 require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "EntityViews" .DIRECTORY_SEPARATOR. "UserView.php";
 require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "EntityFactories" .DIRECTORY_SEPARATOR. "UserFactory.php";
 
@@ -15,7 +15,12 @@ final class UserManager extends EntityManager
     public function __construct() {
     }
 
-    public function findWithId( int $id ): User|null {
+    protected function mandatoryColumns(): array
+    {
+        return UserEntity::mandatoryColumns();
+    }
+
+    public function findWithId( int $id ): UserEntity|null {
 
         $query = "SELECT * FROM user WHERE id=" . $id;
 
@@ -36,7 +41,7 @@ final class UserManager extends EntityManager
 
         $userEntity = $this->findWithUsername( $username );
 
-        if ( ! $userEntity ) {
+        if ( ! $userEntity instanceof UserEntity ) {
             return false;
         }
 
@@ -44,7 +49,7 @@ final class UserManager extends EntityManager
 
     }
 
-    public function findWithUsername( string $username ): User|false {
+    public function findWithUsername( string $username ): UserEntity|false {
 
         if ( empty($username) ) {
             return false;
@@ -64,7 +69,7 @@ final class UserManager extends EntityManager
 
     }
 
-    protected function entityFromRow( Array $row ): User
+    protected function entityFromRow( Array $row ): UserEntity
     {
         $id = $row["id"];
         $username = $row["username"];
@@ -74,7 +79,7 @@ final class UserManager extends EntityManager
 
         $enabled = $this->boolFromInt($enabled);
 
-        return new User($id, $username, $email, $enabled, $themeId);
+        return new UserEntity($id, $username, $email, $enabled, $themeId);
     }
 
     /**

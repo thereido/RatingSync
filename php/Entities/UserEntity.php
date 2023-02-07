@@ -11,8 +11,9 @@ require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "EntityView
 /**
  * Database User row
  */
-final class User implements EntityInterface
+final class UserEntity implements EntityInterface
 {
+    const mandatoryColumns =  array("id", "username", "enabled");
     /** @var int Database ID. Use -1 for a new user. */
     public readonly int $id;
     public readonly string $username;
@@ -31,6 +32,11 @@ final class User implements EntityInterface
         $this->themeId = $themeId;
     }
 
+    static public function mandatoryColumns(): array
+    {
+        return self::mandatoryColumns;
+    }
+
     /**
      * Save to the database
      *
@@ -43,7 +49,7 @@ final class User implements EntityInterface
         $id = $this->id;
         $username = $db->quote($this->username);
         $email = is_null($this->email) ? "NULL" : $db->quote($this->email);
-        $enabled = $this->enabled;
+        $enabled = $this->enabled ? "true" : "false";
         $themeId = is_null($this->themeId) ? "NULL" : $this->themeId;
 
         $insert = ($id == -1);

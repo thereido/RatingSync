@@ -711,6 +711,203 @@ class ApiTest extends RatingSyncTestCase
         $this->assertFalse(empty($film), "Film from the DB should not be empty");
         $this->assertEquals($uniqueName, $film->getUniqueName($sourceName), "uniqueName for $sourceName");
     }
+
+    /**
+     * - 1) Theme does not exist
+     *      - Expect: success=false
+     * - 2) Theme is not enabled
+     *      - Expect: success=false
+     *
+     * @covers  \RatingSync\api_setTheme()
+     * @depends testSetup
+     */
+    public function testApi_setThemeInvalidTheme()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $invalidThemeId = -1;
+        $disabledThemeId = 100;
+
+            // 1) Theme does not exist
+            //   - Expect: success=false
+
+        // Setup 1
+        $get = array(); // HTML submit $_GET
+        $get['i'] = $invalidThemeId;
+
+        // Test 1
+        $responseJson = api_setTheme(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+        // Verify 1
+        $this->assertFalse(empty($responseJson), "Response should not be empty");
+        $obj = json_decode($responseJson);
+        $success = $obj->Success;
+        $this->assertEquals("false", $success, "Should fail with a non-existing theme");
+
+            // 2) Theme is not enabled
+            //   - Expect: success=false
+
+        // Setup 2
+        $db = getDatabase();
+        $db->exec("INSERT INTO theme (id, name, enabled) VALUES (100, 'test_theme_disabled', false)");
+        $get = array(); // HTML submit $_GET
+        $get['i'] = $disabledThemeId;
+
+        // Test 2
+        $responseJson = api_setTheme(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+        // Verify 2
+        $this->assertFalse(empty($responseJson), "Response should not be empty");
+        $obj = json_decode($responseJson);
+        $success = $obj->Success;
+        $this->assertEquals("false", $success, "Should fail with a disabled theme");
+
+        // Cleanup 2
+        $db->exec("DELETE FROM theme WHERE id=$disabledThemeId");
+    }
+
+    /**
+     * - Set the theme that is the default
+     * - User's current theme is null
+     *
+     * Expect
+     *   - Success=true
+     *   - User's theme is set in the DB
+     *
+     * @covers  \RatingSync\api_setTheme()
+     * @depends testSetup
+     */
+    public function testApi_setThemeDefault()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $defaultThemeId = 1;
+        DatabaseTest::resetDb();
+        $get = array(); // HTML submit $_GET
+        $get['i'] = $defaultThemeId;
+
+        // Test
+        $responseJson = api_setTheme(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+        // Verify
+        $this->assertFalse(empty($responseJson), "Response should not be empty");
+        $obj = json_decode($responseJson);
+        $success = $obj->Success;
+        $this->assertEquals("true", $success, "Should succeed");
+        $userView = userMgr()->findViewWithUsername(Constants::TEST_RATINGSYNC_USERNAME);
+        $this->assertTrue($userView !== false, "Failed to get the user (".Constants::TEST_RATINGSYNC_USERNAME.") from the db");
+        $this->assertEquals($defaultThemeId, $userView->getTheme()?->getId(), "The DB does not match the value set");
+    }
+
+    /**
+     * - User has a theme
+     * - Theme is different from the user's theme
+     *
+     * Expect
+     *   - Success=true
+     *   - User's theme is changed
+     *
+     * @covers  \RatingSync\api_setTheme()
+     * @depends testSetup
+     * @depends testApi_setThemeDefault
+     */
+    public function testApi_setThemeDifferentId()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $defaultThemeId = 1;
+        $nonDefaultThemeId = 2;
+        $get = array(); // HTML submit $_GET
+        $get['i'] = $defaultThemeId;
+        api_setTheme(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+        // Test
+        $get['i'] = $nonDefaultThemeId;
+        $responseJson = api_setTheme(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+        // Verify
+        $this->assertFalse(empty($responseJson), "Response should not be empty");
+        $obj = json_decode($responseJson);
+        $success = $obj->Success;
+        $this->assertEquals("true", $success, "Should succeed");
+        $userView = userMgr()->findViewWithUsername(Constants::TEST_RATINGSYNC_USERNAME);
+        $this->assertTrue($userView !== false, "Failed to get the user (".Constants::TEST_RATINGSYNC_USERNAME.") from the db");
+        $this->assertEquals($nonDefaultThemeId, $userView->getTheme()?->getId(), "The DB does not match the value set");
+    }
+
+    /**
+     * - Theme is already the user's theme
+     *
+     * Expect
+     *   - Success=true
+     *   - No change
+     *
+     * @covers  \RatingSync\api_setTheme()
+     * @depends testSetup
+     * @depends testApi_setThemeDifferentId
+     */
+    public function testApi_setThemeNoChange()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $nonDefaultThemeId = 2;
+        $get = array(); // HTML submit $_GET
+        $get['i'] = $nonDefaultThemeId;
+        api_setTheme(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+        // Test
+        $responseJson = api_setTheme(Constants::TEST_RATINGSYNC_USERNAME, $get);
+
+        // Verify
+        $this->assertFalse(empty($responseJson), "Response should not be empty");
+        $obj = json_decode($responseJson);
+        $success = $obj->Success;
+        $this->assertEquals("true", $success, "Should succeed");
+        $userView = userMgr()->findViewWithUsername(Constants::TEST_RATINGSYNC_USERNAME);
+        $this->assertTrue($userView !== false, "Failed to get the user (".Constants::TEST_RATINGSYNC_USERNAME.") from the db");
+        $this->assertEquals($nonDefaultThemeId, $userView->getTheme()?->getId(), "The DB does not match the value set");
+    }
+
+    /**
+     * - User is enabled
+     * - Theme is different from the user's current theme
+     *
+     * Expect
+     *   - Success=true
+     *   - User's theme is changed
+     *
+     * @covers  \RatingSync\api_setTheme()
+     * @depends testSetup
+     * @depends testApi_setThemeDifferentId
+     */
+    public function testApi_setThemeEnabledUser()
+    {$this->start(__CLASS__, __FUNCTION__);
+
+        // Set up
+        $defaultThemeId = 1;
+        $nonDefaultThemeId = 2;
+        $username = Constants::TEST_RATINGSYNC_USERNAME;
+        $userMgr = userMgr();
+        $userView = $userMgr->findViewWithUsername($username);
+        $userView->enable(true);
+        $userMgr->save($userView);
+        $get = array(); // HTML submit $_GET
+        $get['i'] = $defaultThemeId;
+        api_setTheme($username, $get);
+
+        // Test
+        $get['i'] = $nonDefaultThemeId;
+        $responseJson = api_setTheme($username, $get);
+
+        // Verify
+        $this->assertFalse(empty($responseJson), "Response should not be empty");
+        $obj = json_decode($responseJson);
+        $success = $obj->Success;
+        $this->assertEquals("true", $success, "Should succeed");
+        $userView = userMgr()->findViewWithUsername($username);
+        $this->assertTrue($userView !== false, "Failed to get the user ($username) from the db");
+        $this->assertEquals($nonDefaultThemeId, $userView->getTheme()?->getId(), "The DB does not match the value set");
+    }
 }
 
 ?>

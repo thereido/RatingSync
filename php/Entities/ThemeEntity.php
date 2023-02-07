@@ -13,6 +13,7 @@ require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "EntityView
  */
 final class ThemeEntity implements EntityInterface
 {
+    const mandatoryColumns =  array("id", "name", "enabled", "default");
     public readonly int $id;
     public readonly string $name;
     public readonly bool $enabled;
@@ -27,6 +28,11 @@ final class ThemeEntity implements EntityInterface
         $this->enabled = $enabled;
         $this->default = $default;
 
+    }
+
+    static public function mandatoryColumns(): array
+    {
+        return self::mandatoryColumns;
     }
 
     /**

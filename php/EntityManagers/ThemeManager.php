@@ -14,6 +14,13 @@ final class ThemeManager extends EntityManager
     public function __construct() {
     }
 
+    protected function mandatoryColumns(): array
+    {
+        // Whenever changing this function, always make the change
+        // at EntityManagerChild::mandatoryColumns() in EntityManagerTest.php
+        return ThemeEntity::mandatoryColumns();
+    }
+
     public function findViewWithId( int $id ): ThemeView|false {
 
         $entity = $this->findWithId( $id );
@@ -141,21 +148,11 @@ final class ThemeManager extends EntityManager
 
         try {
 
-            $result = $this->findMultipleDbResult( $query );
+            $entities = $this->findMultipleDbResult( $query );
 
         }
         catch (Exception) {
             return false;
-        }
-
-        $rows = $result->fetchAll();
-
-        if ( ! $rows ) {
-            return false;
-        }
-
-        foreach ($rows as $row) {
-            $entities[] = $this->entityFromRow( $row );
         }
 
         return $entities;
@@ -174,7 +171,7 @@ final class ThemeManager extends EntityManager
 
         try {
 
-            $result = $this->getDb()->query($query);
+            return $this->findWithQuery($query);
 
         }
         catch (Exception $e) {
@@ -183,16 +180,6 @@ final class ThemeManager extends EntityManager
             throw $e;
 
         }
-
-        if ( ! $result ) {
-
-            return false;
-
-        }
-
-        $row = $result->fetch();
-
-        return $this->entityFromRow( $row );
 
     }
 
@@ -203,12 +190,20 @@ final class ThemeManager extends EntityManager
 
         $entity = $this->findDefaultEntity();
 
-        return new ThemeView( $entity );
+        if ( $entity ) {
+            return new ThemeView( $entity );
+        }
+        else {
+            return false;
+        }
 
     }
 
     protected function entityFromRow( Array $row ): ThemeEntity
     {
+        // Whenever changing this function, always make the change
+        // at EntityManagerChild::entityFromRow() in EntityManagerTest.php
+
         $id = $row["id"];
         $name = $row["name"];
         $enabled = $row["enabled"];

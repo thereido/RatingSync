@@ -321,7 +321,7 @@ class MainTest extends RatingSyncTestCase
         $this->assertEquals($year, $film->getYear(), "Year");
         $this->assertEquals($contentType, $film->getContentType(), 'Content Type');
         $this->assertEquals($filmImage, $film->getImage(), 'Image link (film)');
-        $this->assertEquals(1, preg_match("@($sourceImage)@", $film->getImage($sourceName), $matches), "Image link ($sourceName)");
+        $this->assertEquals(1, preg_match("@($sourceImage)@", $film->getImage($sourceName), $matches), "Image link ($sourceName) $sourceImage " . $film->getImage($sourceName));
         $this->assertEquals(round($criticScore), round($film->getCriticScore($sourceName)), 'Critic score');
         $this->assertEquals(round($userScore), round($film->getUserScore($sourceName)), 'User score');
         $this->assertEquals($directors, $directorsFromSearch, 'Director(s)');
