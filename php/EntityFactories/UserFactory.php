@@ -28,7 +28,7 @@ final class UserFactory
             $this->_userView->getUsername(),
             $this->_userView->getEmail(),
             $this->_userView->isEnabled(),
-            $this->_userView->getTheme()?->getId(),
+            $this->_userView->getThemeId(true),
         );
 
     }

@@ -13,6 +13,7 @@ class UserView
     private string              $username;
     private string|null         $email;
     private bool                $enabled;
+    private int|null            $entityThemeId;
 
     private ThemeView|null      $theme;
 
@@ -22,26 +23,19 @@ class UserView
         $this->username = $entity->username;
         $this->email = $entity->email;
         $this->enabled = $entity->enabled;
+        $this->entityThemeId = $entity->themeId;
         $this->theme = null;
 
-        $theme = themeMgr()->findViewWithUsername( $this->username );
-        if ( ! $theme instanceof ThemeView ) {
-
-            try {
-
-                $theme = themeMgr()->findDefaultView();
-
-            }
-            catch (Exception $e) {
-
-                logError("New UserView without a theme. No default available.");
-
-            }
-
+        $theme = null;
+        if ( ! empty( $this->entityThemeId ) ) {
+            $theme = themeMgr()->findViewWithId( $this->entityThemeId );
         }
 
-        if ( $theme ) {
+        if ( $theme instanceof ThemeView ) {
             $this->theme = $theme;
+        }
+        else {
+            $this->setThemeToDefault();
         }
 
     }
@@ -70,6 +64,16 @@ class UserView
         $this->enabled = $enabled;
     }
 
+    public function getThemeId( bool $ignoreDefault = false ): int|null {
+
+        if ( $ignoreDefault ) {
+            return $this->entityThemeId;
+        }
+        else {
+            return $this->theme->getId();
+        }
+    }
+
     public function getTheme(): ThemeView|null {
         return $this->theme;
     }
@@ -87,8 +91,32 @@ class UserView
         }
 
         $this->theme = $theme;
+        $this->entityThemeId = $theme->getId();
 
         return true;
+
+    }
+
+    private function setThemeToDefault(): bool {
+
+        try {
+
+            $theme = themeMgr()->findDefaultView();
+
+        }
+        catch (Exception) {
+
+            logError("New UserView without a theme. No default available.");
+            return false;
+
+        }
+
+        if ( $theme instanceof ThemeView ) {
+            $this->theme = $theme;
+            return true;
+        }
+
+        return false;
 
     }
 
