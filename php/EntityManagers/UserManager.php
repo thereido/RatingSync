@@ -69,6 +69,9 @@ final class UserManager extends EntityManager
 
     }
 
+    /**
+     * @throws Exception
+     */
     protected function entityFromRow( Array $row ): UserEntity
     {
         $id = $row["id"];
@@ -79,7 +82,18 @@ final class UserManager extends EntityManager
 
         $enabled = $this->boolFromInt($enabled);
 
-        return new UserEntity($id, $username, $email, $enabled, $themeId);
+        try {
+
+            return new UserEntity($id, $username, $email, $enabled, $themeId);
+
+        } catch (InvalidArgumentException $argEx) {
+            $e = new Exception("Invalid UserEntity from a database query row.", 0, $argEx);
+            logError($e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError($e->getTraceAsString());
+
+            throw $e;
+        }
+
     }
 
     /**

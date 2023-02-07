@@ -2,6 +2,9 @@
 
 namespace RatingSync;
 
+use Exception;
+use InvalidArgumentException;
+
 require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "UserEntity.php";
 require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "EntityViews" .DIRECTORY_SEPARATOR. "UserView.php";
 
@@ -16,6 +19,9 @@ final class UserFactory
 
     }
 
+    /**
+     * @throws Exception
+     */
     public function build(): UserEntity {
 
         $userId = $this->_userView->getId();
@@ -23,13 +29,21 @@ final class UserFactory
             $userId = -1;
         }
 
-        return new UserEntity(
-            $userId,
-            $this->_userView->getUsername(),
-            $this->_userView->getEmail(),
-            $this->_userView->isEnabled(),
-            $this->_userView->getThemeId(true),
-        );
+        try {
+            return new UserEntity(
+                $userId,
+                $this->_userView->getUsername(),
+                $this->_userView->getEmail(),
+                $this->_userView->isEnabled(),
+                $this->_userView->getThemeId(true),
+            );
+        } catch (InvalidArgumentException $argEx) {
+             $e = new Exception("Invalid UserEntity from this UserView.", 0, $argEx);
+             logError($e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+             logError($e->getTraceAsString());
+
+             throw $e;
+        }
 
     }
 

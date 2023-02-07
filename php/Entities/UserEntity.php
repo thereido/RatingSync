@@ -3,6 +3,7 @@
 namespace RatingSync;
 
 use Exception;
+use InvalidArgumentException;
 
 require_once "EntityInterface.php";
 require_once __DIR__.DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "Constants.php";
@@ -21,9 +22,30 @@ final class UserEntity implements EntityInterface
     public readonly bool $enabled;
     public readonly int|null $themeId;
 
+    /**
+     * @param int $id
+     * @param string $username
+     * @param string|null $email
+     * @param bool $enabled
+     * @param int|null $themeId
+     * @throws InvalidArgumentException
+     */
     public function __construct(int $id, string $username, string|null $email, bool $enabled, int|null $themeId)
     {
-        // FIXME valid the values
+        // Validation
+        $e = null;
+        if ( $id < -1 || $id == 0 ) {
+            $e = new InvalidArgumentException("Valid values for id are positive integers or -1 for a new user.");
+        }
+        elseif ( !is_null($themeId) && $themeId < 1 ) {
+            $e = new InvalidArgumentException("Valid values for themeId are positive integers");
+        }
+
+        if ( !is_null( $e ) ) {
+            logError($e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError($e->getTraceAsString());
+            throw $e;
+        }
 
         $this->id = $id;
         $this->username = $username;
@@ -83,7 +105,7 @@ final class UserEntity implements EntityInterface
         $success = $db->exec($stmt) !== false;
         if ( ! $success ) {
             $msg = "Error trying to save: $stmt";
-            logError($msg);
+            logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
             throw new Exception($msg);
         }
 
@@ -92,6 +114,23 @@ final class UserEntity implements EntityInterface
         }
 
         return $id;
+    }
+
+    public function equals( UserEntity $other ): bool
+    {
+        $lhs = $this;
+        $rhs = $other;
+
+        if (   $lhs->id != $rhs->id
+            || $lhs->username != $rhs->username
+            || $lhs->email != $rhs->email
+            || $lhs->enabled != $rhs->enabled
+            || $lhs->themeId != $rhs->themeId
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
 }

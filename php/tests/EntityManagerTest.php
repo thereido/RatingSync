@@ -7,9 +7,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Entit
 require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
-use http\Exception;
 use \PDO;
-use \PDOStatement;
 
 // Class to expose protected members and functions
 class EntityManagerChild extends EntityManager {
