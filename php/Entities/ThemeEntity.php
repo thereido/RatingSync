@@ -61,7 +61,7 @@ final class ThemeEntity implements EntityInterface
         $success = $db->exec($stmt) !== false;
         if ( ! $success ) {
             $msg = "Error trying to save: $stmt";
-            logError($msg);
+            logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
             throw new Exception($msg);
         }
 

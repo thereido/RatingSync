@@ -860,7 +860,7 @@ function api_archiveRating($username)
             }
         }
         catch (Exception $e) {
-            logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$date, archiveIt=$archiveIt\n)" . $e->getMessage() . "\n" . $e->getTraceAsString());
+            logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$date, archiveIt=$archiveIt\n)" . $e->getMessage() . "\n" . $e->getTraceAsString(), __CLASS__."::".__FUNCTION__.":".__LINE__);
         }
     }
 
@@ -893,7 +893,7 @@ function api_setSeen($username): string
 
         }
         catch (Exception $e) {
-            logError("Exception setting whether the user has seen this title (filmId=$filmId, username=$username, seen=$seen\n)" . $e->getMessage() . "\n" . $e->getTraceAsString());
+            logError("Exception setting whether the user has seen this title (filmId=$filmId, username=$username, seen=$seen\n)" . $e->getMessage() . "\n" . $e->getTraceAsString(), __CLASS__."::".__FUNCTION__.":".__LINE__);
         }
     }
 
@@ -926,7 +926,7 @@ function api_setNeverWatch($username): string
 
         }
         catch (Exception $e) {
-            logError("Exception setting whether the user never plans to watch the title (filmId=$filmId, username=$username, never=$neverWatch\n)" . $e->getMessage() . "\n" . $e->getTraceAsString());
+            logError("Exception setting whether the user never plans to watch the title (filmId=$filmId, username=$username, never=$neverWatch\n)" . $e->getMessage() . "\n" . $e->getTraceAsString(), __CLASS__."::".__FUNCTION__.":".__LINE__);
         }
     }
 

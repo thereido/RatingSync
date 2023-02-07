@@ -176,7 +176,7 @@ final class ThemeManager extends EntityManager
         }
         catch (Exception $e) {
 
-            logError("Exception getting default theme: " . $e->getMessage());
+            logError("Exception getting default theme: " . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
             throw $e;
 
         }

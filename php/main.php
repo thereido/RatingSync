@@ -139,7 +139,7 @@ function userView( string $username = null ): UserView|null {
         }
     }
     catch (Exception $e) {
-        logError("Error getting a user view with username='$username'. An empty username should be okay.\n" . $e->getMessage());
+        logError("Error getting a user view with username='$username'. An empty username should be okay.\n" . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
     }
 
     return null;
@@ -189,7 +189,6 @@ function logToFile($filename, $input, $prefix = null, $showTime = true, $printAr
     }
 
     try {
-        $filename =  Constants::outputFilePath() . "logDebug.txt";
         $fp = fopen($filename, "a");
         fwrite($fp, $message);
         fclose($fp);
@@ -209,6 +208,7 @@ function logError($input, $prefix = null, $showTime = true, $printArray = null)
 {
     $logfilename =  Constants::outputFilePath() . "logError.txt";
     logToFile($logfilename, $input, $prefix, $showTime, $printArray);
+    logDebug($input, $prefix, $showTime, $printArray);
 }
 
 function printDebug($input, $prefix = null, $showTime = false, $printArray = null)

@@ -17,7 +17,7 @@ class UserView
 
     private ThemeView|null      $theme;
 
-    public function __construct(UserEntity $entity ) {
+    public function __construct( UserEntity $entity ) {
 
         $this->id = $entity->id;
         $this->username = $entity->username;
@@ -106,7 +106,7 @@ class UserView
         }
         catch (Exception) {
 
-            logError("New UserView without a theme. No default available.");
+            logError("New UserView without a theme. No default available.", __CLASS__."::".__FUNCTION__.":".__LINE__);
             return false;
 
         }

@@ -96,7 +96,7 @@ foreach ($result->fetchAll() as $row) {
         
         if (!empty($errorMsg)) {
             echo $errorMsg . "\n";
-            logError($errorMsg);
+            logError($errorMsg, __FILE__.":".__LINE__);
         }
         
         sleep(1);
@@ -106,12 +106,6 @@ foreach ($result->fetchAll() as $row) {
 function logInfo($message)
 {
     $logfilename =  Constants::outputFilePath() . "logInfo.txt";
-    logLine($message, $logfilename);
-}
-
-function logError($message)
-{
-    $logfilename =  Constants::outputFilePath() . "logError.txt";
     logLine($message, $logfilename);
 }
 
