@@ -2,7 +2,7 @@
 
 namespace RatingSync;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "EntityFactories" . DIRECTORY_SEPARATOR . "UserFactory.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entity" .DIRECTORY_SEPARATOR. "Factories" .DIRECTORY_SEPARATOR. "UserFactory.php";
 require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
@@ -12,6 +12,7 @@ use \PDO;
 class UserFactoryTest extends RatingSyncTestCase
 {
 
+    const NEW_USER_ID = -1;
     const PRIMARY_USER_ID = 1;
     const PRIMARY_USERNAME = "ratingsynctest";
     const PRIMARY_EMAIL = "testratingsync@example.com";
@@ -427,7 +428,7 @@ class UserFactoryTest extends RatingSyncTestCase
         try {
 
             $entity = new UserEntity(
-                -1,
+                self::NEW_USER_ID,
                 self::PRIMARY_USERNAME,
                 self::PRIMARY_EMAIL,
                 self::PRIMARY_ENABLED,

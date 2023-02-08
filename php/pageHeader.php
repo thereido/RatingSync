@@ -5,9 +5,9 @@ use Exception;
 
 require_once "main.php";
 require_once "src/Constants.php";
-require_once __DIR__ .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "UserEntity.php";
-require_once __DIR__ .DIRECTORY_SEPARATOR. "EntityManagers" .DIRECTORY_SEPARATOR. "UserManager.php";
-require_once __DIR__ .DIRECTORY_SEPARATOR. "EntityViews" .DIRECTORY_SEPARATOR. "UserView.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entity" .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "UserEntity.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "UserManager.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entity" .DIRECTORY_SEPARATOR. "Views" .DIRECTORY_SEPARATOR. "UserView.php";
 
 function includeHeadHtmlForAllPages( UserView $user = null ): string {
 

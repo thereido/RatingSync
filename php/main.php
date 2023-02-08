@@ -19,8 +19,8 @@ require_once "src/TmdbApi.php";
 require_once "src/Xfinity.php";
 require_once "src/RatingSyncSite.php";
 require_once "src/SessionUtility.php";
-require_once "EntityManagers" .DIRECTORY_SEPARATOR. "ThemeManager.php";
-require_once "EntityManagers" .DIRECTORY_SEPARATOR. "UserManager.php";
+require_once "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "ThemeManager.php";
+require_once "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "UserManager.php";
 
 /**
  * Import ratings from a file to the database

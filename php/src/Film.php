@@ -9,7 +9,7 @@ use DateTime;
 require_once "Http.php";
 require_once "Filmlist.php";
 require_once "UserSpecificFilmInfo.php";
-require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "main.php";
 
 class Film {
     const CONTENT_FILM      = 'FeatureFilm';

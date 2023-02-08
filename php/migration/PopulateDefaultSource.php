@@ -1,9 +1,9 @@
 <?php
 namespace RatingSync;
 
-require_once ".." .DIRECTORY_SEPARATOR. "main.php";
-require_once ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "ajax" .DIRECTORY_SEPARATOR. "api.php";
-require_once ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "TmdbApi.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "main.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "ajax" .DIRECTORY_SEPARATOR. "api.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "TmdbApi.php";
 
 $db = getDatabase();
 $tmdb = new TmdbApi();

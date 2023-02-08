@@ -4,7 +4,7 @@
  */
 namespace RatingSync;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Site.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "Site.php";
 
 require_once "SiteChild.php";
 require_once "HttpTest.php";

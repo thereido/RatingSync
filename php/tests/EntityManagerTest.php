@@ -2,8 +2,8 @@
 
 namespace RatingSync;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "EntityManagers" . DIRECTORY_SEPARATOR . "EntityManager.php";
-require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "EntityManagers" . DIRECTORY_SEPARATOR . "ThemeManager.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entity" .DIRECTORY_SEPARATOR. "Managers" . DIRECTORY_SEPARATOR . "EntityManager.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entity" .DIRECTORY_SEPARATOR. "Managers" . DIRECTORY_SEPARATOR . "ThemeManager.php";
 require_once "DatabaseTest.php";
 require_once "RatingSyncTestCase.php";
 
