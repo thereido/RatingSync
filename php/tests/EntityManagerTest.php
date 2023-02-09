@@ -13,10 +13,10 @@ use \PDO;
 class EntityManagerChild extends EntityManager {
 
     function _getDb(): PDO { return $this->getDb(); }
-    function _findWithQuery( string $query ): EntityInterface|false { return $this->findWithQuery($query); }
+    function _findWithQuery( string $query ): Entity|false { return $this->findWithQuery($query); }
     function _findMultipleDbResult( string $query ): array|false { return $this->findMultipleDbResult($query); }
     function _boolFromInt( $int ): bool { return $this->boolFromInt($int); }
-    function _entityFromRow( array $row ): EntityInterface { return $this->entityFromRow($row); }
+    function _entityFromRow( array $row ): Entity { return $this->entityFromRow($row); }
 
     protected function mandatoryColumns(): array
     {
@@ -26,7 +26,7 @@ class EntityManagerChild extends EntityManager {
     /**
      * @return This uses ignores the $row param and return a ThemeEntity.
      */
-    protected function entityFromRow(array $row): EntityInterface
+    protected function entityFromRow(array $row): Entity
     {
         // This is copied from ThemeManager::entityFromRow()
 
@@ -200,7 +200,7 @@ class EntityManagerTest extends RatingSyncTestCase
 
         // Verify
         $this->assertTrue($entity !== false, "Response should not be false");
-        $this->assertTrue($entity instanceof EntityInterface, "\$entity should be an EntityInterface");
+        $this->assertTrue($entity instanceof Entity, "\$entity should be an Entity");
     }
 
     /**

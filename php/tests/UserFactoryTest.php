@@ -14,7 +14,7 @@ class UserFactoryTest extends RatingSyncTestCase
 
     const NEW_USER_ID = -1;
     const PRIMARY_USER_ID = 1;
-    const PRIMARY_USERNAME = "ratingsynctest";
+    const PRIMARY_USERNAME = "testratingsync";
     const PRIMARY_EMAIL = "testratingsync@example.com";
     const PRIMARY_ENABLED = true;
     const PRIMARY_THEME_ID = NULL;

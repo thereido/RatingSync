@@ -20,16 +20,22 @@ final class UserManager extends EntityManager
         return UserEntity::mandatoryColumns();
     }
 
-    public function findWithId( int $id ): UserEntity|null {
+    public function findWithId( int $id ): UserEntity|false {
 
         $query = "SELECT * FROM user WHERE id=" . $id;
 
         try {
-            return $this->findWithQuery( $query );
+            $entity = $this->findWithQuery( $query );
         }
         catch (Exception) {
             return false;
         }
+
+        if ( empty( $entity ) ) {
+            return false;
+        }
+
+        return $entity;
 
     }
 
@@ -99,19 +105,16 @@ final class UserManager extends EntityManager
     /**
      * Create or replace to the db
      *
-     * @return int|false User db ID or false on failure
+     * @return int|false Database ID of the object saved
+     * @throws Exception
+     * @throws EntityInvalidSaveException
      */
     public function save( UserView $view ): int|false
     {
         $userFactory = new UserFactory( $view );
         $entity = $userFactory->build();
 
-        try {
-            return $entity->save();
-        }
-        catch (Exception) {
-            return false;
-        }
+        return $entity->save();
     }
 
 }

@@ -7,12 +7,20 @@ use PDO;
 use PDOStatement;
 
 require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "Constants.php";
-require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "EntityInterface.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "Entity.php";
 
 abstract class EntityManager
 {
 
+    const NEW_ENTITY_ID = -1;
+
     static protected PDO|null $db;
+
+    protected array $invalidPropertyNames = array();
+    protected array $invalidPropertyMessages = array();
+
+    abstract protected function mandatoryColumns(): array;
+    abstract protected function entityFromRow( Array $row ): Entity;
 
     protected function getDb(): PDO
     {
@@ -56,7 +64,7 @@ abstract class EntityManager
     /**
      * @throws Exception
      */
-    protected function findWithQuery( string $query ): EntityInterface|false
+    protected function findWithQuery( string $query ): Entity|false
     {
 
         try {
@@ -100,9 +108,6 @@ abstract class EntityManager
         }
 
     }
-
-    abstract protected function mandatoryColumns(): array;
-    abstract protected function entityFromRow( Array $row ): EntityInterface;
 
     /**
      * @throws Exception

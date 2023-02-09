@@ -963,17 +963,26 @@ function api_setTheme($username, $params): string
 
         $userViewIsSet = $user->setTheme( $themeId );
 
-        $userId = false;
+        $userId = null;
         if ( $userViewIsSet ) {
-            $userId = userMgr()->save( $user );
+
+            try {
+                $userId = userMgr()->save( $user );
+            }
+            catch (EntityInvalidSaveException $e) {
+                logError($e->getMessage());
+                // FIXME We should put the message in the response
+            }
+
         }
 
-        if ( $userId ) {
+        if ( !is_null($userId) ) {
             $success = true;
         }
 
     }
-    catch (Exception) {
+    catch (Exception $e) {
+        logError($e->getMessage());
         //$success = false;
     }
 

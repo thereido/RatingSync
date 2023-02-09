@@ -5,7 +5,7 @@ namespace RatingSync;
 use Exception;
 use InvalidArgumentException;
 
-require_once "EntityInterface.php";
+require_once "Entity.php";
 require_once "UserProperty.php";
 require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Views" .DIRECTORY_SEPARATOR. "UserView.php";
 require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Exceptions" .DIRECTORY_SEPARATOR. "EntityInvalidSaveException.php";
@@ -14,7 +14,7 @@ require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. ".." .DIRE
 /**
  * Database User row
  */
-final class UserEntity implements EntityInterface
+final class UserEntity extends Entity
 {
     const mandatoryColumns =  array("id", "username", "enabled");
     /** @var int Database ID. Use -1 for a new user. */
@@ -24,11 +24,8 @@ final class UserEntity implements EntityInterface
     public readonly bool $enabled;
     public readonly int|null $themeId;
 
-    private array $invalidPropertyNames = array();
-    private array $invalidPropertyMessages = array();
-
     /**
-     * @param int $id
+     * @param int|null $id
      * @param string $username
      * @param string|null $email
      * @param bool $enabled
@@ -69,6 +66,7 @@ final class UserEntity implements EntityInterface
         return self::mandatoryColumns;
     }
 
+
     /**
      * Save to the database
      *
@@ -92,14 +90,12 @@ final class UserEntity implements EntityInterface
         if ( $insert ) {
             // Insert new user
 
-            $columns = UserProperty::Id->value
-                . ", " . UserProperty::Username->value
+            $columns = UserProperty::Username->value
                 . ", " . UserProperty::Email->value
                 . ", " . UserProperty::Enabled->value
                 . ", " . UserProperty::ThemeId->value;
 
-            $values = $id
-                . ", " . $username
+            $values = $username
                 . ", " . $email
                 . ", " . $enabled
                 . ", " . $themeId;
@@ -135,87 +131,99 @@ final class UserEntity implements EntityInterface
         return $id;
     }
 
-
-    /**
-     * Verify that a save() operation will succeed with the current properties.
-     * On an exception you can call invalidProperties() and
-     * invalidPropertyMessages() to get more info.
-     *
-     * @return void On success nothing happens. On failure a EntityInvalidSaveException is thrown.
-     * @throws EntityInvalidSaveException
-     */
-    private function verifyBeforeSaving(): void
+    protected function verifyBeforeSaving(): void
     {
 
-        $this->invalidPropertyNames = array();
+        $this->invalidProperties = array();
         $this->invalidPropertyMessages = array();
 
         // Make sure the strings are not too long
         if ( strlen($this->username) > UserProperty::usernameMax() ) {
-            $msg = UserProperty::Username->name
-                . " max length is " . UserProperty::usernameMax(); // Changing msg here needs to be changed in UserEntityTest too
-            $this->invalidPropertyNames[] = UserProperty::Username->name;
-            $this->invalidPropertyMessages[ UserProperty::Username->name ] = $msg;
+
+            $property = UserProperty::Username;
+            $msg = $property->name . " max length is " . UserProperty::usernameMax(); // Changing msg here needs to be changed in UserEntityTest too
+            $this->addInvalidProperty( $property, $msg );
+
         }
 
         if ( strlen($this->email) > UserProperty::emailMax() ) {
-            $msg = UserProperty::Email->name
-                . " max length is " . UserProperty::emailMax(); // Changing msg here needs to be changed in UserEntityTest too
-            $this->invalidPropertyNames[] = UserProperty::Email->name;
-            $this->invalidPropertyMessages[ UserProperty::Email->name ] = $msg;
+
+            $property = UserProperty::Email;
+            $msg = $property->name . " max length is " . UserProperty::emailMax(); // Changing msg here needs to be changed in UserEntityTest too
+            $this->addInvalidProperty( $property, $msg );
+
         }
 
-        // Email format (db restrictions only, not business rules).
+        // Email format (db constraints only, not business rules).
         // Note: Current there are not email format in the db
 
         // Make sure the theme in the db is enabled
         if ( !is_null( $this->themeId ) ) {
 
             $theme = themeMgr()->findViewWithId( $this->themeId );
-            if ( $theme === false || $theme->getId() != $this->themeId ) {
-                $msg = UserProperty::ThemeId->name
-                    . " does not match an active theme"; // Changing msg here needs to be changed in UserEntityTest too
-                $this->invalidPropertyNames[] = UserProperty::ThemeId->name;
-                $this->invalidPropertyMessages[ UserProperty::ThemeId->name ] = $msg;
+            if ( $theme === false || $theme->isEnabled() === false ) {
+
+                $property = UserProperty::ThemeId;
+                $msg = $property->name . " does not match an active theme"; // Changing msg here needs to be changed in UserEntityTest too
+                $this->addInvalidProperty( $property, $msg );
+
             }
 
         }
 
-        if ( )
-        // For a new user
-            // is the username already taken?
-            // FIXME
+        if ( $this->id == EntityManager::NEW_ENTITY_ID ) {
+            // New user
 
-            // what about foreign keys... filmlist, user_source...
-            // FIXME
+            // Is the username already taken?
+            $existingEntity = userMgr()->findWithUsername( $this->username );
+            if ( $existingEntity !== false ) {
 
-        // For an existing user, make user the id and username match
-            // FIXME
+                $property = UserProperty::Username;
+                $msg = $property->name . " ($this->username) is already taken"; // Changing msg here needs to be changed in UserEntityTest too
+                $this->addInvalidProperty( $property, $msg );
 
-        if ( count($this->invalidPropertyNames) > 0 ) {
+            }
+
+        }
+        else {
+            // Existing user
+
+            // Make user the id and username match.
+            // The db would let you change the username for existing id, except
+            // that some tables are using username foreign keys. They should be
+            // using id instead. The tables are filmlist, user_filmlist, rating
+            // and user_source.
+            // Until that is fixed we cannot change the username.
+
+            $existingEntity = userMgr()->findWithId( $this->id );
+            if ( $existingEntity instanceof UserEntity ) {
+
+                if ( $this->username !== $existingEntity->username ) {
+
+                    $property = UserProperty::Username;
+                    $msg = "It looks like you are trying to change the "
+                        . $property->name . ". Currently, that feature is not available."; // Changing msg here needs to be changed in UserEntityTest too
+                    $this->addInvalidProperty( $property, $msg );
+
+                }
+
+            }
+            else {
+
+                $property = UserProperty::Id;
+                $msg = $property->name . " " . $this->id . " not found"; // Changing msg here needs to be changed in UserEntityTest too
+                $this->addInvalidProperty( $property, $msg );
+
+            }
+
+        }
+
+        if ( count($this->invalidProperties) > 0 ) {
 
             throw new EntityInvalidSaveException();
 
         }
-    }
 
-    public function invalidProperties(): array
-    {
-        return $this->invalidPropertyNames;
-    }
-
-    public function invalidPropertyMessage( UserProperty $property ): string|false
-    {
-        if ( ! $property instanceof UserProperty ) {
-            return false;
-        }
-
-        if ( key_exists( $property->name, $this->invalidPropertyMessages) ) {
-            return $this->invalidPropertyMessages[ $property->name ];
-        }
-        else {
-            return false;
-        }
     }
 
     public function equals( UserEntity $other ): bool

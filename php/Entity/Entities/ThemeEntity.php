@@ -11,7 +11,7 @@ require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Views" .D
 /**
  * Database Theme
  */
-final class ThemeEntity implements EntityInterface
+final class ThemeEntity extends Entity
 {
     const mandatoryColumns =  array("id", "name", "enabled", "default");
     public readonly int $id;
@@ -35,14 +35,18 @@ final class ThemeEntity implements EntityInterface
         return self::mandatoryColumns;
     }
 
+
     /**
      * Save to the database
      *
      * @return int Database ID of the object saved
      * @throws Exception
+     * @throws EntityInvalidSaveException
      */
     public function save(): int
     {
+        $this->verifyBeforeSaving();
+
         $db = getDatabase();
         $id = $this->id;
         $name = $db->quote($this->name);
@@ -66,6 +70,36 @@ final class ThemeEntity implements EntityInterface
         }
 
         return (int) $db->lastInsertId();
+    }
+
+    protected function verifyBeforeSaving(): void
+    {
+
+        $this->invalidProperties = array();
+        $this->invalidPropertyMessages = array();
+
+        // Make sure the strings are not too long
+
+        // FIXME
+
+        if ( $this->id == EntityManager::NEW_ENTITY_ID ) {
+            // New entity
+
+            // FIXME
+
+        }
+        else {
+            // Existing entity
+
+            // FIXME
+        }
+
+        if ( count($this->invalidProperties) > 0 ) {
+
+            throw new EntityInvalidSaveException();
+
+        }
+
     }
 
 }
