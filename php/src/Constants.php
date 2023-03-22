@@ -39,6 +39,7 @@ class Constants
     /* Constants moved to DomainConstants class
      * php.ini include_path must have the path to DomainConstants.php
      */
+    const DB_HOSTNAME                   = DomainConstants::DB_HOSTNAME;
     const DB_DATABASE                   = DomainConstants::DB_DATABASE;
     const DB_TEST_DATABASE              = DomainConstants::DB_TEST_DATABASE;
     const DB_ADMIN_USER                 = DomainConstants::DB_ADMIN_USER;
