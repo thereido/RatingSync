@@ -19,6 +19,7 @@ require_once "src/TmdbApi.php";
 require_once "src/Xfinity.php";
 require_once "src/RatingSyncSite.php";
 require_once "src/SessionUtility.php";
+require_once "PDO/DbConn.php";
 require_once "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "ThemeManager.php";
 require_once "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "UserManager.php";
 
@@ -70,46 +71,20 @@ function export($username, $source, $format)
 
 function getDatabase($mode = Constants::DB_MODE)
 {
-    static $db_conn_standard;
-    static $db_conn_test;
+    static $dbConn = new DbConn( false );
 
-    if (! ($mode == Constants::DB_MODE_STANDARD || $mode == Constants::DB_MODE_TEST) ) {
-        throw new \InvalidArgumentException('Must set database mode');
+    try {
+
+        return $dbConn->connect();
+
     }
-    
-    $db_conn = null;
-    if ($mode == Constants::DB_MODE_STANDARD) {
-        $db_name = Constants::DB_DATABASE;
-        if (empty($db_conn_standard)) {
-            try {
-                $db_conn_standard = new PDO("mysql:host=localhost;dbname=$db_name", Constants::DB_ADMIN_USER, Constants::DB_ADMIN_PWD);
-                // set the PDO error mode to exception
-                $db_conn_standard->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
-            } catch(PDOException $e) {
-                logDebug("Connection failed: " . $e->getMessage());
-                die("Connection failed: " . $e->getMessage());
-            }
-        }
-        $db_conn = $db_conn_standard;
-    } else if ($mode == Constants::DB_MODE_TEST) {
-        $db_name = Constants::DB_TEST_DATABASE;
-        if (empty($db_conn_test)) {
-            try {
-                $db_conn_test = new PDO("mysql:host=localhost;dbname=$db_name", Constants::DB_ADMIN_USER, Constants::DB_ADMIN_PWD);
-                // set the PDO error mode to exception
-                $db_conn_test->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
-            } catch(PDOException $e) {
-                logDebug("Connection failed: " . $e->getMessage());
-                die("Connection failed: " . $e->getMessage());
-            } catch(\Exception $e) {
-                logDebug("Connection failed: " . $e->getMessage());
-            }
-        }
-        $db_conn = $db_conn_test;
+    catch ( \Exception $e ) {
+
+        logError("Unable to get a database connection.", __CLASS__."::".__FUNCTION__.":".__LINE__);
+        die("Connection failed: " . $e->getMessage());
+
     }
 
-
-    return $db_conn;
 }
 
 function userMgr(): UserManager {
@@ -377,7 +352,7 @@ function getMediaDbApiClient($sourceName = Constants::DATA_API_DEFAULT)
 
 function unquote($str)
 {
-    $length = strlen($str);
+    $length = empty($str) ? 0 : strlen($str);
     if ( $length < 2 ) {
         return $str;
     }
