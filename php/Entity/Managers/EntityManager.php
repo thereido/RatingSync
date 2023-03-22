@@ -29,31 +29,22 @@ abstract class EntityManager
             return self::$db;
         }
 
-        $mode = Constants::DB_MODE;
-
-        if ($mode == Constants::DB_MODE_STANDARD) {
-
-            $db_name = Constants::DB_DATABASE;
-
-        } else if ($mode == Constants::DB_MODE_TEST) {
-
-            $db_name = Constants::DB_TEST_DATABASE;
-
-        }
+        $db_name = Constants::DB_MODE == Constants::DB_MODE_TEST ? Constants::DB_TEST_DATABASE : Constants::DB_DATABASE;
+        $dsn = "mysql:host=". Constants::DB_HOSTNAME .";dbname=$db_name";
 
         try {
 
-            self::$db = new PDO( "mysql:host=localhost;dbname=$db_name", Constants::DB_ADMIN_USER, Constants::DB_ADMIN_PWD );
+            self::$db = new PDO( $dsn, Constants::DB_ADMIN_USER, Constants::DB_ADMIN_PWD );
             self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
 
         } catch(PDOException $e) {
 
-            logError("Connection failed: " . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError("DB connection failed: " . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
             die("Connection failed: " . $e->getMessage());
 
         } catch(\Exception $e) {
 
-            logError("Connection failed: " . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError("DB connection failed: " . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
 
         }
 
