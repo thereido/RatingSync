@@ -7,31 +7,7 @@ use PDO;
 
 class DbConn
 {
-//*RT*    private SshTunnel|null $tunnel = null;
     private PDO|null $conn = null;
-
-    /**
-     * @throws Exception
-     */
-/*RT*
-    public function __construct( bool $ssh = true )
-    {
-
-        if ( $ssh ) {
-
-            $host = Constants::DB_SSH_HOSTNAME;
-            $port = Constants::DB_SSH_PORT;
-            $username = Constants::DB_SSH_USERNAME;
-            $privkey = Constants::DB_SSH_PRIVKEY_FILENAME;
-
-            // FIXME knownHosts
-            //$this->ssh = new SshTunnel($host, $username, $privkey, $port, $knownHosts);
-            $this->tunnel = new SshTunnel($host, $username, $privkey, $port);
-
-        }
-
-    }
-*RT*/
 
     /**
      * @throws Exception
