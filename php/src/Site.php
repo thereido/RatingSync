@@ -22,7 +22,7 @@ abstract class Site
 
     public function __construct($username)
     {
-        if (! (is_string($username) && 0 < strlen($username)) ) {
+        if ( (!is_string( $username )) || empty( $username ) ) {
             throw new \InvalidArgumentException('$username must be non-empty');
         }
         $this->username = $username;

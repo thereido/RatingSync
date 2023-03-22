@@ -99,10 +99,7 @@ class Source
      */
     public function setUniqueName($uniqueName)
     {
-        if (0 == strlen($uniqueName)) {
-            $uniqueName = null;
-        }
-        $this->uniqueName = $uniqueName;
+        $this->uniqueName = empty($uniqueName) ? null : $uniqueName;
     }
 
     /**
@@ -118,10 +115,7 @@ class Source
 
     public function setParentUniqueName($parentUniqueName)
     {
-        if (0 == strlen($parentUniqueName)) {
-            $parentUniqueName = null;
-        }
-        $this->parentUniqueName = $parentUniqueName;
+        $this->parentUniqueName = empty($parentUniqueName) ? null : $parentUniqueName;
     }
 
     public function getParentUniqueName()
@@ -138,10 +132,7 @@ class Source
      */
     public function setUniqueEpisode($uniqueEpisode)
     {
-        if (0 == strlen($uniqueEpisode)) {
-            $uniqueEpisode = null;
-        }
-        $this->uniqueEpisode = $uniqueEpisode;
+        $this->uniqueEpisode = empty($uniqueEpisode) ? null : $uniqueEpisode;
     }
 
     /**
@@ -165,10 +156,7 @@ class Source
      */
     public function setUniqueAlt($uniqueAlt)
     {
-        if (0 == strlen($uniqueAlt)) {
-            $uniqueAlt = null;
-        }
-        $this->uniqueAlt = $uniqueAlt;
+        $this->uniqueAlt = empty($uniqueAlt) ? null : $uniqueAlt;
     }
 
     /**
@@ -184,10 +172,7 @@ class Source
 
     public function setStreamUrl($streamUrl)
     {
-        if (0 == strlen($streamUrl)) {
-            $streamUrl = null;
-        }
-        $this->streamUrl = $streamUrl;
+        $this->streamUrl = empty($streamUrl) ? null : $streamUrl;
     }
 
     public function getStreamUrl()
