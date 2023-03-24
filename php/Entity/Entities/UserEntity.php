@@ -80,8 +80,8 @@ final class UserEntity extends Entity
 
         $db = getDatabase();
         $id = $this->id;
-        $username = $db->quote($this->username);
-        $email = is_null($this->email) ? "NULL" : $db->quote($this->email);
+        $username = DbConn::quoteOrNull( $this->username, $db );
+        $email = DbConn::quoteOrNull( $this->email, $db );
         $enabled = $this->enabled ? "true" : "false";
         $themeId = is_null($this->themeId) ? "NULL" : $this->themeId;
 
@@ -138,7 +138,7 @@ final class UserEntity extends Entity
         $this->invalidPropertyMessages = array();
 
         // Make sure the strings are not too long
-        if ( strlen($this->username) > UserProperty::usernameMax() ) {
+        if ( (!empty($this->username)) && strlen($this->username) > UserProperty::usernameMax() ) {
 
             $property = UserProperty::Username;
             $msg = $property->name . " max length is " . UserProperty::usernameMax(); // Changing msg here needs to be changed in UserEntityTest too
@@ -146,7 +146,7 @@ final class UserEntity extends Entity
 
         }
 
-        if ( strlen($this->email) > UserProperty::emailMax() ) {
+        if ( (!empty($this->email)) && strlen($this->email) > UserProperty::emailMax() ) {
 
             $property = UserProperty::Email;
             $msg = $property->name . " max length is " . UserProperty::emailMax(); // Changing msg here needs to be changed in UserEntityTest too

@@ -377,7 +377,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
     public function getFilmFromDb($sourceId, $contentType = null, $username = null)
     {
         $sourceName = $this->sourceName;
-        if ($this->isThisIdFromImdb($sourceId)) {
+        if (self::isThisIdFromImdb($sourceId)) {
             $sourceName = Constants::SOURCE_IMDB;
         }
 
@@ -394,14 +394,13 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         return $film;
     }
 
-    protected function isThisIdFromImdb($sourceId)
+    static public function isThisIdFromImdb($sourceId): bool
     {
-        $isThisIdFromImdb = false;
-        if (preg_match('/(^tt\d{7}\d*$)/i', $sourceId, $matches)) {
-            $isThisIdFromImdb = true;
+        if ( is_null( $sourceId ) ) {
+            return false;
         }
 
-        return $isThisIdFromImdb;
+        return preg_match('/(^tt\d{7}\d*$)/i', $sourceId, $matches);
     }
 
     /**

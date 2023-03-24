@@ -43,4 +43,13 @@ class DbConn
 
     }
 
+    static public function quoteOrNull($anything, PDO $pdo ): string
+    {
+        if ( empty( $anything ) ) {
+            return "NULL";
+        }
+
+        return $pdo->quote($anything) ?: "NULL";
+    }
+
 }

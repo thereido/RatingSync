@@ -68,7 +68,7 @@ final class ThemeManager extends EntityManager
             return false;
         }
 
-        $usernameEscapedAndQuoted = $this->getDb()->quote($username);
+        $usernameEscapedAndQuoted = DbConn::quoteOrNull( $username, $this->getDb() );
 
         $query =    "SELECT t.* FROM user u, theme t" .
                     "  WHERE u.username=$usernameEscapedAndQuoted" .
@@ -106,7 +106,7 @@ final class ThemeManager extends EntityManager
             return false;
         }
 
-        $nameEscapedAndQuoted = $this->getDb()->quote($name);
+        $nameEscapedAndQuoted = DbConn::quoteOrNull( $name, $this->getDb() );
 
         $query =    "SELECT * FROM theme" .
                     "  WHERE name=$nameEscapedAndQuoted" .

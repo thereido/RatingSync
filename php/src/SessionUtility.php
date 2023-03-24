@@ -25,10 +25,10 @@ class SessionUtility {
         self::logout();
         self::start();
         $db = getDatabase();
-        $usernameEscapedAndQuoted = $db->quote($username);
+        $usernameEscapedAndQuoted = DbConn::quoteOrNull( $username, $db );
         $usernameEscaped = unquote($usernameEscapedAndQuoted);
         $passwordHash = NULL;
-        $passwordEscapedAndQuoted = $db->quote($password);
+        $passwordEscapedAndQuoted = DbConn::quoteOrNull( $password, $db );
         $passwordEscaped = unquote($passwordEscapedAndQuoted);
 
         $query = "SELECT * FROM user WHERE username=$usernameEscapedAndQuoted";
@@ -74,8 +74,8 @@ class SessionUtility {
         $failure = false;
         $db = getDatabase();
 
-        $usernameEscapedAndQuoted = $db->quote($username);
-        $passwordEscapedAndQuoted = $db->quote($password);
+        $usernameEscapedAndQuoted = DbConn::quoteOrNull( $username, $db );
+        $passwordEscapedAndQuoted = DbConn::quoteOrNull( $password, $db );
         $passwordEscaped = unquoted($passwordEscapedAndQuoted);
 
         // Hash the password

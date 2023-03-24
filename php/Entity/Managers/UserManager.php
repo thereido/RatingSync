@@ -61,7 +61,7 @@ final class UserManager extends EntityManager
             return false;
         }
 
-        $usernameEscapedAndQuoted = $this->getDb()->quote($username);
+        $usernameEscapedAndQuoted = DbConn::quoteOrNull( $username, $this->getDb() );
 
         $query = "SELECT * FROM user WHERE username=$usernameEscapedAndQuoted";
 

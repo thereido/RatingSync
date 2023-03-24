@@ -109,7 +109,7 @@ function userView( string $username = null ): UserView|null {
 
         if ( ! empty($username) ) {
 
-            return userMgr()->findViewWithUsername( $username );
+            return userMgr()->findViewWithUsername( $username ) ?: null;
 
         }
     }
