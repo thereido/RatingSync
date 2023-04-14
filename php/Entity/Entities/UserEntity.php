@@ -2,7 +2,6 @@
 
 namespace RatingSync;
 
-use Exception;
 use InvalidArgumentException;
 
 require_once "Entity.php";
@@ -66,17 +65,8 @@ final class UserEntity extends Entity
         return self::mandatoryColumns;
     }
 
-
-    /**
-     * Save to the database
-     *
-     * @return int Database ID of the object saved
-     * @throws Exception
-     * @throws EntityInvalidSaveException
-     */
-    public function save(): int
+    protected function saveStmt( bool $insert ): string
     {
-        $this->verifyBeforeSaving();
 
         $db = getDatabase();
         $id = $this->id;
@@ -85,10 +75,8 @@ final class UserEntity extends Entity
         $enabled = $this->enabled ? "true" : "false";
         $themeId = is_null($this->themeId) ? "NULL" : $this->themeId;
 
-        $insert = ($id == -1);
-
         if ( $insert ) {
-            // Insert new user
+            // Insert new entity
 
             $columns = UserProperty::Username->value
                 . ", " . UserProperty::Email->value
@@ -117,18 +105,8 @@ final class UserEntity extends Entity
 
         }
 
-        $success = $db->exec($stmt) !== false;
-        if ( ! $success ) {
-            $msg = "Error trying to save: $stmt";
-            logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
-            throw new Exception($msg);
-        }
+        return $stmt;
 
-        if ( $insert ) {
-            return (int) $db->lastInsertId();
-        }
-
-        return $id;
     }
 
     protected function verifyBeforeSaving(): void
@@ -142,7 +120,7 @@ final class UserEntity extends Entity
 
             $property = UserProperty::Username;
             $msg = $property->name . " max length is " . UserProperty::usernameMax(); // Changing msg here needs to be changed in UserEntityTest too
-            $this->addInvalidProperty( $property, $msg );
+            $this->addInvalidProperty( $property->name, $msg );
 
         }
 
@@ -150,7 +128,7 @@ final class UserEntity extends Entity
 
             $property = UserProperty::Email;
             $msg = $property->name . " max length is " . UserProperty::emailMax(); // Changing msg here needs to be changed in UserEntityTest too
-            $this->addInvalidProperty( $property, $msg );
+            $this->addInvalidProperty( $property->name, $msg );
 
         }
 
@@ -165,7 +143,7 @@ final class UserEntity extends Entity
 
                 $property = UserProperty::ThemeId;
                 $msg = $property->name . " does not match an active theme"; // Changing msg here needs to be changed in UserEntityTest too
-                $this->addInvalidProperty( $property, $msg );
+                $this->addInvalidProperty( $property->name, $msg );
 
             }
 
@@ -180,7 +158,7 @@ final class UserEntity extends Entity
 
                 $property = UserProperty::Username;
                 $msg = $property->name . " ($this->username) is already taken"; // Changing msg here needs to be changed in UserEntityTest too
-                $this->addInvalidProperty( $property, $msg );
+                $this->addInvalidProperty( $property->name, $msg );
 
             }
 
@@ -203,7 +181,7 @@ final class UserEntity extends Entity
                     $property = UserProperty::Username;
                     $msg = "It looks like you are trying to change the "
                         . $property->name . ". Currently, that feature is not available."; // Changing msg here needs to be changed in UserEntityTest too
-                    $this->addInvalidProperty( $property, $msg );
+                    $this->addInvalidProperty( $property->name, $msg );
 
                 }
 
@@ -212,7 +190,7 @@ final class UserEntity extends Entity
 
                 $property = UserProperty::Id;
                 $msg = $property->name . " " . $this->id . " not found"; // Changing msg here needs to be changed in UserEntityTest too
-                $this->addInvalidProperty( $property, $msg );
+                $this->addInvalidProperty( $property->name, $msg );
 
             }
 

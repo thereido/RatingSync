@@ -5,6 +5,6 @@ namespace RatingSync;
 interface EntityInterface
 {
     static public function mandatoryColumns(): array;
-    function save(): int;
+    function save(): false|int;
 
 }

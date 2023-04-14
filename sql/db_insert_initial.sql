@@ -1,4 +1,4 @@
-INSERT INTO theme (name, enabled, `default`)  VALUES ('dark', true, true);
+INSERT INTO theme (name, enabled)  VALUES ('dark', true);
 INSERT INTO theme (name, enabled)  VALUES ('grey', true);
 
 INSERT INTO user (username, password, email, enabled) VALUES ('testratingsync', '$2y$10$F3rnoPbKTrj8PgEiEFc66uQf5IVPt.bp6t7Xlis9hGSlCsnI58LZS', 'testratingsync@example.com', TRUE);

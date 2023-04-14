@@ -100,7 +100,7 @@ final class ThemeManager extends EntityManager
 
     }
 
-    public function findWithName( string $name ): ThemeEntity|false {
+    public function findWithName( string $name, bool $includeDisabledEntity = false ): ThemeEntity|false {
 
         if ( empty($name) ) {
             return false;
@@ -109,8 +109,11 @@ final class ThemeManager extends EntityManager
         $nameEscapedAndQuoted = DbConn::quoteOrNull( $name, $this->getDb() );
 
         $query =    "SELECT * FROM theme" .
-                    "  WHERE name=$nameEscapedAndQuoted" .
-                    "    AND enabled=TRUE";
+                    "  WHERE name=$nameEscapedAndQuoted";
+
+        if ( ! $includeDisabledEntity ) {
+            $query .= " AND enabled=TRUE";
+        }
 
         try {
             return $this->findWithQuery( $query );
@@ -164,22 +167,16 @@ final class ThemeManager extends EntityManager
      */
     public function findDefaultEntity(): ThemeEntity|false {
 
-        $query =    "SELECT * FROM theme" .
-                    "  WHERE `default`=true AND enabled=true" .
-                    "  ORDER BY id ASC" .
-                    "  LIMIT 1";
+        $entity = $this->findWithName( Constants::THEME_DEFAULT );
 
-        try {
-
-            return $this->findWithQuery($query);
-
-        }
-        catch (Exception $e) {
-
-            logError("Exception getting default theme: " . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+        if ( $entity === false ) {
+            $msg = "Unable to find the default theme (".Constants::THEME_DEFAULT."). Make sure it is enabled.";
+            $e = new Exception( $msg );
+            logError($e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
             throw $e;
-
         }
+
+        return $entity;
 
     }
 
@@ -207,9 +204,8 @@ final class ThemeManager extends EntityManager
         $id = $row["id"];
         $name = $row["name"];
         $enabled = $row["enabled"];
-        $default = $row["default"];
 
-        return new ThemeEntity($id, $name, $enabled, $default);
+        return new ThemeEntity($id, $name, $enabled);
     }
 
 }

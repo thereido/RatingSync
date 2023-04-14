@@ -33,9 +33,8 @@ class EntityManagerChild extends EntityManager {
         $id = $row["id"];
         $name = $row["name"];
         $enabled = $row["enabled"];
-        $default = $row["default"];
 
-        return new ThemeEntity($id, $name, $enabled, $default);
+        return new ThemeEntity($id, $name, $enabled);
     }
 
     public function destructDbConnection() {

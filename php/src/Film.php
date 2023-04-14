@@ -1013,6 +1013,10 @@ class Film {
             $selectYear = "year IS NULL";
             $year = "NULL";
         }
+        $selectSeason = "season=$season";
+        if ( $season == "NULL" ) {
+            $selectSeason = "season IS NULL";
+        }
         $selectEpisodeNumber = "episodeNumber=$episodeNumber";
         if (is_null($episodeNumber)) {
             $selectEpisodeNumber = "episodeNumber IS NULL";
@@ -1025,7 +1029,7 @@ class Film {
             $query  = "SELECT id FROM film";
             $query .= " WHERE title=$title";
             $query .= "   AND $selectYear";
-            $query .= "   AND season=$season";
+            $query .= "   AND $selectSeason";
             $query .= "   AND $selectEpisodeNumber";
             $result = $db->query($query);
             if ($result->rowCount() == 1) {

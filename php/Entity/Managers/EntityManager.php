@@ -16,9 +16,6 @@ abstract class EntityManager
 
     static protected PDO|null $db;
 
-    protected array $invalidPropertyNames = array();
-    protected array $invalidPropertyMessages = array();
-
     abstract protected function mandatoryColumns(): array;
     abstract protected function entityFromRow( Array $row ): Entity;
 

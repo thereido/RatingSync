@@ -2,8 +2,9 @@
 
 namespace RatingSync;
 
-use Exception;
+use InvalidArgumentException;
 
+require_once "Entity.php";
 require_once "EntityInterface.php";
 require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "Constants.php";
 require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Views" .DIRECTORY_SEPARATOR. "ThemeView.php";
@@ -13,20 +14,27 @@ require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "Views" .D
  */
 final class ThemeEntity extends Entity
 {
-    const mandatoryColumns =  array("id", "name", "enabled", "default");
+    const mandatoryColumns =  array("id", "name", "enabled");
     public readonly int $id;
     public readonly string $name;
     public readonly bool $enabled;
-    public readonly bool $default;
 
-    public function __construct(int $id, string $name, bool $enabled, bool $default)
+    /**
+     * @param int $id
+     * @param string $name
+     * @param bool $enabled
+     */
+    public function __construct(int|null $id, string $name, bool $enabled)
     {
-        // FIXME valid the values
+        if ( empty($name) ) {
+            throw new InvalidArgumentException(__CLASS__ . " name must not be empty.");
+        }
+
+        $id = is_null($id) ? -1 : $id;
 
         $this->id = $id;
         $this->name = $name;
         $this->enabled = $enabled;
-        $this->default = $default;
 
     }
 
@@ -35,41 +43,40 @@ final class ThemeEntity extends Entity
         return self::mandatoryColumns;
     }
 
-
-    /**
-     * Save to the database
-     *
-     * @return int Database ID of the object saved
-     * @throws Exception
-     * @throws EntityInvalidSaveException
-     */
-    public function save(): int
+    protected function saveStmt( bool $insert ): string
     {
-        $this->verifyBeforeSaving();
 
         $db = getDatabase();
         $id = $this->id;
-        $name = $db->quote($this->name);
-        $enabled = $this->enabled;
-        $default = $this->default;
+        $name = DbConn::quoteOrNull( $this->name, $db );
+        $enabled = $this->enabled ? "true" : "false";
 
-        $stmt = "REPLACE theme";
-        $stmt .= " (id, name, enabled)";
-        $stmt .= " VALUES (";
-        $stmt .= "$id";
-        $stmt .= ", $name)";
-        $stmt .= ", $enabled";
-        $stmt .= ", $default";
-        $stmt .= ")";
+        if ( $insert ) {
+            // Insert new entity
 
-        $success = $db->exec($stmt) !== false;
-        if ( ! $success ) {
-            $msg = "Error trying to save: $stmt";
-            logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
-            throw new Exception($msg);
+            $columns = ThemeProperty::Name->value
+                . ", " . ThemeProperty::Enabled->value;
+
+            $values = $name
+                . ", " . $enabled;
+
+            $stmt = "INSERT INTO theme ($columns) VALUES ($values)";
+
+        }
+        else {
+            // Update
+
+            $set = ThemeProperty::Name->value . "=" . $name
+                . ", " . ThemeProperty::Enabled->value . "=" . $enabled;
+
+            $where = ThemeProperty::Id->value . "=" . $id;
+
+            $stmt = "UPDATE theme SET $set WHERE $where";
+
         }
 
-        return (int) $db->lastInsertId();
+        return $stmt;
+
     }
 
     protected function verifyBeforeSaving(): void
@@ -79,19 +86,39 @@ final class ThemeEntity extends Entity
         $this->invalidPropertyMessages = array();
 
         // Make sure the strings are not too long
+        if ( (!empty($this->name)) && strlen($this->name) > ThemeProperty::nameMax() ) {
 
-        // FIXME
+            $property = ThemeProperty::Name;
+            $msg = $property->name . " max length is " . ThemeProperty::nameMax(); // Changing msg here needs to be changed in ThemeEntityTest too
+            $this->addInvalidProperty( $property->name, $msg );
+
+        }
 
         if ( $this->id == EntityManager::NEW_ENTITY_ID ) {
             // New entity
 
-            // FIXME
+            // Is the name already taken?
+            $existingEntity = themeMgr()->findWithName( $this->name );
+            if ( $existingEntity !== false ) {
+
+                $property = ThemeProperty::Name;
+                $msg = $property->name . " ($this->name) is already taken"; // Changing msg here needs to be changed in UserEntityTest too
+                $this->addInvalidProperty( $property->name, $msg );
+
+            }
 
         }
         else {
             // Existing entity
 
-            // FIXME
+            $existingEntity = themeMgr()->findWithId( $this->id );
+            if ( ! ($existingEntity instanceof ThemeEntity) ) {
+
+                $property = ThemeProperty::Id;
+                $msg = $property->name . " " . $this->id . " not found"; // Changing msg here needs to be changed in UserEntityTest too
+                $this->addInvalidProperty( $property->name, $msg );
+
+            }
         }
 
         if ( count($this->invalidProperties) > 0 ) {
@@ -100,6 +127,21 @@ final class ThemeEntity extends Entity
 
         }
 
+    }
+
+    public function equals( ThemeEntity $other ): bool
+    {
+        $lhs = $this;
+        $rhs = $other;
+
+        if (   $lhs->id != $rhs->id
+            || $lhs->name != $rhs->name
+            || $lhs->enabled != $rhs->enabled
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
 }

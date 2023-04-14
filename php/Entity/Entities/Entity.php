@@ -2,6 +2,8 @@
 
 namespace RatingSync;
 
+use Exception;
+
 require_once "EntityInterface.php";
 
 abstract class Entity implements EntityInterface
@@ -11,15 +13,6 @@ abstract class Entity implements EntityInterface
     protected array $invalidPropertyMessages = array();
 
     abstract static public function mandatoryColumns(): array;
-
-    /**
-     * Save to the database
-     *
-     * @return int Database ID of the object saved
-     * @throws Exception
-     * @throws EntityInvalidSaveException
-     */
-    abstract public function save(): int;
 
     /**
      * Verify that a save() operation will succeed with these properties.
@@ -34,23 +27,31 @@ abstract class Entity implements EntityInterface
     abstract protected function verifyBeforeSaving(): void;
 
     /**
+     * Return a db statement for saving this entity.
+     *
+     * @param bool $insert True if this a new entity. False is this an existing entity.
+     * @return string
+     */
+    abstract protected function saveStmt( bool $insert ): string;
+
+    /**
      * Use this function after calling save() if the verify function threw an
      * EntityInvalidSaveException. This function shows which properties
-     * (UserProperty enum) have a problem. To see the message for each property
-     * call invalidPropertyMessage( UserProperty $property ).
+     * (Property name) have a problem. To see the message for each property
+     * call invalidPropertyMessage( string $propertyName ).
      *
-     * @return array Array of UserProperty enums for values that would not let the db save the entity
+     * @return array Array of property names as strings for values that would not let the db save the entity
      */
     public function invalidProperties(): array
     {
         return $this->invalidProperties;
     }
 
-    public function invalidPropertyMessage( UserProperty $property ): string|false
+    public function invalidPropertyMessage( string $propertyName ): string|false
     {
 
-        if ( key_exists( $property->name, $this->invalidPropertyMessages) ) {
-            return $this->invalidPropertyMessages[ $property->name ];
+        if ( key_exists( $propertyName, $this->invalidPropertyMessages) ) {
+            return $this->invalidPropertyMessages[ $propertyName ];
         }
         else {
             return false;
@@ -58,13 +59,46 @@ abstract class Entity implements EntityInterface
 
     }
 
-    protected function addInvalidProperty( UserProperty $property, string $msg ): void
+    protected function addInvalidProperty(string $propertyName, string $msg ): void
     {
 
-        $this->invalidProperties[] = $property;
-        $this->invalidPropertyMessages[ $property->name ] = $msg;
+        $this->invalidProperties[] = $propertyName;
+        $this->invalidPropertyMessages[ $propertyName ] = $msg;
 
         logDebug($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
+
+    }
+
+    /**
+     * Save to the database
+     *
+     * @return false|int Database ID of the object saved. False on failure.
+     * @throws Exception
+     * @throws EntityInvalidSaveException
+     */
+    public function save(): false|int
+    {
+
+        $this->verifyBeforeSaving();
+
+        $id = $this->id;
+        $insert = ($id == -1);
+        $stmt = $this->saveStmt( $insert );
+
+        $db = getDatabase();
+        $executed = $db->exec( $stmt );
+        $returnCode = $executed !== false;
+
+        if ( $returnCode === false ) {
+            logError("Error trying to save: $stmt", __CLASS__."::".__FUNCTION__.":".__LINE__);
+            return false;
+        }
+        elseif ( $insert ) {
+            return (int) $db->lastInsertId();
+        }
+        else {
+            return $id;
+        }
 
     }
 

@@ -14,7 +14,11 @@ function includeHeadHtmlForAllPages( UserView $user = null ): string {
     if ( empty( $user ) ) {
         $user = userView();
     }
+
     $themeName = $user?->getThemeName();
+    if ( is_null($themeName) ) {
+        $themeName = Constants::THEME_DEFAULT;
+    }
 
     $html  = '<meta charset="utf-8" />' . "\n";
     $html .= includeBootstrapDependencies();

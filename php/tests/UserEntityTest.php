@@ -13,7 +13,7 @@ require_once "UserFactoryTest.php";
 class UserEntityTest extends RatingSyncTestCase
 {
 
-    const NEW_USER_ID = UserFactoryTest::NEW_USER_ID;
+    const NEW_USER_ID = EntityManager::NEW_ENTITY_ID;
     const PRIMARY_USER_ID = UserFactoryTest::PRIMARY_USER_ID;
     const PRIMARY_USERNAME = UserFactoryTest::PRIMARY_USERNAME;
     const PRIMARY_EMAIL = UserFactoryTest::PRIMARY_EMAIL;
@@ -349,8 +349,8 @@ class UserEntityTest extends RatingSyncTestCase
 
             $this->assertStringContainsString($exceptionMsg, $e->getMessage());
             $this->assertCount(1, $changed->invalidProperties(), "There should be 1 invalid property");
-            $this->assertSame($invalidProperty, $changed->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
-            $propertyMsg = $changed->invalidPropertyMessage($invalidProperty);
+            $this->assertEquals($invalidProperty->name, $changed->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
+            $propertyMsg = $changed->invalidPropertyMessage($invalidProperty->name);
             $this->assertEquals($propertyMsgExpected, $propertyMsg, "Wrong error message for an invalid " . $invalidProperty->name);
 
             throw $e;
@@ -685,8 +685,8 @@ class UserEntityTest extends RatingSyncTestCase
 
             $this->assertStringContainsString($exceptionMsg, $e->getMessage());
             $this->assertCount(1, $entity->invalidProperties(), "There should be 1 invalid property");
-            $this->assertSame($invalidProperty, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
-            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty);
+            $this->assertEquals($invalidProperty->name, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
+            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty->name);
             $this->assertEquals($propertyMsgExpected, $propertyMsg, "Wrong error message for an invalid " . $invalidProperty->name);
 
             throw $e;
@@ -742,8 +742,8 @@ class UserEntityTest extends RatingSyncTestCase
 
             $this->assertStringContainsString($exceptionMsg, $e->getMessage());
             $this->assertCount(1, $entity->invalidProperties(), "There should be 1 invalid property");
-            $this->assertSame($invalidProperty, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
-            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty);
+            $this->assertEquals($invalidProperty->name, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
+            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty->name);
             $this->assertEquals($propertyMsgExpected, $propertyMsg, "Wrong error message for an invalid " . $invalidProperty->name);
 
             throw $e;
@@ -799,8 +799,8 @@ class UserEntityTest extends RatingSyncTestCase
 
             $this->assertStringContainsString($exceptionMsg, $e->getMessage());
             $this->assertCount(1, $entity->invalidProperties(), "There should be 1 invalid property");
-            $this->assertSame($invalidProperty, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
-            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty);
+            $this->assertEquals($invalidProperty->name, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
+            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty->name);
             $this->assertEquals($propertyMsgExpected, $propertyMsg, "Wrong error message for an invalid " . $invalidProperty->name);
 
             throw $e;
@@ -856,8 +856,8 @@ class UserEntityTest extends RatingSyncTestCase
 
             $this->assertStringContainsString($exceptionMsg, $e->getMessage());
             $this->assertCount(1, $entity->invalidProperties(), "There should be 1 invalid property");
-            $this->assertSame($invalidProperty, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
-            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty);
+            $this->assertEquals($invalidProperty->name, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
+            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty->name);
             $this->assertEquals($propertyMsgExpected, $propertyMsg, "Wrong error message for an invalid " . $invalidProperty->name);
 
             throw $e;
@@ -916,8 +916,8 @@ class UserEntityTest extends RatingSyncTestCase
 
             $this->assertStringContainsString($exceptionMsg, $e->getMessage());
             $this->assertCount(1, $entity->invalidProperties(), "There should be 1 invalid property");
-            $this->assertSame($invalidProperty, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
-            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty);
+            $this->assertEquals($invalidProperty->name, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
+            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty->name);
             $this->assertEquals($propertyMsgExpected, $propertyMsg, "Wrong error message for an invalid " . $invalidProperty->name);
 
             throw $e;
@@ -974,8 +974,8 @@ class UserEntityTest extends RatingSyncTestCase
 
             $this->assertStringContainsString($exceptionMsg, $e->getMessage());
             $this->assertCount(1, $entity->invalidProperties(), "There should be 1 invalid property");
-            $this->assertSame($invalidProperty, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
-            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty);
+            $this->assertEquals($invalidProperty->name, $entity->invalidProperties()[0], $invalidProperty->name . " should be an invalid property");
+            $propertyMsg = $entity->invalidPropertyMessage($invalidProperty->name);
             $this->assertEquals($propertyMsgExpected, $propertyMsg, "Wrong error message for an invalid " . $invalidProperty->name);
 
             throw $e;
