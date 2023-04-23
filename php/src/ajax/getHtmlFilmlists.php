@@ -142,7 +142,9 @@ function getHtmlFilmlistSelectOptions($listnames, $indent = 0) {
 
 function getHtmlFilmlistNamesForFilter($listnames, $currentListname, $level = 0) {
     $html = "";
-    $filterLists = explode("%l", array_value_by_key("filterlists", $_POST));
+
+    $filterlistsParam = array_value_by_key("filterlists", $_POST);
+    $filterLists = is_null( $filterlistsParam ) ? array() : explode("%l", $filterlistsParam);
 
     $prefix = "";
     for ($levelIndex = $level; $levelIndex > 0; $levelIndex--) {
@@ -177,7 +179,9 @@ function getHtmlFilmlistNamesForFilter($listnames, $currentListname, $level = 0)
 
 function getHtmlGenresForFilter($genres) {
     $html = "";
-    $filterGenres = explode("%g", array_value_by_key("filtergenres", $_POST));
+
+    $filtergenresParam = array_value_by_key("filtergenres", $_POST);
+    $filterGenres = is_null( $filtergenresParam ) ? array() : explode("%l", $filtergenresParam);
 
     foreach ($genres as $genre) {
         $checked = "";
@@ -198,7 +202,9 @@ function getHtmlGenresForFilter($genres) {
 
 function getHtmlContentTypeForFilter() {
     $html = "";
-    $filter = explode("%c", array_value_by_key("filtercontenttypes", $_POST));
+
+    $filtercontenttypesParam = array_value_by_key("filtercontenttypes", $_POST);
+    $filter = is_null( $filtercontenttypesParam ) ? array() : explode("%l", $filtercontenttypesParam);
 
     $contentTypes = array();
     $contentTypes[Film::CONTENT_FILM] = "Movies";

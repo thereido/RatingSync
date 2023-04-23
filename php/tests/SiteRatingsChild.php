@@ -4,8 +4,8 @@
  */
 namespace RatingSync;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "SiteRatings.php";
-require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Imdb.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR.  ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "SiteRatings.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR.  ".." .DIRECTORY_SEPARATOR. "src" .DIRECTORY_SEPARATOR. "Imdb.php";
 require_once "SiteRatingsTest.php";
 
 class SiteRatingsChild extends \RatingSync\SiteRatings {

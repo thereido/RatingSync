@@ -1,29 +1,43 @@
 <?php
 namespace RatingSync;
 
+use Exception;
+
 require_once "main.php";
 require_once "src/Constants.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. "Entity" .DIRECTORY_SEPARATOR. "Entities" .DIRECTORY_SEPARATOR. "UserEntity.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "UserManager.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. "Entity" .DIRECTORY_SEPARATOR. "Views" .DIRECTORY_SEPARATOR. "UserView.php";
 
-function includeHeadHtmlForAllPages() {
-    $html = '';
-    $html .= '<meta charset="utf-8" />' . "\n";
+function includeHeadHtmlForAllPages( UserView $user = null ): string {
+
+    if ( empty( $user ) ) {
+        $user = userView();
+    }
+
+    $themeName = $user?->getThemeName();
+    if ( is_null($themeName) ) {
+        $themeName = Constants::THEME_DEFAULT;
+    }
+
+    $html  = '<meta charset="utf-8" />' . "\n";
     $html .= includeBootstrapDependencies();
     $html .= includeFontAwesomeDependencies();
     $html .= includeJavascriptFiles();
     $html .= '<link href="/css/rs.css" rel="stylesheet">' . "\n";
     $html .= '<link href="/css/switches.css" rel="stylesheet">' . "\n";
+    $html .= "<link href='/css/rs-theme-$themeName.css' rel='stylesheet'>\n";
 
     return $html;
 }
 
 /**
  * All pages should call this function in the HTML head. Javascript files
- * needed by all pages are inlcuded.
+ * needed by all pages are included.
  *
  */
-function includeJavascriptFiles() {
-    $html = '';
-    $html .= '<script src="/Chrome/constants.js"></script>' . "\n";
+function includeJavascriptFiles(): string {
+    $html  = '<script src="/Chrome/constants.js"></script>' . "\n";
     $html .= '<script src="/Chrome/rsCommon.js"></script>' . "\n";
     $html .= '<script src="/js/pageHeader.js"></script>' . "\n";
     $html .= '<script src="/js/search.js"></script>' . "\n";
@@ -31,9 +45,8 @@ function includeJavascriptFiles() {
     return $html;
 }
 
-function includeBootstrapDependencies() {
-    $html = '';
-    $html .= '<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">' . "\n";
+function includeBootstrapDependencies(): string {
+    $html  = '<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">' . "\n";
     $html .= '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">' . "\n";
     $html .= '<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>' . "\n";
     $html .= '<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>' . "\n";
@@ -41,14 +54,11 @@ function includeBootstrapDependencies() {
     return $html;
 }
 
-function includeFontAwesomeDependencies() {
-    $html = '';
-    $html .= '<script src="https://kit.fontawesome.com/a79b70d2ab.js" crossorigin="anonymous"></script>' . "\n";
-
-    return $html;
+function includeFontAwesomeDependencies(): string {
+    return '<script src="https://kit.fontawesome.com/a79b70d2ab.js" crossorigin="anonymous"></script>' . "\n";
 }
 
-function getPageHeader($forListnameParam = false, $listnames = null) {
+function getPageHeader($forListnameParam = false, $listnames = null): string {
     $username = getUsername();
     if (!$forListnameParam && !empty($username)) {
         $listnames = Filmlist::getUserListsFromDbByParent($username, false);
@@ -128,7 +138,7 @@ function getPageHeader($forListnameParam = false, $listnames = null) {
     return $html;
 }
 
-function getHtmlFilmlistNamesForNav($listnames, $level = 0) {
+function getHtmlFilmlistNamesForNav($listnames, $level = 0): string {
     $html = "";
 
     $prefix = "";
@@ -152,4 +162,3 @@ function getHtmlFilmlistNamesForNav($listnames, $level = 0) {
     return $html;
 }
 
-?>

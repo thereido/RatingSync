@@ -34,10 +34,12 @@ class Constants
     const DATE_MIN_STR                  = "1000-01-01";
     const IMAGE_PATH_TMDBAPI            = "https://image.tmdb.org/t/p";
     const DATA_API_DEFAULT              = Constants::SOURCE_TMDBAPI;
+    const THEME_DEFAULT                 = "dark";
 
     /* Constants moved to DomainConstants class
      * php.ini include_path must have the path to DomainConstants.php
      */
+    const DB_HOSTNAME                   = DomainConstants::DB_HOSTNAME;
     const DB_DATABASE                   = DomainConstants::DB_DATABASE;
     const DB_TEST_DATABASE              = DomainConstants::DB_TEST_DATABASE;
     const DB_ADMIN_USER                 = DomainConstants::DB_ADMIN_USER;

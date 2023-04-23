@@ -9,7 +9,7 @@ use DateTime;
 require_once "Http.php";
 require_once "Filmlist.php";
 require_once "UserSpecificFilmInfo.php";
-require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "main.php";
 
 class Film {
     const CONTENT_FILM      = 'FeatureFilm';
@@ -994,13 +994,13 @@ class Film {
 
         $filmId = $this->id;
         $parentId = $this->parentId ?: "NULL";
-        $title = $db->quote($this->getTitle());
+        $title = DbConn::quoteOrNull( $this->getTitle(), $db );
         $year = $this->getYear();
         $contentType = $this->getContentType();
         $seasonCount = $this->getSeasonCount() ?: "NULL";
-        $season = $db->quote($this->getSeason());
+        $season = DbConn::quoteOrNull( $this->getSeason(), $db );
         $episodeNumber = $this->getEpisodeNumber();
-        $episodeTitle = $db->quote($this->getEpisodeTitle());
+        $episodeTitle = DbConn::quoteOrNull( $this->getEpisodeTitle(), $db );
         $image = $this->getImage();
         $refreshDate = $this->getRefreshDate();
         $refreshDateUpdate = ", refreshDate=NULL";
@@ -1012,6 +1012,10 @@ class Film {
         if (is_null($year)) {
             $selectYear = "year IS NULL";
             $year = "NULL";
+        }
+        $selectSeason = "season=$season";
+        if ( $season == "NULL" ) {
+            $selectSeason = "season IS NULL";
         }
         $selectEpisodeNumber = "episodeNumber=$episodeNumber";
         if (is_null($episodeNumber)) {
@@ -1025,7 +1029,7 @@ class Film {
             $query  = "SELECT id FROM film";
             $query .= " WHERE title=$title";
             $query .= "   AND $selectYear";
-            $query .= "   AND season=$season";
+            $query .= "   AND $selectSeason";
             $query .= "   AND $selectEpisodeNumber";
             $result = $db->query($query);
             if ($result->rowCount() == 1) {
@@ -1076,7 +1080,7 @@ class Film {
         
         // Directors
         foreach ($this->getDirectors() as $director) {
-            $director = $db->quote($director);
+            $director =DbConn::quoteOrNull( $director, $db );
             $personId = null;
             $result = $db->query("SELECT id FROM person WHERE fullname=$director");
             if ($result->rowCount() == 1) {
@@ -1406,16 +1410,16 @@ class Film {
         //$uniqueEpisode = array_value_by_key("uniqueEpisode", $searchTerms);
         //$uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
         $title = array_value_by_key("title", $searchTerms);
-        $titleEscapedAndQuoted = $db->quote($title);
+        $titleEscapedAndQuoted = DbConn::quoteOrNull( $title, $db );
         $year = array_value_by_key("year", $searchTerms);
         $parentYear = array_value_by_key("parentYear", $searchTerms);
         $contentType = array_value_by_key("contentType", $searchTerms);
         $season = array_value_by_key("season", $searchTerms);
-        $seasonEscapedAndQuoted = $db->quote($season);
+        $seasonEscapedAndQuoted = DbConn::quoteOrNull( $season, $db );
         $seasonEscaped = unquote($seasonEscapedAndQuoted);
         $episodeNumber = array_value_by_key("episodeNumber", $searchTerms);
         $episodeTitle = array_value_by_key("episodeTitle", $searchTerms);
-        $episodeTitleEscapedAndQuoted = $db->quote($episodeTitle);
+        $episodeTitleEscapedAndQuoted = DbConn::quoteOrNull( $episodeTitle, $db );
         $episodeTitleEscaped = unquote($episodeTitleEscapedAndQuoted);
         $sourceName = array_value_by_key("sourceName", $searchTerms);
         
@@ -1544,7 +1548,7 @@ class Film {
         $parentId = $film->getParentId();
         if (empty($parentId)) {
             $query .= " WHERE contentType='". self::CONTENT_TV_SERIES ."'";
-            $query .= "   AND title=". $db->quote($film->getTitle());
+            $query .= "   AND title=". DbConn::quoteOrNull( $film->getTitle(), $db );
             $query .= "   AND year=". $film->getYear();
         } else {
             $query .= " WHERE id=$parentId";

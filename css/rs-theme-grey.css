@@ -1,0 +1,14 @@
+
+.card { border: none; }
+
+.rs-navbar { border: none; }
+
+:root {
+    --bg: var(--grey--bg);
+    --bg-surface: var(--grey--bg-surface);
+    --bg-input-text: var(--grey--bg-input-text);
+
+    --grey--bg: #424242;
+    --grey--bg-surface: #383838;
+    --grey--bg-input-text: var(--grey--bg);
+}

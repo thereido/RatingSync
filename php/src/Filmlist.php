@@ -308,7 +308,7 @@ class Filmlist
         $isDuplicate = false;
         $prevItemUpdated = false;
         $username = $this->username;
-        $listnameEscapedAndQuoted = $db->quote($this->listname);
+        $listnameEscapedAndQuoted = DbConn::quoteOrNull( $this->listname, $db );
         $wherePrefix = " WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted ";
 
         // Check for an duplicate
@@ -389,7 +389,7 @@ class Filmlist
         $rowExists = false;
         $username = $this->username;
         $listname = $this->listname;
-        $listnameEscapedAndQuoted = $db->quote($listname);
+        $listnameEscapedAndQuoted = DbConn::quoteOrNull( $listname, $db );
         $wherePrefix = " WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted ";
 
         $query = "SELECT next_film_id, position FROM filmlist $wherePrefix" .
@@ -488,9 +488,9 @@ class Filmlist
         $errorFree = true;
         $username = $this->username;
         $listname = $this->listname;
-        $listnameEscapedAndQuoted = $db->quote($listname);
+        $listnameEscapedAndQuoted = DbConn::quoteOrNull( $listname, $db );
         $parentListname = $this->parentListname;
-        $parentListnameEscapedAndQuoted = $db->quote($parentListname);
+        $parentListnameEscapedAndQuoted = DbConn::quoteOrNull( $parentListname, $db );
 
         // Error if the list already exists
         $query = "SELECT * FROM filmlist WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted";
@@ -561,7 +561,7 @@ class Filmlist
         // Check for children (Don't delete a list with children)
         $username = $this->username;
         $listname = $this->listname;
-        $listnameEscapedAndQuoted = $db->quote($listname);
+        $listnameEscapedAndQuoted = DbConn::quoteOrNull( $listname, $db );
         $query = "SELECT * FROM user_filmlist" .
                     " WHERE parent_listname=$listnameEscapedAndQuoted" .
                     "   AND user_name='$username'";
@@ -645,8 +645,8 @@ class Filmlist
         $success = true;
 
         $oldListname = $this->listname;
-        $oldListnameEscapedAndQuoted = $db->quote($oldListname);
-        $newListnameEscapedAndQuoted = $db->quote($newListname);
+        $oldListnameEscapedAndQuoted = DbConn::quoteOrNull( $oldListname, $db );
+        $newListnameEscapedAndQuoted = DbConn::quoteOrNull( $newListname, $db );
         
         // Rename the listname on the list itself
         $query  = "UPDATE user_filmlist SET listname=$newListnameEscapedAndQuoted";
@@ -696,7 +696,7 @@ class Filmlist
         $this->removeAllItems();
         $db = getDatabase();
 
-        $listnameEscapedAndQuoted = $db->quote($listname);
+        $listnameEscapedAndQuoted = DbConn::quoteOrNull( $listname, $db );
 
         $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted";
         $result = $db->query($query);
@@ -846,7 +846,7 @@ class Filmlist
         $parentListnameEscapedAndQuoted = null;
         $parentSelect = "parent_listname IS NULL";
         if (!empty($parentListname)) {
-            $parentListnameEscapedAndQuoted = $db->quote($parentListname);
+            $parentListnameEscapedAndQuoted = DbConn::quoteOrNull( $parentListname, $db );
             $parentSelect = "parent_listname=$parentListnameEscapedAndQuoted";
         }
 
@@ -938,13 +938,13 @@ class Filmlist
         $ancestors = array();
 
         while (!empty($listname)) {
-            $listnameEscapedAndQuoted = $db->quote($listname);
+            $listnameEscapedAndQuoted = DbConn::quoteOrNull( $listname, $db );
             $query = "SELECT * FROM user_filmlist WHERE user_name='$username' AND listname=$listnameEscapedAndQuoted";
             $result = $db->query($query);
             if ($result->rowCount() == 1) {
                 $parentListname = $result->fetch()['parent_listname'];
                 if (!empty($parentListname)) {
-                    $parentListnameEscapedAndQuoted = $db->quote($parentListname);
+                    $parentListnameEscapedAndQuoted = DbConn::quoteOrNull( $parentListname, $db );
                     $parentListnameEscaped = unquote($parentListnameEscapedAndQuoted);
                     $ancestors[] = $parentListnameEscaped;
                 }
@@ -1026,7 +1026,7 @@ class Filmlist
 
         $db = getDatabase();
         $wherePrefix = " WHERE user_name='" . $this->username . "'" .
-                    "   AND listname=" . $db->quote($this->listname);
+                    "   AND listname=" . DbConn::quoteOrNull( $this->listname, $db );
         $queryPrefix = "SELECT film_id FROM filmlist" . $wherePrefix; 
         $newPrevQuery = $queryPrefix . "AND next_film_id=$nextFilmId";    
 
@@ -1112,7 +1112,7 @@ class Filmlist
         $username = $this->getUsername();
         $db = getDatabase();
         
-        $listnameEscapedAndQuoted = $db->quote($this->getListname());
+        $listnameEscapedAndQuoted = DbConn::quoteOrNull( $this->getListname(), $db );
 
         $query  = "SELECT film_id, next_film_id FROM filmlist";
         $query .= " WHERE user_name='$username'";
@@ -1148,7 +1148,7 @@ class Filmlist
         }
         $username = $this->getUsername();
         $db = getDatabase();
-        $listnameEscapedAndQuoted = $db->quote($this->getListname());
+        $listnameEscapedAndQuoted = DbConn::quoteOrNull( $this->getListname(), $db );
 
         $query  = "SELECT film_id, next_film_id FROM filmlist";
         $query .= " WHERE user_name='$username'";

@@ -1,0 +1,16 @@
+
+CREATE TABLE IF NOT EXISTS theme
+(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    `default` BOOLEAN NOT NULL DEFAULT FALSE,
+    ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_default (`default`, enabled),
+    INDEX idx_id (id, enabled)
+);
+
+ALTER TABLE user
+    ADD theme_id INT NULL AFTER enabled,
+    ADD FOREIGN KEY (theme_id) REFERENCES theme(id);

@@ -1,0 +1,8 @@
+
+:root {
+    --bg: var(--dark--bg);
+    --bg-surface: var(--dark--bg-surface);
+
+    --dark--bg: #121212;
+    --dark--bg-surface: #212121;
+}

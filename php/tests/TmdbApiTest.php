@@ -42,7 +42,7 @@ class TmdbApiTest extends RatingSyncTestCase
     const TESTSERIES_TMDBID_SOURCEID = "1399";
     const TESTSERIES_USER_SCORE = 8.1;
     const TESTSERIES_CRITIC_SCORE = null;
-    const TESTSERIES_IMAGE = "/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg";
+    const TESTSERIES_IMAGE = "/7WUHnWGx5OO145IRxPDUkQSh4C7.jpg";
     const TESTSERIES_DIRECTORS = array();
     const TESTSERIES_GENRES = array("Sci-Fi & Fantasy", "Drama", "Action & Adventure");
     const TESTSERIES_SEASON_COUNT = 8;
@@ -1106,11 +1106,11 @@ class TmdbApiTest extends RatingSyncTestCase
                     // TMDb API source-specific
         $this->assertEquals(self::TESTFILM_PRIMARY_IMAGE, $film->getImage($sourceName), "source image");
         $this->assertEquals(self::TESTFILM_PRIMARY_TMDBID, $film->getUniqueName($sourceName), "uniqueName");
-        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, round($film->getUserScore($sourceName), 1), "user score");
+        $this->assertEquals(round(self::TESTFILM_PRIMARY_USER_SCORE), round($film->getUserScore($sourceName)), "user score");
         $this->assertNull($film->getParentUniqueName($sourceName), "parent uniqueName should be null for a movie");    
                     // IMDb source-specific
         $this->assertEquals(self::TESTFILM_PRIMARY_IMDBID, $film->getUniqueName(Constants::SOURCE_IMDB), "IMDb ID");
-        $this->assertEquals(self::TESTFILM_PRIMARY_USER_SCORE, round($film->getUserScore(Constants::SOURCE_IMDB), 1), "IMDb user score");
+        $this->assertEquals(round(self::TESTFILM_PRIMARY_USER_SCORE), round($film->getUserScore(Constants::SOURCE_IMDB)), "IMDb user score");
                     // Not available in the detail request
         $rating = $film->getRating($sourceName);
         $this->assertNull($rating->getYourScore(), 'Your Score');

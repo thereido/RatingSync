@@ -1,3 +1,12 @@
+
+CREATE TABLE IF NOT EXISTS theme
+(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS user
     (
         id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -5,10 +14,12 @@ CREATE TABLE IF NOT EXISTS user
         password VARCHAR(255) NULL DEFAULT NULL,
         email VARCHAR(50) NULL DEFAULT NULL,
         enabled BOOLEAN NOT NULL DEFAULT FALSE,
+        theme_id INT NULL,
         ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        
+
         INDEX idx_username (username, enabled),
-        INDEX idx_id (id, enabled)
+        INDEX idx_id (id, enabled),
+        FOREIGN KEY (theme_id) REFERENCES theme(id)
     );
 
 CREATE TABLE IF NOT EXISTS verify_user

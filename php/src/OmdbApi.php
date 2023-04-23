@@ -422,8 +422,7 @@ class OmdbApi extends \RatingSync\Site
     public function getFilmFromDb($sourceId, $contentType = null, $username = null)
     {
         $sourceName = $this->sourceName;
-        if (preg_match('/(^tt\d{7}\d*$)/i', $sourceId, $matches)) {
-            $imdbId = $matches[1];
+        if ( MediaDbApiClient::isThisIdFromImdb($sourceId) ) {
             $sourceName = Constants::SOURCE_IMDB;
         }
 
