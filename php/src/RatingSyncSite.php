@@ -167,10 +167,11 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $refreshCache = Constants::USE_CACHE_NEVER;
         $films = array();
 
-        $orderBy = "";
+        $orderBy = "ORDER BY ";
         if (!empty($this->getSort())) {
-            $orderBy = "ORDER BY " . $this->getSort() . " " . $this->getSortDirection();
+            $orderBy .= $this->getSort() . " " . $this->getSortDirection() . ", ";
         }
+        $orderBy .= "rating.ts " . $this->getSortDirection();
 
         $limit = "";
         if (!empty($limitPages)) {
