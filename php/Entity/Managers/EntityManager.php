@@ -37,7 +37,7 @@ abstract class EntityManager
         } catch(PDOException $e) {
 
             logError("DB connection failed: " . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
-            die("Connection failed: " . $e->getMessage());
+            die("DB Connection failed: " . $e->getMessage());
 
         } catch(\Exception $e) {
 

@@ -80,8 +80,8 @@ function getDatabase($mode = Constants::DB_MODE)
     }
     catch ( \Exception $e ) {
 
-        logError("Unable to get a database connection.", __CLASS__."::".__FUNCTION__.":".__LINE__);
-        die("Connection failed: " . $e->getMessage());
+        logError(input: "Unable to get a database connection. " . $e->getMessage(), prefix: __FUNCTION__."() ".__FILE__.":".__LINE__);
+        die("DB Connection failed: " . $e->getMessage());
 
     }
 
