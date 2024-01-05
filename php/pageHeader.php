@@ -45,11 +45,51 @@ function includeJavascriptFiles(): string {
     return $html;
 }
 
-function includeBootstrapDependencies(): string {
-    $html  = '<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">' . "\n";
-    $html .= '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">' . "\n";
-    $html .= '<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>' . "\n";
-    $html .= '<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>' . "\n";
+function includeBootstrapDependencies(int $majorVersion = 4): string {
+
+    $bootstrapCssUrl = $popperUrl = $bootstrapScriptUrl = "";
+    $bootstrapCssHash = $popperHash = $bootstrapScriptHash = "";
+    $jqueryScript = "";
+
+    switch ($majorVersion) {
+
+        case 5:
+            // Bootstrap 5.3
+            $bootstrapCssUrl     = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css";
+            $popperUrl           = "https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js";
+            $bootstrapScriptUrl  = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js";
+
+            $bootstrapCssHash    = "sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN";
+            $popperHash          = "sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r";
+            $bootstrapScriptHash = "sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+";
+            break;
+
+        case 4:
+        default:
+            // Bootstrap 4.6
+            $bootstrapCssUrl     = "https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css";
+            $jqueryUrl           = "https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js";
+            $popperUrl           = "https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js";
+            $bootstrapScriptUrl  = "https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js";
+
+            $bootstrapCssHash    = "sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N";
+            $jqueryHash          = "sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj";
+            $popperHash          = "sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN";
+            $bootstrapScriptHash = "sha384-+sLIOodYLS7CIrQpBjl+C7nPvqq+FbNUBDunl/OZv93DB7Ln/533i8e/mZXLi/P+";
+
+            $jqueryScript    = "<script src=\"$jqueryUrl\" integrity=\"$jqueryHash\" crossorigin=\"anonymous\"></script>\n";
+
+    }
+
+    $bootstrapLink   = "<link href=\"$bootstrapCssUrl\" integrity=\"$bootstrapCssHash\" rel=\"stylesheet\" crossorigin=\"anonymous\">\n";
+    $popperScript    = "<script src=\"$popperUrl\" integrity=\"$popperHash\" crossorigin=\"anonymous\"></script>\n";
+    $bootstrapScript = "<script src=\"$bootstrapScriptUrl\" integrity=\"$bootstrapScriptHash\" crossorigin=\"anonymous\"></script>\n";
+
+    $html  = "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n";
+    $html .= "$bootstrapLink";
+    $html .= "$jqueryScript";
+    $html .= "$popperScript";
+    $html .= "$bootstrapScript";
 
     return $html;
 }
