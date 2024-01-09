@@ -279,14 +279,12 @@ detail-episodeNumber {
     z-index: 1;
     width: 489px;
     border-radius: 10px;
-    /* background-color is in the colors area of this file */
-    /* border-color is in the colors area of this file */
     background-color: transparent;
 }
 
 .film-highlight.active {
     display: block;
-    box-shadow: 0 0 1rem .8rem var(--border-primary);
+    /* box-shadow is in the color area in this file */
 }
 
 .film-highlight.detail-left {
@@ -582,6 +580,7 @@ select { background-color: var(--bg-input-text); color: var(--fg-surface-muted);
 .dropdown-menu > .selected { background: var(--primary); color: var(--fg-surface); }
 .edit-rating-date { color: var(--fg)}
 .film-dropdown-content { background-color: var(--bg-surface); border-color: var(--border-surface); }
+.film-highlight.active { box-shadow: 0 0 1rem .8rem var(--border-primary); }
 .film-line > .film-title > a { color: var(--fg); }
 .footer { border-top-color: var(--footer-border); }
 .rating-history, .rating-history:disabled, .btn-rating-history, .btn-group > .btn-rating-history:not(:first-child) { color: var(--fg-surface-muted); }

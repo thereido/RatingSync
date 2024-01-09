@@ -100,7 +100,7 @@ function renderUserlistFilms() {
         const isEpisode = film.contentType == CONTENT_TV_EPISODE ? true : false;
 
         const filmItemEl = document.createElement("filmItem");
-        const boxHighlight = document.createElement("div");
+        const boxHighlightEl = document.createElement("div");
         const inactivePosterContainerEl = document.createElement("div");
         const activePosterContainerEl = document.createElement("div");
         const dropdownEl = document.createElement("div");
@@ -116,8 +116,8 @@ function renderUserlistFilms() {
         activePosterContainerEl.setAttribute("class", `poster-container has-focus ${episodeClass["userlistfilm"]}`);
         activePosterContainerEl.setAttribute("onMouseLeave", `hideFilmDropdownForUserlist(${filmId}, detailTimer)`);
         activePosterContainerEl.hidden = true;
-        boxHighlight.id = `film-highlight-${filmId}`;
-        boxHighlight.classList.add("film-highlight");
+        boxHighlightEl.id = `film-highlight-${filmId}`;
+        boxHighlightEl.classList.add("film-highlight");
         dropdownEl.id = `film-dropdown-${filmId}`;
         dropdownEl.classList.add("film-dropdown-content");
 
@@ -126,12 +126,12 @@ function renderUserlistFilms() {
             activePosterContainerEl.setAttribute("data-episode", isEpisode ? "true" : "false");
         }
 
+        activePosterContainerEl.appendChild(boxHighlightEl);
         filmItemEl.appendChild(inactivePosterContainerEl);
         filmItemEl.appendChild(activePosterContainerEl);
         userlistRowEl.appendChild(filmItemEl);
 
         const posterEl = renderPoster(film, true, inactivePosterContainerEl);
-        posterEl.appendChild(boxHighlight);
         posterEl.appendChild(dropdownEl);
 
     }
