@@ -107,15 +107,15 @@ poster > table > tbody > tr > td > a {
 }
 
 #userlist-row.background .poster-container.does-not-have-focus {
-    filter: blur(4px);
+    /*filter: blur(4px);
     animation-name: poster-blur;
-    animation-duration: 2s;
+    animation-duration: 2s;*/
 }
 
 #userlist-row:not(background) .poster-container.does-not-have-focus {
-    filter: blur(0px);
+    /*filter: blur(0px);
     animation-name: poster-unblur;
-    animation-duration: 1s;
+    animation-duration: 1s;*/
 }
 
 @keyframes poster-blur {
@@ -272,12 +272,33 @@ detail-episodeNumber {
     border-radius: 25%;
 }
 
+.film-highlight {
+    display: none;
+    position: absolute;
+    top: 0;
+    z-index: 1;
+    width: 489px;
+    border-radius: 10px;
+    /* background-color is in the colors area of this file */
+    /* border-color is in the colors area of this file */
+    background-color: transparent;
+}
+
+.film-highlight.active {
+    display: block;
+    box-shadow: 0 0 1rem .8rem var(--border-primary);
+}
+
+.film-highlight.detail-left {
+    left: -324px;
+}
+
 .film-dropdown-content {
     display: none;
     position: absolute;
     top: 0;
     z-index: 1;
-    width: 334px;
+    width: 339px;
     /* background-color is in the colors area of this file */
     /* border-color is in the colors area of this file */
     margin-bottom: 5px;
@@ -287,13 +308,13 @@ detail-episodeNumber {
 
 .film-dropdown-content.detail-right,
 filmitem.episode .poster-container.detail-left {
-    left: 169px;
+    left: 165px;
     border-radius: 0 var(--radius-poster-dropdown) var(--radius-poster-dropdown) 0;
 }
 
 .film-dropdown-content.detail-left,
 filmitem.episode .poster-container.detail-right {
-    left: -314px;
+    left: -324px;
     border-radius: var(--radius-poster-dropdown) 0 0 var(--radius-poster-dropdown);
 }
 
@@ -706,7 +727,7 @@ detail-episode-rating { color: var(--star); }
     --default-background: var(--highlight);
 }
 
-@media (prefers-color-scheme: disabled) {
+@media (prefers-color-scheme: light) {
     :root {
         --bg: white;
         --bg-surface: #f8f9fa;
