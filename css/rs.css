@@ -267,6 +267,13 @@ detail-episodeNumber {
     width: fit-content;
 }
 
+.poster-container.active poster {
+    position: absolute;
+    z-index: 2;
+    border-radius: 20px;
+    /* background-color is in the colors area of this file */
+}
+
 .userlist-film-episode {
     min-height: auto;
     border-radius: 25%;
@@ -284,6 +291,7 @@ detail-episodeNumber {
 
 .film-highlight.active {
     display: block;
+    /* background-color is in the colors area of this file */
     /* box-shadow is in the color area in this file */
 }
 
@@ -306,13 +314,13 @@ detail-episodeNumber {
 
 .film-dropdown-content.detail-right,
 filmitem.episode .poster-container.detail-left {
-    left: 165px;
+    left: 150px;
     border-radius: 0 var(--radius-poster-dropdown) var(--radius-poster-dropdown) 0;
 }
 
 .film-dropdown-content.detail-left,
 filmitem.episode .poster-container.detail-right {
-    left: -324px;
+    left: -339px;
     border-radius: var(--radius-poster-dropdown) 0 0 var(--radius-poster-dropdown);
 }
 
@@ -580,7 +588,7 @@ select { background-color: var(--bg-input-text); color: var(--fg-surface-muted);
 .dropdown-menu > .selected { background: var(--primary); color: var(--fg-surface); }
 .edit-rating-date { color: var(--fg)}
 .film-dropdown-content { background-color: var(--bg-surface); border-color: var(--border-surface); }
-.film-highlight.active { box-shadow: 0 0 1rem .8rem var(--border-primary); }
+.film-highlight.active { background-color: var(--bg-surface); box-shadow: 0 0 1rem .8rem var(--border-primary); }
 .film-line > .film-title > a { color: var(--fg); }
 .footer { border-top-color: var(--footer-border); }
 .rating-history, .rating-history:disabled, .btn-rating-history, .btn-group > .btn-rating-history:not(:first-child) { color: var(--fg-surface-muted); }
@@ -600,6 +608,7 @@ rating-watched.highlight, rating-watched.watched-on.highlight { color: var(--pri
 .thirdparty-bar > .source-logo-1 > a > imdbScore, .thirdparty-bar > .source-logo-1 > a > tmdbScore { color: var(--fg); }
 .thirdparty-bar > .source-logo-2 > a > imdbScore, .thirdparty-bar > .source-logo-2 > a > tmdbScore { color: var(--fg); }
 .poster-container.has-focus { background-color: var(--bg-surface); border-color: var(--border-surface); }
+.poster-container.active poster { background-color: var(--bg-surface); }
 watchit-btn-container > div > div { background-color: var(--bg-poster-text); color: rgba(120, 120, 120); }
 
 detail-episode { background-color: var(--bg-surface); color: var(--fg-surface-muted); border-color: var(--border-surface); box-shadow: 0 2px 5px var(--shadow-primary); }
