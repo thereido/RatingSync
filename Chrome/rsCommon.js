@@ -1059,9 +1059,9 @@ function renderPoster(film, overlay, parentEl) {
     posterEl.appendChild(tableEl);
     tableEl.appendChild(tableBodyEl);
     tableBodyEl.appendChild(tableRowEl);
-    tableRowEl.appendChild(paddingColumnLeftEl);
+    //tableRowEl.appendChild(paddingColumnLeftEl);
     tableRowEl.appendChild(contentColumnEl);
-    tableRowEl.appendChild(paddingColumnRightEl);
+    //tableRowEl.appendChild(paddingColumnRightEl);
     contentColumnEl.appendChild(linkEl);
     contentColumnEl.appendChild(watchItContainerEl);
     linkEl.appendChild(imageEl);

@@ -30,6 +30,7 @@ function sizeBreakpointCallback() {
         var dropdownEl = document.getElementById("film-dropdown-" + filmId);
         var dropdownClass = "detail-left";
 
+        const highlightBoxEl = document.getElementById("film-highlight-" + filmId);
         const activePosterEl = document.getElementById("poster-focus-in-" + filmId);
         const inactivePosterEl = document.getElementById("poster-focus-out-" + filmId);
         const populatedPosterEl = activePosterEl?.hidden ? inactivePosterEl : activePosterEl;
@@ -45,9 +46,9 @@ function sizeBreakpointCallback() {
 
         dropdownEl.setAttribute("class", "film-dropdown-content " + dropdownClass);
 
-        activePosterEl.classList.remove("detail-left");
-        activePosterEl.classList.remove("detail-right");
+        activePosterEl.classList.remove("detail-left", "detail-right");
         activePosterEl.classList.add(dropdownClass);
+        highlightBoxEl.classList.add(dropdownClass);
     }
 }
 
@@ -99,6 +100,7 @@ function renderUserlistFilms() {
         const isEpisode = film.contentType == CONTENT_TV_EPISODE ? true : false;
 
         const filmItemEl = document.createElement("filmItem");
+        const boxHighlightEl = document.createElement("div");
         const inactivePosterContainerEl = document.createElement("div");
         const activePosterContainerEl = document.createElement("div");
         const dropdownEl = document.createElement("div");
@@ -114,6 +116,8 @@ function renderUserlistFilms() {
         activePosterContainerEl.setAttribute("class", `poster-container has-focus ${episodeClass["userlistfilm"]}`);
         activePosterContainerEl.setAttribute("onMouseLeave", `hideFilmDropdownForUserlist(${filmId}, detailTimer)`);
         activePosterContainerEl.hidden = true;
+        boxHighlightEl.id = `film-highlight-${filmId}`;
+        boxHighlightEl.classList.add("film-highlight");
         dropdownEl.id = `film-dropdown-${filmId}`;
         dropdownEl.classList.add("film-dropdown-content");
 
@@ -122,6 +126,7 @@ function renderUserlistFilms() {
             activePosterContainerEl.setAttribute("data-episode", isEpisode ? "true" : "false");
         }
 
+        activePosterContainerEl.appendChild(boxHighlightEl);
         filmItemEl.appendChild(inactivePosterContainerEl);
         filmItemEl.appendChild(activePosterContainerEl);
         userlistRowEl.appendChild(filmItemEl);
@@ -173,7 +178,11 @@ function showFilmDropdownForUserlist(filmId) {
 
     resizeHeightToMatchElements(activePosterContainerEl, dropdownEl);
 
-    // Blur all other posters to look like they are in the background
+    // Show highlighting for the active film
+    const boxHighlightEl = document.getElementById(`film-highlight-${filmId}`);
+    boxHighlightEl.classList.add("active");
+
+    // Put all other posters into the background
     activePosterContainerEl.classList.add("active");
     document.getElementById(`userlist-row`).classList.add("background");
 }
@@ -213,6 +222,10 @@ function hideFilmDropdownForUserlist(filmId, detailTimer) {
     // Poster might have been resized to match the dropdown. Put it back the
     // default height
     outerBoxEl.removeAttribute("style");
+
+    // Hide highlight
+    const boxHighlight = document.getElementById(`film-highlight-${filmId}`);
+    boxHighlight.classList.remove("active");
 
     // Undo the background style
     document.getElementById("userlist-row").classList.remove("background");

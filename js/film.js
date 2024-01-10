@@ -345,7 +345,9 @@ function buildSeasonLineElement(film) {
 
         // After adding more content make the heights of the dropdown and the poster
         const outerBoxEl = document.getElementById(`poster-focus-in-${filmId}`);
+        const boxHighlightEl = document.getElementById(`film-highlight-${filmId}`);
         resizeHeightToMatchElements(outerBoxEl, dropdownEl);
+        resizeHeightToMatchElements(boxHighlightEl, dropdownEl);
     }
 
     function renderFilmlistItems(userlists, includedListnames, filmId, prefix) {
