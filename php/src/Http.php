@@ -130,7 +130,7 @@ class Http
         $baseUrl = "";
 
         if ($sourceName == Constants::SOURCE_RATINGSYNC) {
-            $baseUrl = Constants::RS_HOST;
+            $baseUrl = Constants::INTERNAL_API_URL;
         } elseif ($sourceName == Constants::SOURCE_IMDB) {
             $baseUrl = "https://www.imdb.com";
         } elseif ($sourceName == Constants::SOURCE_OMDBAPI) {
