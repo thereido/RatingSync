@@ -39,6 +39,8 @@ class Constants
     /* Constants moved to DomainConstants class
      * php.ini include_path must have the path to DomainConstants.php
      */
+
+    // Database
     const DB_HOSTNAME                   = DomainConstants::DB_HOSTNAME;
     const DB_DATABASE                   = DomainConstants::DB_DATABASE;
     const DB_TEST_DATABASE              = DomainConstants::DB_TEST_DATABASE;
@@ -47,11 +49,19 @@ class Constants
     const DB_MODE_STANDARD              = DomainConstants::DB_MODE_STANDARD;
     const DB_MODE_TEST                  = DomainConstants::DB_MODE_TEST;
     const DB_MODE                       = DomainConstants::DB_MODE;
-    const RS_HOST                       = DomainConstants::RS_HOST;
+
+    // RatingSync URLs
+    const APP_URL                       = DomainConstants::APP_URL;
+    const INTERNAL_API_URL              = DomainConstants::INTERNAL_API_URL;
+
+    // API Keys
     const OMDB_API_KEY                  = DomainConstants::OMDB_API_KEY;
     const TMDB_API_KEY                  = DomainConstants::TMDB_API_KEY;
+
+    // Config/Preferences
     const SITE_NAME                     = DomainConstants::SITE_NAME;
     const FAVICON_URL                   = DomainConstants::FAVICON_URL;
+    const DISABLE_REGISTER              = false;
 
     static function basePath()
     {
@@ -80,7 +90,7 @@ class Constants
 
     static function echoJavascriptConstants(): void
     {
-        $jsConstants =  "const RS_URL_BASE = \"" . Constants::RS_HOST . "\";"                    . "\n";
+        $jsConstants =  "const RS_URL_BASE = \"" . Constants::APP_URL . "\";"                    . "\n";
         $jsConstants .= "const RS_URL_API = RS_URL_BASE + \"/php/src/ajax/api.php\";"            . "\n";
         $jsConstants .= "const OMDB_API_KEY  = \"" . Constants::OMDB_API_KEY . "\";"             . "\n";
         $jsConstants .= "const TMDB_API_KEY  = \"" . Constants::TMDB_API_KEY . "\";"             . "\n";
