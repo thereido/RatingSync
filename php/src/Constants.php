@@ -61,7 +61,7 @@ class Constants
     // Config/Preferences
     const SITE_NAME                     = DomainConstants::SITE_NAME;
     const FAVICON_URL                   = DomainConstants::FAVICON_URL;
-    const DISABLE_REGISTER              = false;
+    const DISABLE_REGISTER              = DomainConstants::DISABLE_REGISTER;
 
     static function basePath()
     {

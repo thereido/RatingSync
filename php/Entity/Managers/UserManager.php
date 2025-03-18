@@ -84,7 +84,7 @@ final class UserManager extends EntityManager
         $username = $row["username"];
         $email = $row["email"];
         $enabled = $row["enabled"];
-        $themeId = $row["theme_id"];
+        $themeId = $row["theme_id"]; // FIXME: Validate the key "theme_id" before using it
 
         $enabled = $this->boolFromInt($enabled);
 
