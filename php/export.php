@@ -25,10 +25,16 @@ $pageFooter = getPageFooter();
 if (!empty($username)) {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $source = test_input($_POST["source"]);
+        $format = test_input($_POST["format"]);
 
         // FIXME - input validation
+
+        $exportFormat = ExportFormat::CSV_LETTERBOXD;
+        if ($format == "imdb") {
+            $exportFormat = ExportFormat::CSV_IMDB;
+        }
     
-        $filename = \RatingSync\export($username, $source, $format);
+        $filename = \RatingSync\export($username, $source, $exportFormat);
         if (empty($filename)) {
             $success = false;
         } else {
@@ -82,10 +88,11 @@ function test_input($data)
       </div> <!-- /row -->
             
       <div class="row">
+        <input type="hidden" name="source" value="ratingsync">
         <div class="col-lg-offset-1 col-lg-5">
-          <label>Export from</label>
-          <label class="radio-inline"><input type="radio" name="source" value="ratingsync" checked>RatingSync</label>
-          <label class="radio-inline"><input type="radio" name="source" value="imdb">IMDb</label>
+          <label>Export format</label>
+          <label class="radio-inline"><input type="radio" name="format" value="letterboxd" checked>Letterboxd</label>
+          <label class="radio-inline"><input type="radio" name="format" value="imdb">IMDb</label>
         </div><!-- /col -->
       </div><!-- /row -->
       

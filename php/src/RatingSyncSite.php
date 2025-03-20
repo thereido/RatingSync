@@ -164,7 +164,6 @@ class RatingSyncSite extends \RatingSync\SiteRatings
      */
     public function getRatings($limitPages = null, $beginPage = 1, $details = false, $refreshCache = Constants::USE_CACHE_NEVER)
     {
-        $refreshCache = Constants::USE_CACHE_NEVER;
         $films = array();
 
         $orderBy = "ORDER BY ";
@@ -187,7 +186,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             $film = Film::getFilmFromDb($filmId, $this->username);
             $films[] = $film;
         }
-        
+
         return $films;
     }
 
@@ -399,9 +398,9 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $iter = (new ArrayObject($this->contentTypeFilter))->getIterator();
         while ($iter->valid()) {
 
-            $key = $iter->key();
-            if (Film::validContentType($key) && $iter->current() === false) {
-                $filteredOut .= $comma . "'$key'";
+            $current = $iter->current();
+            if (Film::validContentType($current)) {
+                $filteredOut .= $comma . "'$current'";
                 $comma = ", ";
             }
 

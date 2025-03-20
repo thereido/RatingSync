@@ -1,6 +1,9 @@
 <?php
 namespace RatingSync;
 
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "ExternalTracker" .DIRECTORY_SEPARATOR. "ExternalTracker.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "ExternalTracker" .DIRECTORY_SEPARATOR. "ImdbTracker.php";
+require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "ExternalTracker" .DIRECTORY_SEPARATOR. "Letterboxd.php";
 require_once "Site.php";
 
 abstract class SiteRatings extends \RatingSync\Site
@@ -257,32 +260,37 @@ abstract class SiteRatings extends \RatingSync\Site
     /**
      * Get the account's ratings from the website and write to a file/database
      *
-     * @param string     $format   File format to write to (or database). Currently only XML.
-     * @param string     $filename Write to a new (overwrite) file in the output directory
-     * @param bool|false $detail   False brings only rating data. True also brings full detail (can take a long time).
-     * @param int|0      $useCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
+     * @param ExportFormat $format File format to write to (or database). Currently only XML.
+     * @param string $filename Write to a new (overwrite) file in the output directory
+     * @param bool $detail False brings only rating data. True also brings full detail (can take a long time).
+     * @param int|$useCache 0      $useCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
      *
      * @return true for success, false for failure
      */
-    public function exportRatings($format, $filename, $detail = false, $useCache = Constants::USE_CACHE_NEVER)
+    public function exportRatings(ExportFormat $format, string $filename, bool $detail = false, $useCache = Constants::USE_CACHE_NEVER): bool
     {
-        $films = $this->getRatings(null, 1, $detail, $useCache);
-
         $filename =  Constants::outputFilePath() . $filename;
         $fp = fopen($filename, "w");
 
         $success = true;
         $outputAsStr = "";
-        if (empty($format) || $format == "csv") {
-            $outputAsStr = $this->filmsAsCsv($films);
+        if (empty($format) || $format == ExportFormat::CSV_LETTERBOXD) {
+            $outputAsStr = Letterboxd::exportRatingsCsv(site: $this);
+        }
+        else if ($format == ExportFormat::CSV_IMDB) {
+//        $films = $this->getRatings(null, 1, $detail, $useCache);
+            $films = $this->getRatings(10, 1, $detail, $useCache);
+            $outputAsStr = ImdbTracker::exportCsv($films);
         }
         else {
+            $films = $this->getRatings(null, 1, $detail, $useCache);
             $outputAsStr = $this->filmsAsXml($films);
         }
 
         if ($success && fwrite($fp, $outputAsStr) !== FALSE) {
             $success = true;
         }
+
         fclose($fp);
         
         return $success;
@@ -299,35 +307,6 @@ abstract class SiteRatings extends \RatingSync\Site
         $xml->addChild('count', $filmCount);
 
         return $xml->asXml();
-    }
-
-    public function filmsAsCsv($films)
-    {
-        $csv = "imdbID,Title,Year,Rating10,WatchedDate" . "\n"; // letterboxd format
-        foreach ($films as $film) {
-            if ($film->getContentType() == Film::CONTENT_TV_EPISODE) {
-                continue;
-            }
-            $title = $film->getTitle();
-            $year = $film->getYear();
-            $imdbId = $film->getUniqueName(Constants::SOURCE_IMDB);
-            $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
-            if (empty($rating)) {
-                logDebug("Rating empty for $title");
-                continue;
-            }
-            $ratingScore = $rating->getYourScore();
-            $ratingDateStr = $rating->getYourRatingDate()->format("Y-m-d");
-
-            if ($imdbId == null) {
-                $imdbId = "";
-            }
-
-            // Write a line for this film
-            $csv .= "$imdbId,\"$title\",$year,$ratingScore,$ratingDateStr" . "\n";
-        }
-
-        return $csv;
     }
 
     /**

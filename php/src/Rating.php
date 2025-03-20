@@ -125,7 +125,7 @@ class Rating
     /**
      * The day you rated it
      *
-     * @return string
+     * @return DateTime
      */
     public function getYourRatingDate()
     {
@@ -856,6 +856,16 @@ class Rating
         }
 
         return $success;
+    }
+
+    public static function compareByRatingDate($a, $b): int
+    {
+        $dateA = $a->getYourRatingDate();
+        $dateB = $b->getYourRatingDate();
+        if ($dateA == $dateB) {
+            return 0;
+        }
+        return ($dateA < $dateB) ? -1 : 1;
     }
 
     private static function createAndSaveToDb($sourceName, $username, $filmId, SetRatingScoreValue $score, bool $watched, $date, $archiveIt = false): bool

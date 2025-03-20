@@ -17,6 +17,7 @@ require_once "src/Imdb.php";
 require_once "src/OmdbApi.php";
 require_once "src/TmdbApi.php";
 require_once "src/Xfinity.php";
+require_once "src/ExportFormat.php";
 require_once "src/RatingSyncSite.php";
 require_once "src/SessionUtility.php";
 require_once "PDO/DbConn.php";
@@ -40,18 +41,18 @@ function import($username, $filename, $format)
 
 /**
  * Export ratings from $source and write to a new file.  The file
-   is written to the server.
+ * is written to the server.
  *
  * @param string $username Account's ratings exported
  * @param string $source   IMDb, Jinni, etc Constants::SOURCE_***
- * @param string $format   XML
+ * @param ExportFormat $format
  * @param string $filename Output file name written to ./output/$filename
  *
  * @return bool true/false - success/fail
  */
-function export($username, $source, $format)
+function export($username, $source, ExportFormat $format)
 {
-    $filename = "ratings.csv";
+    $filename = "BagoMovie_" . $username . "_ratings_" . $format->toString() . "." . $format->getExtension();
     $site = null;
 
     if ($source == "ratingsync") {
