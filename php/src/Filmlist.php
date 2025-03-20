@@ -27,11 +27,6 @@ require_once "Constants.php";
  */
 class Filmlist
 {
-    const SORT_POSITION     = 'Position';
-    const SORT_ADDED        = 'Added';
-    const SORTDIR_ASC       = 'ASC';
-    const SORTDIR_DESC      = 'DESC';
-
     protected $listname;
     protected $username;
     protected $parentListname;
@@ -55,26 +50,8 @@ class Filmlist
         $this->username = $username;
         $this->listname = $listname;
         $this->parentListname = $parentListname;
-        $this->sort = static::SORT_POSITION;
-        $this->sortDirection = static::SORTDIR_DESC;
-    }
-
-    public static function validSort($sort)
-    {
-        $validSorts = array(static::SORT_POSITION, static::SORT_ADDED);
-        if (in_array($sort, $validSorts)) {
-            return true;
-        }
-        return false;
-    }
-
-    public static function validSortDirection($sortDirection)
-    {
-        $validSortDirection = array(static::SORTDIR_ASC, static::SORTDIR_DESC);
-        if (in_array($sortDirection, $validSortDirection)) {
-            return true;
-        }
-        return false;
+        $this->sort = ListSortField::position;
+        $this->sortDirection = SqlSortDirection::descending;
     }
 
     /**
@@ -139,16 +116,16 @@ class Filmlist
         $this->username = $name;
     }
 
-    public function setSort($sort)
+    public function setSort(ListSortField $sort): void
     {
-        if (! $this->validSort($sort) ) {
-            throw new \InvalidArgumentException(__FUNCTION__." Invalid sort param '$sort'");
+        if (! $sort->validated() ) {
+            throw new \InvalidArgumentException(__FUNCTION__." Invalid sort param '$sort->value'");
         }
 
         $this->sort = $sort;
     }
 
-    public function getSort()
+    public function getSort(): ListSortField
     {
         return $this->sort;
     }
@@ -157,9 +134,9 @@ class Filmlist
     {
         $column = "";
 
-        if ($this->getSort() == static::SORT_POSITION) {
+        if ($this->getSort() == ListSortField::position) {
             $column = "filmlist.next_film_id";
-        } elseif ($this->getSort() == static::SORT_ADDED) {
+        } elseif ($this->getSort() == ListSortField::modified) {
             $column = "filmlist.create_ts";
         }
 
@@ -168,14 +145,14 @@ class Filmlist
 
     public function setSortDirection($sortDirection)
     {
-        if (! $this->validSortDirection($sortDirection) ) {
-            throw new \InvalidArgumentException(__FUNCTION__." Invalid sortDirection param '$sortDirection'");
+        if (! $sortDirection->validated() ) {
+            throw new \InvalidArgumentException(__FUNCTION__." Invalid sortDirection param '$sortDirection->value'");
         }
 
         $this->sortDirection = $sortDirection;
     }
 
-    public function getSortDirection()
+    public function getSortDirection(): SqlSortDirection
     {
         return $this->sortDirection;
     }
@@ -749,7 +726,7 @@ class Filmlist
         }
 
         $sortedFilmIds = null;
-        if ($this->getSort() == static::SORT_POSITION) {
+        if ($this->getSort() == ListSortField::position) {
             $sortedFilmIds = $this->getItemsByNextId($this->getSortDirection());
         } else {
             $sortedFilmIds = $this->getItemsByCreate($this->getSortDirection());
@@ -1135,7 +1112,7 @@ class Filmlist
             $nextFilmId = $filmId;
         }
             
-        if ($sortDirection == static::SORTDIR_ASC) {
+        if ($sortDirection == SqlSortDirection::ascending) {
             $orderedItems = array_reverse($orderedItems);
         }
 
@@ -1144,7 +1121,7 @@ class Filmlist
 
     public function getItemsByCreate($sortDirection) {
         if (empty($sortDirection)) {
-            $sortDirection = static::SORTDIR_ASC;
+            $sortDirection = SqlSortDirection::ascending;
         }
         $username = $this->getUsername();
         $db = getDatabase();
@@ -1162,5 +1139,28 @@ class Filmlist
         }
 
         return $items;
+    }
+}
+
+enum ListSortField: string {
+    case position   = 'Position';
+    case modified   = 'Added';
+    public function validated(): bool {
+        return in_array($this, [self::position, self::modified]);
+    }
+
+    static public function convert(string $sortField): ListSortField | null {
+        $result =  ListSortField::tryFrom($sortField);
+
+        if ($result === null) {
+            if ( $sortField == 'pos' ) {
+                $result = ListSortField::position;
+            }
+            else if ( $sortField == 'mod' ) {
+                $result = ListSortField::modified;
+            }
+        }
+
+        return $result;
     }
 }

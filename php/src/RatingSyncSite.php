@@ -17,10 +17,6 @@ require_once "SiteRatings.php";
 class RatingSyncSite extends \RatingSync\SiteRatings
 {
     const RATINGSYNC_DATE_FORMAT = "n/j/y";
-    const SORT_RATING_DATE  = 'yourRatingDate';
-    const SORT_YOUR_SCORE   = 'yourScore';
-    const SORTDIR_ASC       = 'ASC';
-    const SORTDIR_DESC      = 'DESC';
 
     /** Content Type filter
      * Keys are the content type. Values are boolean.
@@ -61,28 +57,10 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $this->http = new Http($this->sourceName, $username);
         $this->dateFormat = self::RATINGSYNC_DATE_FORMAT;
         $this->maxCriticScore = 100;
-        $this->sort = static::SORT_RATING_DATE;
-        $this->sortDirection = static::SORTDIR_DESC;
+        $this->sort = RatingSortField::date;
+        $this->sortDirection = SqlSortDirection::descending;
         $this->clearContentTypeFilter();
         $this->clearListFilter();
-    }
-
-    public static function validSort($sort)
-    {
-        $validSorts = array(static::SORT_RATING_DATE, static::SORT_YOUR_SCORE);
-        if (in_array($sort, $validSorts)) {
-            return true;
-        }
-        return false;
-    }
-
-    public static function validSortDirection($sortDirection)
-    {
-        $validSortDirection = array(static::SORTDIR_ASC, static::SORTDIR_DESC);
-        if (in_array($sortDirection, $validSortDirection)) {
-            return true;
-        }
-        return false;
     }
     
     /**
@@ -168,9 +146,9 @@ class RatingSyncSite extends \RatingSync\SiteRatings
 
         $orderBy = "ORDER BY ";
         if (!empty($this->getSort())) {
-            $orderBy .= $this->getSort() . " " . $this->getSortDirection() . ", ";
+            $orderBy .= $this->getSort()->value . " " . $this->getSortDirection()->value . ", ";
         }
-        $orderBy .= "rating.ts " . $this->getSortDirection();
+        $orderBy .= "rating.ts " . $this->getSortDirection()->value;
 
         $limit = "";
         if (!empty($limitPages)) {
@@ -432,30 +410,30 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         return $commaDelimitedLists;
     }
 
-    public function setSort($sort)
+    public function setSort(RatingSortField $field): void
     {
-        if (! $this->validSort($sort) ) {
-            throw new \InvalidArgumentException(__FUNCTION__." Invalid sort param '$sort'");
+        if (! $field->validated() ) {
+            throw new \InvalidArgumentException(__FUNCTION__." Invalid sort param '$field->value'");
         }
 
-        $this->sort = $sort;
+        $this->sort = $field;
     }
 
-    public function getSort()
+    public function getSort(): RatingSortField
     {
         return $this->sort;
     }
 
-    public function setSortDirection($sortDirection)
+    public function setSortDirection(SqlSortDirection $direction): void
     {
-        if (! $this->validSortDirection($sortDirection) ) {
-            throw new \InvalidArgumentException(__FUNCTION__." Invalid sortDirection param '$sortDirection'");
+        if (! $direction->validated() ) {
+            throw new \InvalidArgumentException(__FUNCTION__." Invalid sortDirection param '$direction->value'");
         }
 
-        $this->sortDirection = $sortDirection;
+        $this->sortDirection = $direction;
     }
 
-    public function getSortDirection()
+    public function getSortDirection(): SqlSortDirection
     {
         return $this->sortDirection;
     }
@@ -644,5 +622,52 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
 
         return $exists;
+    }
+}
+
+enum RatingSortField: string {
+    case date   = 'yourRatingDate';
+    case score  = 'yourScore';
+    public function validated(): bool {
+        return in_array($this, [self::date, self::score]);
+    }
+
+    static public function convert(string $sortField): RatingSortField | null {
+        $result = RatingSortField::tryFrom($sortField);
+
+        if ($result === null) {
+            if ($sortField == "date") {
+                $result = RatingSortField::date;
+            }
+            else if ($sortField == "score") {
+                $result = RatingSortField::score;
+            }
+        }
+
+        return $result;
+    }
+}
+
+enum SqlSortDirection: string {
+    case ascending   = 'ASC';
+    case descending  = 'DESC';
+    public function validated(): bool {
+        return in_array($this, [self::ascending, self::descending]);
+    }
+
+    static public function convert(string $sortField): SqlSortDirection | null {
+        $result = SqlSortDirection::tryFrom($sortField);
+
+        if ($result === null) {
+            $sortField = strtoupper($sortField);
+            if ($sortField == "ASC") {
+                $result = SqlSortDirection::ascending;
+            }
+            else if ($sortField == "DESC") {
+                $result = SqlSortDirection::descending;
+            }
+        }
+
+        return $result;
     }
 }

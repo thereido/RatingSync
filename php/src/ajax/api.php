@@ -440,21 +440,11 @@ function api_getRatings($username)
         $beginPage = 1;
     }
 
-    if (strtolower($sort) == "date") {
-        $sort = RatingSyncSite::SORT_RATING_DATE;
-    } elseif (strtolower($sort) == "score") {
-        $sort = RatingSyncSite::SORT_YOUR_SCORE;
-    } elseif (!RatingSyncSite::validSort($sort)) {
-        $sort = RatingSyncSite::SORT_RATING_DATE;
-    }
+    $sort = RatingSortField::convert($sort);
+    if ( $sort == null ) { $sort = RatingSortField::date; }
 
-    if (strtolower($sortDirection) == "desc") {
-        $sortDirection = RatingSyncSite::SORTDIR_DESC;
-    } elseif (strtolower($sortDirection) == "asc") {
-        $sortDirection = RatingSyncSite::SORTDIR_ASC;
-    } elseif (!RatingSyncSite::validSortDirection($sortDirection)) {
-        $sortDirection = RatingSyncSite::SORTDIR_DESC;
-    }
+    $sortDirection = SqlSortDirection::convert($sortDirection);
+    if ( $sortDirection == null ) { $sortDirection = SqlSortDirection::descending; }
 
     // Filter by other lists. Return only films in this list that
     // are also in at least one of the lists being used with the filter
@@ -537,21 +527,11 @@ function api_getFilmsByList($username)
         $beginPage = 1;
     }
 
-    if (strtolower($sort) == "pos") {
-        $sort = Filmlist::SORT_POSITION;
-    } elseif (strtolower($sort) == "mod") {
-        $sort = Filmlist::SORT_ADDED;
-    } elseif (!Filmlist::validSort($sort)) {
-        $sort = Filmlist::SORT_POSITION;
-    }
+    $sort = ListSortField::convert($sort);
+    if ( $sort == null ) { $sort = ListSortField::position; }
 
-    if (strtolower($sortDirection) == "desc") {
-        $sortDirection = Filmlist::SORTDIR_DESC;
-    } elseif (strtolower($sortDirection) == "asc") {
-        $sortDirection = Filmlist::SORTDIR_ASC;
-    } elseif (!Filmlist::validSortDirection($sortDirection)) {
-        $sortDirection = Filmlist::SORTDIR_DESC;
-    }
+    $sortDirection = SqlSortDirection::convert($sortDirection);
+    if ( $sortDirection == null ) { $sortDirection = SqlSortDirection::descending; }
 
     // Filter by other lists. Return only films in this list that
     // are also in at least one of the lists being used with the filter

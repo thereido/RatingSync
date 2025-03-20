@@ -33,11 +33,9 @@ class Letterboxd implements ExternalTracker
 
     static public function exportRatingsCsv(SiteRatings $site): string
     {
-        $site->setSort(RatingSyncSite::SORT_RATING_DATE);
-        $site->setSortDirection(RatingSyncSite::SORTDIR_DESC);
+        $site->setSort(field: RatingSortField::date);
+        $site->setSortDirection(direction: SqlSortDirection::descending);
         //$site->setListFilter($filterListsArr);
-        //$site->setGenreFilter($filterGenresArr);
-        //$site->setGenreFilterMatchAny($filterGenresMatchAny);
         $site->setContentTypeFilter([Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE]);
 
         $films = $site->getRatings(limitPages: 10, beginPage: 1, details: false, refreshCache: Constants::USE_CACHE_NEVER);
