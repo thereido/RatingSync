@@ -122,8 +122,6 @@ function htmlFromTheme( ThemeView $theme ): string
         </div>
     </form>
 
-    <p><a href="../export.php"><button class="btn btn-primary">Export</button></a></p>
-
     <p><a href="../Login/logout.php"><button class="btn btn-primary">Logout</button></a></p>
 
 </div>

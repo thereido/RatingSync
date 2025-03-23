@@ -168,6 +168,7 @@ function getPageHeader($forListnameParam = false, $listnames = null): string {
     $html .= '        </a>'."\n";
     $html .= '        <div class="dropdown-menu" aria-labelledby="navbarSettingsDropdown">'."\n";
     $html .= '          <a class="dropdown-item" href="/php/account/myAccount.php">'.$username.'</a>'."\n";
+    $html .= '          <a class="dropdown-item" href="/php/export.php">Export</a>'."\n";
     $html .= '          <a class="dropdown-item" href="/php/Login/logout.php">Sign Out</a>'."\n";
     $html .= '        </div>'."\n";
     $html .= '      </li>'."\n";
