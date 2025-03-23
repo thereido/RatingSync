@@ -34,12 +34,7 @@ if (!empty($username)) {
             $exportFormat = ExportFormat::CSV_IMDB;
         }
     
-        $filename = \RatingSync\export($username, $source, $exportFormat);
-        if (empty($filename)) {
-            $success = false;
-        } else {
-            $success = true;
-        }
+        $success = \RatingSync\export($username, $exportFormat);
     }
 }
 
@@ -90,7 +85,7 @@ function test_input($data)
       <div class="row">
         <input type="hidden" name="source" value="ratingsync">
         <div class="col-lg-offset-1 col-lg-5">
-          <label>Export format</label>
+          <label>Export format:&nbsp;&nbsp;</label>
           <label class="radio-inline"><input type="radio" name="format" value="letterboxd" checked>Letterboxd</label>
           <label class="radio-inline"><input type="radio" name="format" value="imdb">IMDb</label>
         </div><!-- /col -->

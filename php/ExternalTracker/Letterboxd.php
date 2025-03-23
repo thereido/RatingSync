@@ -1,54 +1,68 @@
 <?php
 namespace RatingSync;
 
-class Letterboxd implements ExternalTracker
+class Letterboxd// implements ExternalTracker
 {
     // https://letterboxd.com/about/importing-data/
     // tmdbID,imdbID,Title,Year,Rating10,WatchedDate,Rewatch
 
-    static public function exportCsv(array $films): string
-    {
-        return self::exportFilmsCsv(films: $films);
-    }
+    private const EXPORT_BATCH_SIZE = 1000;
 
-    static private function csvHeader(): string
+    static public function exportRatingsCsv(RatingSyncSite $site, string $username): array
     {
-        return self::csvRatingsHeader();
-    }
 
-    static public function exportFilmsCsv(array $films = null): string
-    {
-        if ($films == null) {
-            $site = new RatingSyncSite();
-        }
-        $csv = Letterboxd::csvHeader();
-        foreach ($films as $film) {
-            if ($film->getContentType() == Film::CONTENT_FILM) {
-                $csv .= Letterboxd::csvRatingsRows(film: $film);
-            }
-        }
+        logDebug("Beginning export of ratings for $username in Letterboxd format");
 
-        return $csv;
-    }
-
-    static public function exportRatingsCsv(SiteRatings $site): string
-    {
         $site->setSort(field: RatingSortField::date);
         $site->setSortDirection(direction: SqlSortDirection::descending);
         //$site->setListFilter($filterListsArr);
         $site->setContentTypeFilter([Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE]);
 
-        $films = $site->getRatings(limitPages: 10, beginPage: 1, details: false, refreshCache: Constants::USE_CACHE_NEVER);
+        $batches            = [];
+        $processedFilmIds   = [];
+        $progressCount      = 0;
+        $batchCount         = 0;
+        $batchCsv           = Letterboxd::csvRatingsHeader();
 
-        $csv = Letterboxd::csvRatingsHeader();
+        $ratings            = $site->getRatings();
+        $lastRating         = $ratings[count($ratings)-1];
 
-        foreach ($films as $film) {
-            if ($film->getContentType() == Film::CONTENT_FILM) {
-                $csv .= Letterboxd::csvRatingsRows(film: $film);
+        foreach ($ratings as $rating) {
+
+            if ( in_array($rating->getFilmId(), $processedFilmIds) ) {
+                continue;
             }
+
+            try {
+                $film = Film::getFilmFromDb($rating->getFilmId(), username: $username);
+            } catch (\Exception $e) {
+                logDebug("Error getting film from db. FilmId=" . $rating->getFilmId() . " batchCount=$batchCount");
+                continue;
+            }
+
+            if ($film->getContentType() != Film::CONTENT_FILM) {
+                logDebug("Skipping non-movie. FilmId=" . $rating->getFilmId() . " batchCount=$batchCount");
+                continue;
+            }
+
+            $batchCsv           .= Letterboxd::csvRatingsRows(film: $film);
+            $batchCount         += 1 + count($film->getSource(Constants::SOURCE_RATINGSYNC)->getArchive());
+            $processedFilmIds[] = $film->getId();
+
+            if ( $batchCount >= self::EXPORT_BATCH_SIZE || $rating->equals($lastRating) ) {
+
+                $batches[]      = $batchCsv;
+                $progressCount  += $batchCount;
+
+                $batchCsv           = Letterboxd::csvRatingsHeader();
+                $batchCount         = 0;
+            }
+
         }
 
-        return $csv;
+        logDebug("Exported a total of $progressCount of " . count($ratings) . " ratings in " . count($batches) . " batches\n");
+
+        return $batches;
     }
 
     static private function csvRatingsHeader(): string
@@ -71,6 +85,11 @@ class Letterboxd implements ExternalTracker
         $rating                 = $film->getRating(Constants::SOURCE_RATINGSYNC);
         $inactiveRatings        = $film->getSource(Constants::SOURCE_RATINGSYNC)->getArchive();
         $currentRatingRewatch   = count($inactiveRatings) > 0;
+
+        if ( $tmdbId == null ) {
+            logDebug("TMDB ID empty for id=" . $film->getId() . " $title ($year)");
+            return $csv;
+        }
 
         if ( count($inactiveRatings) > 0 ) {
 

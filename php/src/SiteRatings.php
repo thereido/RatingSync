@@ -95,7 +95,7 @@ abstract class SiteRatings extends \RatingSync\Site
      *
      * @return array of Film
      */
-    public function getRatings($limitPages = null, $beginPage = 1, $details = false, $refreshCache = Constants::USE_CACHE_NEVER)
+    public function getRatedFilms($limitPages = null, $beginPage = 1, $details = false, $refreshCache = Constants::USE_CACHE_NEVER)
     {
         $films = array();
         $args = array('pageIndex' => $beginPage);
@@ -255,45 +255,6 @@ abstract class SiteRatings extends \RatingSync\Site
         }
         
         $film->setRating($rating);
-    }
-
-    /**
-     * Get the account's ratings from the website and write to a file/database
-     *
-     * @param ExportFormat $format File format to write to (or database). Currently only XML.
-     * @param string $filename Write to a new (overwrite) file in the output directory
-     * @param bool $detail False brings only rating data. True also brings full detail (can take a long time).
-     * @param int|$useCache 0      $useCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
-     *
-     * @return true for success, false for failure
-     */
-    public function exportRatings(ExportFormat $format, string $filename, bool $detail = false, $useCache = Constants::USE_CACHE_NEVER): bool
-    {
-        $filename =  Constants::outputFilePath() . $filename;
-        $fp = fopen($filename, "w");
-
-        $success = true;
-        $outputAsStr = "";
-        if (empty($format) || $format == ExportFormat::CSV_LETTERBOXD) {
-            $outputAsStr = Letterboxd::exportRatingsCsv(site: $this);
-        }
-        else if ($format == ExportFormat::CSV_IMDB) {
-//        $films = $this->getRatings(null, 1, $detail, $useCache);
-            $films = $this->getRatings(10, 1, $detail, $useCache);
-            $outputAsStr = ImdbTracker::exportCsv($films);
-        }
-        else {
-            $films = $this->getRatings(null, 1, $detail, $useCache);
-            $outputAsStr = $this->filmsAsXml($films);
-        }
-
-        if ($success && fwrite($fp, $outputAsStr) !== FALSE) {
-            $success = true;
-        }
-
-        fclose($fp);
-        
-        return $success;
     }
 
     public function filmsAsXml($films)

@@ -1,25 +1,43 @@
 <?php
 namespace RatingSync;
 
-class ImdbTracker implements ExternalTracker
+class ImdbTracker// implements ExternalTracker
 {
 
-    static public function exportCsv(array $films): string
+    static public function exportRatingsCsv(RatingSyncSite $site, string $username): string
     {
-        return self::exportRatingsCsv(films: $films);
-    }
 
-    static private function csvHeader(): string
-    {
-        return self::csvRatingsHeader();
-    }
+        logDebug("Beginning export of ratings for $username in IMDb format");
 
-    static public function exportRatingsCsv(array $films): string
-    {
-        $csv = self::csvRatingsHeader();
-        foreach ($films as $film) {
-            $csv .= self::csvRatingsRows(film: $film);
+        $exportedRatingCount    = 0;
+        $exportedFilmCount      = 0;
+        $processedFilmIds       = [];
+        $csv                    = self::csvRatingsHeader();
+
+        $ratings                = $site->getRatings();
+
+        foreach ($ratings as $rating) {
+
+            if ( in_array($rating->getFilmId(), $processedFilmIds) ) {
+                continue;
+            }
+
+            try {
+                $film = Film::getFilmFromDb($rating->getFilmId(), username: $username);
+            } catch (\Exception $e) {
+                logDebug("Error getting film from db. FilmId=" . $rating->getFilmId());
+                continue;
+            }
+
+            $exportedThisFilm = self::csvRatingRow(film: $film, csv: $csv);
+            $processedFilmIds[] = $film->getId();
+
+            $exportedRatingCount    += $exportedThisFilm ? 1 : 0;
+            $exportedFilmCount      += $exportedThisFilm ? 1 : 0;
+
         }
+
+        logDebug("Exported a total of $exportedRatingCount ratings for $exportedFilmCount/" . count($processedFilmIds) . " films the user rated\n");
 
         return $csv;
     }
@@ -29,38 +47,36 @@ class ImdbTracker implements ExternalTracker
         return "Position,Const,Created,Modified,Description,Title,URL,Title Type,IMDb Rating,Runtime (mins),Year,Genres,Num Votes,Release Date,Directors,Your Rating,Date Rated" . "\n";
     }
 
-    static private function csvRatingsRows(Film $film): string
+    static private function csvRatingRow(Film $film, string &$csv): bool
     {
-
-        $csv = "";
 
         $imdbId     = $film->getUniqueName(Constants::SOURCE_IMDB);
         $title      = $film->getTitle();
         $year       = $film->getYear();
-        $titleType  = ImdbFilm::titleType( $film->getContentType() );
         $rating     = $film->getRating(Constants::SOURCE_RATINGSYNC);
 
         if ($imdbId == null) {
-            $tmdbId = $film->getUniqueName(Constants::SOURCE_TMDBAPI);
-            logDebug("IMDb ID empty for $title (tmdbId=$tmdbId)");
-            return $csv;
+            logDebug("Skipping IMDB ID empty for $title");
+            return 0;
         }
 
-        if ( $titleType == null ) {
-            logDebug("Unknown film type (" . $film->getContentType() .") for $title");
-            return $csv;
+        $contentType = $film->getContentType();
+        if ( $contentType == null ) {
+            logDebug("Skipping unknown film type (" . $film->getContentType() .") for $title");
+            return false;
         }
+        $titleType  = ImdbFilm::titleType( $contentType );
 
         if (empty($rating)) {
-            logDebug("Rating empty for $title");
-            return $csv;
+            logDebug("Skipping rating empty for $title");
+            return false;
         }
 
         // Write a line for this film
         $data = new ImdbFilm(imdbId: $imdbId, title: $title, year: $year, mediaType: $titleType, rating: $rating);
         $csv .= $data->csvRatingsRow();
 
-        return $csv;
+        return true;
     }
 
 }

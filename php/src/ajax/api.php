@@ -489,7 +489,7 @@ function api_getRatings($username)
     $site->setGenreFilter($filterGenresArr);
     $site->setGenreFilterMatchAny($filterGenresMatchAny);
     $site->setContentTypeFilter($filterContentTypesArr);
-    $films = $site->getRatings($pageSize, $beginPage);
+    $films = $site->getRatedFilms($pageSize, $beginPage);
     $totalRatings = $site->countRatings();
     
     $response = '{';

@@ -40,34 +40,37 @@ function import($username, $filename, $format)
 }
 
 /**
- * Export ratings from $source and write to a new file.  The file
+ * Export a username's ratings to a new file.  The file
  * is written to the server.
  *
  * @param string $username Account's ratings exported
- * @param string $source   IMDb, Jinni, etc Constants::SOURCE_***
  * @param ExportFormat $format
- * @param string $filename Output file name written to ./output/$filename
  *
  * @return bool true/false - success/fail
  */
-function export($username, $source, ExportFormat $format)
+function export(string $username, ExportFormat $format): bool
 {
-    $filename = "BagoMovie_" . $username . "_ratings_" . $format->toString() . "." . $format->getExtension();
-    $site = null;
+    $filename   = "BagoMovie_" . $username . "_ratings_" . $format->toString();
+    $site       = new RatingSyncSite($username);
 
-    if ($source == "ratingsync") {
-        $site = new RatingSyncSite($username);
-    } elseif ($source == "imdb") {
-        $site = new Imdb($username);
-    } else {
-        return "";
+    return $site->exportRatings($format, $filename, true);
+}
+
+function writeFile(string $content, string $filename, string $extension, int $fileNumber = -1): bool
+{
+    $addFileNumber  = $fileNumber >= 0 ? "_" . $fileNumber : "";
+    $filename       = $filename . $addFileNumber . "." . $extension;
+    $success        = false;
+
+    $fp             = fopen($filename, "w");
+
+    if ( fwrite($fp, $content) !== FALSE ) {
+        $success = true;
     }
 
-    if ($site->exportRatings($format, $filename, true)) {
-        return $filename;
-    } else {
-        return "";
-    }
+    fclose($fp);
+
+    return $success;
 }
 
 function getDatabase($mode = Constants::DB_MODE)

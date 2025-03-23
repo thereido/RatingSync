@@ -140,7 +140,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
      *
      * @return array of Film
      */
-    public function getRatings($limitPages = null, $beginPage = 1, $details = false, $refreshCache = Constants::USE_CACHE_NEVER)
+    public function getRatedFilms($limitPages = null, $beginPage = 1, $details = false, $refreshCache = Constants::USE_CACHE_NEVER): array
     {
         $films = array();
 
@@ -168,17 +168,52 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         return $films;
     }
 
-    public function countRatings() {
+    /**
+     * @param int|null $limit
+     * @param int $offset
+     * @return array
+     */
+    public function getRatings(int $limit = null, int $offset = 1): array {
+
+        $ratings = array();
+
+        $orderBy = "ORDER BY ";
+        if (!empty($this->getSort())) {
+            $orderBy .= $this->getSort()->value . " " . $this->getSortDirection()->value . ", ";
+        }
+        $orderBy .= "rating.ts " . $this->getSortDirection()->value;
+
+        if ( $limit !== null ) {
+            $limit = "LIMIT $offset, $limit";
+        }
+
         $db = getDatabase();
-        $query = $this->getRatingsQuery("count(DISTINCT rating.film_id) as count");
+        $query = $this->getRatingsQuery("*", $orderBy, $limit);
         $result = $db->query($query);
-        $row = $result->fetch();
-        
-        return $row["count"];
+
+        foreach ($result->fetchAll() as $row) {
+            $rating = new Rating($this->sourceName);
+            $rating->initFromDbRow($row);
+            $ratings[] = $rating;
+        }
+
+        return $ratings;
     }
 
-    protected function getRatingsQuery($selectCols, $orderBy = "", $limit = "") {
+    public function countRatings(bool $includeInactive = false): int {
+
+        $db = getDatabase();
+        $query = $this->getRatingsQuery("count(rating.film_id) as count", "", "", $includeInactive);
+        $result = $db->query($query);
+        $row = $result->fetch();
+
+        return intval($row["count"]);
+    }
+
+    protected function getRatingsQuery($selectCols, $orderBy = "", $limit = "", bool $includeInactive = false): string {
         $queryTables = "rating";
+
+        $activeWhere = $includeInactive ? "" : " AND active=1";
 
         $contentTypeFilterWhere = "";
         $contentTypeFilteredOut = $this->getContentTypeFilterCommaDelimited();
@@ -210,9 +245,9 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
 
         $query  = "SELECT $selectCols FROM $queryTables";
-        $query .= " WHERE active=1";
-        $query .= "   AND rating.user_name='" .$this->username. "'";
+        $query .= " WHERE rating.user_name='" .$this->username. "'";
         $query .= "   AND source_name='" .$this->sourceName. "'";
+        $query .=     $activeWhere;
         $query .=     $contentTypeFilterWhere;
         $query .=     $listFilterWhere;
         $query .=     $genreFilterWhere;
@@ -623,6 +658,47 @@ class RatingSyncSite extends \RatingSync\SiteRatings
 
         return $exists;
     }
+
+    /**
+     * Get the account's ratings from the website and write to a file/database
+     *
+     * @param ExportFormat $format File format to write to (or database). Currently only XML.
+     * @param string $filename Write to a new (overwrite) file in the output directory
+     * @param bool $detail False brings only rating data. True also brings full detail (can take a long time).
+     * @param int|$useCache 0      $useCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
+     *
+     * @return true for success, false for failure
+     */
+    public function exportRatings(ExportFormat $format, string $filename, bool $detail = false, int $useCache = Constants::USE_CACHE_NEVER): bool
+    {
+        $filename   = Constants::outputFilePath() . $filename;
+        $success    = false;
+
+        if ($format == ExportFormat::CSV_LETTERBOXD) {
+
+            $csvArray = Letterboxd::exportRatingsCsv(site: $this, username: $this->username);
+            $fileNumber = 1;
+            foreach ($csvArray as $csv) {
+                $success = \RatingSync\writeFile($csv, $filename, $format->getExtension(), $fileNumber);
+                $fileNumber++;
+
+                if (!$success) {
+                    logDebug("exportRatings: failed to write to " . $filename . " fileNumber=" . $fileNumber . " success=" . $success);
+                    break;
+                }
+            }
+
+        }
+        else if ($format == ExportFormat::CSV_IMDB) {
+
+            $outputAsStr = ImdbTracker::exportRatingsCsv($this, $this->username);
+            $success = \RatingSync\writeFile($outputAsStr, $filename, $format->getExtension());
+
+        }
+
+        return $success;
+    }
+
 }
 
 enum RatingSortField: string {
