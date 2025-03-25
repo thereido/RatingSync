@@ -673,20 +673,16 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     {
         $filename   = Constants::outputFilePath() . $filename;
         $success    = false;
+        $arrayOfFiles = array();
 
         if ($format == ExportFormat::CSV_LETTERBOXD) {
 
-            $csvArray = Letterboxd::exportRatingsCsv(site: $this, username: $this->username);
-            $fileNumber = 1;
-            foreach ($csvArray as $csv) {
-                $success = \RatingSync\writeFile($csv, $filename, $format->getExtension(), $fileNumber);
-                $fileNumber++;
+            $arrayOfFiles = Letterboxd::exportRatingsCsv(site: $this, username: $this->username);
 
-                if (!$success) {
-                    logDebug("exportRatings: failed to write to " . $filename . " fileNumber=" . $fileNumber . " success=" . $success);
-                    break;
-                }
-            }
+        }
+        else if ($format == ExportFormat::JSON_TRAKT) {
+
+            $arrayOfFiles = Trakt::exportRatingsJson(site: $this, username: $this->username);
 
         }
         else if ($format == ExportFormat::CSV_IMDB) {
@@ -694,6 +690,17 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             $outputAsStr = ImdbTracker::exportRatingsCsv($this, $this->username);
             $success = \RatingSync\writeFile($outputAsStr, $filename, $format->getExtension());
 
+        }
+
+        $fileNumber = 1;
+        foreach ($arrayOfFiles as $fileAsString) {
+            $success = \RatingSync\writeFile($fileAsString, $filename, $format->getExtension(), $fileNumber);
+            $fileNumber++;
+
+            if (!$success) {
+                logDebug("exportRatings: failed to write to " . $filename . " fileNumber=" . $fileNumber . " success=" . $success);
+                break;
+            }
         }
 
         return $success;
