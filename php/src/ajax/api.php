@@ -840,7 +840,7 @@ function api_archiveRating($username)
             }
         }
         catch (Exception $e) {
-            logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$date, archiveIt=$archiveIt\n)" . $e->getMessage() . "\n" . $e->getTraceAsString(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$date, archiveIt=$archiveIt)", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
         }
     }
 
@@ -873,7 +873,7 @@ function api_setSeen($username): string
 
         }
         catch (Exception $e) {
-            logError("Exception setting whether the user has seen this title (filmId=$filmId, username=$username, seen=$seen\n)" . $e->getMessage() . "\n" . $e->getTraceAsString(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError("Exception setting whether the user has seen this title (filmId=$filmId, username=$username, seen=$seen)", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
         }
     }
 
@@ -906,7 +906,7 @@ function api_setNeverWatch($username): string
 
         }
         catch (Exception $e) {
-            logError("Exception setting whether the user never plans to watch the title (filmId=$filmId, username=$username, never=$neverWatch\n)" . $e->getMessage() . "\n" . $e->getTraceAsString(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError("Exception setting whether the user never plans to watch the title (filmId=$filmId, username=$username, never=$neverWatch)", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
         }
     }
 
@@ -950,7 +950,7 @@ function api_setTheme($username, $params): string
                 $userId = userMgr()->save( $user );
             }
             catch (EntityInvalidSaveException $e) {
-                logError($e->getMessage());
+                logError($e->getMessage(), prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
                 // FIXME We should put the message in the response
             }
 
@@ -962,7 +962,7 @@ function api_setTheme($username, $params): string
 
     }
     catch (Exception $e) {
-        logError($e->getMessage());
+        logError($e->getMessage(), prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
         //$success = false;
     }
 
@@ -973,5 +973,3 @@ function api_setTheme($username, $params): string
         return '{"Success":"false"}';
     }
 }
-
-?>

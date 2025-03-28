@@ -84,7 +84,7 @@ function getDatabase($mode = Constants::DB_MODE)
     }
     catch ( \Exception $e ) {
 
-        logError(input: "Unable to get a database connection. " . $e->getMessage(), prefix: __FUNCTION__."() ".__FILE__.":".__LINE__);
+        logError(input: "Unable to get a database connection.", prefix: __FUNCTION__."() ".__FILE__.":".__LINE__, e: $e);
         die("DB Connection failed: " . $e->getMessage());
 
     }
@@ -118,7 +118,7 @@ function userView( string $username = null ): UserView|null {
         }
     }
     catch (Exception $e) {
-        logError("Error getting a user view with username='$username'. An empty username should be okay.\n" . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+        logError("Error getting a user view with username='$username'. An empty username should be okay.", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
     }
 
     return null;
@@ -177,23 +177,33 @@ function logToFile($filename, $input, $prefix = null, $showTime = true, $printAr
     }
 }
 
-function logDebug($input, $prefix = null, $showTime = true, $printArray = null)
+function logDebug($input, $prefix = null, $showTime = true, $printArray = null): void
 {
     $logfilename =  Constants::outputFilePath() . "logDebug.txt";
     logToFile($logfilename, $input, $prefix, $showTime, $printArray);
 }
 
-function logError($input, $prefix = null, $showTime = true, $printArray = null)
+function logError($input, $prefix = null, $showTime = true, \Exception $e = null, $printArray = null): void
 {
     $logfilename =  Constants::outputFilePath() . "logError.txt";
-    logToFile($logfilename, $input, $prefix, $showTime, $printArray);
-    logDebug($input, $prefix, $showTime, $printArray);
+    logToFile($logfilename, $input . "\n$e", $prefix, $showTime, $printArray);
+    logDebug($input . "\n" . exceptionShortMsg($e), $prefix, $showTime, $printArray);
 }
 
 function printDebug($input, $prefix = null, $showTime = false, $printArray = null)
 {
     $message = debugMessage($input, $prefix, $showTime, $printArray);
     print($message);
+}
+
+function exceptionShortMsg( \Exception $e ): string
+{
+    return $e->getMessage() . " <= " . $e->getFile() . ":" . $e->getLine();
+}
+
+function defaultPrefix( string $class, string $function, int $line ): string
+{
+    return "$class::$function() $line";
 }
 
 /**
@@ -377,5 +387,3 @@ function today(): \DateTime
 
     return $today;
 }
-
-?>

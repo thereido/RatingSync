@@ -256,7 +256,7 @@ class Rating
                     $success = $existingRating->replaceInDb($username, $filmId, false);
                     if (!$success) {
                         $msg = "SQL Error trying to deactivate a existing rating (".$db->errorCode().") ".$db->errorInfo()[2];
-                        logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
+                        logError($msg, prefix: __CLASS__."::".__FUNCTION__.":".__LINE__);
                         return false;
                     }
 
@@ -297,7 +297,7 @@ class Rating
                 $film = $userSpecificFilmInfo?->setSeenToDb(true);
             }
             catch (\Exception $e) {
-                logError($e->getMessage() . "\n" . $e->getTraceAsString());
+                logError($e->getMessage(), e: $e);
             }
 
             if ( empty($film) ) {
@@ -597,7 +597,7 @@ class Rating
             $film = Film::getFilmFromDb($filmId, $username);
 
         } catch (\Exception $e) {
-            logError("Error getting a Film for id=$filmId.\n" . $e->getMessage(), __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__);
+            logError("Error getting a Film for id=$filmId.", prefix: __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__, e: $e);
             return false;
         }
 
@@ -813,7 +813,7 @@ class Rating
             $film = Film::getFilmFromDb($filmId, $username);
 
         } catch (\Exception $e) {
-            logError("Error getting a Film for id=$filmId.\n" . $e->getMessage(), __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__);
+            logError("Error getting a Film for id=$filmId.", prefix: __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__, e: $e);
             return false;
         }
 
