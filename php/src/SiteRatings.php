@@ -1,9 +1,6 @@
 <?php
 namespace RatingSync;
 
-require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "ExternalTracker" .DIRECTORY_SEPARATOR. "ImdbTracker.php";
-require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "ExternalTracker" .DIRECTORY_SEPARATOR. "Letterboxd.php";
-require_once __DIR__ .DIRECTORY_SEPARATOR. ".." .DIRECTORY_SEPARATOR. "ExternalTracker" .DIRECTORY_SEPARATOR. "Trakt.php";
 require_once "Site.php";
 
 abstract class SiteRatings extends \RatingSync\Site

@@ -50,27 +50,27 @@ function import($username, $filename, $format)
  */
 function export(string $username, ExportFormat $format): bool
 {
-    $filename   = "BagoMovie_" . $username . "_ratings_" . $format->toString();
+    $filename   = str_replace(' ', '', Constants::SITE_NAME) . "_ExportRatings_to_" . $format->toString();
     $site       = new RatingSyncSite($username);
 
     return $site->exportRatings($format, $filename, true);
 }
 
-function writeFile(string $content, string $filename, string $extension, int $fileNumber = -1): bool
+function writeFile(string $content, string $filename, string $extension, int $fileNumber = -1): string|false
 {
     $addFileNumber  = $fileNumber >= 0 ? "_" . $fileNumber : "";
     $filename       = $filename . $addFileNumber . "." . $extension;
-    $success        = false;
+    $return         = false;
 
     $fp             = fopen($filename, "w");
 
     if ( fwrite($fp, $content) !== FALSE ) {
-        $success = true;
+        $return = $filename;
     }
 
     fclose($fp);
 
-    return $success;
+    return $return;
 }
 
 function getDatabase($mode = Constants::DB_MODE)

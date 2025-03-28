@@ -7,6 +7,11 @@ namespace RatingSync;
 use ArrayObject;
 
 require_once "SiteRatings.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "ExternalAdapter.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "ImdbAdapter.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "LetterboxdAdapter.php";
+//require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "TmdbAdapter.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "TraktAdapter.php";
 
 /**
  * Communicate to/from the RatingSync website/database
@@ -168,14 +173,9 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         return $films;
     }
 
-    /**
-     * @param int|null $limit
-     * @param int $offset
-     * @return array
-     */
-    public function getRatings(int $limit = null, int $offset = 1): array {
-
-        $ratings = array();
+    public function getFilmsForExport( $limit = null, $offset = 1, bool $includeInactive = false ): array
+    {
+        $films = array();
 
         $orderBy = "ORDER BY ";
         if (!empty($this->getSort())) {
@@ -188,16 +188,16 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
 
         $db = getDatabase();
-        $query = $this->getRatingsQuery("*", $orderBy, $limit);
+        $query = $this->getRatingsQuery("DISTINCT rating.film_id", $orderBy, $limit, $includeInactive);
         $result = $db->query($query);
 
         foreach ($result->fetchAll() as $row) {
-            $rating = new Rating($this->sourceName);
-            $rating->initFromDbRow($row);
-            $ratings[] = $rating;
+            $filmId = intval($row["film_id"]);
+            $film = Film::getFilmFromDb($filmId, $this->username);
+            $films[] = $film;
         }
 
-        return $ratings;
+        return $films;
     }
 
     public function countRatings(bool $includeInactive = false): int {
@@ -673,36 +673,44 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     {
         $filename   = Constants::outputFilePath() . $filename;
         $success    = false;
-        $arrayOfFiles = array();
 
-        if ($format == ExportFormat::CSV_LETTERBOXD) {
-
-            $arrayOfFiles = Letterboxd::exportRatingsCsv(site: $this, username: $this->username);
-
+        try {
+            $adapter = match ($format) {
+                ExportFormat::CSV_IMDB          => new ImdbAdapter(username: $this->username),
+                ExportFormat::CSV_LETTERBOXD    => new LetterboxdAdapter(username: $this->username),
+                //ExportFormat::CSV_TMDB          => new TmdbAdapter(username: $this->username),
+                ExportFormat::JSON_TRAKT        => new TraktAdapter(username: $this->username),
+                default                         => null,
+            };
         }
-        else if ($format == ExportFormat::JSON_TRAKT) {
-
-            $arrayOfFiles = Trakt::exportRatingsJson(site: $this, username: $this->username);
-
-        }
-        else if ($format == ExportFormat::CSV_IMDB) {
-
-            $outputAsStr = ImdbTracker::exportRatingsCsv($this, $this->username);
-            $success = \RatingSync\writeFile($outputAsStr, $filename, $format->getExtension());
-
+        catch (\Exception $e) {
+            logDebug("failed to create ExternalAdapter for format=$format->name error=$e", prefix: __CLASS__ . ":" . __FUNCTION__ . ":" . __LINE__ );
+            return false;
         }
 
+        if ( $adapter === null ) {
+            logDebug("Unknown ExternalAdapter for format=$format->name", prefix: __CLASS__ . ":" . __FUNCTION__ . ":" . __LINE__ );
+            return false;
+        }
+
+        $arrayOfFiles = $adapter?->exportRatings() ?? [];
         $fileNumber = 1;
         foreach ($arrayOfFiles as $fileAsString) {
-            $success = \RatingSync\writeFile($fileAsString, $filename, $format->getExtension(), $fileNumber);
+
+            $success = writeFile( $fileAsString, $filename, $format->getExtension(), $fileNumber );
             $fileNumber++;
 
-            if (!$success) {
-                logDebug("exportRatings: failed to write to " . $filename . " fileNumber=" . $fileNumber . " success=" . $success);
+            if ( $success === false ) {
+                logError("Failed to write to " . $filename . " fileNumber=" . $fileNumber . " success=" . $success, prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__));
                 break;
             }
+            else {
+                logDebug("Export file: $success");
+            }
+
         }
 
+        logDebug("");
         return $success;
     }
 
