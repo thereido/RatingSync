@@ -36,6 +36,9 @@ if (!empty($username)) {
         else if ($format == "trakt") {
             $exportFormat = ExportFormat::JSON_TRAKT;
         }
+        else if ($format == "tmdb") {
+            $exportFormat = ExportFormat::CSV_TMDB;
+        }
     
         $success = \RatingSync\export($username, $exportFormat);
     }
@@ -90,7 +93,8 @@ function test_input($data)
         <div class="col-lg-offset-1 col-lg-5">
           <label>Export format:&nbsp;&nbsp;</label>
           <label class="radio-inline"><input type="radio" name="format" value="letterboxd" checked>Letterboxd</label>
-          <label class="radio-inline"><input type="radio" name="format" value="trakt" checked>Trakt</label>
+          <label class="radio-inline"><input type="radio" name="format" value="trakt">Trakt</label>
+          <label class="radio-inline"><input type="radio" name="format" value="tmdb">TMDb</label>
           <label class="radio-inline"><input type="radio" name="format" value="imdb">IMDb</label>
         </div><!-- /col -->
       </div><!-- /row -->

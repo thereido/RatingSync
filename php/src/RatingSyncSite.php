@@ -10,7 +10,7 @@ require_once "SiteRatings.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "ExternalAdapter.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "ImdbAdapter.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "LetterboxdAdapter.php";
-//require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "TmdbAdapter.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "TmdbAdapter.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "TraktAdapter.php";
 
 /**
@@ -678,7 +678,7 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             $adapter = match ($format) {
                 ExportFormat::CSV_IMDB          => new ImdbAdapter(username: $this->username),
                 ExportFormat::CSV_LETTERBOXD    => new LetterboxdAdapter(username: $this->username),
-                //ExportFormat::CSV_TMDB          => new TmdbAdapter(username: $this->username),
+                ExportFormat::CSV_TMDB          => new TmdbAdapter(username: $this->username),
                 ExportFormat::JSON_TRAKT        => new TraktAdapter(username: $this->username),
                 default                         => null,
             };
