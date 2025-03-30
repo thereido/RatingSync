@@ -143,7 +143,7 @@ class Filmlist
         return $column;
     }
 
-    public function setSortDirection($sortDirection)
+    public function setSortDirection( SqlSortDirection $sortDirection ): void
     {
         if (! $sortDirection->validated() ) {
             throw new \InvalidArgumentException(__FUNCTION__." Invalid sortDirection param '$sortDirection->value'");
@@ -1130,7 +1130,7 @@ class Filmlist
         $query  = "SELECT film_id, next_film_id FROM filmlist";
         $query .= " WHERE user_name='$username'";
         $query .= "   AND listname=$listnameEscapedAndQuoted";
-        $query .= " ORDER BY create_ts $sortDirection";
+        $query .= " ORDER BY create_ts $sortDirection->value";
         $result = $db->query($query);
         
         $items = array(); // Keys are next_film_id, Values are film_id

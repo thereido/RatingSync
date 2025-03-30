@@ -42,9 +42,3 @@ abstract class ExternalAdapterJson extends ExternalAdapter
     }
 
 }
-
-abstract class ExternalFilmJson extends ExternalFilm
-{
-    /** This abstract function from the parent: csvEntry() is not used for exporting by JSON transfers  */
-    public function csvEntry( Rating $rating ): string { return ''; }
-}

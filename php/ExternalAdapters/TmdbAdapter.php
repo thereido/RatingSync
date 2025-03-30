@@ -8,7 +8,7 @@ class TmdbAdapter extends ExternalAdapterCsv
     // https://www.themoviedb.org/settings/import-list
     // Trakt_v2
 
-    protected ExportFormat $exportFormat = ExportFormat::CSV_TMDB;
+    protected ExportFormat $exportFormat = ExportFormat::TMDB_RATINGS;
 
     public function __construct( string $username )
     {
@@ -18,14 +18,6 @@ class TmdbAdapter extends ExternalAdapterCsv
     protected function getHeader(): string
     {
         return "rated_at,type,,,,,,tmdb_id,,,,season_number,episode_number,,,,,,episode_tmdb_id,,,rating";
-    }
-
-    protected function isExportableContentType( Film $film ): bool
-    {
-        return match ( $film->getContentType() ) {
-            Film::CONTENT_FILM, Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE => true,
-            default => false,
-        };
     }
 
     protected function validateExternalFilm( Film $film ): array
@@ -43,7 +35,7 @@ class TmdbAdapter extends ExternalAdapterCsv
 
 }
 
-class TmdbFilm extends ExternalFilmCsv
+class TmdbFilm extends ExternalFilm
 {
 
     /**
@@ -52,7 +44,7 @@ class TmdbFilm extends ExternalFilmCsv
     public function __construct( Film $film )
     {
         if ( $film->getUniqueName( source: Constants::SOURCE_TMDBAPI  ) == null ) {
-            throw new \Exception(ExportFormat::CSV_TMDB->toString() . " id must be provided");
+            throw new \Exception(ExportFormat::TMDB_RATINGS->toString() . " id must be provided");
         }
 
         $this->film = $film;
@@ -69,7 +61,7 @@ class TmdbFilm extends ExternalFilmCsv
         return $problems;
     }
 
-    public function csvEntry( Rating $rating ): string
+    public function ratingEntry( Rating $rating ): string
     {
         // Example from tmdb.org
         //
@@ -83,7 +75,7 @@ class TmdbFilm extends ExternalFilmCsv
         // rated_at,type,,,,,,tmdb_id,,,,season_number,episode_number,,,,,,episode_tmdb_id,,,rating
 
         $tmdbIdFull     = $this->film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
-        $contentType    = $this->film->getContentType();
+        $tmdbType       = $this->getExternalFilmType( $this->film->getContentType() );
         $seasonNum      = $this->film->getSeason();
         $episodeNum     = $this->film->getEpisodeNumber();
         $score          = $rating?->getYourScore();
@@ -92,13 +84,33 @@ class TmdbFilm extends ExternalFilmCsv
         $tmdbId         = $tmdbIdFull ? substr($tmdbIdFull, offset: 2) : null;
         $tmdbIdEpisode  = $tmdbIdFull ? substr($tmdbIdFull, offset: 2) : null;
 
-        $tmdbType = match ($contentType) {
+        return "$ratingAt,$tmdbType,,,$tmdbId,$tmdbIdEpisode,,,$seasonNum,$episodeNum,,,,,,,$score";
+    }
+
+    public function filmEntry( ExternalFilm $film ): string|array
+    {
+        // Columns used for exporting film (without ratings) to TMDb
+        // ,type,,,,,,tmdb_id,,,,season_number,episode_number,,,,,,episode_tmdb_id,,,
+
+        $tmdbIdFull     = $this->film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
+        $tmdbType       = $this->getExternalFilmType( $this->film->getContentType() );
+        $seasonNum      = $this->film->getSeason();
+        $episodeNum     = $this->film->getEpisodeNumber();
+
+        $tmdbId         = $tmdbIdFull ? substr($tmdbIdFull, offset: 2) : null;
+        $tmdbIdEpisode  = $tmdbIdFull ? substr($tmdbIdFull, offset: 2) : null;
+
+        return ",$tmdbType,,,$tmdbId,$tmdbIdEpisode,,,$seasonNum,$episodeNum,,,,,,,";
+    }
+
+    private function getExternalFilmType( string $contentType ): string
+    {
+        return match ($contentType) {
             Film::CONTENT_FILM => "movie",
             Film::CONTENT_TV_SERIES => "show",
             Film::CONTENT_TV_EPISODE => "episode",
             default => "",
         };
-
-        return "$ratingAt,$tmdbType,,,$tmdbId,$tmdbIdEpisode,,,$seasonNum,$episodeNum,,,,,,,$score";
     }
+
 }

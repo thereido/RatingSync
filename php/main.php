@@ -45,32 +45,23 @@ function import($username, $filename, $format)
  *
  * @param string $username Account's ratings exported
  * @param ExportFormat $format
- *
- * @return bool true/false - success/fail
+ * @param string $collectionName
+ * @return array|false Array of filenames exported or false in failure
  */
-function export(string $username, ExportFormat $format): bool
+function export( string $username, ExportFormat $format, string $collectionName = "" ): array|false
 {
-    $filename   = str_replace(' ', '', Constants::SITE_NAME) . "_ExportRatings_to_" . $format->toString();
-    $site       = new RatingSyncSite($username);
+    $site   = new RatingSyncSite( $username );
 
-    return $site->exportRatings($format, $filename, true);
+    return $site->export( $format, $collectionName );
 }
 
-function writeFile(string $content, string $filename, string $extension, int $fileNumber = -1): string|false
+function writeFile( string $content, string $filename ): false|int
 {
-    $addFileNumber  = $fileNumber >= 0 ? "_" . $fileNumber : "";
-    $filename       = $filename . $addFileNumber . "." . $extension;
-    $return         = false;
-
-    $fp             = fopen($filename, "w");
-
-    if ( fwrite($fp, $content) !== FALSE ) {
-        $return = $filename;
-    }
-
+    $fp     = fopen($filename, "w");
+    $result = fwrite($fp, $content);
     fclose($fp);
 
-    return $return;
+    return $result;
 }
 
 function getDatabase($mode = Constants::DB_MODE)

@@ -660,58 +660,109 @@ class RatingSyncSite extends \RatingSync\SiteRatings
     }
 
     /**
-     * Get the account's ratings from the website and write to a file/database
-     *
-     * @param ExportFormat $format File format to write to (or database). Currently only XML.
-     * @param string $filename Write to a new (overwrite) file in the output directory
-     * @param bool $detail False brings only rating data. True also brings full detail (can take a long time).
-     * @param int|$useCache 0      $useCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
-     *
-     * @return true for success, false for failure
+     * @param ExportFormat $format
+     * @param string $collectionName
+     * @return array|false Array of filenames exported or false in failure
      */
-    public function exportRatings(ExportFormat $format, string $filename, bool $detail = false, int $useCache = Constants::USE_CACHE_NEVER): bool
+    public function export( ExportFormat $format, string $collectionName = "" ): array|false
     {
-        $filename   = Constants::outputFilePath() . $filename;
-        $success    = false;
+        $siteName   = str_replace(' ', '', Constants::SITE_NAME);
+
+        $adapter = $this->getExternalAdapter( $format );
+        if ( $adapter === null ) {
+            return false;
+        }
+
+        $ratingsExportedFilenames = [];
+        if ( $format->isRatings() ) {
+            $filename                   = $siteName . "_ExportRatings_to_" . $format->toString();
+            $arrayOfFiles               = $adapter->exportRatings() ?? [];
+            $ratingsExportedFilenames   = $this->writeExportFiles( $arrayOfFiles, $filename, $format->getExtension() );
+        }
+
+        $collectionExportedFilenames = [];
+        if ( $format->isCollection() ) {
+            $filename                       = $siteName . "_Export" . $collectionName . "_to_" . $format->toString();
+            $arrayOfFiles                   = $adapter->exportFilmCollection( $collectionName ) ?? [];
+            $collectionExportedFilenames    = $this->writeExportFiles( $arrayOfFiles, $filename, $format->getExtension() );
+        }
+
+        logDebug("");
+        if ( $ratingsExportedFilenames === false || $collectionExportedFilenames === false ) {
+            return false;
+        }
+        else {
+            return array_merge($ratingsExportedFilenames, $collectionExportedFilenames);
+        }
+    }
+
+    /**
+     * @param ExportFormat $format
+     * @return ExternalAdapter|null
+     */
+    private function getExternalAdapter( ExportFormat $format ): ?ExternalAdapter
+    {
+        $adapter = null;
 
         try {
-            $adapter = match ($format) {
-                ExportFormat::CSV_IMDB          => new ImdbAdapter(username: $this->username),
-                ExportFormat::CSV_LETTERBOXD    => new LetterboxdAdapter(username: $this->username),
-                ExportFormat::CSV_TMDB          => new TmdbAdapter(username: $this->username),
-                ExportFormat::JSON_TRAKT        => new TraktAdapter(username: $this->username),
-                default                         => null,
-            };
+            if ( $format->isRatings() ) {
+                $adapter = match ($format) {
+                    ExportFormat::IMDB_RATINGS          => new ImdbAdapter(username: $this->username),
+                    ExportFormat::LETTERBOXD_RATINGS    => new LetterboxdAdapter(username: $this->username),
+                    ExportFormat::TMDB_RATINGS          => new TmdbAdapter(username: $this->username),
+                    ExportFormat::TRAKT_RATINGS         => new TraktAdapter(username: $this->username),
+                    default                             => null,
+                };
+            }
+            else if ( $format->isCollection() ) {
+                $adapter = match ($format) {
+                    ExportFormat::LETTERBOXD_COLLECTION => new LetterboxdAdapter( $this->username ),
+                    default                             => null,
+                };
+            }
         }
         catch (\Exception $e) {
-            logDebug("failed to create ExternalAdapter for format=$format->name error=$e", prefix: __CLASS__ . ":" . __FUNCTION__ . ":" . __LINE__ );
-            return false;
+            logDebug("Failed to create ExternalAdapter for format=$format->name error=$e", prefix: __CLASS__ . ":" . __FUNCTION__ . ":" . __LINE__ );
         }
 
         if ( $adapter === null ) {
             logDebug("Unknown ExternalAdapter for format=$format->name", prefix: __CLASS__ . ":" . __FUNCTION__ . ":" . __LINE__ );
-            return false;
         }
 
-        $arrayOfFiles = $adapter?->exportRatings() ?? [];
-        $fileNumber = 1;
-        foreach ($arrayOfFiles as $fileAsString) {
+        return $adapter;
+    }
 
-            $success = writeFile( $fileAsString, $filename, $format->getExtension(), $fileNumber );
+    /**
+     * @param array $contentStrings
+     * @param string $filenameBase
+     * @param string $extension
+     * @return array|false Array of filenames exported or false in failure
+     */
+    private function writeExportFiles( array $contentStrings, string $filenameBase, string $extension ): array|false
+    {
+
+        $filenames  = array();
+
+        $fileNumber = 1;
+        foreach ( $contentStrings as $fileContent ) {
+
+            $filename           = $filenameBase . "_" . $fileNumber . "." . $extension;
+            $filenameWithPath   = Constants::outputFilePath() . $filename;
+            $written            = writeFile( $fileContent, $filenameWithPath );
             $fileNumber++;
 
-            if ( $success === false ) {
-                logError("Failed to write to " . $filename . " fileNumber=" . $fileNumber . " success=" . $success, prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__));
-                break;
+            if ( $written === false ) {
+                logError("Failed to write to $filenameWithPath", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__));
+                return false;
             }
             else {
-                logDebug("Export file: $success");
+                $filenames[] = $filename;
+                logDebug("Export file: $filenameWithPath");
             }
 
         }
 
-        logDebug("");
-        return $success;
+        return $filenames;
     }
 
 }

@@ -38,9 +38,3 @@ abstract class ExternalAdapterCsv extends ExternalAdapter
     }
 
 }
-
-abstract class ExternalFilmCsv extends ExternalFilm
-{
-    /** This abstract function from the parent: jsonEntry() is not used for exporting by CSV transfers  */
-    public function jsonEntry( Rating $rating ): array { return []; }
-}

@@ -6,7 +6,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . "ExternalAdapterCsv.php";
 class ImdbAdapter extends ExternalAdapterCsv
 {
 
-    protected ExportFormat $exportFormat = ExportFormat::CSV_IMDB;
+    protected ExportFormat $exportFormat = ExportFormat::IMDB_RATINGS;
 
     public function __construct( string $username )
     {
@@ -16,14 +16,6 @@ class ImdbAdapter extends ExternalAdapterCsv
     protected function getHeader(): string
     {
         return "Position,Const,Created,Modified,Description,Title,URL,Title Type,IMDb Rating,Runtime (mins),Year,Genres,Num Votes,Release Date,Directors,Your Rating,Date Rated";
-    }
-
-    protected function isExportableContentType( Film $film ): bool
-    {
-        return match ( $film->getContentType() ) {
-            Film::CONTENT_FILM, Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE => true,
-            default => false,
-        };
     }
 
     protected function validateExternalFilm( Film $film ): array
@@ -40,7 +32,7 @@ class ImdbAdapter extends ExternalAdapterCsv
     }
 }
 
-class ImdbFilm extends ExternalFilmCsv
+class ImdbFilm extends ExternalFilm
 {
 
     /**
@@ -49,7 +41,7 @@ class ImdbFilm extends ExternalFilmCsv
     public function __construct( Film $film )
     {
         if ( $film->getUniqueName( source: Constants::SOURCE_IMDB ) == null ) {
-            throw new \Exception(ExportFormat::CSV_IMDB->toString() . " id must be provided");
+            throw new \Exception(ExportFormat::IMDB_RATINGS->toString() . " id must be provided");
         }
 
         $this->film = $film;
@@ -66,7 +58,7 @@ class ImdbFilm extends ExternalFilmCsv
         return $problems;
     }
 
-    public function csvEntry( Rating $rating ): string
+    public function ratingEntry(Rating $rating ): string
     {
         // IMDb v3
         //
@@ -92,6 +84,11 @@ class ImdbFilm extends ExternalFilmCsv
         };
 
         return ",$imdbId,,,,\"$title\",,$mediaType,,,$year,,,,,$score,$ratedAt" . "\n";
+    }
+
+    public function filmEntry( ExternalFilm $film ): string
+    {
+        return "";
     }
 
 }

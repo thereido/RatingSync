@@ -8,7 +8,8 @@ class LetterboxdAdapter extends ExternalAdapterCsv
     // https://letterboxd.com/about/importing-data/
     // tmdbID,imdbID,Title,Year,Rating10,WatchedDate,Rewatch
 
-    protected ExportFormat $exportFormat = ExportFormat::CSV_LETTERBOXD;
+    protected ExportFormat  $exportFormat           = ExportFormat::LETTERBOXD_RATINGS;
+    protected array         $exportableContentTypes = [Film::CONTENT_FILM];
 
     public function __construct( string $username )
     {
@@ -18,11 +19,6 @@ class LetterboxdAdapter extends ExternalAdapterCsv
     protected function getHeader(): string
     {
         return "tmdbID,imdbID,Title,Year,Rating10,WatchedDate,Rewatch";
-    }
-
-    protected function isExportableContentType( Film $film ): bool
-    {
-        return $film->getContentType() == Film::CONTENT_FILM;
     }
 
     protected function validateExternalFilm( Film $film ): array
@@ -52,7 +48,7 @@ class LetterboxdAdapter extends ExternalAdapterCsv
 
 }
 
-class LetterboxdFilm extends ExternalFilmCsv
+class LetterboxdFilm extends ExternalFilm
 {
     private Rating|null     $earliestRating;
 
@@ -62,7 +58,7 @@ class LetterboxdFilm extends ExternalFilmCsv
     public function __construct( Film $film, Rating|null $earliestRating )
     {
         if ( $film->getUniqueName( source: Constants::SOURCE_TMDBAPI  ) == null ) {
-            throw new \Exception(ExportFormat::CSV_TMDB->toString() . " id must be provided");
+            throw new \Exception(ExportFormat::TMDB_RATINGS->toString() . " id must be provided");
         }
 
         $this->film             = $film;
@@ -80,7 +76,7 @@ class LetterboxdFilm extends ExternalFilmCsv
         return $problems;
     }
 
-    public function csvEntry( Rating $rating ): string
+    public function ratingEntry( Rating $rating ): string
     {
 
         $tmdbSource     = $this->film->getSource( Constants::SOURCE_TMDBAPI );
@@ -97,4 +93,10 @@ class LetterboxdFilm extends ExternalFilmCsv
         return "$tmdbId,$imdbId,\"$title\",$year,$score,$ratingAt,$rewatchStr" . PHP_EOL;
 
     }
+
+    public function filmEntry( ExternalFilm $film ): string
+    {
+        return "";
+    }
+
 }

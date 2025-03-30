@@ -7,19 +7,11 @@ class TraktAdapter extends ExternalAdapterJson
 {
     // https://trakt.tv/settings/data
 
-    protected ExportFormat $exportFormat = ExportFormat::JSON_TRAKT;
+    protected ExportFormat $exportFormat = ExportFormat::TRAKT_RATINGS;
 
     public function __construct( string $username )
     {
         parent::__construct( username: $username, exportFormat: $this->exportFormat );
-    }
-
-    protected function isExportableContentType( Film $film ): bool
-    {
-        return match ( $film->getContentType() ) {
-            Film::CONTENT_FILM, Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE => true,
-            default => false,
-        };
     }
 
     protected function validateExternalFilm( Film $film ): array
@@ -37,7 +29,7 @@ class TraktAdapter extends ExternalAdapterJson
 
 }
 
-class TraktFilm extends ExternalFilmJson
+class TraktFilm extends ExternalFilm
 {
     private string|null     $imdbId;
     private string|null     $tmdbId;
@@ -81,7 +73,7 @@ class TraktFilm extends ExternalFilmJson
         return $problems;
     }
 
-    public function jsonEntry( Rating $rating ): array
+    public function ratingEntry( Rating $rating ): array
     {
         // [
         //  {
@@ -132,4 +124,10 @@ class TraktFilm extends ExternalFilmJson
 
         return $entry;
     }
+
+    public function filmEntry( ExternalFilm $film ): array
+    {
+        return [];
+    }
+
 }
