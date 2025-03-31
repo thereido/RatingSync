@@ -9,6 +9,8 @@
  */
 namespace RatingSync;
 
+use DateTime;
+use Exception;
 use PDO;
 
 require_once "src/Constants.php";
@@ -24,62 +26,88 @@ require_once "PDO/DbConn.php";
 require_once "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "ThemeManager.php";
 require_once "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "UserManager.php";
 
-/**
- * Import ratings from a file to the database
- *
- * @param string $username RatingSync user
- * @param string $filename Input file name read from ./output/$filename
- * @param string $format   XML
- *
- * @return bool true/false - success/fail
- */
-function import($username, $filename, $format)
-{
-    $site = new RatingSyncSite($username);
-    return $site->importRatings($format, $filename, $username);
-}
+const FILE_WRITE_MODE = "w";
 
 /**
- * Export a username's ratings to a new file.  The file
- * is written to the server.
+ * Imports ratings from a file into the RatingSync database.
  *
- * @param string $username Account's ratings exported
- * @param ExportFormat $format
- * @param string $collectionName
- * @return array|false Array of filenames exported or false in failure
+ * @param string $username The RatingSync user name.
+ * @param string $filePath The input file path to read from (e.g., ./output/filename).
+ * @param string $importFormat The format of the input file (e.g., XML).
+ *
+ * @return bool True on success, false on failure.
  */
-function export( string $username, ExportFormat $format, string $collectionName = "" ): array|false
+function import(string $username, string $filePath, string $importFormat): bool
 {
-    $site   = new RatingSyncSite( $username );
+    $ratingSyncSite = createRatingSyncSite($username);
 
-    return $site->export( $format, $collectionName );
+    // Use the constant for the default format (e.g., Constants::IMPORT_FORMAT_XML).
+    return $ratingSyncSite->importRatings($importFormat, $filePath);
 }
 
-function writeFile( string $content, string $filename ): false|int
+/**
+ * Export a user's ratings and film collections to a file on the server.
+ *
+ * @param string $username The username whose ratings/collections are exported.
+ * @param ExportFormat $format The format for the exported data.
+ * @param ?string $collectionName (Optional) The specific collection name to export; null if not applicable.
+ * @return array|false              Array of filenames exported or false in case of failure.
+ */
+function export(string $username, ExportFormat $format, ?string $collectionName = null): array|false
 {
-    $fp     = fopen($filename, "w");
-    $result = fwrite($fp, $content);
-    fclose($fp);
+    $ratingSyncSite = createRatingSyncSite($username);
 
-    return $result;
+    return $ratingSyncSite->export($format, $collectionName ?? "");
 }
 
-function getDatabase($mode = Constants::DB_MODE)
+/**
+ * Create and initialize a RatingSyncSite instance.
+ *
+ * @param string $username The username for which the site instance is created.
+ * @return RatingSyncSite The initialized RatingSyncSite instance.
+ */
+function createRatingSyncSite(string $username): RatingSyncSite
 {
-    static $dbConn = new DbConn( false );
+    return new RatingSyncSite($username);
+}
+
+/**
+ * Writes content to a file.
+ *
+ * @param string $content
+ * @param string $filename
+ * @return int|null
+ */
+function writeFile(string $content, string $filename): ?int
+{
+    $fileHandle = fopen($filename, FILE_WRITE_MODE);
+    if ($fileHandle === null) {
+        return null;
+    }
+
+    $writtenBytes = fwrite($fileHandle, $content);
+    fclose($fileHandle);
+
+    return $writtenBytes ?: null; // Return null if writing failed
+}
+
+/**
+ * @return PDO
+ */
+function getDatabase(): PDO
+{
+    static $dbConn = null;
+
+    if ($dbConn === null) {
+        $dbConn = new DbConn();
+    }
 
     try {
-
         return $dbConn->connect();
-
-    }
-    catch ( \Exception $e ) {
-
-        logError(input: "Unable to get a database connection.", prefix: __FUNCTION__."() ".__FILE__.":".__LINE__, e: $e);
+    } catch (Exception $e) {
+        logError(input: "Unable to get a database connection.", prefix: __FUNCTION__ . "() " . __FILE__ . ":" . __LINE__, e: $e);
         die("DB Connection failed: " . $e->getMessage());
-
     }
-
 }
 
 function userMgr(): UserManager {
@@ -116,16 +144,17 @@ function userView( string $username = null ): UserView|null {
 
 }
 
-function debugMessage($input, $prefix = null, $showTime = true, $printArray = null) {
+function debugMessage($input, $prefix = null, $showTime = true, $printArray = null): string
+{
     if (!is_null($prefix)) {
         $time = "";
         if ($showTime) {
-            $time = date_format(new \DateTime(), 'Y-m-d H:i:s');
+            $time = date_format(new DateTime(), 'Y-m-d H:i:s');
         }
         $prefix = $time . " " . $prefix . ":\t";
     }
     $suffix = "";
-    if ($printArray !== null && is_array($printArray)) {
+    if (is_array($printArray)) {
         $keys = array_keys($printArray);
         $length = count($keys);
         $suffix .= "\narray($length) {\n";
@@ -137,7 +166,7 @@ function debugMessage($input, $prefix = null, $showTime = true, $printArray = nu
             $value = $printArray[$key];
             try {
                 $value = "" . $value;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $value = "Cannot be converted to string";
             }
             $suffix .= "\t[$quote$key$quote] => $value\n";
@@ -148,13 +177,12 @@ function debugMessage($input, $prefix = null, $showTime = true, $printArray = nu
     return $prefix . $input . $suffix . PHP_EOL;
 }
 
-function logToFile($filename, $input, $prefix = null, $showTime = true, $printArray = null)
+function logToFile($filename, $input, $prefix = null, $showTime = true, $printArray = null): void
 {
-    $message = "";
     try {
         $message = debugMessage($input, $prefix, $showTime, $printArray);
     }
-    catch (\Exception $e) {
+    catch (Exception $e) {
         $message = "Exception in debugMessage() " . $e->getCode() . " " . $e->getMessage();
     }
 
@@ -163,7 +191,7 @@ function logToFile($filename, $input, $prefix = null, $showTime = true, $printAr
         fwrite($fp, $message);
         fclose($fp);
     }
-    catch (\Exception $e) {
+    catch (Exception) {
         // Ignore
     }
 }
@@ -174,20 +202,14 @@ function logDebug($input, $prefix = null, $showTime = true, $printArray = null):
     logToFile($logfilename, $input, $prefix, $showTime, $printArray);
 }
 
-function logError($input, $prefix = null, $showTime = true, \Exception $e = null, $printArray = null): void
+function logError($input, $prefix = null, $showTime = true, Exception $e = null, $printArray = null): void
 {
     $logfilename =  Constants::outputFilePath() . "logError.txt";
     logToFile($logfilename, $input . "\n$e", $prefix, $showTime, $printArray);
     logDebug($input . "\n" . exceptionShortMsg($e), $prefix, $showTime, $printArray);
 }
 
-function printDebug($input, $prefix = null, $showTime = false, $printArray = null)
-{
-    $message = debugMessage($input, $prefix, $showTime, $printArray);
-    print($message);
-}
-
-function exceptionShortMsg( \Exception $e ): string
+function exceptionShortMsg( Exception $e ): string
 {
     return $e->getMessage() . " <= " . $e->getFile() . ":" . $e->getLine();
 }
@@ -203,7 +225,7 @@ function defaultPrefix( string $class, string $function, int $line ): string
  *
  * @param string $username RatingSync user
  */
-function sync($username)
+function sync(string $username): void
 {
     $site = new RatingSyncSite($username);
     $site->syncRatings($username);
@@ -216,7 +238,7 @@ function getUsername() {
 /**
  * Looking for one specific film (and it's parent)
  */
-function search($searchTerms, $username = null)
+function search($searchTerms, $username = null): array
 {
     $emptyResults = ['match' => null, 'parent' => null];
     if (empty($searchTerms) || !is_array($searchTerms)) {
@@ -226,19 +248,15 @@ function search($searchTerms, $username = null)
     if (empty($username)) {
         $username = getUsername();
     }
-    $parentId = array_value_by_key("parentId", $searchTerms);
-    $imdbId = array_value_by_key("imdbId", $searchTerms);
-    $uniqueName = array_value_by_key("uniqueName", $searchTerms);
-    $uniqueEpisode = array_value_by_key("uniqueEpisode", $searchTerms);
-    $uniqueAlt = array_value_by_key("uniqueAlt", $searchTerms);
-    $title = array_value_by_key("title", $searchTerms);
-    $year = array_value_by_key("year", $searchTerms);
-    $parentYear = array_value_by_key("parentYear", $searchTerms);
-    $season = array_value_by_key("season", $searchTerms);
-    $episodeNumber = array_value_by_key("episodeNumber", $searchTerms);
-    $episodeTitle = array_value_by_key("episodeTitle", $searchTerms);
-    $contentType = array_value_by_key("contentType", $searchTerms);
-    $sourceName = array_value_by_key("sourceName", $searchTerms);
+
+    // searchTerm keys
+    // parentId, imdbId, uniqueName, uniqueEpisode, uniqueAlt, title, year, parentYear, season, episodeNumber, episodeTitle, contentType, sourceName
+    $uniqueName     = array_value_by_key("uniqueName", $searchTerms);
+    $uniqueEpisode  = array_value_by_key("uniqueEpisode", $searchTerms);
+    $uniqueAlt      = array_value_by_key("uniqueAlt", $searchTerms);
+    $title          = array_value_by_key("title", $searchTerms);
+    $year           = array_value_by_key("year", $searchTerms);
+    $sourceName     = array_value_by_key("sourceName", $searchTerms);
 
     // Check searchTerms
     $validSearchTerms = false;
@@ -251,8 +269,7 @@ function search($searchTerms, $username = null)
     if (!$validSearchTerms) {
         return $emptyResults;
     }
-    
-    $newFilm = false;
+
     $searchDbResult = Film::searchDb($searchTerms, $username);
     $parentFilm = $searchDbResult['parent'];
     $film = $searchDbResult['match'];
@@ -263,7 +280,7 @@ function search($searchTerms, $username = null)
         if (is_null($sourceApi)) {
             return $emptyResults;
         }
-        
+
         $nonApiSources = array(); // Not including obselete sources
         if (in_array($sourceName, $nonApiSources)) {
             // Before searching the source... remove terms specific to another source
@@ -271,16 +288,15 @@ function search($searchTerms, $username = null)
             $searchTerms['uniqueEpisode'] = null;
             $searchTerms['uniqueAlt'] = null;
         }
-        
+
         $film = $sourceApi->getFilmBySearch($searchTerms);
 
         if (!empty($film)) {
-            $film->setRefreshDate(new \DateTime());
+            $film->setRefreshDate(new DateTime());
             $film->saveToDb($username);
-            $newFilm = true;
         }
     }
-    
+
     if (!empty($film) && !empty($film->getId()) && !empty($uniqueName) && !empty($sourceName)) {
         // Existing film - save source data from the search by this source
         $source = $film->getSource($sourceName);
@@ -288,10 +304,15 @@ function search($searchTerms, $username = null)
             $source->setUniqueName($uniqueName);
             $source->setUniqueEpisode($uniqueEpisode);
             $source->setUniqueAlt($uniqueAlt);
-            $source->saveFilmSourceToDb($film->getId());
+            try {
+                $source->saveFilmSourceToDb($film->getId());
+            }
+            catch (Exception $e) {
+                logError(input: "Unable to save film source data.", prefix: __FUNCTION__ . "() " . __FILE__ . ":" . __LINE__, e: $e);
+            }
         }
     }
-    
+
     $resultFilms = array();
     $resultFilms['match'] = $film;
     $resultFilms['parent'] = $parentFilm;
@@ -317,6 +338,18 @@ function array_value_by_key($key, $a, $nullValue = null) {
  *
  * @return Film|null
  */
+
+/**
+ * See the comments at RatingSync::saveRatingToDb()
+ *
+ * @param int $filmId
+ * @param SetRatingScoreValue $score
+ * @param bool $watched
+ * @param string|null $dateStr
+ * @param string|null $originalDateStr
+ * @param bool $forceDelete
+ * @return Film|null
+ */
 function setRating(int $filmId, SetRatingScoreValue $score, bool $watched = true, ?string $dateStr = null, ?string $originalDateStr = null, bool $forceDelete = false) : ?Film
 {
     if (empty($filmId)) {
@@ -326,24 +359,31 @@ function setRating(int $filmId, SetRatingScoreValue $score, bool $watched = true
     $username = getUsername();
 
     try {
-        $date = $dateStr ? new \DateTime($dateStr) : null;
-        $originalDate = $originalDateStr ? new \DateTime($originalDateStr) : null;
+        $date = $dateStr ? new DateTime($dateStr) : null;
+        $originalDate = $originalDateStr ? new DateTime($originalDateStr) : null;
         Rating::saveRatingToDb($filmId, $username, $score, $watched, $date, $originalDate, $forceDelete);
     }
-    catch (\Exception) {
+    catch (Exception) {
+        logDebug("Unable to save rating for filmId=$filmId, username=$username", prefix: __FUNCTION__ . "() " . __FILE__ . ":" . __LINE__);
         return null;
     }
 
-    return Film::getFilmFromDb($filmId, $username);
+    try {
+        $film = Film::getFilmFromDb($filmId, $username);
+    }
+    catch (Exception) {
+        return null;
+    }
+
+    return $film;
 }
 
-function getPageFooter() {
-    $html = "";
-
-    return $html;
+function getPageFooter(): string
+{
+    return "";
 }
 
-function getMediaDbApiClient($sourceName = Constants::DATA_API_DEFAULT)
+function getMediaDbApiClient($sourceName = Constants::DATA_API_DEFAULT): TmdbApi|OmdbApi|null
 {
     $api = null;
     if ($sourceName == Constants::SOURCE_OMDBAPI) {
@@ -371,10 +411,10 @@ function unquote($str)
     return substr($str, 1, $length-2);
 }
 
-function today(): \DateTime
+function today(): DateTime
 {
-    $today = new \DateTime();
-    $today->setTime(0, 0, 0, 0);
+    $today = new DateTime();
+    $today->setTime(hour: 0, minute: 0);
 
     return $today;
 }

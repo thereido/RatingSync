@@ -1,103 +1,81 @@
 <?php
 namespace RatingSync;
 
+use DateTime;
 use Exception;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "main.php";
 require_once "getHtmlFilmlists.php";
 
+// Constants
+const DEFAULT_RESPONSE = "{}";
+
+// Get inputs
 $username = getUsername();
-$response = "";
-
 $action = array_value_by_key("action", $_GET);
+
+// Log the action
 logDebug("API action: $action, username: $username  " . api_getFullUri(), "");
-if ($action == "getSearchFilm") {
-    $response = api_getSearchFilm($username, $_GET);
-}
-elseif ($action == "setRating") {
-    $response = api_setRating($username);
-}
-elseif ($action == "setFilmlist") {
-    $response = api_setFilmlist($username);
-}
-elseif ($action == "getUserLists") {
-    $response = api_getUserLists($username);
-}
-elseif ($action == "createFilmlist") {
-    $response = api_createFilmlist($username);
-}
-elseif ($action == "addFilmBySearch") {
-    $response = api_addFilmBySearch($username, $_GET);
-}
-elseif ($action == "updateFilmSource") {
-    $response = api_updateFilmSource($username);
-}
-elseif ($action == "getStream") {
-    $response = api_getStream($username);
-}
-elseif ($action == "getFilm") {
-    $response = api_getFilm($username, $_GET);
-}
-elseif ($action == "getUser") {
-    $response = api_getUser($username);
-}
-elseif ($action == "getRatings") {
-    $response = api_getRatings($username);
-}
-elseif ($action == "getFilmsByList") {
-    $response = api_getFilmsByList($username);
-}
-elseif ($action == "searchFilms") {
-    $response = api_searchFilms($username);
-}
-elseif ($action == "getFilms") {
-    $response = api_getFilms($username, $_GET);
-}
-elseif ($action == "validateNewUsername") {
-    $response = api_validateNewUsername();
-}
-elseif ($action == "getSeason") {
-    $response = api_getSeason($username);
-}
-elseif ($action == "deleteFilmlist") {
-    $response = api_deleteFilmlist($username);
-}
-elseif ($action == "renameFilmlist") {
-    $response = api_renameFilmlist($username);
-}
-elseif ($action == "archiveRating") {
-    $response = api_archiveRating($username);
-}
-elseif ($action == "setSeen") {
-    $response = api_setSeen($username);
-}
-elseif ($action == "setNeverWatch") {
-    $response = api_setNeverWatch($username);
-}
-elseif ($action == "setTheme") {
-    $response = api_setTheme($username, $_GET);
-}
 
-if (empty($response)) {
-    $response = "{}";
-}
-echo $response;
+// Handle the action and prepare response
+$response = handleApiAction($action, $username);
 
-function api_getSearchFilm($username, $get)
+// Output response
+echo empty($response) ? DEFAULT_RESPONSE : $response;
+
+/**
+ * Handles API actions using a mapping approach.
+ *
+ * @param string $action
+ * @param string $username
+ * @return string
+ */
+function handleApiAction(string $action, string $username): string
 {
-    $searchTerms = getApiSearchTerms($get);
+    // Map actions to their handler functions
+    $actionsMap = [
+        "getSearchFilm"         => fn() => api_getSearchFilm($username, $_GET),
+        "setRating"             => fn() => api_setRating($username),
+        "setFilmlist"           => fn() => api_setFilmlist($username),
+        "getUserLists"          => fn() => api_getUserLists($username),
+        "createFilmlist"        => fn() => api_createFilmlist($username),
+        "addFilmBySearch"       => fn() => api_addFilmBySearch($username, $_GET),
+        "updateFilmSource"      => fn() => api_updateFilmSource(),
+        "getStream"             => fn() => api_getStream(),
+        "getFilm"               => fn() => api_getFilm($username, $_GET),
+        "getUser"               => fn() => api_getUser($username),
+        "getRatings"            => fn() => api_getRatings($username),
+        "getFilmsByList"        => fn() => api_getFilmsByList($username),
+        "searchFilms"           => fn() => api_searchFilms($username),
+        "getFilms"              => fn() => api_getFilms($username, $_GET),
+        "validateNewUsername"   => fn() => api_validateNewUsername(),
+        "getSeason"             => fn() => api_getSeason(),
+        "deleteFilmlist"        => fn() => api_deleteFilmlist($username),
+        "renameFilmlist"        => fn() => api_renameFilmlist($username),
+        "archiveRating"         => fn() => api_archiveRating($username),
+        "setSeen"               => fn() => api_setSeen($username),
+        "setNeverWatch"         => fn() => api_setNeverWatch($username),
+        "setTheme"              => fn() => api_setTheme($username, $_GET),
+    ];
 
-    $searchFilm = null;
+    // Call the handler if the action exists, otherwise return default
+    return $actionsMap[$action]() ?? DEFAULT_RESPONSE;
+}
+
+function api_getSearchFilm(string $username, array $requestParams): string
+{
+    $searchTerms = getApiSearchTerms($requestParams);
+
     try {
         $resultFilms = search($searchTerms, $username);
         $matchFilm = array_value_by_key('match', $resultFilms);
         $parentFilm = array_value_by_key('parent', $resultFilms);
     } catch (Exception $e) {
-        $errorMsg = "Error \RatingSync\search()" . 
-                    "\nsearchTerms keys: " . implode(",", array_keys($searchTerms)) .
-                    "\nsearchTerms values: " . implode(",", $searchTerms) .
-                    "\nException " . $e->getCode() . " " . $e->getMessage();
-        logDebug($errorMsg, __FUNCTION__." ".__LINE__);
+        $errorMsg = "Error during search" .
+            "\nSearch Terms Keys: " . implode(",", array_keys($searchTerms)) .
+            "\nSearch Terms Values: " . implode(",", $searchTerms);
+        logError(input: $errorMsg, prefix: __FUNCTION__ . " " . __LINE__, e: $e);
+        return json_encode([]); // Return empty JSON on error
     }
     
     $responseArr = array();
@@ -107,12 +85,11 @@ function api_getSearchFilm($username, $get)
     if (!empty($parentFilm)) {
         $responseArr['parent'] = $parentFilm->asArray();
     }
-    $responseJson = json_encode($responseArr);
     
-    return $responseJson;
+    return json_encode($responseArr);
 }
 
-function api_setRating($username)
+function api_setRating($username): bool|string
 {
     $film = null;
     $filmId = array_value_by_key("fid", $_GET);
@@ -128,10 +105,10 @@ function api_setRating($username)
     }
     else {
         try {
-            $score = intval($score); // On failure it returns 0
+            $score = intval($score); // On failure, it returns 0
             $score = SetRatingScoreValue::create($score);
         }
-        catch (Exception $e) {
+        catch (Exception) {
             $score = null;
         }
     }
@@ -163,7 +140,7 @@ function api_setRating($username)
     return $response;
 }
 
-function api_setFilmlist($username)
+function api_setFilmlist($username): bool|string
 {
     $listname = array_value_by_key("l", $_GET);
     $filmId = array_value_by_key("id", $_GET);
@@ -180,22 +157,26 @@ function api_setFilmlist($username)
         $filmlist->addItem($filmId, true);
     }
 
-    $film = Film::getFilmFromDb($filmId, $username);
-    $response = $film->json_encode();
+    try {
+        $film = Film::getFilmFromDb($filmId, $username);
+    } catch (Exception $e) {
+        logError("Error \RatingSync\Film::getFilmFromDb() ", e: $e);
+        return '{"Success":"false"}';
+    }
 
-    return $response;
+    return $film->json_encode();
 }
 
 /**
  * return {[{"listname": "name1", "username": "username", "items":[filmId1, filmId2, ...]}], ...}
  */
-function api_getUserLists($username)
+function api_getUserLists($username): bool|string
 {
     $lists = Filmlist::getUserListsFromDbByParent($username, true);
     return json_encode($lists);
 }
 
-function api_createFilmlist($username)
+function api_createFilmlist($username): void
 {
     $listname = array_value_by_key("l", $_GET);
     $filmId = array_value_by_key("id", $_GET);
@@ -214,23 +195,21 @@ function api_createFilmlist($username)
     $filmlist->createToDb();
 }
 
-function api_addFilmBySearch($username, $get)
+function api_addFilmBySearch($username, $get): void
 {
     $searchTerms = getApiSearchTerms($get);
 
-    $searchFilm = null;
     try {
-        $resultFilms = search($searchTerms, $username);
+        search($searchTerms, $username);
     } catch (Exception $e) {
         $errorMsg = "Error \RatingSync\search()" . 
                     "\nsearchTerms keys: " . implode(",", array_keys($searchTerms)) .
-                    "\nsearchTerms values: " . implode(",", $searchTerms) .
-                    "\nException " . $e->getCode() . " " . $e->getMessage();
-        logDebug($errorMsg, __FUNCTION__." ".__LINE__);
+                    "\nsearchTerms values: " . implode(",", $searchTerms);
+        logError($errorMsg, prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
     }
 }
 
-function getApiSearchTerms($get)
+function getApiSearchTerms($get): array
 {
     $searchQuery = array_value_by_key("q", $get);
     $searchUniqueEpisode = array_value_by_key("ue", $get);
@@ -258,7 +237,7 @@ function getApiSearchTerms($get)
     }
     
     logDebug("Params q=$searchQuery, ue=$searchUniqueEpisode, ua=$searchUniqueAlt, t=$searchTitle, y=$searchYear, py=$searchParentYear, s=$searchSeason, en=$searchEpisodeNumber, et=$searchEpisodeTitle, ct=$searchContentType, source=$searchSource", __FUNCTION__." ".__LINE__);
-    $searchTerms = array('uniqueName' => $searchQuery,
+    return array('uniqueName' => $searchQuery,
                          'uniqueEpisode' => $searchUniqueEpisode,
                          'uniqueAlt' => $searchUniqueAlt,
                          'sourceName' => $sourceName,
@@ -269,11 +248,9 @@ function getApiSearchTerms($get)
                          'episodeNumber' => $searchEpisodeNumber,
                          'episodeTitle' => htmlspecialchars_decode($searchEpisodeTitle),
                          'contentType' => $searchContentType);
-
-    return $searchTerms;
 }
 
-function api_updateFilmSource($username)
+function api_updateFilmSource(): void
 {
     $filmId = array_value_by_key("filmid", $_GET);
     $sourceName = array_value_by_key("source", $_GET);
@@ -293,21 +270,30 @@ function api_updateFilmSource($username)
     $source->setUniqueAlt($uniqueAlt);
     $source->setStreamUrl($streamUrl);
     $source->refreshStreamDate();
-    $source->saveFilmSourceToDb($filmId);
+    try {
+        $source->saveFilmSourceToDb($filmId);
+    } catch (Exception $e) {
+        logError("Error saving film source to DB.", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+    }
 }
 
-function api_getStream($username)
+function api_getStream(): string
 {
+    $response = "NONE";
     $filmId = array_value_by_key("id", $_GET);
     $sourceName = array_value_by_key("source", $_GET);
     logDebug("Params filmid=$filmId, source=$sourceName", __FUNCTION__." ".__LINE__);
-    
-    $film = Film::getFilmFromDb($filmId);
+
+    try {
+        $film = Film::getFilmFromDb($filmId);
+    } catch (Exception $e) {
+        logError("Error getting film from DB. Film id=$filmId", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+        return $response;
+    }
     $source = $film->getSource($sourceName);
     $source->createSourceToDb($film);
     $streamUrl = $source->getStreamUrl();
-    
-    $response = "NONE";
+
     if (!empty($streamUrl)) {
         $response = $streamUrl;
     }
@@ -315,7 +301,7 @@ function api_getStream($username)
     return $response;
 }
 
-function api_getFilm($username, $get)
+function api_getFilm($username, $get): bool|string
 {
     $filmId = array_value_by_key("id", $get);
     $parentId = array_value_by_key("pid", $get);
@@ -343,14 +329,18 @@ function api_getFilm($username, $get)
     return $response;
 }
 
-function getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType = null, $seasonNum = null, $episodeNum = null, $parentId = null)
+function getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType = null, $seasonNum = null, $episodeNum = null, $parentId = null): ?Film
 {
     $film = null;
-    $api = getMediaDbApiClient(Constants::DATA_API_DEFAULT);
+    $api = getMediaDbApiClient();
 
     if (!empty($filmId)) {
 
-        $film = Film::getFilmFromDb($filmId, $username);
+        try {
+            $film = Film::getFilmFromDb($filmId, $username);
+        } catch (Exception $e) {
+            logError("Error getting film from DB. Film id=$filmId, username=$username", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+        }
 
     }
     else {
@@ -380,13 +370,13 @@ function getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, 
             $searchTerms["parentId"] = $parentId;
             
             // A search adds the film to the DB. Get the new film from the DB.
-            $searchResponseJson = search($searchTerms, $username);
+            search($searchTerms, $username);
             $film = $api->getFilmFromDb($uniqueName, $contentType, $username);
         }
     }
 
     // Make sure the default API has a source and refresh the film
-    // if it the data is stale
+    // if the data is stale
     if (!empty($film)) {
         // Source
         $sourceAdded = false;
@@ -411,17 +401,15 @@ function getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, 
     return $film;
 }
 
-function api_getUser($username)
+function api_getUser($username): bool|string
 {
     logDebug("Params (none)", __FUNCTION__." ".__LINE__);
 
     $userArr = array("username" => $username);
-    $response = json_encode($userArr);
-
-    return $response;
+    return json_encode($userArr);
 }
 
-function api_getRatings($username)
+function api_getRatings($username): string
 {
     $pageSize = array_value_by_key("ps", $_GET);
     $beginPage = array_value_by_key("bp", $_GET);
@@ -482,7 +470,7 @@ function api_getRatings($username)
         }
     }
 
-    $site = new \RatingSync\RatingSyncSite($username);
+    $site = new RatingSyncSite($username);
     $site->setSort($sort);
     $site->setSortDirection($sortDirection);
     $site->setListFilter($filterListsArr);
@@ -497,17 +485,17 @@ function api_getRatings($username)
     $response .= ', "pageSize":"' .$pageSize. '"';
     $response .= ', "beginPage":"' .$beginPage. '"';
     $response .= ', "films":[';
-    $delimeter = "";
+    $delimiter = "";
     foreach($films as $film) {
-        $response .= $delimeter . $film->json_encode(false);
-        $delimeter = ",";
+        $response .= $delimiter . $film->json_encode(false);
+        $delimiter = ",";
     }
     $response .= ']}';
 
     return $response;
 }
 
-function api_getFilmsByList($username)
+function api_getFilmsByList($username): string
 {
     $listname = array_value_by_key("l", $_GET);
     $pageSize = array_value_by_key("ps", $_GET);
@@ -585,17 +573,17 @@ function api_getFilmsByList($username)
     $response .= ', "pageSize":"' .$pageSize. '"';
     $response .= ', "beginPage":"' .$beginPage. '"';
     $response .= ', "films":[';
-    $delimeter = "";
+    $delimiter = "";
     foreach($films as $film) {
-        $response .= $delimeter . $film->json_encode(false);
-        $delimeter = ",";
+        $response .= $delimiter . $film->json_encode(false);
+        $delimiter = ",";
     }
     $response .= ']}';
 
     return $response;
 }
 
-function api_searchFilms($username)
+function api_searchFilms($username): string
 {
     $searchDomain = array_value_by_key("sd", $_GET);
     $listname = array_value_by_key("list", $_GET);
@@ -609,17 +597,17 @@ function api_searchFilms($username)
     
     $response = '{';
     $response .= '"films":[';
-    $delimeter = "";
+    $delimiter = "";
     foreach($films as $film) {
-        $response .= $delimeter . $film->json_encode(true);
-        $delimeter = ",";
+        $response .= $delimiter . $film->json_encode(true);
+        $delimiter = ",";
     }
     $response .= ']}';
 
     return $response;
 }
 
-function api_getFilms($username, $params)
+function api_getFilms($username, $params): string
 {
     $filmIdsParam = array_value_by_key("id", $params);
     $sourceIdContentTypesParam = array_value_by_key("sidcts", $params);
@@ -657,16 +645,14 @@ function api_getFilms($username, $params)
         $episodeNums = explode(" ", $episodeParam);
     }
 
-    $getFromRsDbOnly = true;
-
-    $api = getMediaDbApiClient(Constants::DATA_API_DEFAULT);
+    $api = getMediaDbApiClient();
     $films = array();
     foreach ($filmIds as $filmId) {
         $film = null;
         try {
-            $film = getFilmApi($username, $filmId, null, null, $getFromRsDbOnly);
+            $film = getFilmApi($username, $filmId, null, null, getFromRsDbOnly: true);
         } catch (Exception $e) {
-            $errorMsg = "Error api.php::getFilmApi(\$username, $filmId, null, $getFromRsDbOnly) Called from api_getFilms()" . 
+            $errorMsg = "Error api.php::getFilmApi(\$username, $filmId, null, true) Called from api_getFilms()" .
                         "\nException (" . $e->getCode() . ") " . $e->getMessage();
             logDebug($errorMsg, __FUNCTION__." ".__LINE__);
         }
@@ -682,9 +668,7 @@ function api_getFilms($username, $params)
         $pieces = explode("_", $idAndContentType);
         if (count($pieces) > 1) {
             $sourceId = $pieces[0];
-            if (count($pieces) > 1) {
-                $contentType = $pieces[1];
-            }
+            $contentType = $pieces[1];
         }
 
         // Use sourceId as either imdbId or uniqueName
@@ -701,9 +685,9 @@ function api_getFilms($username, $params)
         // Call getFilmApi()
         $film = null;
         try {
-            $film = getFilmApi($username, null, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType);
+            $film = getFilmApi($username, null, $imdbId, $uniqueName, getFromRsDbOnly: true, contentType: $contentType);
         } catch (Exception $e) {
-            $errorMsg = "Error api.php::getFilmApi($username, null, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType) Called from api_getFilms()" . 
+            $errorMsg = "Error api.php::getFilmApi($username, null, $imdbId, $uniqueName, true, $contentType) Called from api_getFilms()" .
                         "\nException (" . $e->getCode() . ") " . $e->getMessage();
             logDebug($errorMsg, __FUNCTION__." ".__LINE__);
         }
@@ -729,17 +713,17 @@ function api_getFilms($username, $params)
     
     $response = '{';
     $response .= '"films":[';
-    $delimeter = "";
+    $delimiter = "";
     foreach($films as $film) {
-        $response .= $delimeter . $film->json_encode(true);
-        $delimeter = ",";
+        $response .= $delimiter . $film->json_encode(true);
+        $delimiter = ",";
     }
     $response .= ']}';
 
     return $response;
 }
 
-function api_validateNewUsername()
+function api_validateNewUsername(): string
 {
     $newUsername = array_value_by_key("u", $_GET);
     logDebug("Params u=$newUsername", __FUNCTION__." ".__LINE__);
@@ -748,12 +732,14 @@ function api_validateNewUsername()
     if (!RatingSyncSite::usernameExists($newUsername)) {
         $isValid = "true";
     }
-    $response = '{"valid":"' . $isValid . '"}';
 
-    return $response;
+    return '{"valid":"' . $isValid . '"}';
 }
 
-function api_getSeason($username)
+/**
+ * @return false|string
+ */
+function api_getSeason(): bool|string
 {
     $filmId = array_value_by_key("id", $_GET);
     $seasonNum = array_value_by_key("s", $_GET);
@@ -779,7 +765,7 @@ function api_getSeason($username)
     return $response;
 }
 
-function api_deleteFilmlist($username)
+function api_deleteFilmlist($username): bool|string
 {
     $listname = array_value_by_key("l", $_GET);
     logDebug("Params l=$listname", __FUNCTION__." ".__LINE__);
@@ -787,14 +773,16 @@ function api_deleteFilmlist($username)
     $result = '{ "Success": "false" }';
     if (!empty($username) && !empty($listname)) {
         $result = Filmlist::removeListFromDb($username, $listname, true);
-        $success = $result["Success"];
-        $deletedLists = $result["DeletedLists"];
     }
 
     return json_encode($result);
 }
 
-function api_renameFilmlist($username)
+/**
+ * @param $username
+ * @return string
+ */
+function api_renameFilmlist($username): string
 {
     $oldListname = array_value_by_key("oldl", $_GET);
     $newListname = array_value_by_key("newl", $_GET);
@@ -803,9 +791,7 @@ function api_renameFilmlist($username)
     $success = false;
     if (!empty($username) && !empty($oldListname) && !empty($newListname)) {
         $filmlist = new Filmlist($username, $oldListname);
-        if (!empty($filmlist)) {
-            $success = $filmlist->renameToDb($newListname);
-        }
+        $success = $filmlist->renameToDb($newListname);
     }
 
     if ($success) {
@@ -817,7 +803,7 @@ function api_renameFilmlist($username)
     return $response;
 }
 
-function api_archiveRating($username)
+function api_archiveRating($username): bool|string
 {
     $film = null;
     $filmId = array_value_by_key("fid", $_GET);
@@ -832,7 +818,7 @@ function api_archiveRating($username)
 
     if ( !empty($username) && !empty($filmId) && !empty($dateStr) ) {
         try {
-            $date = new \DateTime($dateStr);
+            $date = new DateTime($dateStr);
             $success = Rating::archiveRatingToDb($filmId, $username, $date, $archiveIt);
 
             if ( $success ) {
@@ -840,7 +826,7 @@ function api_archiveRating($username)
             }
         }
         catch (Exception $e) {
-            logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$date, archiveIt=$archiveIt)", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
+            logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$dateStr, archiveIt=$archiveIt)", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
         }
     }
 
@@ -869,7 +855,7 @@ function api_setSeen($username): string
         try {
 
             $filmInfo = UserSpecificFilmInfo::getFromDb($username, $filmId);
-            $film = $filmInfo?->setSeenToDb($seenBool, new \DateTime());
+            $film = $filmInfo->setSeenToDb($seenBool, new DateTime());
 
         }
         catch (Exception $e) {
@@ -902,7 +888,7 @@ function api_setNeverWatch($username): string
         try {
 
             $filmInfo = UserSpecificFilmInfo::getFromDb($username, $filmId);
-            $film = $filmInfo?->setNeverWatchToDb($neverWatchBool, new \DateTime());
+            $film = $filmInfo->setNeverWatchToDb($neverWatchBool, new DateTime());
 
         }
         catch (Exception $e) {
@@ -919,7 +905,10 @@ function api_setNeverWatch($username): string
     return $response;
 }
 
-function api_getFullUri()
+/**
+ * @return string
+ */
+function api_getFullUri(): string
 {
     $protocol = "http";
     if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {

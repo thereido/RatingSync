@@ -20,7 +20,7 @@ interface iMediaDbApiClient
  * Request data from an API. Specifically a API to a media db like OMDbApi
  * or TMDbApi. Search for films, tv shows, and episodes and get details.
  */
-abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \RatingSync\iMediaDbApiClient
+abstract class MediaDbApiClient extends ApiClient implements \RatingSync\iMediaDbApiClient
 {
     const ATTR_API_REQUEST_NAME = "api_request";
     const REQUEST_DETAIL = "detail";
@@ -70,7 +70,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
     abstract protected function validateResponseSeasonDetail($seasonJson);
 
     abstract protected function populateFilmDetail($response, $film, $overwrite = true);
-    abstract protected function populateSeason($seasonJson, $seriesId);
+    abstract protected function populateSeason(array $seasonJson, int $seriesId): Season;
     abstract protected function searchForUniqueName($film);
     abstract protected function printResultToLog($filmJson, $requestName, $contentType);
 
@@ -273,7 +273,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         return $film;
     }
     
-    public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = null)
+    public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = null): Season|false
     {
         if (is_null($seriesFilmId) || !is_numeric($seriesFilmId) ) {
             throw new \InvalidArgumentException("\$seriesFilmId ($seriesFilmId) must be numeric");
@@ -288,7 +288,12 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         $seasonJson = null;
         $validationMsg = null;
 
-        $film = Film::getFilmFromDb($seriesFilmId);
+        try {
+            $film = Film::getFilmFromDb($seriesFilmId);
+        } catch (\Exception $e) {
+            logError("Error getting film from db", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+        }
+
         if (empty($film)) {
             return false;
         }
@@ -322,9 +327,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
             $seasonJson =  json_decode($response, true);
         }
 
-        $season = $this->populateSeason($seasonJson, $seriesFilmId);
-
-        return $season;
+        return $this->populateSeason($seasonJson, $seriesFilmId);
     }
 
     /**
