@@ -1,6 +1,8 @@
 <?php
 namespace RatingSync;
 
+use Exception;
+
 require_once __DIR__ . DIRECTORY_SEPARATOR . "ExternalAdapterCsv.php";
 
 class TmdbAdapter extends ExternalAdapterCsv
@@ -17,7 +19,7 @@ class TmdbAdapter extends ExternalAdapterCsv
 
     protected function getHeader(): string
     {
-        return "rated_at,type,,,,,,tmdb_id,,,,season_number,episode_number,,,,,,episode_tmdb_id,,,rating";
+        return "rated_at,type,title,year,trakt_rating,trakt_id,imdb_id,tmdb_id,tvdb_id,url,released,season_number,episode_number,episode_title,episode_released,episode_trakt_rating,episode_trakt_id,episode_imdb_id,episode_tmdb_id,episode_tvdb_id,genres,rating";
     }
 
     protected function validateExternalFilm( Film $film ): array
@@ -26,7 +28,7 @@ class TmdbAdapter extends ExternalAdapterCsv
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     protected function createExternalFilm( Film $film, Rating|null $earliestRating = null ): ExternalFilm
     {
@@ -39,12 +41,12 @@ class TmdbFilm extends ExternalFilm
 {
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct( Film $film )
     {
         if ( $film->getUniqueName( source: Constants::SOURCE_TMDBAPI  ) == null ) {
-            throw new \Exception(ExportFormat::TMDB_RATINGS->toString() . " id must be provided");
+            throw new Exception(ExportFormat::TMDB_RATINGS->toString() . " id must be provided");
         }
 
         $this->film = $film;
@@ -61,7 +63,7 @@ class TmdbFilm extends ExternalFilm
         return $problems;
     }
 
-    public function ratingEntry( Rating $rating ): string
+    public function ratingEntry( ?Rating $rating ): string
     {
         // Example from tmdb.org
         //
@@ -71,36 +73,25 @@ class TmdbFilm extends ExternalFilm
         // 2018-08-24T00:19:16Z,movie,Skyscraper,2018,7.0518,293862,tt5758778,447200,,https://trakt.tv/movies/skyscraper-2018,2018-07-13,,,,,,,,,,"action,thriller,drama",7
         // 2018-08-22T23:10:09Z,movie,Ocean's Eight,2018,7.21611,247337,tt5164214,402900,,https://trakt.tv/movies/ocean-s-eight-2018,2018-06-08,,,,,,,,,,"thriller,crime,comedy,action",7
 
-        // Columns used for exporting ratings to TMDb
-        // rated_at,type,,,,,,tmdb_id,,,,season_number,episode_number,,,,,,episode_tmdb_id,,,rating
-
         $tmdbIdFull     = $this->film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
+        $tmdbId         = $tmdbIdFull ? substr($tmdbIdFull, offset: 2) : null;
         $tmdbType       = $this->getExternalFilmType( $this->film->getContentType() );
         $seasonNum      = $this->film->getSeason();
         $episodeNum     = $this->film->getEpisodeNumber();
+        $title          = $this->film->getTitle();
+        $year           = $this->film->getYear();
+        $episodeTitle   = $this->film->getEpisodeTitle();
         $score          = $rating?->getYourScore();
         $ratingAt       = $rating?->getYourRatingDate()?->format("Y-m-d\TH:i:s\Z");
 
-        $tmdbId         = $tmdbIdFull ? substr($tmdbIdFull, offset: 2) : null;
-        $tmdbIdEpisode  = $tmdbIdFull ? substr($tmdbIdFull, offset: 2) : null;
-
-        return "$ratingAt,$tmdbType,,,$tmdbId,$tmdbIdEpisode,,,$seasonNum,$episodeNum,,,,,,,$score";
+        // All:  rated_at,type     ,title ,year ,trakt_rating,trakt_id,imdb_id,tmdb_id,tvdb_id,url,released,season_number,episode_number,episode_title,episode_released,episode_trakt_rating,episode_trakt_id,episode_imdb_id,episode_tmdb_id,episode_tvdb_id,genres,rating
+        // Used: rated_at,type     ,title ,year ,____________,________,_______,tmdb_id,_______,___,________,season_number,episode_number,episode_title,________________,____________________,________________,_______________,_______________,_______________,______,rating
+        return "$ratingAt,$tmdbType,$title,$year,,,,$tmdbId,,,,$seasonNum,$episodeNum,$episodeTitle,,,,,,,,$score";
     }
 
     public function filmEntry(): string|array
     {
-        // Columns used for exporting film (without ratings) to TMDb
-        // ,type,,,,,,tmdb_id,,,,season_number,episode_number,,,,,,episode_tmdb_id,,,
-
-        $tmdbIdFull     = $this->film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
-        $tmdbType       = $this->getExternalFilmType( $this->film->getContentType() );
-        $seasonNum      = $this->film->getSeason();
-        $episodeNum     = $this->film->getEpisodeNumber();
-
-        $tmdbId         = $tmdbIdFull ? substr($tmdbIdFull, offset: 2) : null;
-        $tmdbIdEpisode  = $tmdbIdFull ? substr($tmdbIdFull, offset: 2) : null;
-
-        return ",$tmdbType,,,$tmdbId,$tmdbIdEpisode,,,$seasonNum,$episodeNum,,,,,,,";
+        return $this->ratingEntry( rating: null );
     }
 
     private function getExternalFilmType( string $contentType ): string
