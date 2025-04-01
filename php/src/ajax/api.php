@@ -34,179 +34,32 @@ function handleApiAction(string $action, string $username): string
 {
     // Map actions to their handler functions
     $actionsMap = [
-        "getSearchFilm"         => fn() => api_getSearchFilm($username, $_GET),
-        "setRating"             => fn() => api_setRating($username),
-        "setFilmlist"           => fn() => api_setFilmlist($username),
-        "getUserLists"          => fn() => api_getUserLists($username),
-        "createFilmlist"        => fn() => api_createFilmlist($username),
         "addFilmBySearch"       => fn() => api_addFilmBySearch($username, $_GET),
-        "updateFilmSource"      => fn() => api_updateFilmSource(),
-        "getStream"             => fn() => api_getStream(),
-        "getFilm"               => fn() => api_getFilm($username, $_GET),
-        "getUser"               => fn() => api_getUser($username),
-        "getRatings"            => fn() => api_getRatings($username),
-        "getFilmsByList"        => fn() => api_getFilmsByList($username),
-        "searchFilms"           => fn() => api_searchFilms($username),
-        "getFilms"              => fn() => api_getFilms($username, $_GET),
-        "validateNewUsername"   => fn() => api_validateNewUsername(),
-        "getSeason"             => fn() => api_getSeason(),
-        "deleteFilmlist"        => fn() => api_deleteFilmlist($username),
-        "renameFilmlist"        => fn() => api_renameFilmlist($username),
         "archiveRating"         => fn() => api_archiveRating($username),
-        "setSeen"               => fn() => api_setSeen($username),
+        "createFilmlist"        => fn() => api_createFilmlist($username),
+        "deleteFilmlist"        => fn() => api_deleteFilmlist($username),
+        "getFilm"               => fn() => api_getFilm($username, $_GET),
+        "getFilms"              => fn() => api_getFilms($username, $_GET),
+        "getFilmsByList"        => fn() => api_getFilmsByList($username),
+        "getRatings"            => fn() => api_getRatings($username),
+        "getSearchFilm"         => fn() => api_getSearchFilm($username, $_GET),
+        "getSeason"             => fn() => api_getSeason(),
+        "getStream"             => fn() => api_getStream(),
+        "getUser"               => fn() => api_getUser($username),
+        "getUserLists"          => fn() => api_getUserLists($username),
+        "renameFilmlist"        => fn() => api_renameFilmlist($username),
+        "searchFilms"           => fn() => api_searchFilms($username),
+        "setFilmlist"           => fn() => api_setFilmlist($username),
         "setNeverWatch"         => fn() => api_setNeverWatch($username),
+        "setRating"             => fn() => api_setRating($username),
+        "setSeen"               => fn() => api_setSeen($username),
         "setTheme"              => fn() => api_setTheme($username, $_GET),
+        "updateFilmSource"      => fn() => api_updateFilmSource(),
+        "validateNewUsername"   => fn() => api_validateNewUsername(),
     ];
 
     // Call the handler if the action exists, otherwise return default
     return $actionsMap[$action]() ?? DEFAULT_RESPONSE;
-}
-
-function api_getSearchFilm(string $username, array $requestParams): string
-{
-    $searchTerms = getApiSearchTerms($requestParams);
-
-    try {
-        $resultFilms = search($searchTerms, $username);
-        $matchFilm = array_value_by_key('match', $resultFilms);
-        $parentFilm = array_value_by_key('parent', $resultFilms);
-    } catch (Exception $e) {
-        $errorMsg = "Error during search" .
-            "\nSearch Terms Keys: " . implode(",", array_keys($searchTerms)) .
-            "\nSearch Terms Values: " . implode(",", $searchTerms);
-        logError(input: $errorMsg, prefix: __FUNCTION__ . " " . __LINE__, e: $e);
-        return json_encode([]); // Return empty JSON on error
-    }
-    
-    $responseArr = array();
-    if (!empty($matchFilm)) {
-        $responseArr['match'] = $matchFilm->asArray();
-    }
-    if (!empty($parentFilm)) {
-        $responseArr['parent'] = $parentFilm->asArray();
-    }
-    
-    return json_encode($responseArr);
-}
-
-function api_setRating($username): bool|string
-{
-    $film = null;
-    $filmId = array_value_by_key("fid", $_GET);
-    $score = array_value_by_key("s", $_GET);
-    $watchedParam = array_value_by_key("w", $_GET);
-    $dateStr = array_value_by_key("d", $_GET); // Format: 2000-02-28
-    $originalDateStr = array_value_by_key("od", $_GET); // Format: 2000-02-28
-    $force = array_value_by_key("force", $_GET);
-    logDebug("Params fid=$filmId, s=$score, w=$watchedParam, d=$dateStr, od=$originalDateStr, force=$force", __FUNCTION__." ".__LINE__);
-
-    if ( $score == "null" ) {
-        $score = null;
-    }
-    else {
-        try {
-            $score = intval($score); // On failure, it returns 0
-            $score = SetRatingScoreValue::create($score);
-        }
-        catch (Exception) {
-            $score = null;
-        }
-    }
-
-    if ( $dateStr == "null" ) {
-        $dateStr = null;
-    }
-
-    $watched = false;
-    if ( $watchedParam == 1 || $watchedParam == "true") {
-        $watched = true;
-    }
-
-    $forceDelete = false;
-    if ( $force == 1 || $force == "true") {
-        $forceDelete = true;
-    }
-
-    if (!empty($username) && !empty($filmId) && $score instanceof SetRatingScoreValue) {
-        $film = setRating($filmId, $score, $watched, $dateStr, $originalDateStr, $forceDelete);
-    }
-
-    if (empty($film)) {
-        $response = '{"Success":"false"}';
-    } else {
-        $response = $film->json_encode();
-    }
-
-    return $response;
-}
-
-function api_setFilmlist($username): bool|string
-{
-    $listname = array_value_by_key("l", $_GET);
-    $filmId = array_value_by_key("id", $_GET);
-    $checked = array_value_by_key("c", $_GET);
-    $remove = false;
-    if ($checked == 0) {
-        $remove = true;
-    }
-    logDebug("Params l=$listname, id=$filmId, c=$checked", __FUNCTION__." ".__LINE__);
-    $filmlist = Filmlist::getListFromDb($username, $listname);
-    if ($remove) {
-        $filmlist->removeItem($filmId, true);
-    } else {
-        $filmlist->addItem($filmId, true);
-    }
-
-    try {
-        $film = Film::getFilmFromDb($filmId, $username);
-    } catch (Exception $e) {
-        logError("Error \RatingSync\Film::getFilmFromDb() ", e: $e);
-        return '{"Success":"false"}';
-    }
-
-    return $film->json_encode();
-}
-
-/**
- * return {[{"listname": "name1", "username": "username", "items":[filmId1, filmId2, ...]}], ...}
- */
-function api_getUserLists($username): bool|string
-{
-    $lists = Filmlist::getUserListsFromDbByParent($username, true);
-    return json_encode($lists);
-}
-
-function api_createFilmlist($username): void
-{
-    $listname = array_value_by_key("l", $_GET);
-    $filmId = array_value_by_key("id", $_GET);
-    $checked = array_value_by_key("a", $_GET);
-    $parent = array_value_by_key("parent", $_GET);
-    $add = false;
-    if ($checked == 1) {
-        $add = true;
-    }
-    logDebug("Params l=$listname, id=$filmId, a=$checked, parent=$parent", __FUNCTION__." ".__LINE__);
-    $filmlist = Filmlist::getListFromDb($username, $listname, $parent);
-    if ($add) {
-        $filmlist->addItem($filmId);
-    }
-
-    $filmlist->createToDb();
-}
-
-function api_addFilmBySearch($username, $get): void
-{
-    $searchTerms = getApiSearchTerms($get);
-
-    try {
-        search($searchTerms, $username);
-    } catch (Exception $e) {
-        $errorMsg = "Error \RatingSync\search()" . 
-                    "\nsearchTerms keys: " . implode(",", array_keys($searchTerms)) .
-                    "\nsearchTerms values: " . implode(",", $searchTerms);
-        logError($errorMsg, prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
-    }
 }
 
 function getApiSearchTerms($get): array
@@ -248,85 +101,6 @@ function getApiSearchTerms($get): array
                          'episodeNumber' => $searchEpisodeNumber,
                          'episodeTitle' => htmlspecialchars_decode($searchEpisodeTitle),
                          'contentType' => $searchContentType);
-}
-
-function api_updateFilmSource(): void
-{
-    $filmId = array_value_by_key("filmid", $_GET);
-    $sourceName = array_value_by_key("source", $_GET);
-    $streamUrl = array_value_by_key("su", $_GET);
-    $uniqueName = array_value_by_key("un", $_GET);
-    $uniqueEpisode = array_value_by_key("ue", $_GET);
-    $uniqueAlt = array_value_by_key("ua", $_GET);
-    logDebug("Params filmid=$filmId, source=$sourceName, su=$streamUrl, un=$uniqueName, ue=$uniqueEpisode, ua=$uniqueAlt", __FUNCTION__." ".__LINE__);
-
-    if ($streamUrl == "none") {
-        $streamUrl = null;
-    }
-    
-    $source = new Source($sourceName, $filmId);
-    $source->setUniqueName($uniqueName);
-    $source->setUniqueEpisode($uniqueEpisode);
-    $source->setUniqueAlt($uniqueAlt);
-    $source->setStreamUrl($streamUrl);
-    $source->refreshStreamDate();
-    try {
-        $source->saveFilmSourceToDb($filmId);
-    } catch (Exception $e) {
-        logError("Error saving film source to DB.", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
-    }
-}
-
-function api_getStream(): string
-{
-    $response = "NONE";
-    $filmId = array_value_by_key("id", $_GET);
-    $sourceName = array_value_by_key("source", $_GET);
-    logDebug("Params filmid=$filmId, source=$sourceName", __FUNCTION__." ".__LINE__);
-
-    try {
-        $film = Film::getFilmFromDb($filmId);
-    } catch (Exception $e) {
-        logError("Error getting film from DB. Film id=$filmId", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
-        return $response;
-    }
-    $source = $film->getSource($sourceName);
-    $source->createSourceToDb($film);
-    $streamUrl = $source->getStreamUrl();
-
-    if (!empty($streamUrl)) {
-        $response = $streamUrl;
-    }
-
-    return $response;
-}
-
-function api_getFilm($username, $get): bool|string
-{
-    $filmId = array_value_by_key("id", $get);
-    $parentId = array_value_by_key("pid", $get);
-    $imdbId = array_value_by_key("imdb", $get);
-    $uniqueName = array_value_by_key("un", $get);
-    $contentType = array_value_by_key("ct", $get);
-    $seasonNum = array_value_by_key("s", $get);
-    $episodeNum = array_value_by_key("e", $get);
-    $getFromRsDbOnly = array_value_by_key("rsonly", $get);
-    logDebug("Params id=$filmId, pid=$parentId, imdbId=$imdbId, un=$uniqueName, ct=$contentType, s=$seasonNum, e=$episodeNum, rsonly=$getFromRsDbOnly", __FUNCTION__." ".__LINE__);
-    
-    if ($getFromRsDbOnly === "0") {
-        $getFromRsDbOnly = false;
-    } else {
-        $getFromRsDbOnly = true;
-    }
-    
-    $response = '{"Success":"false"}';
-    $film = getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType, $seasonNum, $episodeNum, $parentId);
-    
-    if (!empty($film)) {
-        $response = $film->json_encode();
-    }
-
-    return $response;
 }
 
 function getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType = null, $seasonNum = null, $episodeNum = null, $parentId = null): ?Film
@@ -401,208 +175,134 @@ function getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, 
     return $film;
 }
 
-function api_getUser($username): bool|string
+/**
+ * @return string
+ */
+function api_getFullUri(): string
 {
-    logDebug("Params (none)", __FUNCTION__." ".__LINE__);
+    $protocol = "http";
+    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+        $protocol = "https";
+    }
 
-    $userArr = array("username" => $username);
-    return json_encode($userArr);
+    return "$protocol://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 }
 
-function api_getRatings($username): string
+/** FIXME:   */
+/** FIXME:   */
+/** FIXME:   */
+/** FIXME:   */
+/** FIXME:   */
+/** FIXME:   */
+/** FIXME:   */
+/** FIXME: TOP  */
+
+function api_addFilmBySearch($username, $get): void
 {
-    $pageSize = array_value_by_key("ps", $_GET);
-    $beginPage = array_value_by_key("bp", $_GET);
-    $sort = array_value_by_key("sort", $_GET);
-    $sortDirection = array_value_by_key("direction", $_GET);
-    $filterlists = array_value_by_key("filterlists", $_GET);
-    $filtergenres = array_value_by_key("filtergenres", $_GET);
-    $filtergenreany = array_value_by_key("filtergenreany", $_GET);
-    $filtercontenttypes = array_value_by_key("filtercontenttypes", $_GET);
-    logDebug("Params ps=$pageSize, bp=$beginPage, sort=$sort, sortDirection=$sortDirection, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany, filtercontenttypes=$filtercontenttypes", __FUNCTION__." ".__LINE__);
-    
-    if (empty($pageSize)) {
-        $pageSize = null;
+    $searchTerms = getApiSearchTerms($get);
+
+    try {
+        search($searchTerms, $username);
+    } catch (Exception $e) {
+        $errorMsg = "Error \RatingSync\search()" .
+            "\nsearchTerms keys: " . implode(",", array_keys($searchTerms)) .
+            "\nsearchTerms values: " . implode(",", $searchTerms);
+        logError($errorMsg, prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
     }
-    if (empty($beginPage)) {
-        $beginPage = 1;
+}
+
+function api_archiveRating($username): bool|string
+{
+    $film = null;
+    $filmId = array_value_by_key("fid", $_GET);
+    $dateStr = array_value_by_key("d", $_GET); // Format: 2000-02-28
+    $archiveNum = array_value_by_key("archive", $_GET);
+    logDebug("Params fid=$filmId, d=$dateStr, archive=$archiveNum", __FUNCTION__." ".__LINE__);
+
+    $archiveIt = true;
+    if ( $archiveNum == 0 ) {
+        $archiveIt = false;
     }
 
-    $sort = RatingSortField::convert($sort);
-    if ( $sort == null ) { $sort = RatingSortField::date; }
+    if ( !empty($username) && !empty($filmId) && !empty($dateStr) ) {
+        try {
+            $date = new DateTime($dateStr);
+            $success = Rating::archiveRatingToDb($filmId, $username, $date, $archiveIt);
 
-    $sortDirection = SqlSortDirection::convert($sortDirection);
-    if ( $sortDirection == null ) { $sortDirection = SqlSortDirection::descending; }
-
-    // Filter by other lists. Return only films in this list that
-    // are also in at least one of the lists being used with the filter
-    $filterListsArr = null;
-    if (!empty($filterlists)) {
-        $filterListsArr = explode("%l", $filterlists);
-    }
-
-    // Filter by genres. Return only films in at least one of the genres
-    $filterGenresArr = array();
-    if (!empty($filtergenres)) {
-        $filterGenresArr = explode("%g", $filtergenres);
-    }
-    $filterGenresMatchAny = true;
-    if ($filtergenreany === "0") {
-        $filterGenresMatchAny = false;
-    }
-    
-    // Filter by contentType. If the param is empty return all types.
-    // If the param non-empty return only types in the list.
-    $filterContentTypesArr = array();
-    if (!empty($filtercontenttypes)) {
-        $filterContentTypesParam = explode("%c", $filtercontenttypes);
-        if (!in_array(Film::CONTENT_FILM, $filterContentTypesParam)) {
-            $filterContentTypesArr[Film::CONTENT_FILM] = false;
+            if ( $success ) {
+                $film =  Film::getFilmFromDb($filmId, $username);
+            }
         }
-        if (!in_array(Film::CONTENT_TV_SERIES, $filterContentTypesParam)) {
-            $filterContentTypesArr[Film::CONTENT_TV_SERIES] = false;
-        }
-        if (!in_array(Film::CONTENT_TV_EPISODE, $filterContentTypesParam)) {
-            $filterContentTypesArr[Film::CONTENT_TV_EPISODE] = false;
-        }
-        if (!in_array(Film::CONTENT_SHORTFILM, $filterContentTypesParam)) {
-            $filterContentTypesArr[Film::CONTENT_SHORTFILM] = false;
+        catch (Exception $e) {
+            logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$dateStr, archiveIt=$archiveIt)", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
         }
     }
 
-    $site = new RatingSyncSite($username);
-    $site->setSort($sort);
-    $site->setSortDirection($sortDirection);
-    $site->setListFilter($filterListsArr);
-    $site->setGenreFilter($filterGenresArr);
-    $site->setGenreFilterMatchAny($filterGenresMatchAny);
-    $site->setContentTypeFilter($filterContentTypesArr);
-    $films = $site->getRatedFilms($pageSize, $beginPage);
-    $totalRatings = $site->countRatings();
-    
-    $response = '{';
-    $response .= '"totalCount":"' .$totalRatings. '"';
-    $response .= ', "pageSize":"' .$pageSize. '"';
-    $response .= ', "beginPage":"' .$beginPage. '"';
-    $response .= ', "films":[';
-    $delimiter = "";
-    foreach($films as $film) {
-        $response .= $delimiter . $film->json_encode(false);
-        $delimiter = ",";
+    if (empty($film)) {
+        $response = '{"Success":"false"}';
+    } else {
+        $response = $film->json_encode();
     }
-    $response .= ']}';
 
     return $response;
 }
 
-function api_getFilmsByList($username): string
+function api_createFilmlist($username): void
 {
     $listname = array_value_by_key("l", $_GET);
-    $pageSize = array_value_by_key("ps", $_GET);
-    $beginPage = array_value_by_key("bp", $_GET);
-    $sort = array_value_by_key("sort", $_GET);
-    $sortDirection = array_value_by_key("direction", $_GET);
-    $filterlists = array_value_by_key("filterlists", $_GET);
-    $filtergenres = array_value_by_key("filtergenres", $_GET);
-    $filtergenreany = array_value_by_key("filtergenreany", $_GET);
-    $filtercontenttypes = array_value_by_key("filtercontenttypes", $_GET);
-    logDebug("Params l=$listname, ps=$pageSize, bp=$beginPage, sort=$sort, sortDirection=$sortDirection, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany, filtercontenttypes=$filtercontenttypes", __FUNCTION__." ".__LINE__);
-    
-    if (empty($pageSize)) {
-        $pageSize = null;
+    $filmId = array_value_by_key("id", $_GET);
+    $checked = array_value_by_key("a", $_GET);
+    $parent = array_value_by_key("parent", $_GET);
+    $add = false;
+    if ($checked == 1) {
+        $add = true;
     }
-    if (empty($beginPage)) {
-        $beginPage = 1;
+    logDebug("Params l=$listname, id=$filmId, a=$checked, parent=$parent", __FUNCTION__." ".__LINE__);
+    $filmlist = Filmlist::getListFromDb($username, $listname, $parent);
+    if ($add) {
+        $filmlist->addItem($filmId);
     }
 
-    $sort = ListSortField::convert($sort);
-    if ( $sort == null ) { $sort = ListSortField::position; }
-
-    $sortDirection = SqlSortDirection::convert($sortDirection);
-    if ( $sortDirection == null ) { $sortDirection = SqlSortDirection::descending; }
-
-    // Filter by other lists. Return only films in this list that
-    // are also in at least one of the lists being used with the filter
-    $filterListsArr = array();
-    if (!empty($filterlists)) {
-        $filterListsArr = explode("%l", $filterlists);
-    }
-
-    // Filter by genres. Return only films in at least one of the genres
-    $filterGenresArr = array();
-    if (!empty($filtergenres)) {
-        $filterGenresArr = explode("%g", $filtergenres);
-    }
-    $filterGenresMatchAny = true;
-    if ($filtergenreany === "0") {
-        $filterGenresMatchAny = false;
-    }
-    
-    // Filter by contentType. If the param is empty return all types.
-    // If the param non-empty return only types in the list.
-    $filterContentTypesArr = array();
-    if (!empty($filtercontenttypes)) {
-        $filterContentTypesParam = explode("%c", $filtercontenttypes);
-        if (!in_array(Film::CONTENT_FILM, $filterContentTypesParam)) {
-            $filterContentTypesArr[Film::CONTENT_FILM] = false;
-        }
-        if (!in_array(Film::CONTENT_TV_SERIES, $filterContentTypesParam)) {
-            $filterContentTypesArr[Film::CONTENT_TV_SERIES] = false;
-        }
-        if (!in_array(Film::CONTENT_TV_EPISODE, $filterContentTypesParam)) {
-            $filterContentTypesArr[Film::CONTENT_TV_EPISODE] = false;
-        }
-        if (!in_array(Film::CONTENT_SHORTFILM, $filterContentTypesParam)) {
-            $filterContentTypesArr[Film::CONTENT_SHORTFILM] = false;
-        }
-    }
-    
-    $list = new Filmlist($username, $listname);
-    $list->setSort($sort);
-    $list->setSortDirection($sortDirection);
-    $list->setListFilter($filterListsArr);
-    $list->setGenreFilter($filterGenresArr);
-    $list->setGenreFilterMatchAny($filterGenresMatchAny);
-    $list->setContentFilter($filterContentTypesArr);
-    $list->initFromDb();
-    $films = $list->getFilms($pageSize, $beginPage);
-    $totalCount = $list->count();
-    
-    $response = '{';
-    $response .= '"totalCount":"' .$totalCount. '"';
-    $response .= ', "pageSize":"' .$pageSize. '"';
-    $response .= ', "beginPage":"' .$beginPage. '"';
-    $response .= ', "films":[';
-    $delimiter = "";
-    foreach($films as $film) {
-        $response .= $delimiter . $film->json_encode(false);
-        $delimiter = ",";
-    }
-    $response .= ']}';
-
-    return $response;
+    $filmlist->createToDb();
 }
 
-function api_searchFilms($username): string
+function api_deleteFilmlist($username): bool|string
 {
-    $searchDomain = array_value_by_key("sd", $_GET);
-    $listname = array_value_by_key("list", $_GET);
-    $query = array_value_by_key("q", $_GET);
-    logDebug("Params sd=$searchDomain, list=$listname, q=$query", __FUNCTION__." ".__LINE__);
+    $listname = array_value_by_key("l", $_GET);
+    logDebug("Params l=$listname", __FUNCTION__." ".__LINE__);
 
-    $site = new RatingSyncSite($username);
-    $limit = 5;
-    // Search domains supported: ratings, list, both
-    $films = $site->search($query, $searchDomain, $listname, $limit);
-    
-    $response = '{';
-    $response .= '"films":[';
-    $delimiter = "";
-    foreach($films as $film) {
-        $response .= $delimiter . $film->json_encode(true);
-        $delimiter = ",";
+    $result = '{ "Success": "false" }';
+    if (!empty($username) && !empty($listname)) {
+        $result = Filmlist::removeListFromDb($username, $listname, true);
     }
-    $response .= ']}';
+
+    return json_encode($result);
+}
+
+function api_getFilm($username, $get): bool|string
+{
+    $filmId = array_value_by_key("id", $get);
+    $parentId = array_value_by_key("pid", $get);
+    $imdbId = array_value_by_key("imdb", $get);
+    $uniqueName = array_value_by_key("un", $get);
+    $contentType = array_value_by_key("ct", $get);
+    $seasonNum = array_value_by_key("s", $get);
+    $episodeNum = array_value_by_key("e", $get);
+    $getFromRsDbOnly = array_value_by_key("rsonly", $get);
+    logDebug("Params id=$filmId, pid=$parentId, imdbId=$imdbId, un=$uniqueName, ct=$contentType, s=$seasonNum, e=$episodeNum, rsonly=$getFromRsDbOnly", __FUNCTION__." ".__LINE__);
+
+    if ($getFromRsDbOnly === "0") {
+        $getFromRsDbOnly = false;
+    } else {
+        $getFromRsDbOnly = true;
+    }
+
+    $response = '{"Success":"false"}';
+    $film = getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType, $seasonNum, $episodeNum, $parentId);
+
+    if (!empty($film)) {
+        $response = $film->json_encode();
+    }
 
     return $response;
 }
@@ -653,7 +353,7 @@ function api_getFilms($username, $params): string
             $film = getFilmApi($username, $filmId, null, null, getFromRsDbOnly: true);
         } catch (Exception $e) {
             $errorMsg = "Error api.php::getFilmApi(\$username, $filmId, null, true) Called from api_getFilms()" .
-                        "\nException (" . $e->getCode() . ") " . $e->getMessage();
+                "\nException (" . $e->getCode() . ") " . $e->getMessage();
             logDebug($errorMsg, __FUNCTION__." ".__LINE__);
         }
         if (! empty($film)) {
@@ -688,7 +388,7 @@ function api_getFilms($username, $params): string
             $film = getFilmApi($username, null, $imdbId, $uniqueName, getFromRsDbOnly: true, contentType: $contentType);
         } catch (Exception $e) {
             $errorMsg = "Error api.php::getFilmApi($username, null, $imdbId, $uniqueName, true, $contentType) Called from api_getFilms()" .
-                        "\nException (" . $e->getCode() . ") " . $e->getMessage();
+                "\nException (" . $e->getCode() . ") " . $e->getMessage();
             logDebug($errorMsg, __FUNCTION__." ".__LINE__);
         }
 
@@ -702,15 +402,15 @@ function api_getFilms($username, $params): string
         try {
             $film = $api->getEpisodeFromDb($seriesFilmId, $seasonNum, $episodeNum, $username);
         } catch (Exception $e) {
-            $errorMsg = "Error getEpisodeFromDb($seriesFilmId, $seasonNum, $episodeNum, \$username) Called from api_getFilms()" . 
-                        "\nException (" . $e->getCode() . ") " . $e->getMessage();
+            $errorMsg = "Error getEpisodeFromDb($seriesFilmId, $seasonNum, $episodeNum, \$username) Called from api_getFilms()" .
+                "\nException (" . $e->getCode() . ") " . $e->getMessage();
             logDebug($errorMsg, __FUNCTION__." ".__LINE__);
         }
         if (!empty($film)) {
             $films[] = $film;
         }
     }
-    
+
     $response = '{';
     $response .= '"films":[';
     $delimiter = "";
@@ -723,17 +423,205 @@ function api_getFilms($username, $params): string
     return $response;
 }
 
-function api_validateNewUsername(): string
+function api_getFilmsByList($username): string
 {
-    $newUsername = array_value_by_key("u", $_GET);
-    logDebug("Params u=$newUsername", __FUNCTION__." ".__LINE__);
+    $listname = array_value_by_key("l", $_GET);
+    $pageSize = array_value_by_key("ps", $_GET);
+    $beginPage = array_value_by_key("bp", $_GET);
+    $sort = array_value_by_key("sort", $_GET);
+    $sortDirection = array_value_by_key("direction", $_GET);
+    $filterlists = array_value_by_key("filterlists", $_GET);
+    $filtergenres = array_value_by_key("filtergenres", $_GET);
+    $filtergenreany = array_value_by_key("filtergenreany", $_GET);
+    $filtercontenttypes = array_value_by_key("filtercontenttypes", $_GET);
+    logDebug("Params l=$listname, ps=$pageSize, bp=$beginPage, sort=$sort, sortDirection=$sortDirection, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany, filtercontenttypes=$filtercontenttypes", __FUNCTION__." ".__LINE__);
 
-    $isValid = "false";
-    if (!RatingSyncSite::usernameExists($newUsername)) {
-        $isValid = "true";
+    if (empty($pageSize)) {
+        $pageSize = null;
+    }
+    if (empty($beginPage)) {
+        $beginPage = 1;
     }
 
-    return '{"valid":"' . $isValid . '"}';
+    $sort = ListSortField::convert($sort);
+    if ( $sort == null ) { $sort = ListSortField::position; }
+
+    $sortDirection = SqlSortDirection::convert($sortDirection);
+    if ( $sortDirection == null ) { $sortDirection = SqlSortDirection::descending; }
+
+    // Filter by other lists. Return only films in this list that
+    // are also in at least one of the lists being used with the filter
+    $filterListsArr = array();
+    if (!empty($filterlists)) {
+        $filterListsArr = explode("%l", $filterlists);
+    }
+
+    // Filter by genres. Return only films in at least one of the genres
+    $filterGenresArr = array();
+    if (!empty($filtergenres)) {
+        $filterGenresArr = explode("%g", $filtergenres);
+    }
+    $filterGenresMatchAny = true;
+    if ($filtergenreany === "0") {
+        $filterGenresMatchAny = false;
+    }
+
+    // Filter by contentType. If the param is empty return all types.
+    // If the param non-empty return only types in the list.
+    $filterContentTypesArr = array();
+    if (!empty($filtercontenttypes)) {
+        $filterContentTypesParam = explode("%c", $filtercontenttypes);
+        if (!in_array(Film::CONTENT_FILM, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_FILM] = false;
+        }
+        if (!in_array(Film::CONTENT_TV_SERIES, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_TV_SERIES] = false;
+        }
+        if (!in_array(Film::CONTENT_TV_EPISODE, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_TV_EPISODE] = false;
+        }
+        if (!in_array(Film::CONTENT_SHORTFILM, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_SHORTFILM] = false;
+        }
+    }
+
+    $list = new Filmlist($username, $listname);
+    $list->setSort($sort);
+    $list->setSortDirection($sortDirection);
+    $list->setListFilter($filterListsArr);
+    $list->setGenreFilter($filterGenresArr);
+    $list->setGenreFilterMatchAny($filterGenresMatchAny);
+    $list->setContentFilter($filterContentTypesArr);
+    $list->initFromDb();
+    $films = $list->getFilms($pageSize, $beginPage);
+    $totalCount = $list->count();
+
+    $response = '{';
+    $response .= '"totalCount":"' .$totalCount. '"';
+    $response .= ', "pageSize":"' .$pageSize. '"';
+    $response .= ', "beginPage":"' .$beginPage. '"';
+    $response .= ', "films":[';
+    $delimiter = "";
+    foreach($films as $film) {
+        $response .= $delimiter . $film->json_encode(false);
+        $delimiter = ",";
+    }
+    $response .= ']}';
+
+    return $response;
+}
+
+function api_getRatings($username): string
+{
+    $pageSize = array_value_by_key("ps", $_GET);
+    $beginPage = array_value_by_key("bp", $_GET);
+    $sort = array_value_by_key("sort", $_GET);
+    $sortDirection = array_value_by_key("direction", $_GET);
+    $filterlists = array_value_by_key("filterlists", $_GET);
+    $filtergenres = array_value_by_key("filtergenres", $_GET);
+    $filtergenreany = array_value_by_key("filtergenreany", $_GET);
+    $filtercontenttypes = array_value_by_key("filtercontenttypes", $_GET);
+    logDebug("Params ps=$pageSize, bp=$beginPage, sort=$sort, sortDirection=$sortDirection, filterlists=$filterlists, filtergenres=$filtergenres, filtergenreany=$filtergenreany, filtercontenttypes=$filtercontenttypes", __FUNCTION__." ".__LINE__);
+
+    if (empty($pageSize)) {
+        $pageSize = null;
+    }
+    if (empty($beginPage)) {
+        $beginPage = 1;
+    }
+
+    $sort = RatingSortField::convert($sort);
+    if ( $sort == null ) { $sort = RatingSortField::date; }
+
+    $sortDirection = SqlSortDirection::convert($sortDirection);
+    if ( $sortDirection == null ) { $sortDirection = SqlSortDirection::descending; }
+
+    // Filter by other lists. Return only films in this list that
+    // are also in at least one of the lists being used with the filter
+    $filterListsArr = null;
+    if (!empty($filterlists)) {
+        $filterListsArr = explode("%l", $filterlists);
+    }
+
+    // Filter by genres. Return only films in at least one of the genres
+    $filterGenresArr = array();
+    if (!empty($filtergenres)) {
+        $filterGenresArr = explode("%g", $filtergenres);
+    }
+    $filterGenresMatchAny = true;
+    if ($filtergenreany === "0") {
+        $filterGenresMatchAny = false;
+    }
+
+    // Filter by contentType. If the param is empty return all types.
+    // If the param non-empty return only types in the list.
+    $filterContentTypesArr = array();
+    if (!empty($filtercontenttypes)) {
+        $filterContentTypesParam = explode("%c", $filtercontenttypes);
+        if (!in_array(Film::CONTENT_FILM, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_FILM] = false;
+        }
+        if (!in_array(Film::CONTENT_TV_SERIES, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_TV_SERIES] = false;
+        }
+        if (!in_array(Film::CONTENT_TV_EPISODE, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_TV_EPISODE] = false;
+        }
+        if (!in_array(Film::CONTENT_SHORTFILM, $filterContentTypesParam)) {
+            $filterContentTypesArr[Film::CONTENT_SHORTFILM] = false;
+        }
+    }
+
+    $site = new RatingSyncSite($username);
+    $site->setSort($sort);
+    $site->setSortDirection($sortDirection);
+    $site->setListFilter($filterListsArr);
+    $site->setGenreFilter($filterGenresArr);
+    $site->setGenreFilterMatchAny($filterGenresMatchAny);
+    $site->setContentTypeFilter($filterContentTypesArr);
+    $films = $site->getRatedFilms($pageSize, $beginPage);
+    $totalRatings = $site->countRatings();
+
+    $response = '{';
+    $response .= '"totalCount":"' .$totalRatings. '"';
+    $response .= ', "pageSize":"' .$pageSize. '"';
+    $response .= ', "beginPage":"' .$beginPage. '"';
+    $response .= ', "films":[';
+    $delimiter = "";
+    foreach($films as $film) {
+        $response .= $delimiter . $film->json_encode(false);
+        $delimiter = ",";
+    }
+    $response .= ']}';
+
+    return $response;
+}
+
+function api_getSearchFilm(string $username, array $requestParams): string
+{
+    $searchTerms = getApiSearchTerms($requestParams);
+
+    try {
+        $resultFilms = search($searchTerms, $username);
+        $matchFilm = array_value_by_key('match', $resultFilms);
+        $parentFilm = array_value_by_key('parent', $resultFilms);
+    } catch (Exception $e) {
+        $errorMsg = "Error during search" .
+            "\nSearch Terms Keys: " . implode(",", array_keys($searchTerms)) .
+            "\nSearch Terms Values: " . implode(",", $searchTerms);
+        logError(input: $errorMsg, prefix: __FUNCTION__ . " " . __LINE__, e: $e);
+        return json_encode([]); // Return empty JSON on error
+    }
+
+    $responseArr = array();
+    if (!empty($matchFilm)) {
+        $responseArr['match'] = $matchFilm->asArray();
+    }
+    if (!empty($parentFilm)) {
+        $responseArr['parent'] = $parentFilm->asArray();
+    }
+
+    return json_encode($responseArr);
 }
 
 /**
@@ -751,12 +639,12 @@ function api_getSeason(): bool|string
         $season = $dataApi->getSeasonFromApi($filmId, $seasonNum);
     }
     catch (Exception $e) {
-        $errorMsg = "Error getSeasonFromApi(filmId=$filmId, seasonNum=$seasonNum)" . 
-                    "\nException " . $e->getCode() . " " . $e->getMessage() .
-                    "\n$e";
+        $errorMsg = "Error getSeasonFromApi(filmId=$filmId, seasonNum=$seasonNum)" .
+            "\nException " . $e->getCode() . " " . $e->getMessage() .
+            "\n$e";
         logDebug($errorMsg, __FUNCTION__." ".__LINE__);
     }
-    
+
     $response = json_encode(array("Response" => "False"));
     if (!empty($season)) {
         $response = $season->json_encode(true);
@@ -765,17 +653,45 @@ function api_getSeason(): bool|string
     return $response;
 }
 
-function api_deleteFilmlist($username): bool|string
+function api_getStream(): string
 {
-    $listname = array_value_by_key("l", $_GET);
-    logDebug("Params l=$listname", __FUNCTION__." ".__LINE__);
+    $response = "NONE";
+    $filmId = array_value_by_key("id", $_GET);
+    $sourceName = array_value_by_key("source", $_GET);
+    logDebug("Params filmid=$filmId, source=$sourceName", __FUNCTION__." ".__LINE__);
 
-    $result = '{ "Success": "false" }';
-    if (!empty($username) && !empty($listname)) {
-        $result = Filmlist::removeListFromDb($username, $listname, true);
+    try {
+        $film = Film::getFilmFromDb($filmId);
+    } catch (Exception $e) {
+        logError("Error getting film from DB. Film id=$filmId", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+        return $response;
+    }
+    $source = $film->getSource($sourceName);
+    $source->createSourceToDb($film);
+    $streamUrl = $source->getStreamUrl();
+
+    if (!empty($streamUrl)) {
+        $response = $streamUrl;
     }
 
-    return json_encode($result);
+    return $response;
+}
+
+function api_getUser($username): bool|string
+{
+    logDebug("Params (none)", __FUNCTION__." ".__LINE__);
+
+    $userArr = array("username" => $username);
+    return json_encode($userArr);
+}
+
+/**
+ * return {[{"listname": "name1", "username": "username", "items":[filmId1, filmId2, ...]}], ...}
+ */
+function api_getUserLists($username): bool|string
+{
+    $lists = Filmlist::getUserListsFromDbByParent($username, true);
+    return json_encode($lists);
 }
 
 /**
@@ -803,31 +719,130 @@ function api_renameFilmlist($username): string
     return $response;
 }
 
-function api_archiveRating($username): bool|string
+function api_searchFilms($username): string
+{
+    $searchDomain = array_value_by_key("sd", $_GET);
+    $listname = array_value_by_key("list", $_GET);
+    $query = array_value_by_key("q", $_GET);
+    logDebug("Params sd=$searchDomain, list=$listname, q=$query", __FUNCTION__." ".__LINE__);
+
+    $site = new RatingSyncSite($username);
+    $limit = 5;
+    // Search domains supported: ratings, list, both
+    $films = $site->search($query, $searchDomain, $listname, $limit);
+
+    $response = '{';
+    $response .= '"films":[';
+    $delimiter = "";
+    foreach($films as $film) {
+        $response .= $delimiter . $film->json_encode(true);
+        $delimiter = ",";
+    }
+    $response .= ']}';
+
+    return $response;
+}
+
+function api_setFilmlist($username): bool|string
+{
+    $listname = array_value_by_key("l", $_GET);
+    $filmId = array_value_by_key("id", $_GET);
+    $checked = array_value_by_key("c", $_GET);
+    $remove = false;
+    if ($checked == 0) {
+        $remove = true;
+    }
+    logDebug("Params l=$listname, id=$filmId, c=$checked", __FUNCTION__." ".__LINE__);
+    $filmlist = Filmlist::getListFromDb($username, $listname);
+    if ($remove) {
+        $filmlist->removeItem($filmId, true);
+    } else {
+        $filmlist->addItem($filmId, true);
+    }
+
+    try {
+        $film = Film::getFilmFromDb($filmId, $username);
+    } catch (Exception $e) {
+        logError("Error \RatingSync\Film::getFilmFromDb() ", e: $e);
+        return '{"Success":"false"}';
+    }
+
+    return $film->json_encode();
+}
+
+function api_setNeverWatch($username): string
 {
     $film = null;
     $filmId = array_value_by_key("fid", $_GET);
-    $dateStr = array_value_by_key("d", $_GET); // Format: 2000-02-28
-    $archiveNum = array_value_by_key("archive", $_GET);
-    logDebug("Params fid=$filmId, d=$dateStr, archive=$archiveNum", __FUNCTION__." ".__LINE__);
+    $neverWatch = array_value_by_key("never", $_GET);
+    logDebug("Params fid=$filmId, never=$neverWatch", __FUNCTION__." ".__LINE__);
 
-    $archiveIt = true;
-    if ( $archiveNum == 0 ) {
-        $archiveIt = false;
+    $neverWatchBool = false;
+    if ( $neverWatch == 1 || $neverWatch == "true") {
+        $neverWatchBool = true;
     }
 
-    if ( !empty($username) && !empty($filmId) && !empty($dateStr) ) {
+    if ( !empty($username) && !empty($filmId) && !empty($neverWatch) ) {
         try {
-            $date = new DateTime($dateStr);
-            $success = Rating::archiveRatingToDb($filmId, $username, $date, $archiveIt);
 
-            if ( $success ) {
-                $film =  Film::getFilmFromDb($filmId, $username);
-            }
+            $filmInfo = UserSpecificFilmInfo::getFromDb($username, $filmId);
+            $film = $filmInfo->setNeverWatchToDb($neverWatchBool, new DateTime());
+
         }
         catch (Exception $e) {
-            logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$dateStr, archiveIt=$archiveIt)", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
+            logError("Exception setting whether the user never plans to watch the title (filmId=$filmId, username=$username, never=$neverWatch)", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
         }
+    }
+
+    if ( empty($film) ) {
+        $response = '{"Success":"false"}';
+    } else {
+        $response = $film->json_encode();
+    }
+
+    return $response;
+}
+
+function api_setRating($username): bool|string
+{
+    $film = null;
+    $filmId = array_value_by_key("fid", $_GET);
+    $score = array_value_by_key("s", $_GET);
+    $watchedParam = array_value_by_key("w", $_GET);
+    $dateStr = array_value_by_key("d", $_GET); // Format: 2000-02-28
+    $originalDateStr = array_value_by_key("od", $_GET); // Format: 2000-02-28
+    $force = array_value_by_key("force", $_GET);
+    logDebug("Params fid=$filmId, s=$score, w=$watchedParam, d=$dateStr, od=$originalDateStr, force=$force", __FUNCTION__." ".__LINE__);
+
+    if ( $score == "null" ) {
+        $score = null;
+    }
+    else {
+        try {
+            $score = intval($score); // On failure, it returns 0
+            $score = SetRatingScoreValue::create($score);
+        }
+        catch (Exception) {
+            $score = null;
+        }
+    }
+
+    if ( $dateStr == "null" ) {
+        $dateStr = null;
+    }
+
+    $watched = false;
+    if ( $watchedParam == 1 || $watchedParam == "true") {
+        $watched = true;
+    }
+
+    $forceDelete = false;
+    if ( $force == 1 || $force == "true") {
+        $forceDelete = true;
+    }
+
+    if (!empty($username) && !empty($filmId) && $score instanceof SetRatingScoreValue) {
+        $film = setRating($filmId, $score, $watched, $dateStr, $originalDateStr, $forceDelete);
     }
 
     if (empty($film)) {
@@ -870,52 +885,6 @@ function api_setSeen($username): string
     }
 
     return $response;
-}
-
-function api_setNeverWatch($username): string
-{
-    $film = null;
-    $filmId = array_value_by_key("fid", $_GET);
-    $neverWatch = array_value_by_key("never", $_GET);
-    logDebug("Params fid=$filmId, never=$neverWatch", __FUNCTION__." ".__LINE__);
-
-    $neverWatchBool = false;
-    if ( $neverWatch == 1 || $neverWatch == "true") {
-        $neverWatchBool = true;
-    }
-
-    if ( !empty($username) && !empty($filmId) && !empty($neverWatch) ) {
-        try {
-
-            $filmInfo = UserSpecificFilmInfo::getFromDb($username, $filmId);
-            $film = $filmInfo->setNeverWatchToDb($neverWatchBool, new DateTime());
-
-        }
-        catch (Exception $e) {
-            logError("Exception setting whether the user never plans to watch the title (filmId=$filmId, username=$username, never=$neverWatch)", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
-        }
-    }
-
-    if ( empty($film) ) {
-        $response = '{"Success":"false"}';
-    } else {
-        $response = $film->json_encode();
-    }
-
-    return $response;
-}
-
-/**
- * @return string
- */
-function api_getFullUri(): string
-{
-    $protocol = "http";
-    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
-        $protocol = "https";
-    }
-
-    return "$protocol://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 }
 
 function api_setTheme($username, $params): string
@@ -961,4 +930,44 @@ function api_setTheme($username, $params): string
     else {
         return '{"Success":"false"}';
     }
+}
+
+function api_updateFilmSource(): void
+{
+    $filmId = array_value_by_key("filmid", $_GET);
+    $sourceName = array_value_by_key("source", $_GET);
+    $streamUrl = array_value_by_key("su", $_GET);
+    $uniqueName = array_value_by_key("un", $_GET);
+    $uniqueEpisode = array_value_by_key("ue", $_GET);
+    $uniqueAlt = array_value_by_key("ua", $_GET);
+    logDebug("Params filmid=$filmId, source=$sourceName, su=$streamUrl, un=$uniqueName, ue=$uniqueEpisode, ua=$uniqueAlt", __FUNCTION__." ".__LINE__);
+
+    if ($streamUrl == "none") {
+        $streamUrl = null;
+    }
+
+    $source = new Source($sourceName, $filmId);
+    $source->setUniqueName($uniqueName);
+    $source->setUniqueEpisode($uniqueEpisode);
+    $source->setUniqueAlt($uniqueAlt);
+    $source->setStreamUrl($streamUrl);
+    $source->refreshStreamDate();
+    try {
+        $source->saveFilmSourceToDb($filmId);
+    } catch (Exception $e) {
+        logError("Error saving film source to DB.", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+    }
+}
+
+function api_validateNewUsername(): string
+{
+    $newUsername = array_value_by_key("u", $_GET);
+    logDebug("Params u=$newUsername", __FUNCTION__." ".__LINE__);
+
+    $isValid = "false";
+    if (!RatingSyncSite::usernameExists($newUsername)) {
+        $isValid = "true";
+    }
+
+    return '{"valid":"' . $isValid . '"}';
 }
