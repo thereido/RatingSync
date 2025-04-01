@@ -98,7 +98,7 @@ class LetterboxdFilm extends ExternalFilm
     {
 
         $tmdbSource     = $this->film->getSource( Constants::SOURCE_TMDBAPI );
-        $imdbSource     = $this->film->getSource( Constants::SOURCE_TMDBAPI );
+        $imdbSource     = $this->film->getSource( Constants::SOURCE_IMDB );
         $tmdbIdFull     = $tmdbSource->getUniqueName();
         $tmdbId         = $tmdbIdFull ? substr($tmdbIdFull, offset: 2) : null;
         $imdbId         = $imdbSource->getUniqueName();
