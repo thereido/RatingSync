@@ -59,7 +59,7 @@ function processExportRequest(string $username, array $post): array|false
 function getExportFormat(string $format, string $collectionName): ?ExportFormat
 {
     return match ($format) {
-        "letterboxd" => empty($collectionName) || $collectionName == "ratings" ? ExportFormat::LETTERBOXD_RATINGS : ExportFormat::LETTERBOXD_COLLECTION,
+        "letterboxd" => empty($collectionName) || $collectionName == "Ratings" ? ExportFormat::LETTERBOXD_RATINGS : ExportFormat::LETTERBOXD_COLLECTION,
         "trakt" => ExportFormat::TRAKT_RATINGS,
         "tmdb" => ExportFormat::TMDB_RATINGS,
         "imdb" => ExportFormat::IMDB_RATINGS,
@@ -95,7 +95,7 @@ function sanitizeInput(string $data): string
     <div class="container">
         <?php echo $pageHeader; ?>
         <div class="well" style="text-align:center">
-            <h1>Export Ratings</h1>
+            <h1 id="exportTitle">Export Ratings</h1>
         </div>
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10">
@@ -123,7 +123,7 @@ function sanitizeInput(string $data): string
                     <label for="format">Export format:</label>
                 </div>
                 <div class="col-sm-4 col-md-3 col-lg-2 col-xl-2 mt-2">
-                    <select class="form-control" id="format" name="format" onchange="updateCollectionName()">
+                    <select class="form-control" id="format" name="format" onchange="onChangeFormat()">
                         <option value="letterboxd">Letterboxd</option>
                         <option value="trakt">Trakt</option>
                         <option value="tmdb">TMDb</option>
@@ -136,8 +136,8 @@ function sanitizeInput(string $data): string
                     <label for="collectionName">List:</label>
                 </div>
                 <div class="col-sm-4 col-md-3 col-lg-2 col-xl-2">
-                    <select class="form-control" id="collectionName" name="collectionName">
-                        <option value="ratings">Ratings</option>
+                    <select class="form-control" id="collectionName" name="collectionName" onchange="onChangeCollectionName()">
+                        <option value="Ratings">Ratings</option>
                         <option value="Watchlist">Watchlist</option>
                         <?php
                         if (!empty($collections) && count($collections) > 0) {
@@ -164,16 +164,24 @@ function sanitizeInput(string $data): string
     <?php echo Constants::echoJavascriptConstants(); ?>
     let pageId = SITE_PAGE.Export;
 
-    function updateCollectionName() {
-        var formatSelect = document.getElementById('format');
-        var collectionSelect = document.getElementById('collectionName');
+    function onChangeFormat() {
+        const formatSelect = document.getElementById('format');
+        const collectionSelect = document.getElementById('collectionName');
         if (formatSelect.value === 'letterboxd') {
             collectionSelect.disabled = false;
         }
         else {
             collectionSelect.disabled = true;
             collectionSelect.selectedIndex = 0;
+            onChangeCollectionName();
         }
+    }
+
+    function onChangeCollectionName() {
+        const exportTitle = document.getElementById('exportTitle');
+        const collectionSelect = document.getElementById('collectionName');
+
+        exportTitle.innerHTML = "Export " + collectionSelect.value;
     }
 </script>
 </body>
