@@ -73,8 +73,10 @@ class TmdbFilm extends ExternalFilm
         // 2018-08-24T00:19:16Z,movie,Skyscraper,2018,7.0518,293862,tt5758778,447200,,https://trakt.tv/movies/skyscraper-2018,2018-07-13,,,,,,,,,,"action,thriller,drama",7
         // 2018-08-22T23:10:09Z,movie,Ocean's Eight,2018,7.21611,247337,tt5164214,402900,,https://trakt.tv/movies/ocean-s-eight-2018,2018-06-08,,,,,,,,,,"thriller,crime,comedy,action",7
 
-        $tmdbIdFull     = $this->film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
-        $tmdbId         = $tmdbIdFull ? substr($tmdbIdFull, offset: 2) : null;
+        $tmdbId         = $this->tmdbId();
+        $imdbId         = $this->imdbId();
+        $episodeTmdbId  = $this->episodeTmdbId();
+        $episodeImdbId  = $this->episodeImdbId();
         $tmdbType       = $this->getExternalFilmType( $this->film->getContentType() );
         $seasonNum      = $this->film->getSeason();
         $episodeNum     = $this->film->getEpisodeNumber();
@@ -85,8 +87,8 @@ class TmdbFilm extends ExternalFilm
         $ratingAt       = $rating?->getYourRatingDate()?->format("Y-m-d\TH:i:s\Z");
 
         // All:  rated_at,type     ,title ,year ,trakt_rating,trakt_id,imdb_id,tmdb_id,tvdb_id,url,released,season_number,episode_number,episode_title,episode_released,episode_trakt_rating,episode_trakt_id,episode_imdb_id,episode_tmdb_id,episode_tvdb_id,genres,rating
-        // Used: rated_at,type     ,title ,year ,____________,________,_______,tmdb_id,_______,___,________,season_number,episode_number,episode_title,________________,____________________,________________,_______________,_______________,_______________,______,rating
-        return "$ratingAt,$tmdbType,$title,$year,,,,$tmdbId,,,,$seasonNum,$episodeNum,$episodeTitle,,,,,,,,$score";
+        // Used: rated_at,type     ,title ,year ,____________,________,imdb_id,tmdb_id,_______,___,________,season_number,episode_number,episode_title,________________,____________________,________________,episode_imdb_id,episode_tmdb_id,_______________,______,rating
+        return "$ratingAt,$tmdbType,$title,$year,,,$imdbId,$tmdbId,,,,$seasonNum,$episodeNum,$episodeTitle,,,,$episodeImdbId,$episodeTmdbId,,,$score";
     }
 
     public function filmEntry(): string|array
@@ -102,6 +104,78 @@ class TmdbFilm extends ExternalFilm
             Film::CONTENT_TV_EPISODE => "episode",
             default => "",
         };
+    }
+
+    private function tmdbId(): ?string
+    {
+        $internalTmdbId = $this->film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
+
+        return match ($this->film->getContentType()) {
+            Film::CONTENT_TV_EPISODE    => $this->seriesTmdbId(),
+            default                     => $this->stripTmdbId( $internalTmdbId ),
+        };
+    }
+
+    private function imdbId(): ?string
+    {
+        $imdbId = $this->film->getUniqueName( source: Constants::SOURCE_IMDB );
+
+        return match ($this->film->getContentType()) {
+            Film::CONTENT_TV_EPISODE    => $this->seriesImdbId(),
+            default                     => $imdbId,
+        };
+    }
+
+    private function seriesTmdbId(): ?string
+    {
+        $internalTmdbId = $this->film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
+        $parentTmdbId   = $this->film->getParentUniqueName( source: Constants::SOURCE_TMDBAPI );
+
+        return match ($this->film->getContentType()) {
+            Film::CONTENT_TV_SERIES     => $this->stripTmdbId( $internalTmdbId ),
+            Film::CONTENT_TV_EPISODE    => $this->stripTmdbId( $parentTmdbId ),
+            default => null,
+        };
+    }
+
+    private function seriesImdbId(): ?string
+    {
+        $imdbId = $this->film->getUniqueName( source: Constants::SOURCE_IMDB );
+        $parentImdbId   = $this->film->getParentUniqueName( source: Constants::SOURCE_IMDB );
+
+        return match ($this->film->getContentType()) {
+            Film::CONTENT_TV_SERIES => $imdbId,
+            Film::CONTENT_TV_EPISODE => $parentImdbId,
+            default => null,
+        };
+    }
+
+    private function episodeTmdbId(): ?string
+    {
+        if ($this->film->getContentType() == Film::CONTENT_TV_EPISODE) {
+            $internalTmdbId = $this->film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
+            return $this->stripTmdbId( $internalTmdbId );
+        }
+        else {
+            return null;
+        }
+    }
+
+    private function episodeImdbId(): ?string
+    {
+        return match ($this->film->getContentType()) {
+            Film::CONTENT_TV_EPISODE => $this->film->getUniqueName( source: Constants::SOURCE_IMDB ),
+            default => null,
+        };
+    }
+
+    private function stripTmdbId( ?string $internalTmdbId ): string
+    {
+        if (empty($internalTmdbId)) {
+            return "";
+        }
+
+        return substr($internalTmdbId, offset: 2);
     }
 
 }
