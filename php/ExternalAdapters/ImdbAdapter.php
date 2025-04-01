@@ -6,11 +6,11 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . "ExternalAdapterCsv.php";
 class ImdbAdapter extends ExternalAdapterCsv
 {
 
-    protected ExportFormat $exportFormat = ExportFormat::IMDB_RATINGS;
+    protected array $supportedExportFormats = [ExportFormat::IMDB_RATINGS];
 
-    public function __construct( string $username )
+    public function __construct( string $username, ExportFormat $format )
     {
-        parent::__construct( username: $username, exportFormat: $this->exportFormat );
+        parent::__construct( username: $username, format: $format, className: __CLASS__ );
     }
 
     protected function getHeader(): string
@@ -86,7 +86,7 @@ class ImdbFilm extends ExternalFilm
         return ",$imdbId,,,,\"$title\",,$mediaType,,,$year,,,,,$score,$ratedAt" . "\n";
     }
 
-    public function filmEntry( ExternalFilm $film ): string
+    public function filmEntry(): string
     {
         return "";
     }

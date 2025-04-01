@@ -13,11 +13,20 @@ $pageHeader = getPageHeader();
 $pageFooter = getPageFooter();
 $success = null;
 $exportedFilenames = null;
+$collections = null;
 
 // Sanitize and process the export request
 if (!empty($username) && $_SERVER["REQUEST_METHOD"] === POST_REQUEST_METHOD) {
     $exportedFilenames = processExportRequest($username, $_POST);
     $success = !empty($exportedFilenames);
+}
+
+if (!empty($username)) {
+    $collections = Filmlist::getUserListsFromDbByParent($username, false);
+    $watchlistKey = array_search("Watchlist", array_column($collections, "listname"));
+    if ($watchlistKey !== false) {
+        unset($collections[$watchlistKey]);
+    }
 }
 
 /**
@@ -130,6 +139,14 @@ function sanitizeInput(string $data): string
                     <select class="form-control" id="collectionName" name="collectionName">
                         <option value="ratings">Ratings</option>
                         <option value="Watchlist">Watchlist</option>
+                        <?php
+                        if (!empty($collections) && count($collections) > 0) {
+                            echo '<optgroup label="Lists">';
+                            $otherLists = getHtmlFilmlistNamesForExport($collections);
+                            echo $otherLists;
+                            echo '</optgroup>';
+                        }
+                        ?>
                     </select>
                 </div>
             </div>

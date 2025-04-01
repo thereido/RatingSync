@@ -7,11 +7,11 @@ class TraktAdapter extends ExternalAdapterJson
 {
     // https://trakt.tv/settings/data
 
-    protected ExportFormat $exportFormat = ExportFormat::TRAKT_RATINGS;
+    protected array $supportedExportFormats = [ExportFormat::TRAKT_RATINGS];
 
-    public function __construct( string $username )
+    public function __construct( string $username, ExportFormat $format )
     {
-        parent::__construct( username: $username, exportFormat: $this->exportFormat );
+        parent::__construct( username: $username, format: $format, className: __CLASS__ );
     }
 
     protected function validateExternalFilm( Film $film ): array
@@ -125,7 +125,7 @@ class TraktFilm extends ExternalFilm
         return $entry;
     }
 
-    public function filmEntry( ExternalFilm $film ): array
+    public function filmEntry(): array
     {
         return [];
     }

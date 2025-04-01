@@ -203,3 +203,25 @@ function getHtmlFilmlistNamesForNav($listnames, $level = 0): string {
     return $html;
 }
 
+function getHtmlFilmlistNamesForExport($lists, $level = 0): string {
+    $html = "";
+
+    $prefix = "";
+    for ($levelIndex = $level; $levelIndex > 0; $levelIndex--) {
+        $prefix .= "&nbsp;&nbsp;";
+    }
+
+    if ($lists == null) {
+        $lists = array();
+    }
+
+    foreach ($lists as $list) {
+        $listname = $list["listname"];
+        $safeListname = htmlentities($listname, ENT_COMPAT, "utf-8");
+        $html .= '<option value="' . $safeListname . '">' . $prefix . $safeListname . '</option>';
+        $html .= getHtmlFilmlistNamesForExport($list["children"], $level+1);
+    }
+
+    return $html;
+}
+

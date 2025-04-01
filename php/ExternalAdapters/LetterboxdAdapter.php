@@ -1,6 +1,8 @@
 <?php
 namespace RatingSync;
 
+use Exception;
+
 require_once __DIR__ . DIRECTORY_SEPARATOR . "ExternalAdapterCsv.php";
 
 class LetterboxdAdapter extends ExternalAdapterCsv
@@ -8,12 +10,12 @@ class LetterboxdAdapter extends ExternalAdapterCsv
     // https://letterboxd.com/about/importing-data/
     // tmdbID,imdbID,Title,Year,Rating10,WatchedDate,Rewatch
 
-    protected ExportFormat  $exportFormat           = ExportFormat::LETTERBOXD_RATINGS;
-    protected array         $exportableContentTypes = [Film::CONTENT_FILM];
+    protected array $supportedExportFormats = [ExportFormat::LETTERBOXD_COLLECTION, ExportFormat::LETTERBOXD_RATINGS];
+    protected array $exportableContentTypes = [Film::CONTENT_FILM];
 
-    public function __construct( string $username )
+    public function __construct( string $username, ExportFormat $format )
     {
-        parent::__construct( username: $username, exportFormat: $this->exportFormat );
+        parent::__construct( username: $username, format: $format, className: __CLASS__ );
     }
 
     protected function getHeader(): string
@@ -27,7 +29,7 @@ class LetterboxdAdapter extends ExternalAdapterCsv
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     protected function createExternalFilm( Film $film, Rating|null $earliestRating = null ): ExternalFilm
     {
@@ -53,12 +55,12 @@ class LetterboxdFilm extends ExternalFilm
     private Rating|null     $earliestRating;
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct( Film $film, Rating|null $earliestRating )
     {
         if ( $film->getUniqueName( source: Constants::SOURCE_TMDBAPI  ) == null ) {
-            throw new \Exception(ExportFormat::TMDB_RATINGS->toString() . " id must be provided");
+            throw new Exception(ExportFormat::TMDB_RATINGS->toString() . " id must be provided");
         }
 
         $this->film             = $film;
@@ -78,6 +80,22 @@ class LetterboxdFilm extends ExternalFilm
 
     public function ratingEntry( Rating $rating ): string
     {
+        $filmFields = $this->filmFieldsToString();
+        $ratingFields = $this->ratingFieldsToString( $rating );
+
+        return "$filmFields,$ratingFields" . PHP_EOL;
+    }
+
+    public function filmEntry(): string
+    {
+        $filmFields = $this->filmFieldsToString();
+        $watchedAt = $this->film->getRating(Constants::SOURCE_RATINGSYNC)?->getYourRatingDate()?->format("Y-m-d");
+
+        return "$filmFields,,$watchedAt," . PHP_EOL;
+    }
+
+    private function filmFieldsToString(): string
+    {
 
         $tmdbSource     = $this->film->getSource( Constants::SOURCE_TMDBAPI );
         $imdbSource     = $this->film->getSource( Constants::SOURCE_TMDBAPI );
@@ -86,17 +104,18 @@ class LetterboxdFilm extends ExternalFilm
         $imdbId         = $imdbSource->getUniqueName();
         $title          = $this->film->getTitle();
         $year           = $this->film->getYear();
+
+        return "$tmdbId,$imdbId,\"$title\",$year";
+    }
+
+    private function ratingFieldsToString( Rating $rating ): string
+    {
+
         $score          = $rating?->getYourScore();
         $ratingAt       = $rating?->getYourRatingDate()?->format("Y-m-d");
         $rewatchStr     = $this->earliestRating === null || $rating->equals($this->earliestRating) ? "false" : "true";
 
-        return "$tmdbId,$imdbId,\"$title\",$year,$score,$ratingAt,$rewatchStr" . PHP_EOL;
-
-    }
-
-    public function filmEntry( ExternalFilm $film ): string
-    {
-        return "";
+        return "$score,$ratingAt,$rewatchStr";
     }
 
 }

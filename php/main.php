@@ -19,10 +19,10 @@ require_once "src/Imdb.php";
 require_once "src/OmdbApi.php";
 require_once "src/TmdbApi.php";
 require_once "src/Xfinity.php";
-require_once "src/ExportFormat.php";
 require_once "src/RatingSyncSite.php";
 require_once "src/SessionUtility.php";
 require_once "PDO/DbConn.php";
+require_once "ExternalAdapters/ExportFormat.php";
 require_once "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "ThemeManager.php";
 require_once "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "UserManager.php";
 
@@ -146,13 +146,13 @@ function userView( string $username = null ): UserView|null {
 
 function debugMessage($input, $prefix = null, $showTime = true, $printArray = null): string
 {
-    if (!is_null($prefix)) {
-        $time = "";
-        if ($showTime) {
-            $time = date_format(new DateTime(), 'Y-m-d H:i:s');
-        }
-        $prefix = $time . " " . $prefix . ":\t";
+    $time = "";
+    if ($showTime) {
+        $time = date_format(new DateTime(), 'Y-m-d H:i:s') . ": ";
     }
+
+    $prefix = empty($prefix) ? "" : $prefix . ":\t";
+
     $suffix = "";
     if (is_array($printArray)) {
         $keys = array_keys($printArray);
@@ -174,7 +174,10 @@ function debugMessage($input, $prefix = null, $showTime = true, $printArray = nu
         $suffix .= "}";
     }
 
-    return $prefix . $input . $suffix . PHP_EOL;
+    $msg = $prefix . $input . $suffix;
+    $visibleTime = !empty($msg) ? $time : "";
+
+    return $visibleTime . $msg . PHP_EOL;
 }
 
 function logToFile($filename, $input, $prefix = null, $showTime = true, $printArray = null): void
@@ -205,7 +208,10 @@ function logDebug($input, $prefix = null, $showTime = true, $printArray = null):
 function logError($input, $prefix = null, $showTime = true, Exception $e = null, $printArray = null): void
 {
     $logfilename =  Constants::outputFilePath() . "logError.txt";
-    logToFile($logfilename, $input . "\n$e", $prefix, $showTime, $printArray);
+    logToFile($logfilename, $input, $prefix, $showTime, $printArray);
+    if ( !is_null($e) ) {
+        logToFile($logfilename, "$e");
+    }
     logDebug($input . "\n" . exceptionShortMsg($e), $prefix, $showTime, $printArray);
 }
 

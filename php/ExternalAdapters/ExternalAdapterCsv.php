@@ -1,6 +1,8 @@
 <?php
 namespace RatingSync;
 
+use Exception;
+
 require_once __DIR__ . DIRECTORY_SEPARATOR . "ExternalAdapter.php";
 
 abstract class ExternalAdapterCsv extends ExternalAdapter
@@ -13,16 +15,27 @@ abstract class ExternalAdapterCsv extends ExternalAdapter
         return $this->getHeader() . PHP_EOL;
     }
 
-    protected function addTrackableEntry( mixed $entry, string|array &$batch ): bool
+    /**
+     * @throws Exception
+     */
+    protected function addTrackableEntry(mixed $entry, string|array &$batch ): bool
     {
-        $success = false;
 
-        if ( is_string( $batch ) && is_string( $entry ) && trim( $entry !== '' ) ) {
-            $batch .= trim( $entry ) . PHP_EOL;
-            $success = true;
+        if ( !is_string( $entry ) ) {
+            throw new Exception("Unable to add entry to CSV batch. Entry is not a string.");
         }
 
-        return $success;
+        if ( !is_string( $batch ) ) {
+            throw new Exception("Unable to add entry to CSV batch. Batch is not a string.");
+        }
+
+        if ( trim( $entry ) === '' ) {
+            throw new Exception("Skipping empty entry.");
+        }
+
+        $batch .= trim( $entry ) . PHP_EOL;
+
+        return true;
     }
 
     protected function addBatch( mixed $batch, array &$batches ): bool

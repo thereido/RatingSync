@@ -8,11 +8,11 @@ class TmdbAdapter extends ExternalAdapterCsv
     // https://www.themoviedb.org/settings/import-list
     // Trakt_v2
 
-    protected ExportFormat $exportFormat = ExportFormat::TMDB_RATINGS;
+    protected array $supportedExportFormats = [ExportFormat::TMDB_RATINGS];
 
-    public function __construct( string $username )
+    public function __construct( string $username, ExportFormat $format )
     {
-        parent::__construct( username: $username, exportFormat: $this->exportFormat );
+        parent::__construct( username: $username, format: $format, className: __CLASS__ );
     }
 
     protected function getHeader(): string
@@ -87,7 +87,7 @@ class TmdbFilm extends ExternalFilm
         return "$ratingAt,$tmdbType,,,$tmdbId,$tmdbIdEpisode,,,$seasonNum,$episodeNum,,,,,,,$score";
     }
 
-    public function filmEntry( ExternalFilm $film ): string|array
+    public function filmEntry(): string|array
     {
         // Columns used for exporting film (without ratings) to TMDb
         // ,type,,,,,,tmdb_id,,,,season_number,episode_number,,,,,,episode_tmdb_id,,,

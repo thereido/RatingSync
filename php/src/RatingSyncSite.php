@@ -705,21 +705,14 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $adapter = null;
 
         try {
-            if ( $format->isRatings() ) {
-                $adapter = match ($format) {
-                    ExportFormat::IMDB_RATINGS          => new ImdbAdapter(username: $this->username),
-                    ExportFormat::LETTERBOXD_RATINGS    => new LetterboxdAdapter(username: $this->username),
-                    ExportFormat::TMDB_RATINGS          => new TmdbAdapter(username: $this->username),
-                    ExportFormat::TRAKT_RATINGS         => new TraktAdapter(username: $this->username),
-                    default                             => null,
-                };
-            }
-            else if ( $format->isCollection() ) {
-                $adapter = match ($format) {
-                    ExportFormat::LETTERBOXD_COLLECTION => new LetterboxdAdapter( $this->username ),
-                    default                             => null,
-                };
-            }
+            $adapter = match ($format) {
+                ExportFormat::IMDB_RATINGS              => new ImdbAdapter(username: $this->username, format: $format),
+                ExportFormat::LETTERBOXD_COLLECTION,
+                ExportFormat::LETTERBOXD_RATINGS        => new LetterboxdAdapter(username: $this->username, format: $format),
+                ExportFormat::TMDB_RATINGS              => new TmdbAdapter(username: $this->username, format: $format),
+                ExportFormat::TRAKT_RATINGS             => new TraktAdapter(username: $this->username, format: $format),
+                default                                 => null,
+            };
         }
         catch (\Exception $e) {
             logDebug("Failed to create ExternalAdapter for format=$format->name error=$e", prefix: __CLASS__ . ":" . __FUNCTION__ . ":" . __LINE__ );
