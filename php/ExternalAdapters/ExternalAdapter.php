@@ -5,7 +5,7 @@ use Exception;
 
 abstract class ExternalAdapter
 {
-    private const   EXPORT_TOTAL_SIZE_DEFAULT   = 10;
+    private const   EXPORT_TOTAL_SIZE_DEFAULT   = 10000;
     private const   EXPORT_BATCH_SIZE_DEFAULT   = 1000;
     protected int   $exportTotalSize            = self::EXPORT_TOTAL_SIZE_DEFAULT;
     protected int   $exportBatchSize            = self::EXPORT_BATCH_SIZE_DEFAULT;
