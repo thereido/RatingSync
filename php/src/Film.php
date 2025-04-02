@@ -1709,7 +1709,13 @@ class Film {
 
         // Update external IDs if IMDb ID is invalid
         if (!$this->validateImdbId()) {
-            $api->getFilmExternalIdsFromApi($this);
+
+            $gotExternalIds = $api->getFilmExternalIdsFromApi($this);
+
+            if (!$gotExternalIds) {
+                logDebug("Failed getting External IDs from API for film id=" . $this->getId(), __CLASS__."::".__FUNCTION__." ".__LINE__);
+                return false;
+            }
         }
 
         // Update Parent IMDb ID if it is invalid
@@ -1728,6 +1734,7 @@ class Film {
             }
             catch (Exception) {
                 logError("Unable getting film id=". $this->getParentId() ." from db. This was an attempt to get the TV Series IMDb ID for the Episode filmId=" . $this->getId(), defaultPrefix(__CLASS__, __FUNCTION__, __LINE__));
+                return false;
             }
 
             // populateImdbIdToDb will update external IDs for the Parent if necessary

@@ -14,7 +14,7 @@ interface iMediaDbApiClient
     public function getFilmBySearch($searchTerms);
     public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = 60);
     public function getFilmDetailFromApi($film, $overwrite = true, $refreshCache = 60);
-    public function getFilmExternalIdsFromApi(Film $film, int $refreshCache = 60): void;
+    public function getFilmExternalIdsFromApi(Film $film, int $refreshCache = 60): bool;
     public function getSourceName();
     public function getUniqueNameFromSourceId($sourceId, $contentType = null);
 }
@@ -256,17 +256,18 @@ abstract class MediaDbApiClient extends ApiClient implements iMediaDbApiClient
         $this->writeToCache($apiResult, $filename);
     }
 
-    public function getFilmExternalIdsFromApi(Film $film, int $refreshCache = 60): void
+    public function getFilmExternalIdsFromApi(Film $film, int $refreshCache = 60): bool
     {
         try {
             $filmJson = $this->getJsonFromApiForExternalIds($film, $refreshCache);
         }
         catch (Exception $e) {
             logDebug($e, __FUNCTION__." ".__LINE__);
-            return;
+            return false;
         }
 
         $this->populateExternalIds($filmJson, $film);
+        return true;
     }
 
     /**
@@ -322,7 +323,6 @@ abstract class MediaDbApiClient extends ApiClient implements iMediaDbApiClient
             logDebug($errorMsg, __CLASS__."::".__FUNCTION__." ".__LINE__, true, $filmJson);
             throw new \Exception($this->sourceName . ' External IDs request failed');
         }
-        $this->printResultToLog($filmJson, self::REQUEST_EXTERNAL_IDS, $film->getContentType());
 
         return $filmJson;
 
