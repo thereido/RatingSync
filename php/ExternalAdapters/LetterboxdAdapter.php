@@ -78,24 +78,9 @@ class LetterboxdFilm extends ExternalFilm
         return $problems;
     }
 
-    public function ratingEntry( Rating $rating ): string
+    public function ratingEntry( ?Rating $rating ): string
     {
-        $filmFields = $this->filmFieldsToString();
-        $ratingFields = $this->ratingFieldsToString( $rating );
-
-        return "$filmFields,$ratingFields" . PHP_EOL;
-    }
-
-    public function filmEntry(): string
-    {
-        $filmFields = $this->filmFieldsToString();
-        $watchedAt = $this->film->getRating(Constants::SOURCE_RATINGSYNC)?->getYourRatingDate()?->format("Y-m-d");
-
-        return "$filmFields,,$watchedAt," . PHP_EOL;
-    }
-
-    private function filmFieldsToString(): string
-    {
+        $this->film->populateImdbIdToDb();
 
         $tmdbSource     = $this->film->getSource( Constants::SOURCE_TMDBAPI );
         $imdbSource     = $this->film->getSource( Constants::SOURCE_IMDB );
@@ -104,18 +89,25 @@ class LetterboxdFilm extends ExternalFilm
         $imdbId         = $imdbSource->getUniqueName();
         $title          = $this->film->getTitle();
         $year           = $this->film->getYear();
+        $score          = null;
+        $ratingAt       = null;
+        $rewatchStr     = null;
 
-        return "$tmdbId,$imdbId,\"$title\",$year";
+        if (is_null($rating)) {
+            $ratingAt = $this->film->getRating(Constants::SOURCE_RATINGSYNC)?->getYourRatingDate()?->format("Y-m-d");
+        }
+        else {
+            $score          = $rating->getYourScore();
+            $ratingAt       = $rating->getYourRatingDate()?->format("Y-m-d");
+            $rewatchStr     = $this->earliestRating === null || $rating->equals($this->earliestRating) ? "false" : "true";
+        }
+
+        return "$tmdbId,$imdbId,\"$title\",$year,$score,$ratingAt,$rewatchStr" . PHP_EOL;
     }
 
-    private function ratingFieldsToString( Rating $rating ): string
+    public function filmEntry(): string|array
     {
-
-        $score          = $rating?->getYourScore();
-        $ratingAt       = $rating?->getYourRatingDate()?->format("Y-m-d");
-        $rewatchStr     = $this->earliestRating === null || $rating->equals($this->earliestRating) ? "false" : "true";
-
-        return "$score,$ratingAt,$rewatchStr";
+        return $this->ratingEntry( rating: null );
     }
 
 }

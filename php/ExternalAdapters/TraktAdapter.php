@@ -50,6 +50,7 @@ class TraktFilm extends ExternalFilm
         $this->imdbId        = $imdbId;
         $this->tmdbId        = $tmdbId;
         $this->watchlistedAt = null;
+        $this->film          = $film;
     }
 
     static public function validateExternalFilm( Film $film ): array
@@ -92,6 +93,8 @@ class TraktFilm extends ExternalFilm
         //    "watched_at": "2024-01-12T02:00:00Z",
         //  }
         // ]
+
+        $this->film->populateImdbIdToDb();
 
         $imdbId         = $this->imdbId;
         $tmdbId         = $this->tmdbId ? substr($this->tmdbId, offset: 2) : null;

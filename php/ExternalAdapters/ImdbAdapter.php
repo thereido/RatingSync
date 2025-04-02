@@ -69,6 +69,8 @@ class ImdbFilm extends ExternalFilm
         // 4,tt3783958,2017-05-16,2017-05-16,,La La Land,https://www.imdb.com/title/tt3783958/,movie,8.1,128,2016,"Comedy, Drama, Music, Musical, Romance",390132,2016-08-31,Damien Chazelle,,
         // 5,tt3183660,2017-05-16,2017-05-16,,Fantastic Beasts and Where to Find Them,https://www.imdb.com/title/tt3183660/,movie,7.4,133,2016,"Adventure, Family, Fantasy",314374,2016-11-08,David Yates,,
 
+        $this->film->populateImdbIdToDb();
+
         $imdbId         = $this->film->getUniqueName( source: Constants::SOURCE_IMDB );
         $title          = $this->film->getTitle();
         $year           = $this->film->getYear();
