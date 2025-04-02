@@ -120,6 +120,26 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         return $url;
     }
 
+    protected function buildUrlExternalIds(Film $film): string
+    {
+        $tmdbId         = TmdbFilm::getTmdbId($film);
+        $parentTmdbId   = TmdbFilm::getSeriesTmdbId($film);
+        $seasonNum      = $film->getSeason();
+        $episodeNum     = $film->getEpisodeNumber();
+        $contentType    = $film->getContentType();
+        $url            = static::BASE_API_URL;
+
+        $url .= match ($contentType) {
+            Film::CONTENT_FILM          => "/movie/$tmdbId",
+            Film::CONTENT_TV_SERIES     => "/tv/$tmdbId",
+            Film::CONTENT_TV_EPISODE    => "/tv/$parentTmdbId/season/$seasonNum/episode/$episodeNum",
+        };
+
+        $url .= "/external_ids?api_key=" . Constants::TMDB_API_KEY;
+
+        return $url;
+    }
+
     protected function validateResponseSeasonDetail($json)
     {
         $errorMsg = $this->getErrorMessageFromResponse($json);
@@ -531,6 +551,27 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         return $season;
     }
 
+    /**
+     * @param array $json
+     * @param Film $film
+     * @return bool success/failure
+     */
+    protected function populateExternalIds(array $json, Film $film): bool
+    {
+        $requestName = self::REQUEST_EXTERNAL_IDS;
+
+        // Get values from the API result
+        $imdbId = $this->jsonValue($json, Film::ATTR_IMDB_ID, $requestName);
+
+        if (empty($imdbId)) {
+            return false;
+        }
+
+        $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+
+        return true;
+    }
+
     protected function printResultToLog($filmJson, $requestName, $contentType) {
         $requestName = $this->getRequestName($requestName, $contentType);
         $titleAttr = Film::ATTR_TITLE;
@@ -888,6 +929,9 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             $tmdbIndexes[Season::ATTR_EPISODE_NUM] = "episode_number";
             $tmdbIndexes[Season::ATTR_EPISODE_IMAGE] = "still_path";
             $tmdbIndexes[Season::ATTR_EPISODE_USERSCORE] = "vote_average";
+        }
+        else if ($requestName == static::REQUEST_EXTERNAL_IDS) {
+            $tmdbIndexes[Film::ATTR_IMDB_ID] = "imdb_id";
         }
         elseif ($requestName == static::REQUEST_FIND) {
 

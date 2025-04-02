@@ -73,6 +73,8 @@ class TmdbFilm extends ExternalFilm
         // 2018-08-24T00:19:16Z,movie,Skyscraper,2018,7.0518,293862,tt5758778,447200,,https://trakt.tv/movies/skyscraper-2018,2018-07-13,,,,,,,,,,"action,thriller,drama",7
         // 2018-08-22T23:10:09Z,movie,Ocean's Eight,2018,7.21611,247337,tt5164214,402900,,https://trakt.tv/movies/ocean-s-eight-2018,2018-06-08,,,,,,,,,,"thriller,crime,comedy,action",7
 
+        $this->film->populateImdbIdToDb();
+
         $tmdbId         = $this->tmdbId();
         $imdbId         = $this->imdbId();
         $episodeTmdbId  = $this->episodeTmdbId();
@@ -108,12 +110,17 @@ class TmdbFilm extends ExternalFilm
 
     private function tmdbId(): ?string
     {
-        $internalTmdbId = $this->film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
+        return self::getTmdbId( $this->film );
+    }
 
-        return match ($this->film->getContentType()) {
-            Film::CONTENT_TV_EPISODE    => $this->seriesTmdbId(),
-            default                     => $this->stripTmdbId( $internalTmdbId ),
-        };
+    private function seriesTmdbId(): ?string
+    {
+        return self::getSeriesTmdbId($this->film);
+    }
+
+    private function episodeTmdbId(): ?string
+    {
+        return self::getEpisodeTmdbId($this->film);
     }
 
     private function imdbId(): ?string
@@ -123,18 +130,6 @@ class TmdbFilm extends ExternalFilm
         return match ($this->film->getContentType()) {
             Film::CONTENT_TV_EPISODE    => $this->seriesImdbId(),
             default                     => $imdbId,
-        };
-    }
-
-    private function seriesTmdbId(): ?string
-    {
-        $internalTmdbId = $this->film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
-        $parentTmdbId   = $this->film->getParentUniqueName( source: Constants::SOURCE_TMDBAPI );
-
-        return match ($this->film->getContentType()) {
-            Film::CONTENT_TV_SERIES     => $this->stripTmdbId( $internalTmdbId ),
-            Film::CONTENT_TV_EPISODE    => $this->stripTmdbId( $parentTmdbId ),
-            default => null,
         };
     }
 
@@ -150,17 +145,6 @@ class TmdbFilm extends ExternalFilm
         };
     }
 
-    private function episodeTmdbId(): ?string
-    {
-        if ($this->film->getContentType() == Film::CONTENT_TV_EPISODE) {
-            $internalTmdbId = $this->film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
-            return $this->stripTmdbId( $internalTmdbId );
-        }
-        else {
-            return null;
-        }
-    }
-
     private function episodeImdbId(): ?string
     {
         return match ($this->film->getContentType()) {
@@ -169,7 +153,40 @@ class TmdbFilm extends ExternalFilm
         };
     }
 
-    private function stripTmdbId( ?string $internalTmdbId ): string
+    static public function getTmdbId( Film $film ): ?string
+    {
+        $internalTmdbId = $film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
+
+        return match ($film->getContentType()) {
+            Film::CONTENT_TV_EPISODE    => self::getSeriesTmdbId($film),
+            default                     => self::stripTmdbId( $internalTmdbId ),
+        };
+    }
+
+    static public function getSeriesTmdbId(Film $film): ?string
+    {
+        $internalTmdbId = $film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
+        $parentTmdbId   = $film->getParentUniqueName( source: Constants::SOURCE_TMDBAPI );
+
+        return match ($film->getContentType()) {
+            Film::CONTENT_TV_SERIES     => self::stripTmdbId( $internalTmdbId ),
+            Film::CONTENT_TV_EPISODE    => self::stripTmdbId( $parentTmdbId ),
+            default => null,
+        };
+    }
+
+    static public function getEpisodeTmdbId(Film $film): ?string
+    {
+        if ($film->getContentType() == Film::CONTENT_TV_EPISODE) {
+            $internalTmdbId = $film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
+            return self::stripTmdbId( $internalTmdbId );
+        }
+        else {
+            return null;
+        }
+    }
+
+    static private function stripTmdbId( ?string $internalTmdbId ): string
     {
         if (empty($internalTmdbId)) {
             return "";

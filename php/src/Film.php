@@ -4,7 +4,9 @@
  */
 namespace RatingSync;
 
+use DateInterval;
 use DateTime;
+use Exception;
 
 require_once "Http.php";
 require_once "Filmlist.php";
@@ -1577,7 +1579,7 @@ class Film {
         }
     }
 
-    public function refresh()
+    public function refresh(): bool
     {
         $refreshed = false;
         $needToRefresh = false;
@@ -1585,22 +1587,32 @@ class Film {
         $currentSeasonCount = $this->getSeasonCount();
         $currentRefreshDate = $this->getRefreshDate();
         $now = new DateTime();
-        $staleDay = $now->sub(new \DateInterval('P30D')); // 30 days ago
+        $staleDay = $now->sub(new DateInterval('P30D')); // 30 days ago
         $now = new DateTime();
-    
-        // Refresh now if it has been too long or if the image is not valid
-        if (empty($currentRefreshDate) || $currentRefreshDate <= $staleDay || !($currentImageValid)) {
+
+        // Reasons for refreshing:
+        // - Stale data
+        // - No valid image
+        // - No IMDb ID
+        // - TV series does not have seasonCount set
+        if ( empty($currentRefreshDate) || $currentRefreshDate <= $staleDay ) {
             $needToRefresh = true;
         }
-
-        // Refresh a TV series does not have seasonCount set
-        if ($this->getContentType() == self::CONTENT_TV_SERIES && empty($currentSeasonCount)) {
+        else if ( !$currentImageValid ) {
+            $needToRefresh = true;
+        }
+        else if ( empty($this->getUniqueName(Constants::SOURCE_IMDB)) ) {
+            $needToRefresh = true;
+        }
+        else if ( $this->getContentType() == self::CONTENT_TV_SERIES && empty($currentSeasonCount) ) {
             $needToRefresh = true;
         }
         
         if ($needToRefresh) {
             $api = getMediaDbApiClient(Constants::DATA_API_DEFAULT);
             $api->getFilmDetailFromApi($this, true, 60);
+
+            $this->fillImdbId($api);
 
             // Any changes?
             if (!$currentImageValid) {
@@ -1614,12 +1626,12 @@ class Film {
                         $filename = "$uniqueName.jpg";
                         try {
                             file_put_contents(Constants::imagePath() . $filename, file_get_contents($refreshedImage));
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             logDebug("Exception downloading an image for $filename.\n" . $e, __CLASS__."::".__FUNCTION__." ".__LINE__);
                         }
                         
                         $this->setImage(Constants::RS_IMAGE_URL_PATH . $filename);
-                        $this->setImage($this->setImage(), Constants::SOURCE_RATINGSYNC);
+                        $this->setImage($this->getImage(), Constants::SOURCE_RATINGSYNC);
                     }
                 }
             }
@@ -1631,7 +1643,7 @@ class Film {
         return $refreshed;
     }
 
-    public function validateImage()
+    public function validateImage(): bool
     {
         $isValid = false;
         $image = $this->getImage();
@@ -1642,6 +1654,93 @@ class Film {
         }
         
         return $isValid;
+    }
+
+    /**
+     * @return bool Made changes
+     */
+    public function populateImdbIdToDb(): bool
+    {
+        if ($this->validateImdbIds()) {
+            return false;
+        }
+
+        $api = getMediaDbApiClient();
+
+        $madeChanges = $this->fillImdbId($api);
+
+        if ($madeChanges) {
+            $madeChanges = $this->saveToDb();
+        }
+
+        return $madeChanges;
+    }
+
+    public function validateImdbIds(): bool
+    {
+        return $this->validateImdbId() && $this->validateParentImdbId();
+    }
+
+    private function validateImdbId(): bool
+    {
+        return !empty($this->getUniqueName(Constants::SOURCE_IMDB));
+    }
+
+    private function validateParentImdbId(): bool
+    {
+        if ($this->getContentType() == self::CONTENT_TV_EPISODE) {
+            $parentImdbId = $this->getParentUniqueName(Constants::SOURCE_IMDB);
+            return !empty($parentImdbId);
+        }
+        else {
+            return true;
+        }
+    }
+
+    /**
+     * @param MediaDbApiClient $api
+     * @return bool Made changes
+     */
+    private function fillImdbId(MediaDbApiClient $api): bool
+    {
+        if ($this->validateImdbIds()) {
+            return false;
+        }
+
+        // Update external IDs if IMDb ID is invalid
+        if (!$this->validateImdbId()) {
+            $api->getFilmExternalIdsFromApi($this);
+        }
+
+        // Update Parent IMDb ID if it is invalid
+        if (!$this->validateParentImdbId()) {
+
+            $parentId = $this->getParentId();
+
+            if (is_null($parentId)) {
+                logDebug(__FUNCTION__ . ": Parent IMDb ID is invalid, but parent is null. No changes made.");
+                return false;
+            }
+
+            $parent = null;
+            try {
+                $parent = self::getFilmFromDb($this->getParentId());
+            }
+            catch (Exception) {
+                logError("Unable getting film id=". $this->getParentId() ." from db. This was an attempt to get the TV Series IMDb ID for the Episode filmId=" . $this->getId(), defaultPrefix(__CLASS__, __FUNCTION__, __LINE__));
+            }
+
+            // populateImdbIdToDb will update external IDs for the Parent if necessary
+            $parent->populateImdbIdToDb();
+
+            $parentImdbId = $parent?->getUniqueName(Constants::SOURCE_IMDB);
+            if (!empty($parentImdbId)) {
+                $this->setParentUniqueName($parentImdbId, Constants::SOURCE_IMDB);
+            }
+
+        }
+
+        return $this->validateImdbIds();
     }
 
 }
