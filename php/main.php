@@ -209,10 +209,12 @@ function logError($input, $prefix = null, $showTime = true, Exception $e = null,
 {
     $logfilename =  Constants::outputFilePath() . "logError.txt";
     logToFile($logfilename, $input, $prefix, $showTime, $printArray);
+    $eMsg = "";
     if ( !is_null($e) ) {
         logToFile($logfilename, "$e");
+        $eMsg = "\n" . exceptionShortMsg($e);
     }
-    logDebug($input . "\n" . exceptionShortMsg($e), $prefix, $showTime, $printArray);
+    logDebug($input . $eMsg, $prefix, $showTime, $printArray);
 }
 
 function exceptionShortMsg( Exception $e ): string
