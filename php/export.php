@@ -91,75 +91,75 @@ function sanitizeInput(string $data): string
     } ?>
 </head>
 <body>
-<form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
     <div class="container">
         <?php echo $pageHeader; ?>
-        <div class="well" style="text-align:center">
-            <h1 id="exportTitle">Export Ratings</h1>
-        </div>
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10">
-                <?php
-                if (!is_null($success)) {
-                    if ($success) {
-                        echo '<div class="alert alert-success">';
-                        echo '<strong>Success!</strong>';
-                        echo '<br/>';
-                        foreach ($exportedFilenames as $filename) {
-                            $baseFilename = basename($filename);
-                            echo '<div><a href="' . \RatingSync\Constants::RS_OUTPUT_URL_PATH . $baseFilename . '">' . $baseFilename . '</a></div>';
+        <form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+            <div class="well" style="text-align:center">
+                <h1 id="exportTitle">Export Ratings</h1>
+            </div>
+            <div class="row">
+                <div class="col-sm-offset-1 col-sm-10">
+                    <?php
+                    if (!is_null($success)) {
+                        if ($success) {
+                            echo '<div class="alert alert-success">';
+                            echo '<strong>Success!</strong>';
+                            echo '<br/>';
+                            foreach ($exportedFilenames as $filename) {
+                                $baseFilename = basename($filename);
+                                echo '<div><a href="' . \RatingSync\Constants::RS_OUTPUT_URL_PATH . $baseFilename . '">' . $baseFilename . '</a></div>';
+                            }
+                            echo '</div>';
+                        } else {
+                            echo '<div class="alert alert-warning"><strong>Failure!</strong> Something went wrong.</div>';
                         }
-                        echo '</div>';
-                    } else {
-                        echo '<div class="alert alert-warning"><strong>Failure!</strong> Something went wrong.</div>';
                     }
-                }
-                ?>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="row justify-content-center">
-                <div class="col-sm-3 col-md-3 col-lg-2 col-xl-2 mt-3">
-                    <label for="format">Export format:</label>
-                </div>
-                <div class="col-sm-4 col-md-3 col-lg-2 col-xl-2 mt-2">
-                    <select class="form-control" id="format" name="format" onchange="onChangeFormat()">
-                        <option value="letterboxd">Letterboxd</option>
-                        <option value="trakt">Trakt</option>
-                        <option value="tmdb">TMDb</option>
-                        <option value="imdb">IMDb</option>
-                    </select>
+                    ?>
                 </div>
             </div>
-            <div class="row justify-content-center mt-3">
-                <div class="col-sm-3 col-md-3 col-lg-2 col-xl-2 mt-2">
-                    <label for="collectionName">List:</label>
+            <div class="form-group">
+                <div class="row justify-content-center">
+                    <div class="col-sm-3 col-md-3 col-lg-2 col-xl-2 mt-3">
+                        <label for="format">Export format:</label>
+                    </div>
+                    <div class="col-sm-4 col-md-3 col-lg-2 col-xl-2 mt-2">
+                        <select class="form-control" id="format" name="format" onchange="onChangeFormat()">
+                            <option value="letterboxd">Letterboxd</option>
+                            <option value="trakt">Trakt</option>
+                            <option value="tmdb">TMDb</option>
+                            <option value="imdb">IMDb</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-sm-4 col-md-3 col-lg-2 col-xl-2">
-                    <select class="form-control" id="collectionName" name="collectionName" onchange="onChangeCollectionName()">
-                        <option value="Ratings">Ratings</option>
-                        <option value="Watchlist">Watchlist</option>
-                        <?php
-                        if (!empty($collections) && count($collections) > 0) {
-                            echo '<optgroup label="Lists">';
-                            $otherLists = getHtmlFilmlistNamesForExport($collections);
-                            echo $otherLists;
-                            echo '</optgroup>';
-                        }
-                        ?>
-                    </select>
+                <div class="row justify-content-center mt-3">
+                    <div class="col-sm-3 col-md-3 col-lg-2 col-xl-2 mt-2">
+                        <label for="collectionName">List:</label>
+                    </div>
+                    <div class="col-sm-4 col-md-3 col-lg-2 col-xl-2">
+                        <select class="form-control" id="collectionName" name="collectionName" onchange="onChangeCollectionName()">
+                            <option value="Ratings">Ratings</option>
+                            <option value="Watchlist">Watchlist</option>
+                            <?php
+                            if (!empty($collections) && count($collections) > 0) {
+                                echo '<optgroup label="Lists">';
+                                $otherLists = getHtmlFilmlistNamesForExport($collections);
+                                echo $otherLists;
+                                echo '</optgroup>';
+                            }
+                            ?>
+                        </select>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-12" style="text-align:center">
-                <input type="submit" name="submitBtn" class="btn btn-lg btn-primary" href="#" role="button"
-                       value="Export">
+            <div class="row">
+                <div class="col-lg-12" style="text-align:center">
+                    <input type="submit" name="submitBtn" class="btn btn-lg btn-primary" href="#" role="button"
+                           value="Export">
+                </div>
             </div>
-        </div>
+        </form>
         <?php echo $pageFooter; ?>
     </div>
-</form>
 <script>
     <?php echo Constants::echoJavascriptConstants(); ?>
     let pageId = SITE_PAGE.Export;
