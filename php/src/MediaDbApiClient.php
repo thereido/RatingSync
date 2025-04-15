@@ -4,6 +4,8 @@
  */
 namespace RatingSync;
 
+use Exception;
+
 require_once "ApiClient.php";
 require_once "Season.php";
 
@@ -12,6 +14,7 @@ interface iMediaDbApiClient
     public function getFilmBySearch($searchTerms);
     public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = 60);
     public function getFilmDetailFromApi($film, $overwrite = true, $refreshCache = 60);
+    public function getFilmExternalIdsFromApi(Film $film, int $refreshCache = 60): bool;
     public function getSourceName();
     public function getUniqueNameFromSourceId($sourceId, $contentType = null);
 }
@@ -20,7 +23,7 @@ interface iMediaDbApiClient
  * Request data from an API. Specifically a API to a media db like OMDbApi
  * or TMDbApi. Search for films, tv shows, and episodes and get details.
  */
-abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \RatingSync\iMediaDbApiClient
+abstract class MediaDbApiClient extends ApiClient implements iMediaDbApiClient
 {
     const ATTR_API_REQUEST_NAME = "api_request";
     const REQUEST_DETAIL = "detail";
@@ -28,11 +31,12 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
     const REQUEST_DETAIL_SERIES = "detail_tv_series";
     const REQUEST_DETAIL_EPISODE = "detail_tv_episode";
     const REQUEST_DETAIL_SEASON = "detail_tv_season";
+    const REQUEST_EXTERNAL_IDS = "external_ids";
 
     protected $sourceName;
     protected $apiKey;
-    protected $cacheFileExtension = "json";
-    protected $defaultRefreshCache = 60; // minutes
+    protected string    $cacheFileExtension     = "json";
+    protected int       $defaultRefreshCache    = 60; // minutes
 
     // Abstract function inherited by ApiClient
     abstract protected function jsonIndex($attrName, $requestName);
@@ -58,6 +62,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
      * @return string API URL to film detail
      */
     abstract protected function buildUrlFilmDetail($film);
+    abstract protected function buildUrlExternalIds(Film $film): string;
 
     /**
      * Return the API URL for the detail of a TV season.  
@@ -70,7 +75,8 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
     abstract protected function validateResponseSeasonDetail($seasonJson);
 
     abstract protected function populateFilmDetail($response, $film, $overwrite = true);
-    abstract protected function populateSeason($seasonJson, $seriesId);
+    abstract protected function populateSeason(array $seasonJson, int $seriesId): Season;
+    abstract protected function populateExternalIds(array $json, Film $film): bool;
     abstract protected function searchForUniqueName($film);
     abstract protected function printResultToLog($filmJson, $requestName, $contentType);
 
@@ -157,7 +163,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         }
         
         $filmJson = null;
-        
+
         // Use it from cache if it is fresh
         $response = $this->getFilmDetailFromCache($film, $refreshCache);
         if ( !empty($response) ) {
@@ -223,6 +229,105 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         return $filmJson;
     }
 
+    public function getExternalIdsFromCache(Film $film, int $refreshCache = null): ?string
+    {
+        $refreshCache = empty($refreshCache) ? $this->defaultRefreshCache : $refreshCache;
+
+        if (Constants::USE_CACHE_NEVER == $refreshCache) {
+            return null;
+        }
+
+        $filename = $this->getExternalIdsCacheFilename($film);
+        return $this->readFromCache($filename, $refreshCache);
+    }
+
+    protected function getExternalIdsCacheFilename(Film $film): string
+    {
+        $filename    = $this->sourceName . "_external_ids_";
+        $filename   .= $film->getId();
+        $filename   .= "." . $this->cacheFileExtension;
+
+        return $filename;
+    }
+
+    protected function cacheExternalIds(string $apiResult, Film $film): void
+    {
+        $filename = $this->getExternalIdsCacheFilename($film);
+        $this->writeToCache($apiResult, $filename);
+    }
+
+    public function getFilmExternalIdsFromApi(Film $film, int $refreshCache = 60): bool
+    {
+        try {
+            $filmJson = $this->getJsonFromApiForExternalIds($film, $refreshCache);
+        }
+        catch (Exception $e) {
+            logDebug($e, __FUNCTION__." ".__LINE__);
+            return false;
+        }
+
+        $this->populateExternalIds($filmJson, $film);
+        return true;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function getJsonFromApiForExternalIds(Film $film, int $refreshCache): array
+    {
+        $filmJson = null;
+
+        // Use it from cache if it is fresh
+        $response = $this->getExternalIdsFromCache($film, $refreshCache);
+        if ( !empty($response) ) {
+            $filmJson = json_decode($response, true);
+        }
+
+        if (empty($filmJson)) {
+            // Go to the API
+
+            $apiUrl = $this->buildUrlExternalIds($film);
+
+            try {
+
+                $response = $this->apiRequest($apiUrl, null, false, false);
+
+                if ( !empty($response) ) {
+                    $filmJson = json_decode($response, true);
+                }
+
+                if ( !empty($filmJson) &&  !empty($filmJson["id"])) {
+                    $filmJson[self::ATTR_API_REQUEST_NAME]  = self::REQUEST_EXTERNAL_IDS;
+                    $response                               = json_encode($filmJson);
+
+                    $this->cacheExternalIds($response, $film);
+                }
+
+            } catch (Exception $e) {
+                logError("Error getting External IDs from TMDb API for film id=" . $film->getId(), prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+                logDebug($e, __FUNCTION__." ".__LINE__);
+                throw $e;
+            }
+        }
+
+        if ( empty($filmJson) || empty($filmJson["id"]) ) {
+            $errorMsg = $this->sourceName . " request failed. Title=".$film->getTitle();
+            $errorMsg .= ", Episode Title=".$film->getEpisodeTitle();
+            $errorMsg .= ", Year=" . $film->getYear();
+            $errorMsg .= ", UniqueName=" . $film->getUniqueName($this->sourceName);
+
+            if (!empty($filmJson)) {
+                $errorMsg .= "\nJSON response...\n$filmJson";
+            }
+
+            logDebug($errorMsg, __CLASS__."::".__FUNCTION__." ".__LINE__, true, $filmJson);
+            throw new \Exception($this->sourceName . ' External IDs request failed');
+        }
+
+        return $filmJson;
+
+    }
+
     public function getFilmBySearch($searchTerms)
     {
         if (empty($searchTerms) || !is_array($searchTerms)) {
@@ -273,7 +378,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         return $film;
     }
     
-    public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = null)
+    public function getSeasonFromApi($seriesFilmId, $seasonNum, $refreshCache = null): Season|false
     {
         if (is_null($seriesFilmId) || !is_numeric($seriesFilmId) ) {
             throw new \InvalidArgumentException("\$seriesFilmId ($seriesFilmId) must be numeric");
@@ -288,7 +393,12 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
         $seasonJson = null;
         $validationMsg = null;
 
-        $film = Film::getFilmFromDb($seriesFilmId);
+        try {
+            $film = Film::getFilmFromDb($seriesFilmId);
+        } catch (\Exception $e) {
+            logError("Error getting film from db", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+        }
+
         if (empty($film)) {
             return false;
         }
@@ -322,9 +432,7 @@ abstract class MediaDbApiClient extends \RatingSync\ApiClient implements \Rating
             $seasonJson =  json_decode($response, true);
         }
 
-        $season = $this->populateSeason($seasonJson, $seriesFilmId);
-
-        return $season;
+        return $this->populateSeason($seasonJson, $seriesFilmId);
     }
 
     /**

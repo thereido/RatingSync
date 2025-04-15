@@ -70,13 +70,17 @@ class SessionUtility {
 
     public static function registerUser($username, $password)
     {
+        if ( Constants::DISABLE_REGISTER ) {
+            return false;
+        }
+
         $success = false;
         $failure = false;
         $db = getDatabase();
 
         $usernameEscapedAndQuoted = DbConn::quoteOrNull( $username, $db );
         $passwordEscapedAndQuoted = DbConn::quoteOrNull( $password, $db );
-        $passwordEscaped = unquoted($passwordEscapedAndQuoted);
+        $passwordEscaped = unquote($passwordEscapedAndQuoted);
 
         // Hash the password
         $passwordHash = password_hash($passwordEscaped, PASSWORD_DEFAULT);

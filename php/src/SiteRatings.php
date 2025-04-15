@@ -92,7 +92,7 @@ abstract class SiteRatings extends \RatingSync\Site
      *
      * @return array of Film
      */
-    public function getRatings($limitPages = null, $beginPage = 1, $details = false, $refreshCache = Constants::USE_CACHE_NEVER)
+    public function getRatedFilms($limitPages = null, $beginPage = 1, $details = false, $refreshCache = Constants::USE_CACHE_NEVER)
     {
         $films = array();
         $args = array('pageIndex' => $beginPage);
@@ -254,40 +254,6 @@ abstract class SiteRatings extends \RatingSync\Site
         $film->setRating($rating);
     }
 
-    /**
-     * Get the account's ratings from the website and write to a file/database
-     *
-     * @param string     $format   File format to write to (or database). Currently only XML.
-     * @param string     $filename Write to a new (overwrite) file in the output directory
-     * @param bool|false $detail   False brings only rating data. True also brings full detail (can take a long time).
-     * @param int|0      $useCache Use cache for files modified within mins from now. -1 means always use cache. Zero means never use cache.
-     *
-     * @return true for success, false for failure
-     */
-    public function exportRatings($format, $filename, $detail = false, $useCache = Constants::USE_CACHE_NEVER)
-    {
-        $films = $this->getRatings(null, 1, $detail, $useCache);
-
-        $filename =  Constants::outputFilePath() . $filename;
-        $fp = fopen($filename, "w");
-
-        $success = true;
-        $outputAsStr = "";
-        if (empty($format) || $format == "csv") {
-            $outputAsStr = $this->filmsAsCsv($films);
-        }
-        else {
-            $outputAsStr = $this->filmsAsXml($films);
-        }
-
-        if ($success && fwrite($fp, $outputAsStr) !== FALSE) {
-            $success = true;
-        }
-        fclose($fp);
-        
-        return $success;
-    }
-
     public function filmsAsXml($films)
     {
         // Write XML
@@ -299,35 +265,6 @@ abstract class SiteRatings extends \RatingSync\Site
         $xml->addChild('count', $filmCount);
 
         return $xml->asXml();
-    }
-
-    public function filmsAsCsv($films)
-    {
-        $csv = "imdbID,Title,Year,Rating10,WatchedDate" . "\n"; // letterboxd format
-        foreach ($films as $film) {
-            if ($film->getContentType() == Film::CONTENT_TV_EPISODE) {
-                continue;
-            }
-            $title = $film->getTitle();
-            $year = $film->getYear();
-            $imdbId = $film->getUniqueName(Constants::SOURCE_IMDB);
-            $rating = $film->getRating(Constants::SOURCE_RATINGSYNC);
-            if (empty($rating)) {
-                logDebug("Rating empty for $title");
-                continue;
-            }
-            $ratingScore = $rating->getYourScore();
-            $ratingDateStr = $rating->getYourRatingDate()->format("Y-m-d");
-
-            if ($imdbId == null) {
-                $imdbId = "";
-            }
-
-            // Write a line for this film
-            $csv .= "$imdbId,\"$title\",$year,$ratingScore,$ratingDateStr" . "\n";
-        }
-
-        return $csv;
     }
 
     /**

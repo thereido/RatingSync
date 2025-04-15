@@ -14,8 +14,8 @@ $loginHeaderClass = "active";
 $regFormDisplay = "none";
 $regHeaderClass = "";
 $regFormHidden = "hidden";
-$regHeaderHidden = "hidden";
-$regHeaderHidden = ""; /* UNCOMMENTED for register */
+$regHeaderHidden = "";
+if (Constants::DISABLE_REGISTER) { $regHeaderHidden = "hidden"; }
 
 $http_referer = "";
 if (array_key_exists("destination", $_POST)) {
@@ -201,6 +201,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	</div>
 
 <script>
+    <?php echo Constants::echoJavascriptConstants(); ?>
     renderMsg("<?php echo $msgSuccess; ?>", document.getElementById("msg-success"));
     renderMsg("<?php echo $msgInfo; ?>", document.getElementById("msg-info"));
     renderMsg("<?php echo $msgWarning; ?>", document.getElementById("msg-warning"));

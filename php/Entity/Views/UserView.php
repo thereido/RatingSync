@@ -104,9 +104,9 @@ class UserView
             $theme = themeMgr()->findDefaultView();
 
         }
-        catch (Exception) {
+        catch (Exception $e) {
 
-            logError("New UserView without a theme. No default available.", __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError("New UserView without a theme. No default available.", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
             return false;
 
         }

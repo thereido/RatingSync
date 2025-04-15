@@ -39,8 +39,7 @@ final class UserFactory
             );
         } catch (InvalidArgumentException $argEx) {
              $e = new Exception("Invalid UserEntity from this UserView.", 0, $argEx);
-             logError($e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
-             logError($e->getTraceAsString());
+             logError("Invalid UserEntity from this UserView.", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $argEx);
 
              throw $e;
         }
