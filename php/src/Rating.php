@@ -33,6 +33,7 @@ define("RATING_DATE_DB_FORMAT", "Y-m-d");
 class Rating
 {
     protected       $sourceName;    // Local, IMDb, RottenTomatoes, Jinni, etc.
+    protected bool  $initiated = false;
 
     protected int   $filmIdFromDb;
     protected       $yourScore;       // Rating (or score) from you - 1 to 10
@@ -66,6 +67,8 @@ class Rating
         $this->setYourRatingDate(empty($row['yourRatingDate']) ? null : new DateTime($row['yourRatingDate']));
         $this->setSuggestedScore(empty($row['suggestedScore']) ? null : $row['suggestedScore']);
         $this->watched = empty($row['watched']) ? true : $row['watched'];
+
+        $this->initiated = true;
     }
 
     /**
@@ -876,12 +879,23 @@ class Rating
 
     public function equals(Rating $other): bool
     {
-        return $this->getSource()           == $other->getSource()
-            && $this->getFilmId()           == $other->getFilmId()
-            && $this->getYourRatingDate()   == $other->getYourRatingDate()
-            && $this->getYourScore()        == $other->getYourScore()
-            && $this->getSuggestedScore()   == $other->getSuggestedScore()
-            && $this->getWatched()          == $other->getWatched();
+
+        if ( $this->isInitiated() && $other->isInitiated() ) {
+
+            return $this->getSource()           == $other->getSource()
+                && $this->getFilmId()           == $other->getFilmId()
+                && $this->getYourRatingDate()   == $other->getYourRatingDate()
+                && $this->getYourScore()        == $other->getYourScore()
+                && $this->getSuggestedScore()   == $other->getSuggestedScore()
+                && $this->getWatched()          == $other->getWatched();
+
+        }
+        else if ($this->isInitiated() == $other->isInitiated()) {
+            return true;
+        }
+
+        return false;
+
     }
 
     private static function createAndSaveToDb($sourceName, $username, $filmId, SetRatingScoreValue $score, bool $watched, $date, $archiveIt = false): bool
@@ -912,6 +926,11 @@ class Rating
         logDebug($replace, __CLASS__."::".__FUNCTION__." ".__LINE__);
 
         return $db->query($replace) !== false;
+    }
+
+    public function isInitiated(): bool
+    {
+        return $this->initiated;
     }
 
 }

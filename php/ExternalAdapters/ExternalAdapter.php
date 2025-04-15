@@ -217,20 +217,22 @@ abstract class ExternalAdapter
 
         foreach ( $inactiveRatings as $inactiveRating ) {
 
+            if ( $inactiveRating->isInitiated() ) {
+                try {
+                    $entries[] = $this->buildEntry($externalFilm, $inactiveRating);
+                } catch (Exception) {
+                    logDebug("Error exporting inactive rating for film id=" . $film->getId() . " $title ($year)");
+                }
+            }
+
+        }
+
+        if ( $rating->isInitiated() ) {
             try {
-                $entries[] = $this->buildEntry( $externalFilm, $inactiveRating );
+                $entries[] = $this->buildEntry($externalFilm, $rating);
+            } catch (Exception) {
+                logDebug("Error exporting entry for film id=" . $film->getId() . " $title ($year)");
             }
-            catch (Exception) {
-                logDebug("Error exporting inactive rating for film id=" . $film->getId() . " $title ($year)");
-            }
-
-        }
-
-        try {
-            $entries[] = $this->buildEntry( $externalFilm, $rating );
-        }
-        catch (Exception) {
-            logDebug("Error exporting entry for film id=" . $film->getId() . " $title ($year)");
         }
 
         return $entries;
