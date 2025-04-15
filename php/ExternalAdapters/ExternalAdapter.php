@@ -217,7 +217,7 @@ abstract class ExternalAdapter
 
         foreach ( $inactiveRatings as $inactiveRating ) {
 
-            if ( $inactiveRating->isInitiated() ) {
+            if ( $inactiveRating?->isInitiated() ) {
                 try {
                     $entries[] = $this->buildEntry($externalFilm, $inactiveRating);
                 } catch (Exception) {
@@ -227,7 +227,7 @@ abstract class ExternalAdapter
 
         }
 
-        if ( $rating->isInitiated() ) {
+        if ( $rating?->isInitiated() ) {
             try {
                 $entries[] = $this->buildEntry($externalFilm, $rating);
             } catch (Exception) {
