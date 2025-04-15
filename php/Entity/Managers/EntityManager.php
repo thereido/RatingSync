@@ -36,12 +36,12 @@ abstract class EntityManager
 
         } catch(PDOException $e) {
 
-            logError("DB connection failed: " . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError("DB connection failed", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
             die("DB Connection failed: " . $e->getMessage());
 
         } catch(\Exception $e) {
 
-            logError("DB connection failed: " . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError("DB connection failed", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
 
         }
 
@@ -62,8 +62,7 @@ abstract class EntityManager
         }
         catch (Exception $e) {
 
-            logError("Exception with query: $query", __CLASS__."::".__FUNCTION__.":".__LINE__);
-            logError($e->getMessage() . "\n" . $e->getTraceAsString());
+            logError("Exception with query: $query", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
             throw $e;
 
         }
@@ -110,8 +109,7 @@ abstract class EntityManager
         }
         catch (Exception $e) {
 
-            logError("Exception with query: $query");
-            logError($e->getMessage() . "\n" . $e->getTraceAsString());
+            logError("Exception with query: $query", e: $e);
             throw $e;
 
         }
@@ -132,7 +130,7 @@ abstract class EntityManager
             }
             catch (Exception $e) {
 
-                logError("Error constructing a Entity: " . $e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+                logError("Error constructing a Entity", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
                 return false;
 
             }

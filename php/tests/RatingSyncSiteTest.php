@@ -73,19 +73,19 @@ class RatingSyncSiteTest extends RatingSyncTestCase
     }
 
     /**
-     * @covers \RatingSync\RatingSyncSite::getRatings
+     * @covers \RatingSync\RatingSyncSite::getRatedFilms
      * @depends testObjectCanBeConstructed
      */
     public function testGetRatingsUsernameWithNoMatch()
     {$this->start(__CLASS__, __FUNCTION__);
 
         $site = new RatingSyncSite("---Username--No--Match---");
-        $films = $site->getRatings();
+        $films = $site->getRatedFilms();
         $this->assertEquals(0, count($films), "Zero ratings for a non matching user");
     }
 
     /**
-     * @covers \RatingSync\RatingSyncSite::getRatings
+     * @covers \RatingSync\RatingSyncSite::getRatedFilms
      * @depends testObjectCanBeConstructed
      * @depends testSetupRatings
      */
@@ -95,7 +95,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
         $username = Constants::TEST_RATINGSYNC_USERNAME;
         $sourceName = Constants::SOURCE_RATINGSYNC;
         $site = new RatingSyncSite($username);
-        $films = $site->getRatings();
+        $films = $site->getRatedFilms();
         $this->assertEquals(3, count($films), "Count ratings for $username");
 
         $foundFilmId1 = false;  $film1Title = "Frozen";
@@ -142,7 +142,7 @@ class RatingSyncSiteTest extends RatingSyncTestCase
     /*RT* testGetRatingsDetailsTrue *RT*/
 
     /**
-     * @covers \RatingSync\RatingSyncSite::getRatings
+     * @covers \RatingSync\RatingSyncSite::getRatedFilms
      * @depends testGetRatings
      */
     public function testGetRatingsFalse()

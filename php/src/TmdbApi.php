@@ -120,6 +120,26 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         return $url;
     }
 
+    protected function buildUrlExternalIds(Film $film): string
+    {
+        $tmdbId         = TmdbFilm::getTmdbId($film);
+        $parentTmdbId   = TmdbFilm::getSeriesTmdbId($film);
+        $seasonNum      = $film->getSeason();
+        $episodeNum     = $film->getEpisodeNumber();
+        $contentType    = $film->getContentType();
+        $url            = static::BASE_API_URL;
+
+        $url .= match ($contentType) {
+            Film::CONTENT_FILM          => "/movie/$tmdbId",
+            Film::CONTENT_TV_SERIES     => "/tv/$tmdbId",
+            Film::CONTENT_TV_EPISODE    => "/tv/$parentTmdbId/season/$seasonNum/episode/$episodeNum",
+        };
+
+        $url .= "/external_ids?api_key=" . Constants::TMDB_API_KEY;
+
+        return $url;
+    }
+
     protected function validateResponseSeasonDetail($json)
     {
         $errorMsg = $this->getErrorMessageFromResponse($json);
@@ -455,11 +475,11 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         if ($overwrite || is_null($existingIMDbUniqueName)) { $film->setUniqueName($imdbId, Constants::SOURCE_IMDB); }
         if ($overwrite || is_null($existingIMDbUserScore)) { $film->setUserScore($imdbUserScore, Constants::SOURCE_IMDB); }
     }
-    
+
     /**
      * Get season data from the TMDb API and populate a new Season object.
      * The api response is not complete, just the fields we currently use.
-     * 
+     *
      * Movie - https://api.themoviedb.org/3/tv/1399/season/1?api_key={api_key}
      * {
      *   "air_date": "2011-04-17",
@@ -479,14 +499,13 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
      *   "poster_path": "/olJ6ivXxCMq3cfujo1IRw30OrsQ.jpg",
      *   "season_number": 1
      * }
+     *
+     * @param $json
+     * @param $seriesFilmId
+     * @return Season
      */
-    public function populateSeason($json, $seriesFilmId)
+    public function populateSeason(array $json, int $seriesFilmId): Season
     {
-        if (!is_array($json)) {
-            throw new \InvalidArgumentException("\$json param ($json) must be an array");
-        } elseif (!is_numeric($seriesFilmId)) {
-            throw new \InvalidArgumentException(__FUNCTION__.'() seriesFilmId must be a number');
-        }
 
         $requestName = self::REQUEST_DETAIL_SEASON;
 
@@ -530,6 +549,27 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
         }
 
         return $season;
+    }
+
+    /**
+     * @param array $json
+     * @param Film $film
+     * @return bool success/failure
+     */
+    protected function populateExternalIds(array $json, Film $film): bool
+    {
+        $requestName = self::REQUEST_EXTERNAL_IDS;
+
+        // Get values from the API result
+        $imdbId = $this->jsonValue($json, Film::ATTR_IMDB_ID, $requestName);
+
+        if (empty($imdbId)) {
+            return false;
+        }
+
+        $film->setUniqueName($imdbId, Constants::SOURCE_IMDB);
+
+        return true;
     }
 
     protected function printResultToLog($filmJson, $requestName, $contentType) {
@@ -889,6 +929,9 @@ class TmdbApi extends \RatingSync\MediaDbApiClient
             $tmdbIndexes[Season::ATTR_EPISODE_NUM] = "episode_number";
             $tmdbIndexes[Season::ATTR_EPISODE_IMAGE] = "still_path";
             $tmdbIndexes[Season::ATTR_EPISODE_USERSCORE] = "vote_average";
+        }
+        else if ($requestName == static::REQUEST_EXTERNAL_IDS) {
+            $tmdbIndexes[Film::ATTR_IMDB_ID] = "imdb_id";
         }
         elseif ($requestName == static::REQUEST_FIND) {
 

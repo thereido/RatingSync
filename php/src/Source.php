@@ -215,7 +215,7 @@ class Source
         $this->rating = $yourRating;
     }
 
-    public function getRating()
+    public function getRating(): Rating
     {
         $rating = $this->rating;
         if (is_null($this->rating)) {

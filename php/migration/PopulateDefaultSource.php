@@ -49,13 +49,13 @@ foreach ($result->fetchAll() as $row) {
 
         // Get film from TMDb with getFilmApi()
         try {
-            $filmFromApi = getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType, $seasonNum, $episodeNum, $parentId);
+            $filmFromApi = ApiHandler::getFilmApi($username, $filmId, $imdbId, $uniqueName, $getFromRsDbOnly, $contentType, $seasonNum, $episodeNum, $parentId);
         }
         catch (\Exception $e) {
             $errorMsg = "Failed 'get' for $itemMsg";
             if ($e->getCode() == 429) {
-                $msg .= " HTTP Error 429 Too many results in a given amount of time";
-                logTryAgain($msg);
+                $errorMsg .= " HTTP Error 429 Too many results in a given amount of time";
+                logTryAgain($errorMsg);
             }
             else {
                 $errorMsg .= " " . $e->getMessage();
@@ -96,7 +96,7 @@ foreach ($result->fetchAll() as $row) {
         
         if (!empty($errorMsg)) {
             echo $errorMsg . "\n";
-            logError($errorMsg, __FILE__.":".__LINE__);
+            logError($errorMsg, prefix: __FILE__.":".__LINE__, e: $e);
         }
         
         sleep(1);

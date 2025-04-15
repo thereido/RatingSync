@@ -84,7 +84,7 @@ final class UserManager extends EntityManager
         $username = $row["username"];
         $email = $row["email"];
         $enabled = $row["enabled"];
-        $themeId = $row["theme_id"];
+        $themeId = $row["theme_id"]; // FIXME: Validate the key "theme_id" before using it
 
         $enabled = $this->boolFromInt($enabled);
 
@@ -94,8 +94,7 @@ final class UserManager extends EntityManager
 
         } catch (InvalidArgumentException $argEx) {
             $e = new Exception("Invalid UserEntity from a database query row.", 0, $argEx);
-            logError($e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
-            logError($e->getTraceAsString());
+            logError("Invalid UserEntity from a database query row.", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $argEx);
 
             throw $e;
         }

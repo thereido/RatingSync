@@ -32,12 +32,13 @@ define("RATING_DATE_DB_FORMAT", "Y-m-d");
  */
 class Rating
 {
-    protected $sourceName;          // Local, IMDb, RottenTomatoes, Jinni, etc.
+    protected       $sourceName;    // Local, IMDb, RottenTomatoes, Jinni, etc.
 
-    protected $yourScore;       // Rating (or score) from you - 1 to 10
-    protected $yourRatingDate;  // The day you rated it
-    protected $suggestedScore;  // How much they think you would like. Suggested by the source.
-    protected $watched = false;
+    protected int   $filmIdFromDb;
+    protected       $yourScore;       // Rating (or score) from you - 1 to 10
+    protected       $yourRatingDate;  // The day you rated it
+    protected       $suggestedScore;  // How much they think you would like. Suggested by the source.
+    protected       $watched = false;
 
     /**
      * Rating data from one source
@@ -60,10 +61,11 @@ class Rating
      */
     public function initFromDbRow($row)
     {
-        empty($row['yourScore']) ? : $this->setYourScore($row['yourScore']);
-        empty($row['yourRatingDate']) ? : $this->setYourRatingDate(new DateTime($row['yourRatingDate']));
-        empty($row['suggestedScore']) ? : $this->setSuggestedScore($row['suggestedScore']);
-        empty($row['watched']) ? : $this->setWatched($row['watched']);
+        $this->filmIdFromDb = $row['film_id'];
+        $this->setYourScore(empty($row['yourScore']) ? null : $row['yourScore']);
+        $this->setYourRatingDate(empty($row['yourRatingDate']) ? null : new DateTime($row['yourRatingDate']));
+        $this->setSuggestedScore(empty($row['suggestedScore']) ? null : $row['suggestedScore']);
+        $this->watched = empty($row['watched']) ? true : $row['watched'];
     }
 
     /**
@@ -74,6 +76,10 @@ class Rating
     public function getSource()
     {
         return $this->sourceName;
+    }
+
+    public function getFilmId(): int {
+        return $this->filmIdFromDb;
     }
 
     /**
@@ -125,7 +131,7 @@ class Rating
     /**
      * The day you rated it
      *
-     * @return string
+     * @return DateTime
      */
     public function getYourRatingDate()
     {
@@ -250,7 +256,7 @@ class Rating
                     $success = $existingRating->replaceInDb($username, $filmId, false);
                     if (!$success) {
                         $msg = "SQL Error trying to deactivate a existing rating (".$db->errorCode().") ".$db->errorInfo()[2];
-                        logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
+                        logError($msg, prefix: __CLASS__."::".__FUNCTION__.":".__LINE__);
                         return false;
                     }
 
@@ -291,7 +297,7 @@ class Rating
                 $film = $userSpecificFilmInfo?->setSeenToDb(true);
             }
             catch (\Exception $e) {
-                logError($e->getMessage() . "\n" . $e->getTraceAsString());
+                logError($e->getMessage(), e: $e);
             }
 
             if ( empty($film) ) {
@@ -591,7 +597,7 @@ class Rating
             $film = Film::getFilmFromDb($filmId, $username);
 
         } catch (\Exception $e) {
-            logError("Error getting a Film for id=$filmId.\n" . $e->getMessage(), __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__);
+            logError("Error getting a Film for id=$filmId.", prefix: __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__, e: $e);
             return false;
         }
 
@@ -807,7 +813,7 @@ class Rating
             $film = Film::getFilmFromDb($filmId, $username);
 
         } catch (\Exception $e) {
-            logError("Error getting a Film for id=$filmId.\n" . $e->getMessage(), __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__);
+            logError("Error getting a Film for id=$filmId.", prefix: __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__, e: $e);
             return false;
         }
 
@@ -856,6 +862,26 @@ class Rating
         }
 
         return $success;
+    }
+
+    public static function compareByRatingDate($a, $b): int
+    {
+        $dateA = $a->getYourRatingDate();
+        $dateB = $b->getYourRatingDate();
+        if ($dateA == $dateB) {
+            return 0;
+        }
+        return ($dateA < $dateB) ? -1 : 1;
+    }
+
+    public function equals(Rating $other): bool
+    {
+        return $this->getSource()           == $other->getSource()
+            && $this->getFilmId()           == $other->getFilmId()
+            && $this->getYourRatingDate()   == $other->getYourRatingDate()
+            && $this->getYourScore()        == $other->getYourScore()
+            && $this->getSuggestedScore()   == $other->getSuggestedScore()
+            && $this->getWatched()          == $other->getWatched();
     }
 
     private static function createAndSaveToDb($sourceName, $username, $filmId, SetRatingScoreValue $score, bool $watched, $date, $archiveIt = false): bool

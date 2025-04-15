@@ -172,7 +172,7 @@ final class ThemeManager extends EntityManager
         if ( $entity === false ) {
             $msg = "Unable to find the default theme (".Constants::THEME_DEFAULT."). Make sure it is enabled.";
             $e = new Exception( $msg );
-            logError($e->getMessage(), __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError($e->getMessage(), prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
             throw $e;
         }
 

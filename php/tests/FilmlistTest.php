@@ -550,8 +550,8 @@ class FilmlistTest extends RatingSyncTestCase
 
         // Test
         $listDb = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, $listname);
-        $listDb->setSort(Filmlist::SORT_POSITION);
-        $listDb->setSortDirection(Filmlist::SORTDIR_ASC);
+        $listDb->setSort(ListSortField::position);
+        $listDb->setSortDirection(SqlSortDirection::ascending);
         $listDb->initFromDb();
 
         // Verify
@@ -593,14 +593,14 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify
             // List 1
         $listDb1 = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, $listname1);
-        $listDb1->setSort(Filmlist::SORT_POSITION);
-        $listDb1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $listDb1->setSort(ListSortField::position);
+        $listDb1->setSortDirection(SqlSortDirection::ascending);
         $listDb1->initFromDb();
         $this->assertEquals($list->getItems(), $listDb1->getItems(), "First list should match");
             // List 2
         $listDb2 = new Filmlist(Constants::TEST_RATINGSYNC_USERNAME, $listname2);
-        $listDb2->setSort(Filmlist::SORT_POSITION);
-        $listDb2->setSortDirection(Filmlist::SORTDIR_ASC);
+        $listDb2->setSort(ListSortField::position);
+        $listDb2->setSortDirection(SqlSortDirection::ascending);
         $listDb2->initFromDb();
         $this->assertEquals($list2->getItems(), $listDb2->getItems(), "Seconds list should match");
     }
@@ -1710,8 +1710,8 @@ class FilmlistTest extends RatingSyncTestCase
         $existingList->createToDb();
         $list = new Filmlist($username, $listname);
         $list->addItem(3);
-        $list->setSort(Filmlist::SORT_POSITION);
-        $list->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list->setSort(ListSortField::position);
+        $list->setSortDirection(SqlSortDirection::ascending);
 
         // Test
         $list->initFromDb();
@@ -2348,8 +2348,8 @@ class FilmlistTest extends RatingSyncTestCase
         $list1 = new Filmlist($username, "filtertests_list1");
 
         // Test 1
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->initFromDb();
 
         // Verify 1
@@ -2358,8 +2358,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 5, 6, 7, 8, 9");
 
         // Test 2
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->initFromDb();
 
         // Verify 2
@@ -2368,8 +2368,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 9, 8, 7, 6, 5");
 
         // Test 3
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->initFromDb();
 
         // Verify 3
@@ -2378,8 +2378,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 5, 7, 9, 8, 6");
 
         // Test 4
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->initFromDb();
 
         // Verify 4
@@ -2488,8 +2488,8 @@ class FilmlistTest extends RatingSyncTestCase
         $list3->createToDb();
 
         // Test 1
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array(Film::CONTENT_TV_SERIES => false, Film::CONTENT_SHORTFILM => false));
         $list1->setGenreFilter(array());
         $list1->setListFilter(array());
@@ -2501,8 +2501,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 5, 6, 7");
 
         // Test 2
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array(Film::CONTENT_TV_SERIES => false, Film::CONTENT_SHORTFILM => false));
         $list1->setGenreFilter(array());
         $list1->setListFilter(array());
@@ -2514,8 +2514,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 7, 6, 5");
 
         // Test 3
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array(Film::CONTENT_TV_SERIES => false, Film::CONTENT_SHORTFILM => false));
         $list1->setGenreFilter(array());
         $list1->setListFilter(array());
@@ -2527,8 +2527,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 5, 7, 6");
 
         // Test 4
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array(Film::CONTENT_TV_SERIES => false, Film::CONTENT_SHORTFILM => false));
         $list1->setGenreFilter(array());
         $list1->setListFilter(array());
@@ -2540,8 +2540,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 6, 7, 5");
         
         // Test 5
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array("Comedy", "Drama"));
         $list1->setListFilter(array());
@@ -2553,8 +2553,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 5, 7, 8, 9");
 
         // Test 6
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array("Comedy", "Drama"));
         $list1->setListFilter(array());
@@ -2566,8 +2566,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 9, 8, 7, 5");
 
         // Test 7
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array("Comedy", "Drama"));
         $list1->setListFilter(array());
@@ -2579,8 +2579,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 5, 7, 9, 8");
 
         // Test 8
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array("Comedy", "Drama"));
         $list1->setListFilter(array());
@@ -2592,8 +2592,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 8, 9, 7, 5");
 
         // Test 9
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array());
         $list1->setListFilter(array($listname2));
@@ -2605,8 +2605,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 7, 8, 9");
 
         // Test 10
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array());
         $list1->setListFilter(array($listname2));
@@ -2618,8 +2618,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 9, 8, 7");
 
         // Test 11
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array());
         $list1->setListFilter(array($listname2));
@@ -2631,8 +2631,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 7, 9, 8");
 
         // Test 12
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array());
         $list1->setListFilter(array($listname2));
@@ -2644,8 +2644,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 8, 9, 7");
 
         // Test 13
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array(Film::CONTENT_FILM => false));
         $list1->setGenreFilter(array());
         $list1->setListFilter(array($listname2));
@@ -2657,8 +2657,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 8, 9");
 
         // Test 14
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array(Film::CONTENT_FILM => false));
         $list1->setGenreFilter(array());
         $list1->setListFilter(array($listname2));
@@ -2670,8 +2670,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 9, 8");
 
         // Test 15
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array(Film::CONTENT_FILM => false));
         $list1->setGenreFilter(array());
         $list1->setListFilter(array($listname2));
@@ -2683,8 +2683,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 9, 8");
 
         // Test 16
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array(Film::CONTENT_FILM => false));
         $list1->setGenreFilter(array());
         $list1->setListFilter(array($listname2));
@@ -2696,8 +2696,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 8, 9");
         
         // Test 17
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array("Comedy", "Horror"));
         $list1->setListFilter(array($listname3));
@@ -2709,8 +2709,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 6, 7, 8");
 
         // Test 18
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array("Comedy", "Horror"));
         $list1->setListFilter(array($listname3));
@@ -2722,8 +2722,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 8, 7, 6");
 
         // Test 19
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array("Comedy", "Horror"));
         $list1->setListFilter(array($listname3));
@@ -2735,8 +2735,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 7, 8, 6");
 
         // Test 20
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array());
         $list1->setGenreFilter(array("Comedy", "Horror"));
         $list1->setListFilter(array($listname3));
@@ -2748,8 +2748,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 6, 8, 7");
 
         // Test 21
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array(Film::CONTENT_TV_SERIES => false));
         $list1->setGenreFilter(array("Comedy", "Horror"));
         $list1->setListFilter(array());
@@ -2761,8 +2761,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 5, 6, 7");
 
         // Test 22
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array(Film::CONTENT_TV_SERIES => false));
         $list1->setGenreFilter(array("Comedy", "Horror"));
         $list1->setListFilter(array());
@@ -2774,8 +2774,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 7, 6, 5");
 
         // Test 23
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array(Film::CONTENT_TV_SERIES => false));
         $list1->setGenreFilter(array("Comedy", "Horror"));
         $list1->setListFilter(array());
@@ -2787,8 +2787,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 5, 7, 6");
 
         // Test 24
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array(Film::CONTENT_TV_SERIES => false));
         $list1->setGenreFilter(array("Comedy", "Horror"));
         $list1->setListFilter(array());
@@ -2800,8 +2800,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 6, 7, 5");
         
         // Test 25
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array(Film::CONTENT_FILM => false));
         $list1->setGenreFilter(array("Comedy", "Drama"));
         $list1->setListFilter(array($listname3));
@@ -2813,8 +2813,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 8, 9");
 
         // Test 26
-        $list1->setSort(Filmlist::SORT_POSITION);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::position);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array(Film::CONTENT_FILM => false));
         $list1->setGenreFilter(array("Comedy", "Drama"));
         $list1->setListFilter(array($listname3));
@@ -2826,8 +2826,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 9, 8");
 
         // Test 27
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_ASC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::ascending);
         $list1->setContentFilter(array(Film::CONTENT_FILM => false));
         $list1->setGenreFilter(array("Comedy", "Drama"));
         $list1->setListFilter(array($listname3));
@@ -2839,8 +2839,8 @@ class FilmlistTest extends RatingSyncTestCase
         $this->assertEquals($itemsExpected, $items, "List item order should be 9, 8");
 
         // Test 28
-        $list1->setSort(Filmlist::SORT_ADDED);
-        $list1->setSortDirection(Filmlist::SORTDIR_DESC);
+        $list1->setSort(ListSortField::modified);
+        $list1->setSortDirection(SqlSortDirection::descending);
         $list1->setContentFilter(array(Film::CONTENT_FILM => false));
         $list1->setGenreFilter(array("Comedy", "Drama"));
         $list1->setListFilter(array($listname3));
@@ -3165,8 +3165,8 @@ class FilmlistTest extends RatingSyncTestCase
 
         // Verify
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertTrue($success, "The function should be error free");
@@ -3206,8 +3206,8 @@ class FilmlistTest extends RatingSyncTestCase
 
         // Verify
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertTrue($success, "The function should be error free");
@@ -3247,8 +3247,8 @@ class FilmlistTest extends RatingSyncTestCase
 
         // Verify
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertTrue($success, "The function should be error free");
@@ -3288,8 +3288,8 @@ class FilmlistTest extends RatingSyncTestCase
 
         // Verify
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertTrue($success, "The function should be error free");
@@ -3329,8 +3329,8 @@ class FilmlistTest extends RatingSyncTestCase
 
         // Verify
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertTrue($success, "The function should be error free");
@@ -3371,8 +3371,8 @@ class FilmlistTest extends RatingSyncTestCase
 
         // Verify 1
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertTrue($success, "The function should be error free");
@@ -3383,8 +3383,8 @@ class FilmlistTest extends RatingSyncTestCase
 
         // Verify 2
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertTrue($success, "The function should be error free");
@@ -3424,8 +3424,8 @@ class FilmlistTest extends RatingSyncTestCase
 
         // Verify
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertFalse($success, "The function should be have error(s)");
@@ -3465,8 +3465,8 @@ class FilmlistTest extends RatingSyncTestCase
 
         // Verify 2
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertFalse($success, "The function should be have error(s)");
@@ -3509,8 +3509,8 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify
         $this->assertEquals(array(1, 5, 2, 3, 4), $list->getItems(), "Items should be 1, 5, 2, 3, 4");
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertFalse($success, "The function should be have error(s)");
@@ -3558,8 +3558,8 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify
         $this->assertEquals(array(1, 2, 3, 4), $list->getItems(), "Items should be 1, 2, 3, 4");
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertFalse($success, "The function should be have error(s)");
@@ -3600,8 +3600,8 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify 2
         $this->assertEquals(array(1, 4, 2, 3, 5), $list->getItems(), "Items from original object should be 1, 4, 2, 3, 5");
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertFalse($success, "The moveItem() should be have error(s)");
@@ -3649,8 +3649,8 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify
         $this->assertEquals(array(1, 4, 2, 3, 5), $list->getItems(), "Items should be 1, 4, 2, 3, 5");
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertFalse($success, "The function should be have error(s)");
@@ -3693,8 +3693,8 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify
         $this->assertEquals(array(1, 3, 4, 2, 5), $list->getItems(), "Items should be 1, 3, 4, 2, 5");
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertFalse($success, "The function should be have error(s)");
@@ -3742,8 +3742,8 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify
         $this->assertEquals(array(1, 3, 4, 5), $list->getItems(), "Items should be 1, 3, 4, 5");
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertFalse($success, "The function should be have error(s)");
@@ -3792,8 +3792,8 @@ class FilmlistTest extends RatingSyncTestCase
         // Verify
         $this->assertEquals(array(1, 3, 4, 2, 5), $list->getItems(), "Items should be 1, 3, 4, 2, 5");
         $verifyList = new Filmlist($username, $listname);
-        $verifyList->setSort(Filmlist::SORT_POSITION);
-        $verifyList->setSortDirection(Filmlist::SORTDIR_ASC);
+        $verifyList->setSort(ListSortField::position);
+        $verifyList->setSortDirection(SqlSortDirection::ascending);
         $verifyList->initFromDb();
         $items = $verifyList->getItems();
         $this->assertTrue($success, "The function should be have no error(s)");

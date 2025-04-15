@@ -168,6 +168,7 @@ function getPageHeader($forListnameParam = false, $listnames = null): string {
     $html .= '        </a>'."\n";
     $html .= '        <div class="dropdown-menu" aria-labelledby="navbarSettingsDropdown">'."\n";
     $html .= '          <a class="dropdown-item" href="/php/account/myAccount.php">'.$username.'</a>'."\n";
+    $html .= '          <a class="dropdown-item" href="/php/export.php">Export</a>'."\n";
     $html .= '          <a class="dropdown-item" href="/php/Login/logout.php">Sign Out</a>'."\n";
     $html .= '        </div>'."\n";
     $html .= '      </li>'."\n";
@@ -197,6 +198,28 @@ function getHtmlFilmlistNamesForNav($listnames, $level = 0): string {
             $html .= '<a class="dropdown-item" id="'.$id.'" href="/php/userlist.php?l='.$safeListname.'">'. $prefix . $listname .'</a>'."\n";
             $html .= getHtmlFilmlistNamesForNav($list["children"], $level+1);
         }
+    }
+
+    return $html;
+}
+
+function getHtmlFilmlistNamesForExport($lists, $level = 0): string {
+    $html = "";
+
+    $prefix = "";
+    for ($levelIndex = $level; $levelIndex > 0; $levelIndex--) {
+        $prefix .= "&nbsp;&nbsp;";
+    }
+
+    if ($lists == null) {
+        $lists = array();
+    }
+
+    foreach ($lists as $list) {
+        $listname = $list["listname"];
+        $safeListname = htmlentities($listname, ENT_COMPAT, "utf-8");
+        $html .= '<option value="' . $safeListname . '">' . $prefix . $safeListname . '</option>';
+        $html .= getHtmlFilmlistNamesForExport($list["children"], $level+1);
     }
 
     return $html;

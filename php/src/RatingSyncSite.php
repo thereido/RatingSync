@@ -7,6 +7,11 @@ namespace RatingSync;
 use ArrayObject;
 
 require_once "SiteRatings.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "ExternalAdapter.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "ImdbAdapter.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "LetterboxdAdapter.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "TmdbAdapter.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "TraktAdapter.php";
 
 /**
  * Communicate to/from the RatingSync website/database
@@ -17,10 +22,6 @@ require_once "SiteRatings.php";
 class RatingSyncSite extends \RatingSync\SiteRatings
 {
     const RATINGSYNC_DATE_FORMAT = "n/j/y";
-    const SORT_RATING_DATE  = 'yourRatingDate';
-    const SORT_YOUR_SCORE   = 'yourScore';
-    const SORTDIR_ASC       = 'ASC';
-    const SORTDIR_DESC      = 'DESC';
 
     /** Content Type filter
      * Keys are the content type. Values are boolean.
@@ -61,28 +62,10 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $this->http = new Http($this->sourceName, $username);
         $this->dateFormat = self::RATINGSYNC_DATE_FORMAT;
         $this->maxCriticScore = 100;
-        $this->sort = static::SORT_RATING_DATE;
-        $this->sortDirection = static::SORTDIR_DESC;
+        $this->sort = RatingSortField::date;
+        $this->sortDirection = SqlSortDirection::descending;
         $this->clearContentTypeFilter();
         $this->clearListFilter();
-    }
-
-    public static function validSort($sort)
-    {
-        $validSorts = array(static::SORT_RATING_DATE, static::SORT_YOUR_SCORE);
-        if (in_array($sort, $validSorts)) {
-            return true;
-        }
-        return false;
-    }
-
-    public static function validSortDirection($sortDirection)
-    {
-        $validSortDirection = array(static::SORTDIR_ASC, static::SORTDIR_DESC);
-        if (in_array($sortDirection, $validSortDirection)) {
-            return true;
-        }
-        return false;
     }
     
     /**
@@ -162,16 +145,15 @@ class RatingSyncSite extends \RatingSync\SiteRatings
      *
      * @return array of Film
      */
-    public function getRatings($limitPages = null, $beginPage = 1, $details = false, $refreshCache = Constants::USE_CACHE_NEVER)
+    public function getRatedFilms($limitPages = null, $beginPage = 1, $details = false, $refreshCache = Constants::USE_CACHE_NEVER): array
     {
-        $refreshCache = Constants::USE_CACHE_NEVER;
         $films = array();
 
         $orderBy = "ORDER BY ";
         if (!empty($this->getSort())) {
-            $orderBy .= $this->getSort() . " " . $this->getSortDirection() . ", ";
+            $orderBy .= $this->getSort()->value . " " . $this->getSortDirection()->value . ", ";
         }
-        $orderBy .= "rating.ts " . $this->getSortDirection();
+        $orderBy .= "rating.ts " . $this->getSortDirection()->value;
 
         $limit = "";
         if (!empty($limitPages)) {
@@ -187,21 +169,51 @@ class RatingSyncSite extends \RatingSync\SiteRatings
             $film = Film::getFilmFromDb($filmId, $this->username);
             $films[] = $film;
         }
-        
+
         return $films;
     }
 
-    public function countRatings() {
+    public function getFilmsForExport( $limit = null, $offset = 1, bool $includeInactive = false ): array
+    {
+        $films = array();
+
+        $orderBy = "ORDER BY ";
+        if (!empty($this->getSort())) {
+            $orderBy .= $this->getSort()->value . " " . $this->getSortDirection()->value . ", ";
+        }
+        $orderBy .= "rating.ts " . $this->getSortDirection()->value;
+
+        if ( $limit !== null ) {
+            $limit = "LIMIT $offset, $limit";
+        }
+
         $db = getDatabase();
-        $query = $this->getRatingsQuery("count(DISTINCT rating.film_id) as count");
+        $query = $this->getRatingsQuery("DISTINCT rating.film_id", $orderBy, $limit, $includeInactive);
         $result = $db->query($query);
-        $row = $result->fetch();
-        
-        return $row["count"];
+
+        foreach ($result->fetchAll() as $row) {
+            $filmId = intval($row["film_id"]);
+            $film = Film::getFilmFromDb($filmId, $this->username);
+            $films[] = $film;
+        }
+
+        return $films;
     }
 
-    protected function getRatingsQuery($selectCols, $orderBy = "", $limit = "") {
+    public function countRatings(bool $includeInactive = false): int {
+
+        $db = getDatabase();
+        $query = $this->getRatingsQuery("count(rating.film_id) as count", "", "", $includeInactive);
+        $result = $db->query($query);
+        $row = $result->fetch();
+
+        return intval($row["count"]);
+    }
+
+    protected function getRatingsQuery($selectCols, $orderBy = "", $limit = "", bool $includeInactive = false): string {
         $queryTables = "rating";
+
+        $activeWhere = $includeInactive ? "" : " AND active=1";
 
         $contentTypeFilterWhere = "";
         $contentTypeFilteredOut = $this->getContentTypeFilterCommaDelimited();
@@ -233,9 +245,9 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
 
         $query  = "SELECT $selectCols FROM $queryTables";
-        $query .= " WHERE active=1";
-        $query .= "   AND rating.user_name='" .$this->username. "'";
+        $query .= " WHERE rating.user_name='" .$this->username. "'";
         $query .= "   AND source_name='" .$this->sourceName. "'";
+        $query .=     $activeWhere;
         $query .=     $contentTypeFilterWhere;
         $query .=     $listFilterWhere;
         $query .=     $genreFilterWhere;
@@ -399,9 +411,9 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         $iter = (new ArrayObject($this->contentTypeFilter))->getIterator();
         while ($iter->valid()) {
 
-            $key = $iter->key();
-            if (Film::validContentType($key) && $iter->current() === false) {
-                $filteredOut .= $comma . "'$key'";
+            $current = $iter->current();
+            if (Film::validContentType($current)) {
+                $filteredOut .= $comma . "'$current'";
                 $comma = ", ";
             }
 
@@ -433,30 +445,30 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         return $commaDelimitedLists;
     }
 
-    public function setSort($sort)
+    public function setSort(RatingSortField $field): void
     {
-        if (! $this->validSort($sort) ) {
-            throw new \InvalidArgumentException(__FUNCTION__." Invalid sort param '$sort'");
+        if (! $field->validated() ) {
+            throw new \InvalidArgumentException(__FUNCTION__." Invalid sort param '$field->value'");
         }
 
-        $this->sort = $sort;
+        $this->sort = $field;
     }
 
-    public function getSort()
+    public function getSort(): RatingSortField
     {
         return $this->sort;
     }
 
-    public function setSortDirection($sortDirection)
+    public function setSortDirection(SqlSortDirection $direction): void
     {
-        if (! $this->validSortDirection($sortDirection) ) {
-            throw new \InvalidArgumentException(__FUNCTION__." Invalid sortDirection param '$sortDirection'");
+        if (! $direction->validated() ) {
+            throw new \InvalidArgumentException(__FUNCTION__." Invalid sortDirection param '$direction->value'");
         }
 
-        $this->sortDirection = $sortDirection;
+        $this->sortDirection = $direction;
     }
 
-    public function getSortDirection()
+    public function getSortDirection(): SqlSortDirection
     {
         return $this->sortDirection;
     }
@@ -645,5 +657,152 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
 
         return $exists;
+    }
+
+    /**
+     * @param ExportFormat $format
+     * @param string $collectionName
+     * @return array|false Array of filenames exported or false in failure
+     */
+    public function export( ExportFormat $format, string $collectionName = "" ): array|false
+    {
+        $siteName   = str_replace(' ', '', Constants::SITE_NAME);
+
+        $adapter = $this->getExternalAdapter( $format );
+        if ( $adapter === null ) {
+            return false;
+        }
+
+        $ratingsExportedFilenames = [];
+        if ( $format->isRatings() ) {
+            $filename                   = $siteName . "_ExportRatings_to_" . $format->toString();
+            $arrayOfFiles               = $adapter->exportRatings() ?? [];
+            $ratingsExportedFilenames   = $this->writeExportFiles( $arrayOfFiles, $filename, $format->getExtension() );
+        }
+
+        $collectionExportedFilenames = [];
+        if ( $format->isCollection() ) {
+            $filename                       = $siteName . "_Export" . $collectionName . "_to_" . $format->toString();
+            $arrayOfFiles                   = $adapter->exportFilmCollection( $collectionName ) ?? [];
+            $collectionExportedFilenames    = $this->writeExportFiles( $arrayOfFiles, $filename, $format->getExtension() );
+        }
+
+        logDebug("");
+        if ( $ratingsExportedFilenames === false || $collectionExportedFilenames === false ) {
+            return false;
+        }
+        else {
+            return array_merge($ratingsExportedFilenames, $collectionExportedFilenames);
+        }
+    }
+
+    /**
+     * @param ExportFormat $format
+     * @return ExternalAdapter|null
+     */
+    private function getExternalAdapter( ExportFormat $format ): ?ExternalAdapter
+    {
+        $adapter = null;
+
+        try {
+            $adapter = match ($format) {
+                ExportFormat::IMDB_RATINGS              => new ImdbAdapter(username: $this->username, format: $format),
+                ExportFormat::LETTERBOXD_COLLECTION,
+                ExportFormat::LETTERBOXD_RATINGS        => new LetterboxdAdapter(username: $this->username, format: $format),
+                ExportFormat::TMDB_RATINGS              => new TmdbAdapter(username: $this->username, format: $format),
+                ExportFormat::TRAKT_RATINGS             => new TraktAdapter(username: $this->username, format: $format),
+                default                                 => null,
+            };
+        }
+        catch (\Exception $e) {
+            logDebug("Failed to create ExternalAdapter for format=$format->name error=$e", prefix: __CLASS__ . ":" . __FUNCTION__ . ":" . __LINE__ );
+        }
+
+        if ( $adapter === null ) {
+            logDebug("Unknown ExternalAdapter for format=$format->name", prefix: __CLASS__ . ":" . __FUNCTION__ . ":" . __LINE__ );
+        }
+
+        return $adapter;
+    }
+
+    /**
+     * @param array $contentStrings
+     * @param string $filenameBase
+     * @param string $extension
+     * @return array|false Array of filenames exported or false in failure
+     */
+    private function writeExportFiles( array $contentStrings, string $filenameBase, string $extension ): array|false
+    {
+
+        $filenames  = array();
+
+        $fileNumber = 1;
+        foreach ( $contentStrings as $fileContent ) {
+
+            $filename           = $filenameBase . "_" . $fileNumber . "." . $extension;
+            $filenameWithPath   = Constants::outputFilePath() . $filename;
+            $written            = writeFile( $fileContent, $filenameWithPath );
+            $fileNumber++;
+
+            if ( $written === false ) {
+                logError("Failed to write to $filenameWithPath", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__));
+                return false;
+            }
+            else {
+                $filenames[] = $filename;
+                logDebug("Export file: $filenameWithPath");
+            }
+
+        }
+
+        return $filenames;
+    }
+
+}
+
+enum RatingSortField: string {
+    case date   = 'yourRatingDate';
+    case score  = 'yourScore';
+    public function validated(): bool {
+        return in_array($this, [self::date, self::score]);
+    }
+
+    static public function convert(string $sortField): RatingSortField | null {
+        $result = RatingSortField::tryFrom($sortField);
+
+        if ($result === null) {
+            if ($sortField == "date") {
+                $result = RatingSortField::date;
+            }
+            else if ($sortField == "score") {
+                $result = RatingSortField::score;
+            }
+        }
+
+        return $result;
+    }
+}
+
+enum SqlSortDirection: string {
+    case ascending   = 'ASC';
+    case descending  = 'DESC';
+    public function validated(): bool {
+        return in_array($this, [self::ascending, self::descending]);
+    }
+
+    static public function convert(string $sortField): SqlSortDirection | null {
+        $result = SqlSortDirection::tryFrom($sortField);
+
+        if ($result === null) {
+            $sortField = strtoupper($sortField);
+            if ($sortField == "ASC") {
+                $result = SqlSortDirection::ascending;
+            }
+            else if ($sortField == "DESC") {
+                $result = SqlSortDirection::descending;
+            }
+        }
+
+        return $result;
     }
 }
