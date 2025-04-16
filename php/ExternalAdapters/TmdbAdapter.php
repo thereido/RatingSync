@@ -22,7 +22,7 @@ class TmdbAdapter extends ExternalAdapterCsv
         return "rated_at,type,title,year,trakt_rating,trakt_id,imdb_id,tmdb_id,tvdb_id,url,released,season_number,episode_number,episode_title,episode_released,episode_trakt_rating,episode_trakt_id,episode_imdb_id,episode_tmdb_id,episode_tvdb_id,genres,rating";
     }
 
-    protected function validateExternalFilm( Film $film ): array
+    protected function validateExportableExternalFilm( Film $film ): array
     {
         return TmdbFilm::validateExternalFilm( $film );
     }
@@ -63,7 +63,7 @@ class TmdbFilm extends ExternalFilm
         return $problems;
     }
 
-    public function ratingEntry( ?Rating $rating ): string
+    public function ratingExportEntry( ?Rating $rating ): string
     {
         // Example from tmdb.org
         //
@@ -93,9 +93,9 @@ class TmdbFilm extends ExternalFilm
         return "$ratingAt,$tmdbType,$title,$year,,,$imdbId,$tmdbId,,,,$seasonNum,$episodeNum,$episodeTitle,,,,$episodeImdbId,$episodeTmdbId,,,$score";
     }
 
-    public function filmEntry(): string|array
+    public function filmExportEntry(): string|array
     {
-        return $this->ratingEntry( rating: null );
+        return $this->ratingExportEntry( rating: null );
     }
 
     private function getExternalFilmType( string $contentType ): string

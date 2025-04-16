@@ -18,7 +18,7 @@ class ImdbAdapter extends ExternalAdapterCsv
         return "Position,Const,Created,Modified,Description,Title,URL,Title Type,IMDb Rating,Runtime (mins),Year,Genres,Num Votes,Release Date,Directors,Your Rating,Date Rated";
     }
 
-    protected function validateExternalFilm( Film $film ): array
+    protected function validateExportableExternalFilm( Film $film ): array
     {
         return ImdbFilm::validateExternalFilm( $film );
     }
@@ -58,7 +58,7 @@ class ImdbFilm extends ExternalFilm
         return $problems;
     }
 
-    public function ratingEntry(Rating $rating ): string
+    public function ratingExportEntry( Rating $rating ): string
     {
         // IMDb v3
         //
@@ -88,7 +88,7 @@ class ImdbFilm extends ExternalFilm
         return ",$imdbId,,,,\"$title\",,$mediaType,,,$year,,,,,$score,$ratedAt" . "\n";
     }
 
-    public function filmEntry(): string
+    public function filmExportEntry(): string
     {
         return "";
     }

@@ -15,11 +15,11 @@ abstract class ExternalAdapter
     protected array $supportedExportFormats = [];
     protected array $exportableContentTypes = [Film::CONTENT_FILM, Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE];
 
-    abstract protected function validateExternalFilm( Film $film ): array;
+    abstract protected function validateExportableExternalFilm( Film $film ): array;
     abstract protected function createExternalFilm( Film $film, Rating|null $earliestRating = null ): ExternalFilm;
     abstract protected function getEmptyBatch(): string|array;
     abstract protected function addTrackableEntry( mixed $entry, string|array &$batch ): bool;
-    abstract protected function addBatch( string|array $batch, array &$batches ): bool;
+    abstract protected function addExportBatch( string|array $batch, array &$batches ): bool;
 
     /**
      * @throws Exception
@@ -27,7 +27,7 @@ abstract class ExternalAdapter
     protected function __construct(string $username, ExportFormat $format, string $className )
     {
         if ( !in_array( $format, $this->supportedExportFormats) ) {
-            throw new \Exception("Export format ($format->name) is not supported for $className adapter");
+            throw new Exception("Export format ($format->name) is not supported for $className adapter");
         }
 
         $this->username      = $username;
@@ -41,9 +41,9 @@ abstract class ExternalAdapter
         $extensionFormat    = strtoupper( $this->exportFormat->getExtension() );
         logDebug("Export $this->username ratings for importing to $serviceName in $extensionFormat format");
 
-        $films              = $this->getRatedFilmsForExport( limit: $this->exportTotalSize, includeInactive: true );
+        $films              = $this->getFilmsForExportRatings( limit: $this->exportTotalSize, includeInactive: true );
 
-        return $this->exportEntries( $films );
+        return $this->exportFromFilms( films: $films );
     }
 
     public function exportFilmCollection( string $collectionName ): array
@@ -53,12 +53,12 @@ abstract class ExternalAdapter
         $extensionFormat    = strtoupper( $this->exportFormat->getExtension() );
         logDebug("Export $this->username \"$collectionName\" for importing to $serviceName in $extensionFormat format");
 
-        $films = $this->getFilmCollectionForExport( name: $collectionName, limit: $this->exportTotalSize );
+        $films = $this->getFilmsForExportCollection( name: $collectionName, limit: $this->exportTotalSize );
 
-        return $this->exportEntries( $films );
+        return $this->exportFromFilms( films: $films );
     }
 
-    private function exportEntries( array $films ): array
+    private function exportFromFilms( array $films ): array
     {
 
         $export                 = []; // See $exportBatch
@@ -72,25 +72,26 @@ abstract class ExternalAdapter
 
         foreach ( $films as $currentFilmKey => $film ) {
 
-            $validContentType = $this->isExportableContentType( $film );
-            $validFilm        = $this->validateFilm( $film );
-
-            if ( !$validContentType || !$validFilm ) {
+            $exportThisFilm = $this->validateExportableContentType( $film ) && $this->validateExportableFilm( $film );
+            if ( ! $exportThisFilm ) {
 
                 $unexportedFilms[] = $film->getId();
 
-                if ( !$validContentType ) {
-                    logDebug("Unable to export entries for film id=" . $film->getId() . " " . $film->getTitle() . " (" . $film->getYear() . ") - invalid content type " . $film->getContentType());
-                }
-
-                if ( $currentFilmKey == $lastFilmKey ) {
-                    $this->finishBatch( $exportBatch, $export, $exportEntryCount, $batchEntryCount );
+                if ($currentFilmKey == $lastFilmKey) {
+                    $this->finishExportBatch($exportBatch, $export, $exportEntryCount, $batchEntryCount);
                 }
 
                 continue;
             }
 
-            $exportEntries = $this->getExportEntriesForFilm( film: $film );
+            $exportEntries = [];
+            if ( $this->exportFormat->isRatings() ) {
+                $entriesForThisFilm = $this->getEntriesForExportRatings( film: $film );
+                $exportEntries = array_merge( $exportEntries, $entriesForThisFilm );
+            }
+            else if ( $this->exportFormat->isCollection() ) {
+                $exportEntries[] = $this->getEntryForExportCollection( film: $film );
+            }
 
             $filmEntryCount         = 0;
             $filmEntryErrorCount    = 0;
@@ -123,8 +124,16 @@ abstract class ExternalAdapter
                 logDebug("Unable to export entries for film id=" . $film->getId() . " " . $film->getTitle() . " (" . $film->getYear() . ")");
             }
 
-            if ( $batchEntryCount >= $this->exportBatchSize || $currentFilmKey == $lastFilmKey ) {
-                $this->finishBatch($exportBatch, $export, $exportEntryCount, $batchEntryCount);
+            $finishThisBatch = $exportEntryCount >= $this->exportTotalSize
+                || $batchEntryCount >= $this->exportBatchSize
+                || $currentFilmKey == $lastFilmKey;
+            if ( $finishThisBatch ) {
+
+                $this->finishExportBatch($exportBatch, $export, $exportEntryCount, $batchEntryCount);
+
+                if ( $exportEntryCount >= $this->exportTotalSize ) {
+                    break;
+                }
             }
 
         }
@@ -138,9 +147,10 @@ abstract class ExternalAdapter
         }
 
         return $export;
+
     }
 
-    protected function getRatedFilmsForExport( int $limit = null, int $offset = 1, bool $includeInactive = false ): array
+    protected function getFilmsForExportRatings( int $limit = null, int $offset = 1, bool $includeInactive = false ): array
     {
 
         $site = new RatingSyncSite( $this->username );
@@ -151,38 +161,20 @@ abstract class ExternalAdapter
 
     }
 
-    protected function getFilmCollectionForExport( string $name, int $limit = null ): array
+    protected function getFilmsForExportCollection( string $name, int $limit = null ): array
     {
 
         $list = new Filmlist( $this->username, $name );
         $list->setSort( ListSortField::position );
         $list->setSortDirection( SqlSortDirection::descending );
-        $list->setContentFilter( $this->getFilterForContentTypes() );
+        $list->setContentFilter( $this->getContentTypesFilterForExport() );
         $list->initFromDb();
 
         return $list->getFilms( $limit );
+
     }
 
-    private function validateFilm( Film $film ): bool
-    {
-        $invalidReason = $this->validateExternalFilm( $film );
-
-        if ( count($invalidReason) ) {
-            $reasons = "";
-            foreach ( $invalidReason as $reason ) {
-                $delimiter = $reasons == "" ? "" : ", ";
-                $reasons .= $delimiter . $reason;
-            }
-
-            $contentTypeMsg = $film->getContentType() == Film::CONTENT_TV_EPISODE ? " - s" . $film->getSeason() . " e" . $film->getEpisodeNumber() : "";
-            logDebug("Invalid film for exporting ratings. Reason=\"$reasons\". Skipping this film. FilmId=" . $film->getId() . " " . $film->getTitle() . " (" . $film->getYear() . ")$contentTypeMsg");
-            return false;
-        }
-
-        return true;
-    }
-
-    private function getExportEntriesForFilm( Film $film ): array
+    private function getEntriesForExportRatings( Film $film ): array
     {
         $entries = [];
 
@@ -219,7 +211,7 @@ abstract class ExternalAdapter
 
             if ( $inactiveRating?->isInitiated() ) {
                 try {
-                    $entries[] = $this->buildEntry($externalFilm, $inactiveRating);
+                    $entries[] = $this->buildExportEntry($externalFilm, $inactiveRating);
                 } catch (Exception) {
                     logDebug("Error exporting inactive rating for film id=" . $film->getId() . " $title ($year)");
                 }
@@ -229,7 +221,7 @@ abstract class ExternalAdapter
 
         if ( $rating?->isInitiated() ) {
             try {
-                $entries[] = $this->buildEntry($externalFilm, $rating);
+                $entries[] = $this->buildExportEntry($externalFilm, $rating);
             } catch (Exception) {
                 logDebug("Error exporting entry for film id=" . $film->getId() . " $title ($year)");
             }
@@ -238,10 +230,40 @@ abstract class ExternalAdapter
         return $entries;
     }
 
+    private function getEntryForExportCollection( Film $film ): string
+    {
+
+        $imdbId                 = $film->getUniqueName(Constants::SOURCE_IMDB);
+        $tmdbId                 = $film->getUniqueName(Constants::SOURCE_TMDBAPI);
+        $title                  = $film->getTitle();
+        $year                   = $film->getYear();
+
+        if ( $imdbId == null && $tmdbId == null ) {
+            logDebug("IMDb & TMDb ids are empty for film id=" . $film->getId() . " $title ($year)");
+            return "";
+        }
+
+        try {
+            $externalFilm = $this->createExternalFilm( $film );
+        }
+        catch (Exception $e) {
+            logDebug( "Error creating ExternalFilm for film id=" . $film->getId() . " $title ($year)\n" . exceptionShortMsg($e), prefix: __CLASS__ . ":" . __FUNCTION__ . ":" . __LINE__ );
+            return "";
+        }
+
+        try {
+            return $this->buildExportEntry( $externalFilm );
+        } catch (Exception) {
+            logDebug("Error exporting entry for film id=" . $film->getId() . " $title ($year)");
+            return "";
+        }
+
+    }
+
     /**
      * @throws Exception
      */
-    private function buildEntry( ExternalFilm $externalFilm, Rating|null $rating = null ): string|array
+    private function buildExportEntry( ExternalFilm $externalFilm, Rating|null $rating = null ): string|array
     {
         try {
             return match ($this->exportFormat) {
@@ -249,9 +271,9 @@ abstract class ExternalAdapter
                 ExportFormat::LETTERBOXD_RATINGS,
                 ExportFormat::IMDB_RATINGS,
                 ExportFormat::TMDB_RATINGS,
-                ExportFormat::TRAKT_RATINGS         => $externalFilm->ratingEntry( $rating ),
+                ExportFormat::TRAKT_RATINGS         => $externalFilm->ratingExportEntry( $rating ),
 
-                ExportFormat::LETTERBOXD_COLLECTION => $externalFilm->filmEntry(),
+                ExportFormat::LETTERBOXD_COLLECTION => $externalFilm->filmExportEntry(),
 
                 default => throw new Exception("Unknown export format: " . $this->exportFormat->toString()),
 
@@ -264,13 +286,13 @@ abstract class ExternalAdapter
 
     }
 
-    private function finishBatch( string|array &$batch, array &$batches, int &$progressCount, int &$entryCount ): void
+    private function finishExportBatch( string|array &$batch, array &$batches, int &$progressCount, int &$entryCount ): void
     {
         if ( $batch == null ) {
             return;
         }
 
-        $addedTheBatch = $this->addBatch( $batch, $batches );
+        $addedTheBatch = $this->addExportBatch( $batch, $batches );
 
         if ( !$addedTheBatch ) {
             logDebug("Error adding batch to batches[" . count($batches) . "]. Missing $entryCount entries by skipping this batch. Continuing to the next batch.");
@@ -282,12 +304,7 @@ abstract class ExternalAdapter
         $batch          = $this->getEmptyBatch();
     }
 
-    private function isExportableContentType( Film $film ): bool
-    {
-        return in_array( $film->getContentType(), $this->exportableContentTypes );
-    }
-
-    private function getFilterForContentTypes(): array
+    private function getContentTypesFilterForExport(): array
     {
         $types  = [Film::CONTENT_FILM, Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE];
         $filter = [];
@@ -299,15 +316,44 @@ abstract class ExternalAdapter
         return $filter;
     }
 
+    private function validateExportableFilm( Film $film ): bool
+    {
+        $invalidReasons = $this->validateExportableExternalFilm( $film );
+
+        if ( count($invalidReasons) ) {
+            $reasons = "";
+            foreach ( $invalidReasons as $reason ) {
+                $delimiter = $reasons == "" ? "" : ", ";
+                $reasons .= $delimiter . $reason;
+            }
+
+            $contentTypeMsg = $film->getContentType() == Film::CONTENT_TV_EPISODE ? " - s" . $film->getSeason() . " e" . $film->getEpisodeNumber() : "";
+            logDebug("Invalid film for exporting ratings. Reason=\"$reasons\". Skipping this film. FilmId=" . $film->getId() . " " . $film->getTitle() . " (" . $film->getYear() . ")$contentTypeMsg");
+            return false;
+        }
+
+        return true;
+    }
+
+    private function validateExportableContentType( Film $film ): bool
+    {
+        if ( in_array( $film->getContentType(), $this->exportableContentTypes ) ) {
+            return true;
+        }
+
+        logDebug("Unable to export entries for film id=" . $film->getId() . " " . $film->getTitle() . " (" . $film->getYear() . ") - invalid content type " . $film->getContentType());
+        return false;
+    }
+
 }
 
 abstract class ExternalFilm
 {
     protected Film $film;
 
-    abstract static public function validateExternalFilm(Film $film ): array;
-    abstract public function ratingEntry( Rating $rating ): string|array;
-    abstract public function filmEntry(): string|array;
+    abstract static public function validateExternalFilm( Film $film ): array;
+    abstract public function ratingExportEntry( Rating $rating ): string|array;
+    abstract public function filmExportEntry(): string|array;
 
     public function info(): string
     {

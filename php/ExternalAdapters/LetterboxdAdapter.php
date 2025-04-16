@@ -23,7 +23,7 @@ class LetterboxdAdapter extends ExternalAdapterCsv
         return "tmdbID,imdbID,Title,Year,Rating10,WatchedDate,Rewatch";
     }
 
-    protected function validateExternalFilm( Film $film ): array
+    protected function validateExportableExternalFilm( Film $film ): array
     {
         return LetterboxdFilm::validateExternalFilm( $film );
     }
@@ -36,15 +36,28 @@ class LetterboxdAdapter extends ExternalAdapterCsv
         return new LetterboxdFilm( $film, $earliestRating );
     }
 
-    protected function getRatedFilmsForExport( int $limit = null, int $offset = 1, bool $includeInactive = false ): array
+    protected function getFilmsForExportRatings( int $limit = null, int $offset = 1, bool $includeInactive = false ): array
     {
 
         $site = new RatingSyncSite( $this->username );
         $site->setSort( field: RatingSortField::date );
         $site->setSortDirection( direction: SqlSortDirection::descending );
-        $site->setContentTypeFilter( [Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE] );
+        $site->setContentTypeFilter( [Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE] ); // Filter out TV
 
         return $site->getFilmsForExport( limit: $limit, offset: $offset, includeInactive: $includeInactive );
+
+    }
+
+    protected function getFilmsForExportCollection( string $name, int $limit = null ): array
+    {
+
+        $list = new Filmlist( $this->username, $name );
+        $list->setSort( ListSortField::position );
+        $list->setSortDirection( SqlSortDirection::descending );
+        $list->setContentFilter( [Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE] ); // Filter out TV
+
+        $list->initFromDb();
+        return $list->getFilms( $limit );
 
     }
 
@@ -78,7 +91,7 @@ class LetterboxdFilm extends ExternalFilm
         return $problems;
     }
 
-    public function ratingEntry( ?Rating $rating ): string
+    public function ratingExportEntry( ?Rating $rating ): string
     {
         $this->film->populateImdbIdToDb();
 
@@ -105,9 +118,9 @@ class LetterboxdFilm extends ExternalFilm
         return "$tmdbId,$imdbId,\"$title\",$year,$score,$ratingAt,$rewatchStr" . PHP_EOL;
     }
 
-    public function filmEntry(): string|array
+    public function filmExportEntry(): string|array
     {
-        return $this->ratingEntry( rating: null );
+        return $this->ratingExportEntry( rating: null );
     }
 
 }

@@ -38,7 +38,7 @@ abstract class ExternalAdapterCsv extends ExternalAdapter
         return true;
     }
 
-    protected function addBatch( mixed $batch, array &$batches ): bool
+    protected function addExportBatch( mixed $batch, array &$batches ): bool
     {
         $success = false;
 

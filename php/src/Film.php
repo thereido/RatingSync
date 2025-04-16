@@ -55,7 +55,7 @@ class Film {
     {
     }
 
-    public static function validContentType($contentType)
+    public static function validContentType( string $contentType ): bool
     {
         $validTypes = array(static::CONTENT_FILM,
                             static::CONTENT_SHORTFILM,

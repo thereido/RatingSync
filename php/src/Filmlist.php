@@ -846,7 +846,8 @@ class Filmlist
         return $listnames;
     }
 
-    public function getContentTypeFilterCommaDelimited() {
+    public function getContentTypeFilterCommaDelimited(): string
+    {
         $filteredOut = "";
         $comma = "";
         reset($this->contentFilter);
@@ -854,15 +855,15 @@ class Filmlist
         $iter = (new ArrayObject($this->contentFilter))->getIterator();
         while ($iter->valid()) {
 
-            $key = $iter->key();
-            if (Film::validContentType($key) && $iter->current() === false) {
-                $filteredOut .= $comma . "'$key'";
+            $current = $iter->current();
+            if ( $current !== false && Film::validContentType($current) ) {
+                $filteredOut .= $comma . "'$current'";
                 $comma = ", ";
             }
 
             $iter->next();
         }
-        
+
         return $filteredOut;
     }
 

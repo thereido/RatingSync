@@ -14,7 +14,7 @@ class TraktAdapter extends ExternalAdapterJson
         parent::__construct( username: $username, format: $format, className: __CLASS__ );
     }
 
-    protected function validateExternalFilm( Film $film ): array
+    protected function validateExportableExternalFilm( Film $film ): array
     {
         return TraktFilm::validateExternalFilm( $film );
     }
@@ -74,7 +74,7 @@ class TraktFilm extends ExternalFilm
         return $problems;
     }
 
-    public function ratingEntry( Rating $rating ): array
+    public function ratingExportEntry( Rating $rating ): array
     {
         // [
         //  {
@@ -128,7 +128,7 @@ class TraktFilm extends ExternalFilm
         return $entry;
     }
 
-    public function filmEntry(): array
+    public function filmExportEntry(): array
     {
         return [];
     }
