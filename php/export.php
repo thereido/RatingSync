@@ -110,7 +110,8 @@ function sanitizeInput(string $data): string
                             echo '<br/>';
                             foreach ($exportedFilenames as $filename) {
                                 $baseFilename = basename($filename);
-                                echo '<div><a href="' . Constants::RS_OUTPUT_URL_PATH . $baseFilename . '">' . $baseFilename . '</a></div>';
+                                $userDir = "/" . $username . "/";
+                                echo '<div><a href="' . Constants::RS_OUTPUT_URL_PATH . $userDir . $baseFilename . '">' . $baseFilename . '</a></div>';
                             }
                             echo '</div>';
                         } else {
