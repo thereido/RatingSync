@@ -304,7 +304,7 @@ abstract class MediaDbApiClient extends ApiClient implements iMediaDbApiClient
                 }
 
             } catch (Exception $e) {
-                logError("Error getting External IDs from TMDb API for film id=" . $film->getId(), prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+                logError("Error getting External IDs from TMDb API for film id=" . $film->getId(), e: $e);
                 logDebug($e, __FUNCTION__." ".__LINE__);
                 throw $e;
             }
@@ -396,7 +396,7 @@ abstract class MediaDbApiClient extends ApiClient implements iMediaDbApiClient
         try {
             $film = Film::getFilmFromDb($seriesFilmId);
         } catch (\Exception $e) {
-            logError("Error getting film from db", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+            logError("Error getting film from db", e: $e);
         }
 
         if (empty($film)) {

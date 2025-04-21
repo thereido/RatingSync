@@ -3,7 +3,7 @@ namespace RatingSync;
 
 require_once "Site.php";
 
-abstract class SiteRatings extends \RatingSync\Site
+abstract class SiteRatings extends Site
 {
     protected $maxRatingScore = 10;
     protected $maxCriticScore = 10;

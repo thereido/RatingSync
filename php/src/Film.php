@@ -1733,7 +1733,7 @@ class Film {
                 $parent = self::getFilmFromDb($this->getParentId());
             }
             catch (Exception) {
-                logError("Unable getting film id=". $this->getParentId() ." from db. This was an attempt to get the TV Series IMDb ID for the Episode filmId=" . $this->getId(), defaultPrefix(__CLASS__, __FUNCTION__, __LINE__));
+                logError("Unable getting film id=". $this->getParentId() ." from db. This was an attempt to get the TV Series IMDb ID for the Episode filmId=" . $this->getId());
                 return false;
             }
 

@@ -34,7 +34,7 @@ class DbConn
 
         } catch(PDOException $e) {
 
-            logError("DB connection failed", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
+            logError("DB connection failed", e: $e);
             throw $e;
 
         }

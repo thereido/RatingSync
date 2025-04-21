@@ -3,26 +3,45 @@ namespace RatingSync;
 
 use Exception;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . "ExternalAdapterCsv.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Export" . DIRECTORY_SEPARATOR . "ExportEntry.php";
 
-class LetterboxdAdapter extends ExternalAdapterCsv
+class LetterboxdAdapter extends ExternalAdapter
 {
     // https://letterboxd.com/about/importing-data/
     // tmdbID,imdbID,Title,Year,Rating10,WatchedDate,Rewatch
 
-    protected array $supportedExportFormats = [ExportFormat::LETTERBOXD_COLLECTION, ExportFormat::LETTERBOXD_RATINGS];
-    protected array $exportableContentTypes = [Film::CONTENT_FILM];
-
-    public function __construct( string $username, ExportFormat $format )
+    /**
+     * @param ExportCollectionType $collectionType
+     * @throws Exception
+     */
+    public function __construct( ExportCollectionType $collectionType )
     {
-        parent::__construct( username: $username, format: $format, className: __CLASS__ );
+        $exportableContentTypes = [Film::CONTENT_FILM];
+        $supportedExportCollectionTypes = [ExportCollectionType::COLLECTION, ExportCollectionType::RATINGS];
+
+        parent::__construct( $collectionType, __CLASS__, $exportableContentTypes, $supportedExportCollectionTypes );
     }
 
-    protected function getHeader(): string
+    /**
+     * @return ExportDestination
+     */
+    protected static function exportDestination(): ExportDestination
     {
-        return "tmdbID,imdbID,Title,Year,Rating10,WatchedDate,Rewatch";
+        return ExportDestination::LETTERBOXD;
     }
 
+    /**
+     * @return string
+     */
+    public function getCsvHeader(): string
+    {
+        return "tmdbID,imdbID,Title,Year,Rating10,WatchedDate,Rewatch" . PHP_EOL;
+    }
+
+    /**
+     * @param Film $film
+     * @return array
+     */
     protected function validateExportableExternalFilm( Film $film ): array
     {
         return LetterboxdFilm::validateExternalFilm( $film );
@@ -31,34 +50,9 @@ class LetterboxdAdapter extends ExternalAdapterCsv
     /**
      * @throws Exception
      */
-    protected function createExternalFilm( Film $film, Rating|null $earliestRating = null ): ExternalFilm
+    public function createExternalFilm(Film $film, Rating|null $earliestRating = null ): ExternalFilm
     {
         return new LetterboxdFilm( $film, $earliestRating );
-    }
-
-    protected function getFilmsForExportRatings( int $limit = null, int $offset = 1, bool $includeInactive = false ): array
-    {
-
-        $site = new RatingSyncSite( $this->username );
-        $site->setSort( field: RatingSortField::date );
-        $site->setSortDirection( direction: SqlSortDirection::descending );
-        $site->setContentTypeFilter( [Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE] ); // Filter out TV
-
-        return $site->getFilmsForExport( limit: $limit, offset: $offset, includeInactive: $includeInactive );
-
-    }
-
-    protected function getFilmsForExportCollection( string $name, int $limit = null ): array
-    {
-
-        $list = new Filmlist( $this->username, $name );
-        $list->setSort( ListSortField::position );
-        $list->setSortDirection( SqlSortDirection::descending );
-        $list->setContentFilter( [Film::CONTENT_TV_SERIES, Film::CONTENT_TV_EPISODE] ); // Filter out TV
-
-        $list->initFromDb();
-        return $list->getFilms( $limit );
-
     }
 
 }
@@ -68,18 +62,24 @@ class LetterboxdFilm extends ExternalFilm
     private Rating|null     $earliestRating;
 
     /**
+     * @param Film $film
+     * @param Rating|null $earliestRating
      * @throws Exception
      */
     public function __construct( Film $film, Rating|null $earliestRating )
     {
         if ( $film->getUniqueName( source: Constants::SOURCE_TMDBAPI  ) == null ) {
-            throw new Exception(ExportFormat::TMDB_RATINGS->toString() . " id must be provided");
+            throw new Exception(ExportDestination::TMDB->value . " id must be provided");
         }
 
         $this->film             = $film;
         $this->earliestRating   = $earliestRating;
     }
 
+    /**
+     * @param Film $film
+     * @return array Array<string>: An empty return is a valid film. An invalid film gets one or more reasons.
+     */
     static public function validateExternalFilm( Film $film ): array
     {
         $problems = [];
@@ -91,7 +91,12 @@ class LetterboxdFilm extends ExternalFilm
         return $problems;
     }
 
-    public function ratingExportEntry( ?Rating $rating ): string
+    /**
+     * @param Rating|null $rating
+     * @return ExportEntry
+     * @throws Exception
+     */
+    public function exportEntry( Rating|null $rating = null ): ExportEntry
     {
         $this->film->populateImdbIdToDb();
 
@@ -103,7 +108,6 @@ class LetterboxdFilm extends ExternalFilm
         $title          = $this->film->getTitle();
         $year           = $this->film->getYear();
         $score          = null;
-        $ratingAt       = null;
         $rewatchStr     = null;
 
         if (is_null($rating)) {
@@ -115,12 +119,7 @@ class LetterboxdFilm extends ExternalFilm
             $rewatchStr     = $this->earliestRating === null || $rating->equals($this->earliestRating) ? "false" : "true";
         }
 
-        return "$tmdbId,$imdbId,\"$title\",$year,$score,$ratingAt,$rewatchStr" . PHP_EOL;
-    }
-
-    public function filmExportEntry(): string|array
-    {
-        return $this->ratingExportEntry( rating: null );
+        return new ExportEntry( "$tmdbId,$imdbId,\"$title\",$year,$score,$ratingAt,$rewatchStr" . PHP_EOL );
     }
 
 }

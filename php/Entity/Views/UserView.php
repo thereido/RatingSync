@@ -106,7 +106,7 @@ class UserView
         }
         catch (Exception $e) {
 
-            logError("New UserView without a theme. No default available.", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
+            logError("New UserView without a theme. No default available.", e: $e);
             return false;
 
         }

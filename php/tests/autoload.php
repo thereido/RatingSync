@@ -7,7 +7,7 @@ spl_autoload_register(
         if ($classes === null) {
             $classes = array(
                 'RatingSync\\constants' => '/src/Constants.php',
-                'RatingSync\\export' => '/export.php',
+                'RatingSync\\ExportBatch' => '/export.php',
                 'RatingSync\\film' => '/src/Film.php',
                 'RatingSync\\http' => '/src/Http.php',
                 'RatingSync\\httpimdb' => '/src/HttpImdb.php',

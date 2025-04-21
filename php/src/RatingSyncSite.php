@@ -5,8 +5,10 @@
 namespace RatingSync;
 
 use ArrayObject;
+use Exception;
 
 require_once "SiteRatings.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Export" . DIRECTORY_SEPARATOR . "ExporterFactory.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "ExternalAdapter.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "ImdbAdapter.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "ExternalAdapters" . DIRECTORY_SEPARATOR . "LetterboxdAdapter.php";
@@ -19,7 +21,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Exter
  * - Get details for each and rate it
  * - Export/Import ratings.
  */
-class RatingSyncSite extends \RatingSync\SiteRatings
+class RatingSyncSite extends SiteRatings
 {
     const RATINGSYNC_DATE_FORMAT = "n/j/y";
 
@@ -657,105 +659,6 @@ class RatingSyncSite extends \RatingSync\SiteRatings
         }
 
         return $exists;
-    }
-
-    /**
-     * @param ExportFormat $format
-     * @param string $collectionName
-     * @return array|false Array of filenames exported or false in failure
-     */
-    public function export( ExportFormat $format, string $collectionName = "" ): array|false
-    {
-        $siteName   = str_replace(' ', '', Constants::SITE_NAME);
-
-        $adapter = $this->getExternalAdapter( $format );
-        if ( $adapter === null ) {
-            return false;
-        }
-
-        $ratingsExportedFilenames = [];
-        if ( $format->isRatings() ) {
-            $filename                   = $siteName . "_ExportRatings_to_" . $format->toString();
-            $arrayOfFiles               = $adapter->exportRatings() ?? [];
-            $ratingsExportedFilenames   = $this->writeExportFiles( $arrayOfFiles, $filename, $format->getExtension() );
-        }
-
-        $collectionExportedFilenames = [];
-        if ( $format->isCollection() ) {
-            $filename                       = $siteName . "_Export" . $collectionName . "_to_" . $format->toString();
-            $arrayOfFiles                   = $adapter->exportFilmCollection( $collectionName ) ?? [];
-            $collectionExportedFilenames    = $this->writeExportFiles( $arrayOfFiles, $filename, $format->getExtension() );
-        }
-
-        logDebug("");
-        if ( $ratingsExportedFilenames === false || $collectionExportedFilenames === false ) {
-            return false;
-        }
-        else {
-            return array_merge($ratingsExportedFilenames, $collectionExportedFilenames);
-        }
-    }
-
-    /**
-     * @param ExportFormat $format
-     * @return ExternalAdapter|null
-     */
-    private function getExternalAdapter( ExportFormat $format ): ?ExternalAdapter
-    {
-        $adapter = null;
-
-        try {
-            $adapter = match ($format) {
-                ExportFormat::IMDB_RATINGS              => new ImdbAdapter(username: $this->username, format: $format),
-                ExportFormat::LETTERBOXD_COLLECTION,
-                ExportFormat::LETTERBOXD_RATINGS        => new LetterboxdAdapter(username: $this->username, format: $format),
-                ExportFormat::TMDB_RATINGS              => new TmdbAdapter(username: $this->username, format: $format),
-                ExportFormat::TRAKT_RATINGS             => new TraktAdapter(username: $this->username, format: $format),
-                default                                 => null,
-            };
-        }
-        catch (\Exception $e) {
-            logDebug("Failed to create ExternalAdapter for format=$format->name error=$e", prefix: __CLASS__ . ":" . __FUNCTION__ . ":" . __LINE__ );
-        }
-
-        if ( $adapter === null ) {
-            logDebug("Unknown ExternalAdapter for format=$format->name", prefix: __CLASS__ . ":" . __FUNCTION__ . ":" . __LINE__ );
-        }
-
-        return $adapter;
-    }
-
-    /**
-     * @param array $contentStrings
-     * @param string $filenameBase
-     * @param string $extension
-     * @return array|false Array of filenames exported or false in failure
-     */
-    private function writeExportFiles( array $contentStrings, string $filenameBase, string $extension ): array|false
-    {
-
-        $filenames  = array();
-
-        $fileNumber = 1;
-        foreach ( $contentStrings as $fileContent ) {
-
-            $filename           = $filenameBase . "_" . $fileNumber . "." . $extension;
-            $filenameWithPath   = Constants::outputFilePath() . $filename;
-            $written            = writeFile( $fileContent, $filenameWithPath );
-            $fileNumber++;
-
-            if ( $written === false ) {
-                logError("Failed to write to $filenameWithPath", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__));
-                return false;
-            }
-            else {
-                $filenames[] = $filename;
-                logDebug("Export file: $filenameWithPath");
-            }
-
-        }
-
-        return $filenames;
     }
 
 }
