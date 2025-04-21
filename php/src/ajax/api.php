@@ -135,7 +135,7 @@ class ApiHandler
             try {
                 $film = Film::getFilmFromDb($filmId, $username);
             } catch (Exception $e) {
-                logError("Error getting film from DB. Film id=$filmId, username=$username", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+                logError("Error getting film from DB. Film id=$filmId, username=$username", e: $e);
             }
 
         } else {
@@ -206,7 +206,7 @@ class ApiHandler
             $errorMsg = "Error \RatingSync\search()" .
                 "\nsearchTerms keys: " . implode(",", array_keys($searchTerms)) .
                 "\nsearchTerms values: " . implode(",", $searchTerms);
-            logError($errorMsg, prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+            logError($errorMsg, e: $e);
         }
     }
 
@@ -232,7 +232,7 @@ class ApiHandler
                     $film = Film::getFilmFromDb($filmId, $username);
                 }
             } catch (Exception $e) {
-                logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$dateStr, archiveIt=$archiveIt)", prefix: __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__, e: $e);
+                logError("Exception archiving/activating a rating (filmId=$filmId, username=$username, rating date=$dateStr, archiveIt=$archiveIt)", e: $e);
             }
         }
 
@@ -617,7 +617,7 @@ class ApiHandler
             $errorMsg = "Error during search" .
                 "\nSearch Terms Keys: " . implode(",", array_keys($searchTerms)) .
                 "\nSearch Terms Values: " . implode(",", $searchTerms);
-            logError(input: $errorMsg, prefix: __FUNCTION__ . " " . __LINE__, e: $e);
+            logError(message: $errorMsg, e: $e);
             return json_encode([]); // Return empty JSON on error
         }
 
@@ -670,7 +670,7 @@ class ApiHandler
         try {
             $film = Film::getFilmFromDb($filmId);
         } catch (Exception $e) {
-            logError("Error getting film from DB. Film id=$filmId", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+            logError("Error getting film from DB. Film id=$filmId", e: $e);
             return $response;
         }
         $source = $film->getSource($sourceName);
@@ -797,7 +797,7 @@ class ApiHandler
                 $film = $filmInfo->setNeverWatchToDb($neverWatchBool, new DateTime());
 
             } catch (Exception $e) {
-                logError("Exception setting whether the user never plans to watch the title (filmId=$filmId, username=$username, never=$neverWatch)", prefix: __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__, e: $e);
+                logError("Exception setting whether the user never plans to watch the title (filmId=$filmId, username=$username, never=$neverWatch)", e: $e);
             }
         }
 
@@ -878,7 +878,7 @@ class ApiHandler
                 $film = $filmInfo->setSeenToDb($seenBool, new DateTime());
 
             } catch (Exception $e) {
-                logError("Exception setting whether the user has seen this title (filmId=$filmId, username=$username, seen=$seen)", prefix: __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__, e: $e);
+                logError("Exception setting whether the user has seen this title (filmId=$filmId, username=$username, seen=$seen)", e: $e);
             }
         }
 
@@ -911,7 +911,7 @@ class ApiHandler
                 try {
                     $userId = userMgr()->save($user);
                 } catch (EntityInvalidSaveException $e) {
-                    logError($e->getMessage(), prefix: __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__, e: $e);
+                    logError($e->getMessage(), e: $e);
                     // FIXME We should put the message in the response
                 }
 
@@ -922,7 +922,7 @@ class ApiHandler
             }
 
         } catch (Exception $e) {
-            logError($e->getMessage(), prefix: __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__, e: $e);
+            logError($e->getMessage(), e: $e);
             //$success = false;
         }
 
@@ -956,7 +956,7 @@ class ApiHandler
         try {
             $source->saveFilmSourceToDb($filmId);
         } catch (Exception $e) {
-            logError("Error saving film source to DB.", prefix: defaultPrefix(__CLASS__, __FUNCTION__, __LINE__), e: $e);
+            logError("Error saving film source to DB.", e: $e);
         }
     }
 

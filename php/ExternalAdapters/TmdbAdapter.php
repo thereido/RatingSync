@@ -3,34 +3,54 @@ namespace RatingSync;
 
 use Exception;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . "ExternalAdapterCsv.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Export" . DIRECTORY_SEPARATOR . "ExportEntry.php";
 
-class TmdbAdapter extends ExternalAdapterCsv
+class TmdbAdapter extends ExternalAdapter
 {
     // https://www.themoviedb.org/settings/import-list
     // Trakt_v2
 
-    protected array $supportedExportFormats = [ExportFormat::TMDB_RATINGS];
-
-    public function __construct( string $username, ExportFormat $format )
+    /**
+     * @param ExportCollectionType $collectionType
+     * @throws Exception
+     */
+    public function __construct( ExportCollectionType $collectionType )
     {
-        parent::__construct( username: $username, format: $format, className: __CLASS__ );
+        parent::__construct( $collectionType, __CLASS__ );
     }
 
-    protected function getHeader(): string
+    /**
+     * @return string
+     */
+    public function getCsvHeader(): string
     {
-        return "rated_at,type,title,year,trakt_rating,trakt_id,imdb_id,tmdb_id,tvdb_id,url,released,season_number,episode_number,episode_title,episode_released,episode_trakt_rating,episode_trakt_id,episode_imdb_id,episode_tmdb_id,episode_tvdb_id,genres,rating";
+        return "rated_at,type,title,year,trakt_rating,trakt_id,imdb_id,tmdb_id,tvdb_id,url,released,season_number,episode_number,episode_title,episode_released,episode_trakt_rating,episode_trakt_id,episode_imdb_id,episode_tmdb_id,episode_tvdb_id,genres,rating" . PHP_EOL;
     }
 
-    protected function validateExternalFilm( Film $film ): array
+    /**
+     * @return ExportDestination
+     */
+    protected static function exportDestination(): ExportDestination
+    {
+        return ExportDestination::TMDB;
+    }
+
+    /**
+     * @param Film $film
+     * @return array
+     */
+    protected function validateExportableExternalFilm( Film $film ): array
     {
         return TmdbFilm::validateExternalFilm( $film );
     }
 
     /**
+     * @param Film $film
+     * @param Rating|null $earliestRating
+     * @return ExternalFilm
      * @throws Exception
      */
-    protected function createExternalFilm( Film $film, Rating|null $earliestRating = null ): ExternalFilm
+    public function createExternalFilm(Film $film, Rating|null $earliestRating = null ): ExternalFilm
     {
         return new TmdbFilm( $film );
     }
@@ -41,17 +61,22 @@ class TmdbFilm extends ExternalFilm
 {
 
     /**
+     * @param Film $film
      * @throws Exception
      */
     public function __construct( Film $film )
     {
         if ( $film->getUniqueName( source: Constants::SOURCE_TMDBAPI  ) == null ) {
-            throw new Exception(ExportFormat::TMDB_RATINGS->toString() . " id must be provided");
+            throw new Exception(ExportDestination::TMDB->value . " id must be provided");
         }
 
         $this->film = $film;
     }
 
+    /**
+     * @param Film $film
+     * @return array Array<string>: An empty return is a valid film. An invalid film gets one or more reasons.
+     */
     static public function validateExternalFilm( Film $film ): array
     {
         $problems = [];
@@ -63,7 +88,12 @@ class TmdbFilm extends ExternalFilm
         return $problems;
     }
 
-    public function ratingEntry( ?Rating $rating ): string
+    /**
+     * @param Rating|null $rating
+     * @return ExportEntry
+     * @throws Exception
+     */
+    public function exportEntry( Rating|null $rating = null ): ExportEntry
     {
         // Example from tmdb.org
         //
@@ -90,14 +120,13 @@ class TmdbFilm extends ExternalFilm
 
         // All:  rated_at,type     ,title ,year ,trakt_rating,trakt_id,imdb_id,tmdb_id,tvdb_id,url,released,season_number,episode_number,episode_title,episode_released,episode_trakt_rating,episode_trakt_id,episode_imdb_id,episode_tmdb_id,episode_tvdb_id,genres,rating
         // Used: rated_at,type     ,title ,year ,____________,________,imdb_id,tmdb_id,_______,___,________,season_number,episode_number,episode_title,________________,____________________,________________,episode_imdb_id,episode_tmdb_id,_______________,______,rating
-        return "$ratingAt,$tmdbType,$title,$year,,,$imdbId,$tmdbId,,,,$seasonNum,$episodeNum,$episodeTitle,,,,$episodeImdbId,$episodeTmdbId,,,$score";
+        return new ExportEntry( "$ratingAt,$tmdbType,$title,$year,,,$imdbId,$tmdbId,,,,$seasonNum,$episodeNum,$episodeTitle,,,,$episodeImdbId,$episodeTmdbId,,,$score" );
     }
 
-    public function filmEntry(): string|array
-    {
-        return $this->ratingEntry( rating: null );
-    }
-
+    /**
+     * @param string $contentType
+     * @return string
+     */
     private function getExternalFilmType( string $contentType ): string
     {
         return match ($contentType) {
@@ -108,21 +137,33 @@ class TmdbFilm extends ExternalFilm
         };
     }
 
+    /**
+     * @return string|null
+     */
     private function tmdbId(): ?string
     {
         return self::getTmdbId( $this->film );
     }
 
+    /**
+     * @return string|null
+     */
     private function seriesTmdbId(): ?string
     {
         return self::getSeriesTmdbId($this->film);
     }
 
+    /**
+     * @return string|null
+     */
     private function episodeTmdbId(): ?string
     {
         return self::getEpisodeTmdbId($this->film);
     }
 
+    /**
+     * @return string|null
+     */
     private function imdbId(): ?string
     {
         $imdbId = $this->film->getUniqueName( source: Constants::SOURCE_IMDB );
@@ -133,6 +174,9 @@ class TmdbFilm extends ExternalFilm
         };
     }
 
+    /**
+     * @return string|null
+     */
     private function seriesImdbId(): ?string
     {
         $imdbId = $this->film->getUniqueName( source: Constants::SOURCE_IMDB );
@@ -145,6 +189,9 @@ class TmdbFilm extends ExternalFilm
         };
     }
 
+    /**
+     * @return string|null
+     */
     private function episodeImdbId(): ?string
     {
         return match ($this->film->getContentType()) {
@@ -153,6 +200,10 @@ class TmdbFilm extends ExternalFilm
         };
     }
 
+    /**
+     * @param Film $film
+     * @return string|null
+     */
     static public function getTmdbId( Film $film ): ?string
     {
         $internalTmdbId = $film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
@@ -163,6 +214,10 @@ class TmdbFilm extends ExternalFilm
         };
     }
 
+    /**
+     * @param Film $film
+     * @return string|null
+     */
     static public function getSeriesTmdbId(Film $film): ?string
     {
         $internalTmdbId = $film->getUniqueName( source: Constants::SOURCE_TMDBAPI );
@@ -175,6 +230,10 @@ class TmdbFilm extends ExternalFilm
         };
     }
 
+    /**
+     * @param Film $film
+     * @return string|null
+     */
     static public function getEpisodeTmdbId(Film $film): ?string
     {
         if ($film->getContentType() == Film::CONTENT_TV_EPISODE) {
@@ -186,6 +245,10 @@ class TmdbFilm extends ExternalFilm
         }
     }
 
+    /**
+     * @param string|null $internalTmdbId
+     * @return string
+     */
     static private function stripTmdbId( ?string $internalTmdbId ): string
     {
         if (empty($internalTmdbId)) {

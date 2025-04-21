@@ -259,7 +259,7 @@ class Rating
                     $success = $existingRating->replaceInDb($username, $filmId, false);
                     if (!$success) {
                         $msg = "SQL Error trying to deactivate a existing rating (".$db->errorCode().") ".$db->errorInfo()[2];
-                        logError($msg, prefix: __CLASS__."::".__FUNCTION__.":".__LINE__);
+                        logError($msg);
                         return false;
                     }
 
@@ -280,7 +280,7 @@ class Rating
                 $success = $db->query($query) !== false;
                 if (!$success) {
                     $msg = "SQL Error delete an external rating (".$db->errorCode().") ".$db->errorInfo()[2];
-                    logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
+                    logError($msg);
                     return false;
                 }
 
@@ -290,7 +290,7 @@ class Rating
         $saveSuccess = $this->replaceInDb($username, $filmId, $active, $existingRating);
         if (!$saveSuccess) {
             $msg = "SQL Error insert/replace a rating (".$db->errorCode().") ".$db->errorInfo()[2];
-            logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError($msg);
             return false;
         }
 
@@ -304,7 +304,7 @@ class Rating
             }
 
             if ( empty($film) ) {
-                logError("Unable to save that the username has seen this film. (filmId=$filmId, username=$username", __CLASS__."::".__FUNCTION__.":".__LINE__);
+                logError("Unable to save that the username has seen this film. (filmId=$filmId, username=$username");
             }
         }
 
@@ -429,7 +429,7 @@ class Rating
         $success = $db->query($query) !== false;
         if (!$success) {
             $msg = "SQL Error deleting a rating (".$db->errorCode().") ".$db->errorInfo()[2];
-            logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError($msg);
             return false;
         }
 
@@ -449,7 +449,7 @@ class Rating
         $success = $this->replaceInDb($username, $filmId, false);
         if (!$success) {
             $msg = "SQL Error trying to archive a rating (".$db->errorCode().") ".$db->errorInfo()[2];
-            logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError($msg);
             return false;
         }
 
@@ -591,7 +591,7 @@ class Rating
     public static function saveRatingToDb(int $filmId, string $username, SetRatingScoreValue $newScore, bool $watched = true, ?DateTime $newDate = null, ?DateTime $originalDate = null, bool $forceDelete = false): bool
     {
         if ( $newScore == SetRatingScoreValue::View && !$watched ) {
-            logError("Tried to set rating to score=".$newScore->getScore()." (".$newScore->name.") and watched=false, which is not valid. You can use score=SetRatingScoreValue::Delete to delete a rating.", __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError("Tried to set rating to score=".$newScore->getScore()." (".$newScore->name.") and watched=false, which is not valid. You can use score=SetRatingScoreValue::Delete to delete a rating.");
             return false;
         }
 
@@ -600,7 +600,7 @@ class Rating
             $film = Film::getFilmFromDb($filmId, $username);
 
         } catch (\Exception $e) {
-            logError("Error getting a Film for id=$filmId.", prefix: __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__, e: $e);
+            logError("Error getting a Film for id=$filmId.", e: $e);
             return false;
         }
 
@@ -646,7 +646,7 @@ class Rating
                 $success = $db->query($query) !== false;
                 if (!$success) {
                     $msg = "SQL Error delete original rating before changing it (".$db->errorCode().") ".$db->errorInfo()[2];
-                    logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
+                    logError($msg);
                     return false;
                 }
 
@@ -659,7 +659,7 @@ class Rating
                     $success = $db->exec($stmt) !== false;
                     if (!$success) {
                         $msg = "Failed to activate the newest archived rating after deleting the active rating.";
-                        logError($msg, __CLASS__."::".__FUNCTION__.":".__LINE__);
+                        logError($msg);
                     }
                 }
 
@@ -816,7 +816,7 @@ class Rating
             $film = Film::getFilmFromDb($filmId, $username);
 
         } catch (\Exception $e) {
-            logError("Error getting a Film for id=$filmId.", prefix: __CLASS__ . "::" . __FUNCTION__ . ":" . __LINE__, e: $e);
+            logError("Error getting a Film for id=$filmId.", e: $e);
             return false;
         }
 

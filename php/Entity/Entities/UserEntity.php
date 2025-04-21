@@ -46,7 +46,7 @@ final class UserEntity extends Entity
         }
 
         if ( !is_null( $e ) ) {
-            logError("Error construction a UserEntity username=$username, id=$id", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
+            logError("Error construction a UserEntity username=$username, id=$id", e: $e);
             throw $e;
         }
 

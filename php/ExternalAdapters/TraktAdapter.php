@@ -1,42 +1,70 @@
 <?php
 namespace RatingSync;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . "ExternalAdapterJson.php";
+use DateTime;
+use Exception;
 
-class TraktAdapter extends ExternalAdapterJson
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Export" . DIRECTORY_SEPARATOR . "ExportEntry.php";
+
+class TraktAdapter extends ExternalAdapter
 {
     // https://trakt.tv/settings/data
 
-    protected array $supportedExportFormats = [ExportFormat::TRAKT_RATINGS];
-
-    public function __construct( string $username, ExportFormat $format )
+    /**
+     * @param ExportCollectionType $collectionType
+     * @throws Exception
+     */
+    public function __construct( ExportCollectionType $collectionType )
     {
-        parent::__construct( username: $username, format: $format, className: __CLASS__ );
+        parent::__construct( collectionType: $collectionType, className: __CLASS__, exportFormat: ExportFileFormat::JSON );
     }
 
-    protected function validateExternalFilm( Film $film ): array
+    /**
+     * @return ExportDestination
+     */
+    protected static function exportDestination(): ExportDestination
+    {
+        return ExportDestination::TRAKT;
+    }
+
+    /**
+     * @param Film $film
+     * @return array
+     */
+    protected function validateExportableExternalFilm( Film $film ): array
     {
         return TraktFilm::validateExternalFilm( $film );
     }
 
     /**
-     * @throws \Exception
+     * @param Film $film
+     * @param Rating|null $earliestRating
+     * @return ExternalFilm
+     * @throws Exception
      */
-    protected function createExternalFilm( Film $film, Rating|null $earliestRating = null ): ExternalFilm
+    public function createExternalFilm(Film $film, Rating|null $earliestRating = null ): ExternalFilm
     {
         return new TraktFilm( $film );
     }
 
+    /**
+     * @return string
+     */
+    public function getCsvHeader(): string
+    {
+        return "";
+    }
 }
 
 class TraktFilm extends ExternalFilm
 {
     private string|null     $imdbId;
     private string|null     $tmdbId;
-    private \DateTime|null  $watchlistedAt;
+    private DateTime|null  $watchlistedAt;
 
     /**
-     * @throws \Exception
+     * @param Film $film
+     * @throws Exception
      */
     public function __construct( Film $film )
     {
@@ -44,7 +72,7 @@ class TraktFilm extends ExternalFilm
         $tmdbId                 = $film->getUniqueName(Constants::SOURCE_TMDBAPI);
 
         if ( $imdbId == null && $tmdbId == null ) {
-            throw new \Exception("Either IMDb & TMDb id must be provided. IMDb=$imdbId, TMDb=$tmdbId");
+            throw new Exception("Either IMDb & TMDb id must be provided. IMDb=$imdbId, TMDb=$tmdbId");
         }
 
         $this->imdbId        = $imdbId;
@@ -53,6 +81,10 @@ class TraktFilm extends ExternalFilm
         $this->film          = $film;
     }
 
+    /**
+     * @param Film $film
+     * @return array Array<string>: An empty return is a valid film. An invalid film gets one or more reasons.
+     */
     static public function validateExternalFilm( Film $film ): array
     {
         $problems   = [];
@@ -74,7 +106,12 @@ class TraktFilm extends ExternalFilm
         return $problems;
     }
 
-    public function ratingEntry( Rating $rating ): array
+    /**
+     * @param Rating|null $rating
+     * @return ExportEntry
+     * @throws Exception
+     */
+    public function exportEntry( Rating|null $rating = null ): ExportEntry
     {
         // [
         //  {
@@ -125,12 +162,7 @@ class TraktFilm extends ExternalFilm
             $entry['rated_at']  = $ratingAt;
         }
 
-        return $entry;
-    }
-
-    public function filmEntry(): array
-    {
-        return [];
+        return new ExportEntry( $entry );
     }
 
 }

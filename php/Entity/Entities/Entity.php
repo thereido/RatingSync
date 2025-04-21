@@ -90,7 +90,7 @@ abstract class Entity implements EntityInterface
         $returnCode = $executed !== false;
 
         if ( $returnCode === false ) {
-            logError("Error trying to save: $stmt", __CLASS__."::".__FUNCTION__.":".__LINE__);
+            logError("Error trying to save: $stmt");
             return false;
         }
         elseif ( $insert ) {

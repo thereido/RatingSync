@@ -1,52 +1,80 @@
 <?php
 namespace RatingSync;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . "ExternalAdapterCsv.php";
+use Exception;
 
-class ImdbAdapter extends ExternalAdapterCsv
+require_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "Export" . DIRECTORY_SEPARATOR . "ExportEntry.php";
+
+class ImdbAdapter extends ExternalAdapter
 {
 
-    protected array $supportedExportFormats = [ExportFormat::IMDB_RATINGS];
-
-    public function __construct( string $username, ExportFormat $format )
+    /**
+     * @param ExportCollectionType $collectionType
+     * @throws Exception
+     */
+    public function __construct( ExportCollectionType $collectionType )
     {
-        parent::__construct( username: $username, format: $format, className: __CLASS__ );
+        parent::__construct( $collectionType, __CLASS__ );
     }
 
-    protected function getHeader(): string
+    /**
+     * @return string
+     */
+    public function getCsvHeader(): string
     {
-        return "Position,Const,Created,Modified,Description,Title,URL,Title Type,IMDb Rating,Runtime (mins),Year,Genres,Num Votes,Release Date,Directors,Your Rating,Date Rated";
+        return "Position,Const,Created,Modified,Description,Title,URL,Title Type,IMDb Rating,Runtime (mins),Year,Genres,Num Votes,Release Date,Directors,Your Rating,Date Rated" . PHP_EOL;
     }
 
-    protected function validateExternalFilm( Film $film ): array
+    /**
+     * @return ExportDestination
+     */
+    protected static function exportDestination(): ExportDestination
+    {
+        return ExportDestination::IMDB;
+    }
+
+    /**
+     * @param Film $film
+     * @return array
+     */
+    protected function validateExportableExternalFilm( Film $film ): array
     {
         return ImdbFilm::validateExternalFilm( $film );
     }
 
     /**
-     * @throws \Exception
+     * @param Film $film
+     * @param Rating|null $earliestRating
+     * @return ExternalFilm
+     * @throws Exception
      */
-    protected function createExternalFilm( Film $film, Rating|null $earliestRating = null ): ExternalFilm
+    public function createExternalFilm(Film $film, Rating|null $earliestRating = null ): ExternalFilm
     {
         return new ImdbFilm( $film );
     }
 }
 
+
 class ImdbFilm extends ExternalFilm
 {
 
     /**
-     * @throws \Exception
+     * @param Film $film
+     * @throws Exception
      */
     public function __construct( Film $film )
     {
         if ( $film->getUniqueName( source: Constants::SOURCE_IMDB ) == null ) {
-            throw new \Exception(ExportFormat::IMDB_RATINGS->toString() . " id must be provided");
+            throw new Exception(ExportDestination::IMDB->value . " id must be provided");
         }
 
         $this->film = $film;
     }
 
+    /**
+     * @param Film $film
+     * @return array Array<string>: An empty return is a valid film. An invalid film gets one or more reasons.
+     */
     static public function validateExternalFilm( Film $film ): array
     {
         $problems = [];
@@ -58,7 +86,12 @@ class ImdbFilm extends ExternalFilm
         return $problems;
     }
 
-    public function ratingEntry(Rating $rating ): string
+    /**
+     * @param Rating|null $rating
+     * @return ExportEntry
+     * @throws Exception
+     */
+    public function exportEntry( Rating|null $rating = null ): ExportEntry
     {
         // IMDb v3
         //
@@ -85,12 +118,7 @@ class ImdbFilm extends ExternalFilm
             default => null,
         };
 
-        return ",$imdbId,,,,\"$title\",,$mediaType,,,$year,,,,,$score,$ratedAt" . "\n";
-    }
-
-    public function filmEntry(): string
-    {
-        return "";
+        return new ExportEntry(",$imdbId,,,,\"$title\",,$mediaType,,,$year,,,,,$score,$ratedAt" . PHP_EOL);
     }
 
 }

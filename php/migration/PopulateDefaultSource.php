@@ -96,7 +96,7 @@ foreach ($result->fetchAll() as $row) {
         
         if (!empty($errorMsg)) {
             echo $errorMsg . "\n";
-            logError($errorMsg, prefix: __FILE__.":".__LINE__, e: $e);
+            logError($errorMsg, e: $e);
         }
         
         sleep(1);

@@ -3,6 +3,7 @@
 /PHPPage.php
 /php/cache/*.*
 /php/output/*.*
+/php/output/*/*.*
 /php/tests/punit.bat
 /php/tests/Temp*
 /php/tests/cache/*

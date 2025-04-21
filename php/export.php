@@ -3,6 +3,7 @@ namespace RatingSync;
 require_once "main.php";
 require_once "pageHeader.php";
 require_once "src/Constants.php";
+require_once "Export/ExportEnums.php";
 
 // Define constants for readability
 const POST_REQUEST_METHOD = "POST";
@@ -17,7 +18,7 @@ $collections = null;
 
 // Sanitize and process the export request
 if (!empty($username) && $_SERVER["REQUEST_METHOD"] === POST_REQUEST_METHOD) {
-    $exportedFilenames = processExportRequest($username, $_POST);
+    $exportedFilenames = processExportRequest( $_POST );
     $success = !empty($exportedFilenames);
 }
 
@@ -32,38 +33,40 @@ if (!empty($username)) {
 /**
  * Process the export request
  *
- * @param string $username
  * @param array $post
  * @return array|false Success or fail status, or null if invalid
  */
-function processExportRequest(string $username, array $post): array|false
+function processExportRequest( array $post ): array|false
 {
-    $format = sanitizeInput($post["format"]);
+    $destination = sanitizeInput($post["exportDest"]);
     $collectionName = sanitizeInput( $post["collectionName"] ?? "" );
-    $exportFormat = getExportFormat($format, $collectionName);
+    $exportDestination = getExportDestination($destination);
 
-    if (is_null($exportFormat)) {
+    if (is_null($exportDestination)) {
         return false;
     }
 
-    return \RatingSync\export($username, $exportFormat, $collectionName);
+    if ($collectionName == "Ratings") {
+        $collectionName = "";
+    }
+
+    return export( $exportDestination, $collectionName );
 }
 
 /**
- * Get export format based on input
+ * Get export destination based on input
  *
- * @param string $format
- * @param string $collectionName
- * @return ExportFormat|null Export format constant or null if invalid
+ * @param string $destination
+ * @return ExportOldFormat|null Export format constant or null if invalid
  */
-function getExportFormat(string $format, string $collectionName): ?ExportFormat
+function getExportDestination(string $destination): ?ExportDestination
 {
-    return match ($format) {
-        "letterboxd" => empty($collectionName) || $collectionName == "Ratings" ? ExportFormat::LETTERBOXD_RATINGS : ExportFormat::LETTERBOXD_COLLECTION,
-        "trakt" => ExportFormat::TRAKT_RATINGS,
-        "tmdb" => ExportFormat::TMDB_RATINGS,
-        "imdb" => ExportFormat::IMDB_RATINGS,
-        default => null,
+    return match ($destination) {
+        "letterboxd"    => ExportDestination::LETTERBOXD,
+        "trakt"         => ExportDestination::TRAKT,
+        "tmdb"          => ExportDestination::TMDB,
+        "imdb"          => ExportDestination::IMDB,
+        default         => null,
     };
 }
 
@@ -107,7 +110,7 @@ function sanitizeInput(string $data): string
                             echo '<br/>';
                             foreach ($exportedFilenames as $filename) {
                                 $baseFilename = basename($filename);
-                                echo '<div><a href="' . \RatingSync\Constants::RS_OUTPUT_URL_PATH . $baseFilename . '">' . $baseFilename . '</a></div>';
+                                echo '<div><a href="' . Constants::RS_OUTPUT_URL_PATH . $baseFilename . '">' . $baseFilename . '</a></div>';
                             }
                             echo '</div>';
                         } else {
@@ -123,7 +126,7 @@ function sanitizeInput(string $data): string
                         <label for="format">Export format:</label>
                     </div>
                     <div class="col-sm-4 col-md-3 col-lg-2 col-xl-2 mt-2">
-                        <select class="form-control" id="format" name="format" onchange="onChangeFormat()">
+                        <select class="form-control" id="exportDest" name="exportDest" onchange="onChangeFormat()">
                             <option value="letterboxd">Letterboxd</option>
                             <option value="trakt">Trakt</option>
                             <option value="tmdb">TMDb</option>
@@ -165,9 +168,9 @@ function sanitizeInput(string $data): string
     let pageId = SITE_PAGE.Export;
 
     function onChangeFormat() {
-        const formatSelect = document.getElementById('format');
+        const destinationSelect = document.getElementById('exportDest');
         const collectionSelect = document.getElementById('collectionName');
-        if (formatSelect.value === 'letterboxd') {
+        if (destinationSelect.value === 'letterboxd') {
             collectionSelect.disabled = false;
         }
         else {

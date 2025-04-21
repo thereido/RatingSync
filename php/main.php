@@ -13,18 +13,18 @@ use DateTime;
 use Exception;
 use PDO;
 
-require_once "src/Constants.php";
-require_once "src/Jinni.php";
-require_once "src/Imdb.php";
-require_once "src/OmdbApi.php";
-require_once "src/TmdbApi.php";
-require_once "src/Xfinity.php";
-require_once "src/RatingSyncSite.php";
-require_once "src/SessionUtility.php";
-require_once "PDO/DbConn.php";
-require_once "ExternalAdapters/ExportFormat.php";
+require_once "src" .DIRECTORY_SEPARATOR. "Constants.php";
+require_once "src" .DIRECTORY_SEPARATOR. "Jinni.php";
+require_once "src" .DIRECTORY_SEPARATOR. "Imdb.php";
+require_once "src" .DIRECTORY_SEPARATOR. "OmdbApi.php";
+require_once "src" .DIRECTORY_SEPARATOR. "TmdbApi.php";
+require_once "src" .DIRECTORY_SEPARATOR. "Xfinity.php";
+require_once "src" .DIRECTORY_SEPARATOR. "RatingSyncSite.php";
+require_once "src" .DIRECTORY_SEPARATOR. "SessionUtility.php";
+require_once "PDO" .DIRECTORY_SEPARATOR. "DbConn.php";
 require_once "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "ThemeManager.php";
 require_once "Entity" .DIRECTORY_SEPARATOR. "Managers" .DIRECTORY_SEPARATOR. "UserManager.php";
+require_once "Export" .DIRECTORY_SEPARATOR. "ExporterFactory.php";
 
 const FILE_WRITE_MODE = "w";
 
@@ -49,15 +49,26 @@ function import(string $username, string $filePath, string $importFormat): bool
  * Export a user's ratings and film collections to a file on the server.
  *
  * @param string $username The username whose ratings/collections are exported.
- * @param ExportFormat $format The format for the exported data.
+ * @param ExportDestination $destination
  * @param ?string $collectionName (Optional) The specific collection name to export; null if not applicable.
  * @return array|false              Array of filenames exported or false in case of failure.
  */
-function export(string $username, ExportFormat $format, ?string $collectionName = null): array|false
+function export( ExportDestination $destination, ?string $collectionName = "" ): array|false
 {
-    $ratingSyncSite = createRatingSyncSite($username);
 
-    return $ratingSyncSite->export($format, $collectionName ?? "");
+    try {
+        $exporter = ExporterFactory::create( $destination, $collectionName );
+    }
+    catch (Exception $e) {
+        logError("Failed to create Export for destination=$destination->name, collection='$collectionName' error=$e", e: $e );
+        return false;
+    }
+
+    $exportedFilenames  = $exporter->export();
+
+    logDebug("");
+    return $exportedFilenames;
+
 }
 
 /**
@@ -76,19 +87,19 @@ function createRatingSyncSite(string $username): RatingSyncSite
  *
  * @param string $content
  * @param string $filename
- * @return int|null
+ * @return false|int the number of bytes written, or FALSE on error.
  */
-function writeFile(string $content, string $filename): ?int
+function writeFile(string $content, string $filename): false|int
 {
     $fileHandle = fopen($filename, FILE_WRITE_MODE);
     if ($fileHandle === null) {
-        return null;
+        return false;
     }
 
     $writtenBytes = fwrite($fileHandle, $content);
     fclose($fileHandle);
 
-    return $writtenBytes ?: null; // Return null if writing failed
+    return $writtenBytes;
 }
 
 /**
@@ -105,7 +116,7 @@ function getDatabase(): PDO
     try {
         return $dbConn->connect();
     } catch (Exception $e) {
-        logError(input: "Unable to get a database connection.", prefix: __FUNCTION__ . "() " . __FILE__ . ":" . __LINE__, e: $e);
+        logError(message: "Unable to get a database connection.", e: $e);
         die("DB Connection failed: " . $e->getMessage());
     }
 }
@@ -137,7 +148,7 @@ function userView( string $username = null ): UserView|null {
         }
     }
     catch (Exception $e) {
-        logError("Error getting a user view with username='$username'. An empty username should be okay.", prefix: __CLASS__."::".__FUNCTION__.":".__LINE__, e: $e);
+        logError("Error getting a user view with username='$username'. An empty username should be okay.", e: $e);
     }
 
     return null;
@@ -205,16 +216,24 @@ function logDebug($input, $prefix = null, $showTime = true, $printArray = null):
     logToFile($logfilename, $input, $prefix, $showTime, $printArray);
 }
 
-function logError($input, $prefix = null, $showTime = true, Exception $e = null, $printArray = null): void
+function logError($message, Exception $e = null, $printArray = null): void
 {
     $logfilename =  Constants::outputFilePath() . "logError.txt";
-    logToFile($logfilename, $input, $prefix, $showTime, $printArray);
+
+    $prefix = "";
+    if ( !is_null($e) ) {
+        $prefix = $e->getFile() . "::" . $e->getLine();
+    }
+
+    logToFile($logfilename, $message, $prefix, true, $printArray);
+
     $eMsg = "";
     if ( !is_null($e) ) {
         logToFile($logfilename, "$e");
         $eMsg = "\n" . exceptionShortMsg($e);
     }
-    logDebug($input . $eMsg, $prefix, $showTime, $printArray);
+
+    logDebug($message . $eMsg, $prefix, true, $printArray);
 }
 
 function exceptionShortMsg( Exception $e ): string
@@ -316,7 +335,7 @@ function search($searchTerms, $username = null): array
                 $source->saveFilmSourceToDb($film->getId());
             }
             catch (Exception $e) {
-                logError(input: "Unable to save film source data.", prefix: __FUNCTION__ . "() " . __FILE__ . ":" . __LINE__, e: $e);
+                logError(message: "Unable to save film source data.", e: $e);
             }
         }
     }
