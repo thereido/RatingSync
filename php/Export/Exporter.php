@@ -23,7 +23,7 @@ abstract class Exporter
      * @param string|null $collectionName A null collectionName implies this is for Ratings. Non-null means this is for a Collection.
      * @return array Array<Film>: Films to be exported
      */
-    abstract protected function getFilms( ?string $collectionName = null ): array;
+    abstract protected function getFilms( int $limit, ?string $collectionName = null ): array;
 
     /**
      * @param Film $film
@@ -62,7 +62,7 @@ abstract class Exporter
         $collectionMsg  = $this->collectionName ? "collection '$this->collectionName'" : "ratings";
         logDebug("Export " . getUsername() . " $collectionMsg for importing to $destination in $extensionFormat format");
 
-        $films  = $this->getFilms( $this->collectionName );
+        $films  = $this->getFilms( self::EXPORT_FILM_LIMIT_DEFAULT, $this->collectionName );
         $export = $this->buildExportBatch( films: $films );
 
         return $export->saveToDisk( $this->collectionName );
@@ -165,7 +165,7 @@ class RatingsExporter extends Exporter
      * @param string|null $collectionName A null collectionName implies this is for Ratings. Non-null means this is for a Collection.
      * @return array Array<Film>: Films to be exported
      */
-    protected function getFilms( ?string $collectionName = null ): array
+    protected function getFilms( int $limit, ?string $collectionName = null ): array
     {
 
         $site = new RatingSyncSite( getUsername() );
@@ -173,7 +173,7 @@ class RatingsExporter extends Exporter
         $site->setSortDirection( direction: SqlSortDirection::descending );
         $site->setContentTypeFilter( $this->adapter->getContentTypeFilterForExport() ); // Filter out TV
 
-        return $site->getFilmsForExport( limit: self::EXPORT_FILM_LIMIT_DEFAULT );
+        return $site->getFilmsForExport( $limit );
 
     }
 
@@ -247,7 +247,7 @@ class CollectionExporter extends Exporter
      * @param string|null $collectionName A null collectionName implies this is for Ratings. Non-null means this is for a Collection.
      * @return array Array<Film>: Films to be exported
      */
-    protected function getFilms( ?string $collectionName = null ): array
+    protected function getFilms( int $limit, ?string $collectionName = null ): array
     {
 
         $list = new Filmlist( getUsername(), $collectionName );
@@ -256,7 +256,7 @@ class CollectionExporter extends Exporter
         $list->setContentFilter( $this->adapter->getContentTypeFilterForExport() );
         $list->initFromDb();
 
-        return $list->getFilms( self::EXPORT_FILM_LIMIT_DEFAULT );
+        return $list->getFilms( $limit );
 
     }
 
